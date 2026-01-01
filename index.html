@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musly - Your Subsonic Music Client</title>
+    <meta name="google-site-verification" content="JLboq1MTOnN_zbmZERMAfBaSIsHclAARBMfbYfzikeE" />
+
+    <!-- Meta tags for Discord embed -->
+    <meta property="og:title" content="Musly - Your Subsonic Music Client">
+    <meta property="og:description"
+        content="Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and completely yours.">
+    <meta property="og:image"
+        content="https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true">
+    <meta property="og:url" content="https://dddevid.github.io/Musly/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Musly">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Musly - Your Subsonic Music Client">
+    <meta name="twitter:description"
+        content="Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and completely yours.">
+    <meta name="twitter:image"
+        content="https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#FA243C">
+
+    <link rel="icon" type="image/png"
+        href="https://github.com/dddevid/Musly/blob/master/assets/Musly%20Big%202X.png?raw=true">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Framer Motion via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+        data-id="devidd" data-description="Support me on Buy me a coffee!" data-message="" data-color="#FA243C"
+        data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #FA243C;
+            --dark-bg: #000000;
+            --dark-surface: #1C1C1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated Background */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(250, 36, 60, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(252, 92, 101, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(250, 36, 60, 0.05) 0%, transparent 70%);
+            animation: gradientShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 1rem 5%;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        .logo img {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 0 10px rgba(250, 36, 60, 0.4));
+        }
+
+        @keyframes logoGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px rgba(250, 36, 60, 0.3));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 20px rgba(250, 36, 60, 0.6));
+            }
+        }
+
+        .logo img {
+            animation: none;
+        }
+
+        .logo:hover img {
+            filter: drop-shadow(0 0 20px rgba(250, 36, 60, 0.8));
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-red);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .download-btn {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary-red), #FC5C65);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(250, 36, 60, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(250, 36, 60, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 5% 4rem;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-visual {
+                display: none;
+            }
+        }
+
+        .hero-text {
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #8E8E93 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(135deg, var(--primary-red), #FC5C65);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-primary i,
+        .btn-secondary i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red), #FC5C65);
+            color: white;
+            box-shadow: 0 10px 30px rgba(250, 36, 60, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(250, 36, 60, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        /* Phone Mockup */
+        .hero-visual {
+            position: relative;
+            animation: fadeInRight 1s ease 0.3s backwards;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .phone-mockup {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(-2deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(2deg);
+            }
+        }
+
+        .phone-frame {
+            background: linear-gradient(145deg, #2C2C2E, #1C1C1E);
+            border-radius: 50px;
+            padding: 1rem;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .phone-screen {
+            background: #000;
+            border-radius: 40px;
+            overflow: hidden;
+            aspect-ratio: 9/19.5;
+            position: relative;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            position: relative;
+        }
+
+        .screen-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 8rem 5%;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .section-title p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(28, 28, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 3rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-red), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(250, 36, 60, 0.2);
+            border-color: rgba(250, 36, 60, 0.3);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-red), #FC5C65);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(250, 36, 60, 0.3);
+            color: white;
+        }
+
+        .feature-icon i {
+            font-size: 2.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Platforms Section */
+        .platforms {
+            padding: 8rem 5%;
+            background: rgba(28, 28, 30, 0.3);
+        }
+
+        .platforms-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            justify-items: center;
+        }
+
+        .platform-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .platform-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-red), #FC5C65);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .platform-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-red);
+            box-shadow: 0 20px 40px rgba(250, 36, 60, 0.2);
+        }
+
+        .platform-status {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .status-available {
+            background: rgba(52, 199, 89, 0.2);
+            color: #34C759;
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+
+        .status-build {
+            background: rgba(255, 159, 10, 0.2);
+            color: #FF9F0A;
+            border: 1px solid rgba(255, 159, 10, 0.3);
+        }
+
+        .platform-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-red);
+        }
+
+        .platform-icon i {
+            font-size: 4rem;
+        }
+
+        .platform-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .platform-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Roadmap Section */
+        .roadmap {
+            padding: 8rem 5%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .roadmap-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .roadmap-card {
+            background: rgba(28, 28, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roadmap-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-red);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .roadmap-card:hover::after {
+            transform: scaleY(1);
+        }
+
+        .roadmap-card:hover {
+            transform: translateX(10px);
+            border-color: rgba(250, 36, 60, 0.3);
+            box-shadow: -10px 0 30px rgba(250, 36, 60, 0.15);
+        }
+
+        .roadmap-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(250, 36, 60, 0.15);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-red);
+        }
+
+        .roadmap-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .roadmap-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .roadmap-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 159, 10, 0.15);
+            border: 1px solid rgba(255, 159, 10, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #FF9F0A;
+            margin-top: 1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #FF9F0A;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 5%;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-red);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .social-links a {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-red);
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .platforms-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title h2 {
+                font-size: 2.5rem;
+            }
+
+            .features-grid,
+            .platforms-grid,
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Stagger animation for grid items */
+        .reveal:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .reveal:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .reveal:nth-child(3) {
+            transition-delay: 0.3s;
+        }
+
+        .reveal:nth-child(4) {
+            transition-delay: 0.4s;
+        }
+
+        .reveal:nth-child(5) {
+            transition-delay: 0.5s;
+        }
+
+        .reveal:nth-child(6) {
+            transition-delay: 0.6s;
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced animations */
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-left {
+            animation: slideInFromLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-right {
+            animation: slideInFromRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-scale {
+            animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Magnetic button effect */
+        .btn-primary,
+        .btn-secondary,
+        .download-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before,
+        .btn-secondary::before,
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::before,
+        .btn-secondary:hover::before,
+        .download-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Card shine effect */
+        .feature-card,
+        .platform-card,
+        .roadmap-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after,
+        .platform-card::after,
+        .roadmap-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.03),
+                    transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+
+        .feature-card:hover::after,
+        .platform-card:hover::after,
+        .roadmap-card:hover::after {
+            left: 100%;
+        }
+
+        /* Parallax elements */
+        .parallax {
+            transition: transform 0.1s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="https://github.com/dddevid/Musly/blob/master/assets/Musly%20Big%202X.png?raw=true"
+                    alt="Musly Logo">
+                <span>Musly</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#platforms">Platforms</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+                <li><a href="#download">Download</a></li>
+            </ul>
+            <button class="download-btn" onclick="scrollToDownload()">
+                <i class="fas fa-download"></i> Download Beta
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Your Music, <br><span class="hero-highlight">Beautifully Streaming</span></h1>
+                <p>Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and
+                    completely yours.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="scrollToDownload()">
+                        <i class="fas fa-cloud-download-alt"></i> Download Now
+                    </button>
+                    <button class="btn-secondary" onclick="window.open('https://github.com/dddevid/Musly', '_blank')">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-mockup">
+                    <div class="phone-frame">
+                        <div class="phone-screen">
+                            <div class="screen-content">
+                                <img src="https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true"
+                                    alt="Musly App Screenshot">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-title reveal">
+            <h2>Powerful Features</h2>
+            <p>Everything you need for the perfect music streaming experience</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-palette"></i></div>
+                <h3>Apple Music UI</h3>
+                <p>Beautiful, modern interface inspired by Apple Music with dark/light mode support and responsive
+                    design.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-music"></i></div>
+                <h3>Music Streaming</h3>
+                <p>Stream music seamlessly from your Subsonic server with full playback controls and queue management.
+                </p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-car"></i></div>
+                <h3>Android Auto</h3>
+                <p>Full support for Android Auto integration, bringing your music to your car's dashboard.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-search"></i></div>
+                <h3>Smart Search</h3>
+                <p>Quickly find your favorite artists, albums, and songs with our powerful search functionality.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-list-ul"></i></div>
+                <h3>Playlist Management</h3>
+                <p>Create, edit, and manage playlists with ease. Your music, organized your way.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon"><i class="fas fa-download"></i></div>
+                <h3>Offline Mode</h3>
+                <p>Download your favorite tracks for offline listening. Music everywhere, anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="platforms" id="platforms">
+        <div class="section-title reveal">
+            <h2>Cross-Platform Support</h2>
+            <p>Available on all your devices</p>
+        </div>
+        <div class="platforms-grid">
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fab fa-android"></i></div>
+                <h3>Android</h3>
+                <p>Full support with prebuilt APK ready to download</p>
+                <span class="platform-status status-available">
+                    <i class="fas fa-check-circle"></i> Available Now
+                </span>
+            </div>
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fab fa-apple"></i></div>
+                <h3>iOS</h3>
+                <p>Compatible with iPhone and iPad - requires manual build</p>
+                <span class="platform-status status-build">
+                    <i class="fas fa-hammer"></i> Build from Source
+                </span>
+            </div>
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fab fa-windows"></i></div>
+                <h3>Windows</h3>
+                <p>Native desktop application for Windows 10/11</p>
+                <span class="platform-status status-build">
+                    <i class="fas fa-hammer"></i> Build from Source
+                </span>
+            </div>
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fab fa-linux"></i></div>
+                <h3>Linux</h3>
+                <p>Full open source support for all major distributions</p>
+                <span class="platform-status status-build">
+                    <i class="fas fa-hammer"></i> Build from Source
+                </span>
+            </div>
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fas fa-desktop"></i></div>
+                <h3>macOS</h3>
+                <p>Native macOS application with Apple Silicon support</p>
+                <span class="platform-status status-build">
+                    <i class="fas fa-hammer"></i> Build from Source
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <section class="roadmap" id="roadmap">
+        <div class="section-title reveal">
+            <h2>Roadmap</h2>
+            <p>What's coming next to Musly</p>
+        </div>
+        <div class="roadmap-grid">
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-desktop"></i></div>
+                <h3>Custom PC UX</h3>
+                <p>A dedicated desktop-optimized interface designed specifically for larger screens, moving beyond the
+                    mobile-adapted layout.</p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-car-side"></i></div>
+                <h3>CarPlay Support</h3>
+                <p>Native CarPlay integration with a dedicated browsing interface for safe and intuitive in-car music
+                    control.</p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-heart"></i></div>
+                <h3>Last.fm Integration</h3>
+                <p>Automatic scrobbling support and rich metadata for artists and albums from Last.fm's extensive
+                    database.</p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-layer-group"></i></div>
+                <h3>Local Playlists</h3>
+                <p>Create and manage playlists locally on your device, independent of the Subsonic server for greater
+                    flexibility.</p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-server"></i></div>
+                <h3>Custom API Server</h3>
+                <p>Support for custom backend implementations and extended APIs beyond standard Subsonic compatibility.
+                </p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+            <div class="roadmap-card reveal">
+                <div class="roadmap-icon"><i class="fas fa-sync"></i></div>
+                <h3>Improved Sync</h3>
+                <p>Enhanced synchronization capabilities for offline music, ensuring your library is always up to date.
+                </p>
+                <div class="roadmap-status">
+                    <span class="status-dot"></span>
+                    In Planning
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="download">
+        <div class="section-title reveal">
+            <h2>Download Beta</h2>
+            <p>Get the latest version and start streaming today</p>
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn-primary" style="font-size: 1.3rem; padding: 1.5rem 4rem;"
+                onclick="window.open('https://github.com/dddevid/Musly/releases/tag/v1.0.0', '_blank')">
+                <i class="fas fa-cloud-download-alt"></i> Download v1.0.0-beta (APK)
+            </button>
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                Currently available for Android. iOS and desktop versions require building from source.
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://github.com/dddevid/Musly" target="_blank">GitHub</a>
+                <a href="https://github.com/dddevid/Musly/releases" target="_blank">Releases</a>
+                <a href="#roadmap">Roadmap</a>
+                <a href="https://github.com/dddevid/Musly/issues" target="_blank">Support</a>
+            </div>
+            <div class="social-links">
+                <a href="https://github.com/dddevid/Musly" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://github.com/dddevid/Musly/releases" target="_blank" title="Releases">
+                    <i class="fas fa-rocket"></i>
+                </a>
+                <a href="https://github.com/dddevid/Musly/issues" target="_blank" title="Issues">
+                    <i class="fas fa-bug"></i>
+                </a>
+            </div>
+            <div class="copyright">
+                <p>© 2026 Musly. Licensed under CC BY-NC-SA 4.0</p>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem;">Do not redistribute to commercial stores</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Enhanced navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Advanced scroll reveal with stagger
+        const reveals = document.querySelectorAll('.reveal');
+
+        const revealOnScroll = () => {
+            reveals.forEach((element, index) => {
+                const elementTop = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+
+                if (elementTop < windowHeight - 100) {
+                    setTimeout(() => {
+                        element.classList.add('active');
+                    }, index * 50);
+                }
+            });
+        };
+
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+
+        // Smooth scroll to download
+        function scrollToDownload() {
+            document.getElementById('download').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Enhanced parallax effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero-visual');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+
+            // Parallax for background
+            const bgGradient = document.querySelector('.bg-gradient');
+            if (bgGradient) {
+                bgGradient.style.transform = `translateY(${scrolled * 0.5}px) scale(${1 + scrolled * 0.0002})`;
+            }
+        });
+
+        // Magnetic button effect
+        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .download-btn');
+
+        buttons.forEach(button => {
+            button.addEventListener('mousemove', (e) => {
+                const rect = button.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const deltaX = (x - centerX) / centerX;
+                const deltaY = (y - centerY) / centerY;
+
+                button.style.transform = `translate(${deltaX * 10}px, ${deltaY * 10}px) scale(1.05)`;
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'translate(0, 0) scale(1)';
+            });
+        });
+
+        // Card tilt effect
+        const cards = document.querySelectorAll('.feature-card, .platform-card, .roadmap-card');
+
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+
+        // Animate logo on load
+        window.addEventListener('load', () => {
+            const logo = document.querySelector('.logo');
+            if (logo) {
+                logo.classList.add('animate-scale');
+            }
+        });
+
+        // Intersection Observer for advanced animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0) scale(1)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Cursor trail effect (subtle)
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            const diffX = mouseX - cursorX;
+            const diffY = mouseY - cursorY;
+
+            cursorX += diffX * 0.1;
+            cursorY += diffY * 0.1;
+
+            requestAnimationFrame(animateCursor);
+        }
+
+        animateCursor();
+
+        // Add entrance animations
+        setTimeout(() => {
+            document.querySelector('.hero-text')?.classList.add('animate-left');
+            document.querySelector('.hero-visual')?.classList.add('animate-right');
+        }, 100);
+    </script>
+</body>
+
+</html>
