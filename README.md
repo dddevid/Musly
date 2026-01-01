@@ -15,14 +15,17 @@ A beautiful Flutter music streaming client with an Apple Music-inspired UI for S
 - 🔀 **Shuffle & Repeat** - Control playback modes
 - 📊 **Queue Management** - View and modify the play queue
 
-## Getting Started
-
 ### Prerequisites
 
 - Flutter SDK 3.10.0 or higher
 - A Subsonic-compatible music server (Subsonic, Navidrome, Airsonic, etc.)
 
-### Installation
+## Download Beta
+
+You can download the latest beta release (APK for Android) from the GitHub releases page:
+👉 **[Download Musly v1.0.0-beta](https://github.com/dddevid/Musly/releases/tag/v1.0.0)**
+
+## Installation
 
 1. Install dependencies:
    ```bash
