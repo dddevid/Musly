@@ -42,8 +42,10 @@ You can download the latest beta release (APK for Android) from the GitHub relea
 
 - [ ] **Custom PC UX**: Currently, the UI is adapted from mobile for desktop platforms. Future updates will include a dedicated desktop-optimized interface.
 - [ ] **CarPlay Support**: Add a dedicated browsing interface for CarPlay.
+- [ ] **Last.fm Integration**: Support for scrobbling and artist/album metadata.
+- [ ] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
+- [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
 - [ ] Improved synchronization for offline music.
-- [ ] Support for more Subsonic extensions.
 
 ## Screenshots
 
