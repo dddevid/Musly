@@ -18,7 +18,7 @@ A beautiful Flutter music streaming client with an Apple Music-inspired UI for S
 
 ### Prerequisites
 
-- Flutter SDK 3.10.0 or higher
+- Flutter SDK 3.30.0 or higher
 - A Subsonic-compatible music server (Subsonic, Navidrome, Airsonic, etc.)
 
 ## Supported Platforms
@@ -103,4 +103,5 @@ Musly works with any Subsonic API-compatible server:
 > **DO NOT redistribute this app to the Google Play Store or other commercial stores.**
 
 This project is open source and available under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** License. See the [LICENSE](LICENSE) file for details.
+
 
