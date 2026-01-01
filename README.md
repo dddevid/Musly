@@ -38,6 +38,20 @@ You can download the latest beta release (APK for Android) from the GitHub relea
 > [!NOTE]  
 > Currently, only **Android** has a prebuilt APK. For **iOS** and desktop platforms, you will need to build the app from source.
 
+## Support Development
+
+If you enjoy using Musly and want to support its development, consider buying me a coffee! ☕
+
+<div align="center">
+  
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Development-fa243c?style=for-the-badge&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/devidd)
+
+**[Support on Buy Me a Coffee](https://buymeacoffee.com/devidd)** ⌨️
+
+</div>
+
+Your support helps me dedicate more time to improving Musly, adding new features, and maintaining the project. Every contribution is greatly appreciated! 💙
+
 ## Roadmap
 
 - [ ] **Custom PC UX**: Currently, the UI is adapted from mobile for desktop platforms. Future updates will include a dedicated desktop-optimized interface.
@@ -103,6 +117,3 @@ Musly works with any Subsonic API-compatible server:
 > **DO NOT redistribute this app to the Google Play Store or other commercial stores.**
 
 This project is open source and available under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** License. See the [LICENSE](LICENSE) file for details.
-
-
-
