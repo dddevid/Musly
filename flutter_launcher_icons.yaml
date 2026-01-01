@@ -1,0 +1,22 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "Musly Icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#1C1C1E"
+  adaptive_icon_foreground: "Musly Icon.png"
+  
+  web:
+    generate: true
+    image_path: "Musly Icon.png"
+    background_color: "#1C1C1E"
+    theme_color: "#FA243C"
+  
+  windows:
+    generate: true
+    image_path: "Musly Icon.png"
+    icon_size: 48
+  
+  macos:
+    generate: true
+    image_path: "Musly Icon.png"

@@ -1,0 +1,90 @@
+name: musly
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none'
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# In Windows, build-name is used as the major, minor, and patch parts
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  
+  provider: ^6.1.2
+  
+  dio: ^5.4.0
+  
+  just_audio: ^0.9.36
+  audio_service: ^0.18.12
+  
+  cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
+  
+  crypto: ^3.0.3
+  
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  
+  flutter_sliding_up_panel: ^2.0.0+1
+  palette_generator: ^0.3.3+4
+  shimmer: ^3.0.0
+  
+  uuid: ^4.3.3
+  collection: ^1.18.0
+  
+  volume_controller: ^3.4.1
+  
+  permission_handler: ^11.3.1
+  
+  device_info_plus: ^10.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+# For information on the generic Dart part of this file, see the
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/logo.png
+    - assets/logobig.png
+  #   - images/a_dot_burr.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+
+  # For details regarding adding assets from package dependencies, see
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #   - family: Trajan Pro
+  #     fonts:
+  # For details regarding fonts from package dependencies,
