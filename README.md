@@ -14,6 +14,7 @@ A beautiful Flutter music streaming client with an Apple Music-inspired UI for S
 - ▶️ **Now Playing** - Full-featured music player with controls
 - 🔀 **Shuffle & Repeat** - Control playback modes
 - 📊 **Queue Management** - View and modify the play queue
+- 🚗 **Android Auto** - Full support for Android Auto integration
 
 ### Prerequisites
 
@@ -40,6 +41,7 @@ You can download the latest beta release (APK for Android) from the GitHub relea
 ## Roadmap
 
 - [ ] **Custom PC UX**: Currently, the UI is adapted from mobile for desktop platforms. Future updates will include a dedicated desktop-optimized interface.
+- [ ] **CarPlay Support**: Add a dedicated browsing interface for CarPlay.
 - [ ] Improved synchronization for offline music.
 - [ ] Support for more Subsonic extensions.
 
