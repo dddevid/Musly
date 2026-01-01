@@ -20,10 +20,37 @@ A beautiful Flutter music streaming client with an Apple Music-inspired UI for S
 - Flutter SDK 3.10.0 or higher
 - A Subsonic-compatible music server (Subsonic, Navidrome, Airsonic, etc.)
 
+## Supported Platforms
+
+Musly is a cross-platform application that supports:
+- 📱 **Android** (Prebuilt APK available)
+- 🍏 **iOS** (Requires manual build)
+- 🪟 **Windows**
+- 🐧 **Linux**
+- 🍎 **macOS**
+
 ## Download Beta
 
 You can download the latest beta release (APK for Android) from the GitHub releases page:
 👉 **[Download Musly v1.0.0-beta](https://github.com/dddevid/Musly/releases/tag/v1.0.0)**
+
+> [!NOTE]  
+> Currently, only **Android** has a prebuilt APK. For **iOS** and desktop platforms, you will need to build the app from source.
+
+## Roadmap
+
+- [ ] **Custom PC UX**: Currently, the UI is adapted from mobile for desktop platforms. Future updates will include a dedicated desktop-optimized interface.
+- [ ] Improved synchronization for offline music.
+- [ ] Support for more Subsonic extensions.
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/Screenshot_20260101_024726.png" width="200" />
+  <img src="screenshots/Screenshot_20260101_024746.png" width="200" />
+  <img src="screenshots/Screenshot_20260101_024751.png" width="200" />
+  <img src="screenshots/Screenshot_20260101_024803.png" width="200" />
+</p>
 
 ## Installation
 
