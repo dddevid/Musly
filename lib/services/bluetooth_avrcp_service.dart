@@ -65,10 +65,10 @@ class BluetoothAvrcpService {
   BluetoothAvrcpService._internal();
 
   static const MethodChannel _methodChannel = MethodChannel(
-    'com.musly.musly/bluetooth_avrcp',
+    'com.devid.musly/bluetooth_avrcp',
   );
   static const EventChannel _eventChannel = EventChannel(
-    'com.musly.musly/bluetooth_avrcp_events',
+    'com.devid.musly/bluetooth_avrcp_events',
   );
 
   StreamSubscription? _eventSubscription;
@@ -98,7 +98,6 @@ class BluetoothAvrcpService {
     if (_isInitialized) return;
 
     try {
-
       _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
         _handleEvent,
         onError: _handleError,

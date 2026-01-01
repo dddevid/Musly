@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothA2dp

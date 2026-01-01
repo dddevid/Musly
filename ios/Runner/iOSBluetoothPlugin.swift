@@ -6,8 +6,8 @@ import ExternalAccessory
 
 public class iOSBluetoothPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
-    private static let methodChannelName = "com.musly.musly/bluetooth_avrcp"
-    private static let eventChannelName = "com.musly.musly/bluetooth_avrcp_events"
+    private static let methodChannelName = "com.devid.musly/bluetooth_avrcp"
+    private static let eventChannelName = "com.devid.musly/bluetooth_avrcp_events"
     
     private var eventSink: FlutterEventSink?
     private var methodChannel: FlutterMethodChannel?

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.musly.musly"
+    namespace = "com.devid.musly"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.musly.musly"
+        applicationId = "com.devid.musly"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

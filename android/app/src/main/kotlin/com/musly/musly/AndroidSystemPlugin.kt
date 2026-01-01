@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -23,8 +23,8 @@ import io.flutter.plugin.common.MethodChannel
 object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     
     private const val TAG = "AndroidSystemPlugin"
-    private const val METHOD_CHANNEL = "com.musly.musly/android_system"
-    private const val EVENT_CHANNEL = "com.musly.musly/android_system_events"
+    private const val METHOD_CHANNEL = "com.devid.musly/android_system"
+    private const val EVENT_CHANNEL = "com.devid.musly/android_system_events"
     
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null

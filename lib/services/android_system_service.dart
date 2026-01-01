@@ -10,10 +10,10 @@ class AndroidSystemService {
   AndroidSystemService._internal();
 
   static const MethodChannel _methodChannel = MethodChannel(
-    'com.musly.musly/android_system',
+    'com.devid.musly/android_system',
   );
   static const EventChannel _eventChannel = EventChannel(
-    'com.musly.musly/android_system_events',
+    'com.devid.musly/android_system_events',
   );
 
   StreamSubscription? _eventSubscription;
@@ -52,7 +52,6 @@ class AndroidSystemService {
     if (_isInitialized) return;
 
     try {
-
       _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
         _handleEvent,
         onError: _handleError,

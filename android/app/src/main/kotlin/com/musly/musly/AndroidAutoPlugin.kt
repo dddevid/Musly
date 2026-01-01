@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.content.Context
 import android.content.Intent
@@ -10,8 +10,8 @@ import io.flutter.plugin.common.MethodChannel
 
 object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     
-    private const val METHOD_CHANNEL = "com.musly.musly/android_auto"
-    private const val EVENT_CHANNEL = "com.musly.musly/android_auto_events"
+    private const val METHOD_CHANNEL = "com.devid.musly/android_auto"
+    private const val EVENT_CHANNEL = "com.devid.musly/android_auto_events"
     
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null

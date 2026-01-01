@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.content.Context
 import android.util.Log
@@ -14,8 +14,8 @@ import io.flutter.plugin.common.MethodChannel
 object BluetoothAvrcpPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     
     private const val TAG = "BluetoothAvrcpPlugin"
-    private const val METHOD_CHANNEL = "com.musly.musly/bluetooth_avrcp"
-    private const val EVENT_CHANNEL = "com.musly.musly/bluetooth_avrcp_events"
+    private const val METHOD_CHANNEL = "com.devid.musly/bluetooth_avrcp"
+    private const val EVENT_CHANNEL = "com.devid.musly/bluetooth_avrcp_events"
     
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null

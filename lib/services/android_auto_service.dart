@@ -12,10 +12,10 @@ class AndroidAutoService {
   AndroidAutoService._internal();
 
   static const MethodChannel _methodChannel = MethodChannel(
-    'com.musly.musly/android_auto',
+    'com.devid.musly/android_auto',
   );
   static const EventChannel _eventChannel = EventChannel(
-    'com.musly.musly/android_auto_events',
+    'com.devid.musly/android_auto_events',
   );
 
   StreamSubscription? _eventSubscription;
@@ -38,7 +38,6 @@ class AndroidAutoService {
     if (defaultTargetPlatform != TargetPlatform.android) return;
 
     try {
-
       _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
         _handleEvent,
         onError: _handleError,

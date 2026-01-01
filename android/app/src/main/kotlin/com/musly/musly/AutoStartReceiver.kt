@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.content.BroadcastReceiver
 import android.content.Context

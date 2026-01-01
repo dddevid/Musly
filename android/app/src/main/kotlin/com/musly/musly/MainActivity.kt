@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

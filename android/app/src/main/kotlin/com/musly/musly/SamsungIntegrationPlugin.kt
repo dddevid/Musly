@@ -1,4 +1,4 @@
-package com.musly.musly
+package com.devid.musly
 
 import android.content.Context
 import android.util.Log
@@ -14,8 +14,8 @@ import io.flutter.plugin.common.MethodChannel
 object SamsungIntegrationPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     
     private const val TAG = "SamsungIntegrationPlugin"
-    private const val METHOD_CHANNEL = "com.musly.musly/samsung_integration"
-    private const val EVENT_CHANNEL = "com.musly.musly/samsung_integration_events"
+    private const val METHOD_CHANNEL = "com.devid.musly/samsung_integration"
+    private const val EVENT_CHANNEL = "com.devid.musly/samsung_integration_events"
     
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null

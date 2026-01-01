@@ -68,10 +68,10 @@ class SamsungIntegrationService {
   SamsungIntegrationService._internal();
 
   static const MethodChannel _methodChannel = MethodChannel(
-    'com.musly.musly/samsung_integration',
+    'com.devid.musly/samsung_integration',
   );
   static const EventChannel _eventChannel = EventChannel(
-    'com.musly.musly/samsung_integration_events',
+    'com.devid.musly/samsung_integration_events',
   );
 
   StreamSubscription? _eventSubscription;
@@ -95,7 +95,6 @@ class SamsungIntegrationService {
     if (_isInitialized) return;
 
     try {
-
       final isSamsung = await _methodChannel.invokeMethod<bool>(
         'isSamsungDevice',
       );

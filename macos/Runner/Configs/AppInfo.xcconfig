@@ -8,7 +8,7 @@
 PRODUCT_NAME = musly
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.musly.musly
+PRODUCT_BUNDLE_IDENTIFIER = com.devid.musly
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.musly. All rights reserved.

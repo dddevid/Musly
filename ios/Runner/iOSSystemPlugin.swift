@@ -5,8 +5,8 @@ import AVFoundation
 
 public class iOSSystemPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
-    private static let methodChannelName = "com.musly.musly/android_system"
-    private static let eventChannelName = "com.musly.musly/android_system_events"
+    private static let methodChannelName = "com.devid.musly/android_system"
+    private static let eventChannelName = "com.devid.musly/android_system_events"
     
     private var eventSink: FlutterEventSink?
     private var methodChannel: FlutterMethodChannel?
