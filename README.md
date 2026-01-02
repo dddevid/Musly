@@ -55,7 +55,7 @@ Your support helps me dedicate more time to improving Musly, adding new features
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
-- [ ] **Lyrics for PC**: Currently under development and disabled by default on Desktop. 
+- [ ] **Lyrics for PC**: Currently under development (barely working) and disabled by default on Desktop. 
     > [!TIP]  
     > To re-enable the lyrics button on PC for testing or development:
     > 1. Open `lib/widgets/desktop_player_bar.dart`.
@@ -66,6 +66,7 @@ Your support helps me dedicate more time to improving Musly, adding new features
 - [ ] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
 - [ ] Improved synchronization for offline music.
+- [ ] Tizen OS (Samsung TV) and WebOS (LG TV) port
 
 ## Screenshots
 
@@ -110,3 +111,5 @@ Musly works with any Subsonic API-compatible server:
 > **DO NOT redistribute this app to the Google Play Store or other commercial stores.**
 
 This project is open source and available under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** License. See the [LICENSE](LICENSE) file for details.
+
+
