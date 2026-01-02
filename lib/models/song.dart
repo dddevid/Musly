@@ -86,4 +86,44 @@ class Song {
     final seconds = duration! % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
+
+  Song copyWith({
+    String? id,
+    String? title,
+    String? album,
+    String? albumId,
+    String? artist,
+    String? artistId,
+    int? track,
+    int? year,
+    String? genre,
+    String? coverArt,
+    int? duration,
+    int? bitRate,
+    String? suffix,
+    String? contentType,
+    int? size,
+    String? path,
+    bool? starred,
+  }) {
+    return Song(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      album: album ?? this.album,
+      albumId: albumId ?? this.albumId,
+      artist: artist ?? this.artist,
+      artistId: artistId ?? this.artistId,
+      track: track ?? this.track,
+      year: year ?? this.year,
+      genre: genre ?? this.genre,
+      coverArt: coverArt ?? this.coverArt,
+      duration: duration ?? this.duration,
+      bitRate: bitRate ?? this.bitRate,
+      suffix: suffix ?? this.suffix,
+      contentType: contentType ?? this.contentType,
+      size: size ?? this.size,
+      path: path ?? this.path,
+      starred: starred ?? this.starred,
+    );
+  }
 }

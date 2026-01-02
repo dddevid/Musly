@@ -33,14 +33,20 @@ Musly is a cross-platform application that supports:
 ## Download Beta
 
 You can download the latest beta release (APK for Android) from the GitHub releases page:
-👉 **[Download Musly v1.0.0-beta](https://github.com/dddevid/Musly/releases/tag/v1.0.0)**
+👉 **[Download Musly v1.0.1](https://github.com/dddevid/Musly/releases/tag/v1.0.1)**
 
 > [!NOTE]  
 > Currently, only **Android** has a prebuilt APK. For **iOS** and desktop platforms, you will need to build the app from source.
 
 ## Roadmap
 
-- [ ] **Custom PC UX**: Currently, the UI is adapted from mobile for desktop platforms. Future updates will include a dedicated desktop-optimized interface.
+- [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
+- [ ] **Lyrics for PC**: Currently under development and disabled by default on Desktop. 
+    > [!TIP]  
+    > To re-enable the lyrics button on PC for testing or development:
+    > 1. Open `lib/widgets/desktop_player_bar.dart`.
+    > 2. Locate the commented-out `IconButton` with `Icons.lyrics_rounded`.
+    > 3. Remove the comments to show the button in the player bar.
 - [ ] **CarPlay Support**: Add a dedicated browsing interface for CarPlay.
 - [ ] **Last.fm Integration**: Support for scrobbling and artist/album metadata.
 - [ ] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.

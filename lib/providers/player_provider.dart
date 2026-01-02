@@ -5,6 +5,7 @@ import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
 import '../services/android_auto_service.dart';
 import '../services/android_system_service.dart';
+import '../services/windows_system_service.dart';
 import '../services/bluetooth_avrcp_service.dart';
 import '../services/samsung_integration_service.dart';
 import '../providers/library_provider.dart';
@@ -17,6 +18,7 @@ class PlayerProvider extends ChangeNotifier {
   final OfflineService _offlineService = OfflineService();
   final AndroidAutoService _androidAutoService = AndroidAutoService();
   final AndroidSystemService _androidSystemService = AndroidSystemService();
+  final WindowsSystemService _windowsService = WindowsSystemService();
   final BluetoothAvrcpService _bluetoothService = BluetoothAvrcpService();
   final SamsungIntegrationService _samsungService = SamsungIntegrationService();
 
@@ -53,6 +55,14 @@ class PlayerProvider extends ChangeNotifier {
     _androidSystemService.onSeekTo = seek;
     _androidSystemService.onHeadsetHook = togglePlayPause;
     _androidSystemService.onHeadsetDoubleClick = skipNext;
+
+    _windowsService.initialize();
+    _windowsService.onPlay = play;
+    _windowsService.onPause = pause;
+    _windowsService.onStop = stop;
+    _windowsService.onSkipNext = skipNext;
+    _windowsService.onSkipPrevious = skipPrevious;
+    _windowsService.onSeekTo = seek;
 
     _androidSystemService.onAudioFocusLoss = () {
       pause();
@@ -285,6 +295,14 @@ class PlayerProvider extends ChangeNotifier {
       queueLength: _queue.length,
     );
 
+    _windowsService.updatePlaybackState(
+      song: _currentSong!,
+      artworkUrl: artworkUrl,
+      duration: _duration,
+      position: _position,
+      isPlaying: _isPlaying,
+    );
+
     _bluetoothService.updateFromSong(
       song: _currentSong!,
       artworkUrl: artworkUrl,
@@ -348,12 +366,20 @@ class PlayerProvider extends ChangeNotifier {
     });
 
     Duration? lastNotified;
+    Duration? lastSystemUpdate;
     _audioPlayer.positionStream.listen((position) {
       _position = position;
       if (lastNotified == null ||
           position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
         lastNotified = position;
         notifyListeners();
+      }
+      
+      // Update system services progress (SMTC, Taskbar) every 1s
+      if (lastSystemUpdate == null || 
+          (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() > 1000) {
+        lastSystemUpdate = position;
+        _updateAllServices();
       }
     });
 
@@ -389,6 +415,12 @@ class PlayerProvider extends ChangeNotifier {
     List<Song>? playlist,
     int? startIndex,
   }) async {
+    // If the song is already the current one, toggle play/pause
+    if (_currentSong?.id == song.id) {
+      await togglePlayPause();
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 
@@ -573,11 +605,35 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleFavorite() async {
+    if (_currentSong == null) return;
+
+    final isStarred = _currentSong!.starred == true;
+
+    final newSong = _currentSong!.copyWith(starred: !isStarred);
+    _currentSong = newSong;
+    notifyListeners();
+
+    try {
+      if (isStarred) {
+        await _subsonicService.unstar(id: newSong.id);
+      } else {
+        await _subsonicService.star(id: newSong.id);
+      }
+      _libraryProvider?.loadStarred();
+    } catch (e) {
+      debugPrint('Error toggling favorite: $e');
+      _currentSong = _currentSong!.copyWith(starred: isStarred);
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
     _androidAutoService.dispose();
     _androidSystemService.dispose();
+    _windowsService.dispose();
     _bluetoothService.dispose();
     _samsungService.dispose();
     super.dispose();

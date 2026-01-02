@@ -3,11 +3,14 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  just_audio_windows
   permission_handler_windows
   volume_controller
+  windows_taskbar
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  smtc_windows
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

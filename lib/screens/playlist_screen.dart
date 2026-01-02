@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +34,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   bool _isReorderMode = false;
   Set<int> _selectedIndices = {};
+
+  bool get _isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
 
   @override
   void initState() {
@@ -273,7 +280,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   ],
                   flexibleSpace: FlexibleSpaceBar(
                     background: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 80, 24, 0),
+                      padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -281,8 +288,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                           Hero(
                             tag: 'playlist_${widget.playlistId}',
                             child: Container(
-                              width: 180,
-                              height: 180,
+                              width: 160,
+                              height: 160,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
@@ -308,7 +315,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
                           Text(
                             _playlist!.name,
@@ -518,15 +525,16 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             ),
           ),
 
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [MiniPlayer(), _buildBottomNav(context, isDark)],
+          if (!_isDesktop)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [MiniPlayer(), _buildBottomNav(context, isDark)],
+              ),
             ),
-          ),
         ],
       ),
       floatingActionButton: _isReorderMode
@@ -706,24 +714,24 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   void _showDeleteDialog(BuildContext context) {
-    showCupertinoDialog(
+    showDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Delete Playlist'),
         content: Text(
           'Are you sure you want to delete "${_playlist?.name ?? widget.playlistName}"?',
         ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
+          TextButton(
             onPressed: () async {
               Navigator.pop(context);
               await _deletePlaylist();
             },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -874,7 +882,7 @@ class _SpotifySongTile extends StatelessWidget {
                 if (isPlaying)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: _AnimatedEqualizer(
+                    child: AnimatedEqualizer(
                       color: AppTheme.appleMusicRed,
                       isPlaying: playerProvider.isPlaying,
                     ),
@@ -910,103 +918,6 @@ class _SpotifySongTile extends StatelessWidget {
                 ),
               ],
             ),
-    );
-  }
-}
-
-class _AnimatedEqualizer extends StatefulWidget {
-  final Color color;
-  final bool isPlaying;
-
-  const _AnimatedEqualizer({required this.color, required this.isPlaying});
-
-  @override
-  State<_AnimatedEqualizer> createState() => _AnimatedEqualizerState();
-}
-
-class _AnimatedEqualizerState extends State<_AnimatedEqualizer>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _controllers;
-
-  @override
-  void initState() {
-    super.initState();
-    _controllers = List.generate(
-      3,
-      (index) => AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: 300 + (index * 100)),
-      ),
-    );
-    if (widget.isPlaying) {
-      _startAnimations();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_AnimatedEqualizer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isPlaying != oldWidget.isPlaying) {
-      if (widget.isPlaying) {
-        _startAnimations();
-      } else {
-        _stopAnimations();
-      }
-    }
-  }
-
-  void _startAnimations() {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      for (var controller in _controllers) {
-        if (!controller.isAnimating) {
-          controller.repeat(reverse: true);
-        }
-      }
-    });
-  }
-
-  void _stopAnimations() {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      for (var controller in _controllers) {
-        controller.stop();
-        controller.value = 0;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _controllers[index],
-          builder: (context, child) {
-            return Container(
-              width: 3,
-              height: 12 * _controllers[index].value + 4,
-              margin: const EdgeInsets.symmetric(horizontal: 1),
-              decoration: BoxDecoration(
-                color: widget.color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            );
-          },
-        );
-      }),
     );
   }
 }

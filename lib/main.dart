@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
+import 'package:dotlottie_loader/dotlottie_loader.dart';
 
 import 'services/services.dart';
 import 'services/bpm_analyzer_service.dart';
@@ -77,15 +79,22 @@ class AuthWrapper extends StatelessWidget {
     switch (authProvider.state) {
       case AuthState.unknown:
       case AuthState.authenticating:
-        return const Scaffold(
+        return Scaffold(
+          backgroundColor: Colors.black,
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Connecting...'),
-              ],
+            child: DotLottieLoader.fromNetwork(
+              'https://lottie.host/6e9f4052-df21-4dc1-be37-88b062099640/TMV5YZRCbo.lottie',
+              frameBuilder: (BuildContext context, DotLottie? dotlottie) {
+                if (dotlottie != null) {
+                  return Lottie.memory(
+                    dotlottie.animations.values.single,
+                    width: 250,
+                    height: 250,
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
             ),
           ),
         );

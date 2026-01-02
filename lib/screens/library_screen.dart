@@ -30,7 +30,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-
           SliverAppBar(
             pinned: true,
             floating: true,
@@ -176,9 +175,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    if (_selectedFilter == 'All' || _selectedFilter == 'Artists') {
-
-    }
+    if (_selectedFilter == 'All' || _selectedFilter == 'Artists') {}
 
     return items;
   }
@@ -287,20 +284,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   void _showDeletePlaylistDialog(BuildContext context, _LibraryItem item) {
-    showCupertinoDialog(
+    showDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Elimina Playlist'),
         content: Text(
           'Sei sicuro di voler eliminare la playlist "${item.name}"?',
         ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Annulla'),
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
+          TextButton(
             onPressed: () async {
               Navigator.pop(context);
               final libraryProvider = Provider.of<LibraryProvider>(
@@ -329,6 +325,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 }
               }
             },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Elimina'),
           ),
         ],
@@ -340,30 +337,33 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final controller = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showCupertinoDialog(
+    showDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('New Playlist'),
         content: Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: CupertinoTextField(
+          padding: const EdgeInsets.only(top: 8),
+          child: TextField(
             controller: controller,
             autofocus: true,
-            placeholder: 'Playlist name',
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-              borderRadius: BorderRadius.circular(8),
+            decoration: InputDecoration(
+              hintText: 'Playlist name',
+              filled: true,
+              fillColor: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.all(12),
             ),
           ),
         ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
+          TextButton(
             onPressed: () async {
               if (controller.text.trim().isNotEmpty) {
                 final libraryProvider = Provider.of<LibraryProvider>(
@@ -566,7 +566,7 @@ class _SettingsSheet extends StatelessWidget {
                 CupertinoIcons.gear_alt,
                 color: isDark ? Colors.white : Colors.black87,
               ),
-              title: const Text('Impostazioni'),
+              title: const Text('Settings'),
               trailing: Icon(
                 CupertinoIcons.chevron_forward,
                 size: 18,

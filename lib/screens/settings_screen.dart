@@ -107,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? AppTheme.darkBackground
           : AppTheme.lightBackground,
       appBar: AppBar(
-        title: const Text('Impostazioni'),
+        title: const Text('Settings'),
         centerTitle: false,
         backgroundColor: _isDark
             ? AppTheme.darkBackground
@@ -118,7 +118,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-
           if (_isDownloading && _downloadTotal > 0)
             Container(
               margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -169,8 +168,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildCacheToggle(
                 icon: CupertinoIcons.photo,
                 iconGradient: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
-                title: 'Cache Immagini',
-                subtitle: 'Salva le copertine degli album in locale',
+                title: 'Image Cache',
+                subtitle: 'Save album covers locally',
                 value: _imageCacheEnabled,
                 onChanged: _toggleImageCache,
               ),
@@ -178,8 +177,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildCacheToggle(
                 icon: CupertinoIcons.music_note,
                 iconGradient: const [Color(0xFF34C759), Color(0xFF30D158)],
-                title: 'Cache Musica',
-                subtitle: 'Salva i metadati dei brani in locale',
+                title: 'Music Cache',
+                subtitle: 'Save song metadata locally',
                 value: _musicCacheEnabled,
                 onChanged: _toggleMusicCache,
               ),
@@ -187,8 +186,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildCacheToggle(
                 icon: CupertinoIcons.speedometer,
                 iconGradient: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
-                title: 'Cache BPM',
-                subtitle: 'Salva i BPM analizzati in locale',
+                title: 'BPM Cache',
+                subtitle: 'Save BPM analysis locally',
                 value: _bpmCacheEnabled,
                 onChanged: _toggleBpmCache,
               ),
@@ -196,12 +195,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSection(
-            title: 'PULIZIA CACHE',
+            title: 'CACHE CLEANUP',
             children: [_buildClearAllCacheButton()],
           ),
           const SizedBox(height: 24),
           _buildSection(
-            title: 'DOWNLOAD OFFLINE',
+            title: 'OFFLINE DOWNLOAD',
             children: [
               _buildOfflineInfo(),
               if (_isDownloading) _buildDownloadProgress(),
@@ -213,7 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSection(
-            title: 'ANALISI BPM',
+            title: 'BPM ANALYSIS',
             children: [
               _buildBPMCacheInfo(),
               if (_isCaching) _buildCachingProgress(),
@@ -223,13 +222,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           _buildSection(
-            title: 'INFORMAZIONI',
+            title: 'INFORMATION',
             children: [
               _buildInfoTile(
                 icon: CupertinoIcons.info,
                 iconColor: AppTheme.appleMusicRed,
-                title: 'Versione',
-                subtitle: '1.0.0',
+                title: 'Version',
+                subtitle: '1.0.1',
               ),
               _buildDivider(),
               _buildInfoTile(
@@ -314,7 +313,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           size: 18,
         ),
       ),
-      title: const Text('BPM Cachati', style: TextStyle(fontSize: 16)),
+      title: const Text('Cached BPMs', style: TextStyle(fontSize: 16)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -429,7 +428,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           title: Text(
-            'Cacha tutti i BPM',
+            'Cache all BPMs',
             style: TextStyle(
               fontSize: 16,
               color: _isCaching
@@ -487,7 +486,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           title: Text(
-            'Cancella cache',
+            'Clear cache',
             style: TextStyle(
               fontSize: 16,
               color: isDisabled
@@ -601,12 +600,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           size: 18,
         ),
       ),
-      title: const Text(
-        'Cancella tutta la cache',
-        style: TextStyle(fontSize: 16),
-      ),
+      title: const Text('Clear all cache', style: TextStyle(fontSize: 16)),
       subtitle: Text(
-        'Rimuovi tutte le cache (immagini, musica, BPM)',
+        'Remove all cache (images, music, BPM)',
         style: TextStyle(
           fontSize: 13,
           color: _isDark
@@ -630,20 +626,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _cacheSettings.setImageCacheEnabled(value);
 
     if (!value) {
-
       await DefaultCacheManager().emptyCache();
-      _showSnackBar('Cache immagini disabilitata e svuotata');
+      _showSnackBar('Cache images disabled and cleared');
     } else {
-      _showSnackBar('Cache immagini abilitata');
+      _showSnackBar('Cache images enabled');
     }
   }
 
   Future<void> _toggleMusicCache(bool value) async {
     setState(() => _musicCacheEnabled = value);
     await _cacheSettings.setMusicCacheEnabled(value);
-    _showSnackBar(
-      value ? 'Cache musica abilitata' : 'Cache musica disabilitata',
-    );
+    _showSnackBar(value ? 'Cache music enabled' : 'Cache music disabled');
   }
 
   Future<void> _toggleBpmCache(bool value) async {
@@ -651,32 +644,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _cacheSettings.setBpmCacheEnabled(value);
 
     if (!value) {
-
       await _bpmAnalyzer.clearCache();
-      _showSnackBar('Cache BPM disabilitata e svuotata');
+      _showSnackBar('Cache BPM disabled and cleared');
     } else {
-      _showSnackBar('Cache BPM abilitata');
+      _showSnackBar('Cache BPM enabled');
     }
   }
 
   Future<void> _clearAllCache() async {
-    final confirmed = await showCupertinoDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Cancella tutta la cache'),
+      builder: (context) => AlertDialog(
+        title: const Text('Clear all cache'),
         content: const Text(
-          'Sei sicuro di voler cancellare tutte le cache? '
-          'Questa azione rimuoverà immagini, musica e BPM salvati.',
+          'Are you sure you want to clear all cache? '
+          'This action will remove images, music, and BPM saved.',
         ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annulla'),
+            child: const Text('Abort'),
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cancella tutto'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Clear all'),
           ),
         ],
       ),
@@ -684,16 +676,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (confirmed == true) {
       try {
-
         await Future.wait([
           DefaultCacheManager().emptyCache(),
           _bpmAnalyzer.clearCache(),
         ]);
 
         setState(() {});
-        _showSnackBar('Tutta la cache è stata cancellata');
+        _showSnackBar('All cache has been cleared');
       } catch (e) {
-        _showSnackBar('Errore durante la pulizia della cache: $e');
+        _showSnackBar('Error during cache cleanup: $e');
       }
     }
   }
@@ -711,15 +702,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
-
-      _showSnackBar('Caricamento canzoni in corso...');
+      _showSnackBar('Loading songs...');
       final songs = await libraryProvider.getAllSongs();
 
       if (songs.isEmpty) {
         setState(() {
           _isCaching = false;
         });
-        _showSnackBar('Nessuna canzone disponibile');
+        _showSnackBar('No songs available');
         return;
       }
 
@@ -745,7 +735,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             setState(() {
               _isCaching = false;
             });
-            _showSnackBar('Cache completata: $_totalSongs canzoni');
+            _showSnackBar('Cache completed: $_totalSongs songs');
           }
         },
       );
@@ -754,28 +744,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {
           _isCaching = false;
         });
-        _showSnackBar('Errore durante il caching: $e');
+        _showSnackBar('Error during caching: $e');
       }
     }
   }
 
   Future<void> _clearCache() async {
-    final confirmed = await showCupertinoDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Cancella cache'),
-        content: const Text(
-          'Sei sicuro di voler cancellare tutti i BPM salvati?',
-        ),
+      builder: (context) => AlertDialog(
+        title: const Text('Clear cache'),
+        content: const Text('Are you sure you want to delete all saved BPMs?'),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annulla'),
+            child: const Text('Cancel'),
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cancella'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Clear'),
           ),
         ],
       ),
@@ -784,7 +772,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed == true) {
       await _bpmAnalyzer.clearCache();
       setState(() {});
-      _showSnackBar('Cache BPM cancellata');
+      _showSnackBar('Cache BPM cleared');
     }
   }
 
@@ -808,12 +796,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           size: 18,
         ),
       ),
-      title: const Text('Brani scaricati', style: TextStyle(fontSize: 16)),
+      title: const Text('Downloaded songs', style: TextStyle(fontSize: 16)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '$_downloadedCount brani • $_downloadedSize',
+            '$_downloadedCount songs • $_downloadedSize',
             style: TextStyle(
               fontSize: 14,
               color: _isDark
@@ -849,7 +837,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Download in corso...',
+                'Downloading...',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -882,7 +870,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            '$_downloadProgress di $_downloadTotal brani',
+            '$_downloadProgress of $_downloadTotal songs',
             style: TextStyle(
               fontSize: 12,
               color: _isDark
@@ -919,7 +907,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       title: Text(
-        'Scarica tutto il catalogo',
+        'Download all catalog',
         style: TextStyle(
           fontSize: 16,
           color: _isDownloading
@@ -931,7 +919,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       subtitle: _isDownloading
           ? Text(
-              'Download in corso... ${_downloadProgress} di ${_downloadTotal} brani',
+              'Downloading... ${_downloadProgress} of ${_downloadTotal} songs',
               style: TextStyle(
                 fontSize: 13,
                 color: _isDark
@@ -940,7 +928,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             )
           : Text(
-              'Scarica tutte le canzoni per l\'ascolto offline',
+              'Download all songs for offline listening',
               style: TextStyle(
                 fontSize: 13,
                 color: _isDark
@@ -987,7 +975,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       title: Text(
-        'Elimina download',
+        'Delete downloads',
         style: TextStyle(
           fontSize: 16,
           color: isDisabled
@@ -1019,40 +1007,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     try {
-      _showSnackBar('Caricamento catalogo...');
+      _showSnackBar('Loading catalog...');
       final songs = await libraryProvider.getAllSongs();
 
       if (songs.isEmpty) {
-        _showSnackBar('Nessuna canzone da scaricare');
+        _showSnackBar('No songs to download');
         return;
       }
 
-      _showSnackBar('Avvio download di ${songs.length} brani in background...');
+      _showSnackBar(
+        'Starting download of ${songs.length} songs in background...',
+      );
 
       _offlineService.startBackgroundDownload(songs, subsonicService);
     } catch (e) {
-      _showSnackBar('Errore durante il download: $e');
+      _showSnackBar('Error during download: $e');
     }
   }
 
   Future<void> _deleteAllDownloads() async {
-    final confirmed = await showCupertinoDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Elimina download'),
+      builder: (context) => AlertDialog(
+        title: const Text('Delete downloads'),
         content: Text(
-          'Sei sicuro di voler eliminare tutti i $_downloadedCount brani scaricati? '
-          'Libererai $_downloadedSize di spazio.',
+          'Are you sure you want to delete all $_downloadedCount downloaded songs? '
+          'This will free up $_downloadedSize of space.',
         ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annulla'),
+            child: const Text('Cancel'),
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Elimina tutto'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete all'),
           ),
         ],
       ),
@@ -1062,9 +1052,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       try {
         await _offlineService.deleteAllDownloads();
         await _loadOfflineInfo();
-        _showSnackBar('Download eliminati');
+        _showSnackBar('Downloads deleted');
       } catch (e) {
-        _showSnackBar('Errore durante l\'eliminazione: $e');
+        _showSnackBar('Error during deletion: $e');
       }
     }
   }

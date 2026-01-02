@@ -86,7 +86,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private fun showIdleNotification() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID).apply {
             setContentTitle("Musly")
-            setContentText("Ready for Android Auto")
+            setContentText("Ready to play music")
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             priority = NotificationCompat.PRIORITY_LOW
@@ -623,5 +623,8 @@ class MusicService : MediaBrowserServiceCompat() {
     
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        mediaSession.isActive = false
+        stopForeground(true)
+        stopSelf()
     }
 }

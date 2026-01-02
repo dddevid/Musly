@@ -11,7 +11,7 @@ publish_to: 'none'
 # Read more about Android versioning at https://developer.android.com/studio/publish/versioning
 # In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
 # In Windows, build-name is used as the major, minor, and patch parts
-version: 1.1.0+2
+version: 1.0.1+1
 
 environment:
   sdk: ^3.10.0
@@ -28,7 +28,9 @@ dependencies:
   
   dio: ^5.4.0
   
-  just_audio: ^0.9.36
+  just_audio: ^0.9.46
+  just_audio_windows: ^0.2.2
+  audio_session: ^0.1.25
   audio_service: ^0.18.12
   
   cached_network_image: ^3.3.1
@@ -51,6 +53,10 @@ dependencies:
   permission_handler: ^11.3.1
   
   device_info_plus: ^10.1.2
+  lottie: ^3.1.2
+  dotlottie_loader: ^0.0.5
+  smtc_windows: ^1.1.0
+  windows_taskbar: ^1.1.2
 
 dev_dependencies:
   flutter_test:

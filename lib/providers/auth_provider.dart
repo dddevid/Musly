@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../models/server_config.dart';
 import '../services/services.dart';
 
@@ -94,7 +95,23 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _storageService.clearServerConfig();
+    final offlineService = OfflineService();
+    if (offlineService.isBackgroundDownloadActive) {
+      offlineService.cancelBackgroundDownload();
+    }
+
+    await Future.wait([
+      DefaultCacheManager().emptyCache(),
+      BpmAnalyzerService().clearCache(),
+      offlineService.deleteAllDownloads(),
+      AndroidAutoService().dispose(),
+      AndroidSystemService().dispose(),
+      SamsungIntegrationService().dispose(),
+      BluetoothAvrcpService().dispose(),
+    ]);
+
+    await _storageService.clearAll();
+
     _config = null;
     _state = AuthState.unauthenticated;
     notifyListeners();

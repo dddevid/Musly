@@ -1,5 +1,19 @@
+/*
+  ATTENTION: The PC (Desktop) layout of this view is currently under development 
+  and may not be graphically correct or centered as expected.
+  
+  If you wish to contribute to fixing it, you are welcome! 
+  
+  TO RE-ENABLE THE LYRICS BUTTON ON PC:
+  1. Go to the file 'lib/widgets/desktop_player_bar.dart'
+  2. Search for the commented code block related to the IconButton with the 'Icons.lyrics_rounded' icon
+  3. Remove the /* ... */ comments to show the button again in the desktop player bar.
+*/
+
 import 'dart:async';
 import 'dart:ui';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -47,6 +61,11 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   bool _showReturnButton = false;
   Timer? _userScrollTimer;
 
+  bool get _isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -75,7 +94,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   void _onScroll() {
-
     if (!_scrollController.position.isScrollingNotifier.value) return;
 
     _isUserScrolling = true;
@@ -84,7 +102,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     _checkScrollDistance();
 
     _userScrollTimer = Timer(const Duration(milliseconds: 500), () {
-
       _checkAutoResync();
     });
   }
@@ -147,7 +164,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     if (_bpmInitialized) return;
 
     try {
-
       final subsonicService = Provider.of<SubsonicService>(
         context,
         listen: false,
@@ -157,7 +173,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       final bpm = await _bpmAnalyzer.getBPM(widget.song, audioUrl);
 
       if (mounted) {
-
         final beatDuration = (60000 / bpm).round();
         _dotsController.duration = Duration(milliseconds: beatDuration);
         _bpmInitialized = true;
@@ -181,7 +196,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     _positionSubscription = playerProvider.positionStream.listen((position) {
       if (_lyrics != null && _lyrics!.isNotEmpty) {
-
         final firstTimestamp = _lyrics!.lines.first.timestamp;
         _timeUntilFirstLyric = firstTimestamp - position;
 
@@ -202,7 +216,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
           });
           _scrollToCurrentLine();
         } else {
-
           setState(() {});
         }
       }
@@ -229,7 +242,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       if (syncedData != null) {
         final structuredLyrics = syncedData['structuredLyrics'];
         if (structuredLyrics is List && structuredLyrics.isNotEmpty) {
-
           final lyrics = structuredLyrics.first;
           final lines = lyrics['line'] as List?;
           if (lines != null && lines.isNotEmpty) {
@@ -268,7 +280,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       if (plainData != null) {
         final value = plainData['value']?.toString();
         if (value != null && value.isNotEmpty) {
-
           if (value.contains('[') && value.contains(':')) {
             setState(() {
               _lyrics = SyncedLyrics.fromLrc(value);
@@ -302,19 +313,20 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   double _estimateLineHeight(String text, {bool isActive = false}) {
-
     final fontSize = isActive ? 28.0 : 22.0;
     final verticalPadding = isActive ? 14.0 * 2 : 8.0 * 2;
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final availableWidth = screenWidth - 28 * 2 - 4 * 2;
+
+    final availableWidth = _isDesktop
+        ? (screenWidth * 0.6) - 100
+        : screenWidth - 28 * 2 - 4 * 2;
 
     final charWidth = fontSize * 0.45;
     final charsPerLine = (availableWidth / charWidth).floor().clamp(10, 100);
 
     final numLines = (text.length / charsPerLine).ceil().clamp(1, 10);
-    final textHeight =
-        fontSize * 1.3 * numLines;
+    final textHeight = fontSize * 1.3 * numLines;
     return textHeight + verticalPadding;
   }
 
@@ -391,42 +403,125 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       body: Stack(
         fit: StackFit.expand,
         children: [
-
           _buildAnimatedBackground(imageUrl),
 
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.black.withOpacity(0.4)),
+            child: Container(color: Colors.black.withOpacity(0.6)),
           ),
 
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.5),
+          if (_isDesktop)
+            _buildDesktopContent(context, imageUrl)
+          else
+            SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(context),
+                  Expanded(child: _buildContent()),
+                  _buildBottomControls(context),
                 ],
-                stops: const [0.0, 0.2, 0.8, 1.0],
               ),
             ),
-          ),
 
-          SafeArea(
+          if (_isDesktop)
+            Positioned(
+              top: 24,
+              right: 24,
+              child: IconButton(
+                onPressed: widget.onClose,
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopContent(BuildContext context, String imageUrl) {
+    return Padding(
+      padding: const EdgeInsets.all(64.0),
+      child: Row(
+        children: [
+          // Left Side: Artwork & Info
+          Expanded(
+            flex: 4,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                _buildHeader(context),
-
-                Expanded(child: _buildContent()),
-
-                _buildBottomControls(context),
+                Hero(
+                  tag: 'lyrics_artwork',
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 40,
+                            offset: const Offset(0, 20),
+                          ),
+                        ],
+                        color: Colors
+                            .grey[900], // Background color to prevent flash
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 600, // Optimized for desktop view
+                          memCacheHeight: 600,
+                          fadeInDuration: Duration.zero, // Prevent flash
+                          fadeOutDuration: Duration.zero,
+                          placeholder: (_, __) =>
+                              Container(color: Colors.grey[900]),
+                          errorWidget: (_, __, ___) =>
+                              Container(color: Colors.grey[900]),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  widget.song.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                if (widget.song.artist != null)
+                  Text(
+                    widget.song.artist!,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
               ],
             ),
           ),
+
+          const SizedBox(width: 64),
+
+          // Right Side: Lyrics
+          Expanded(flex: 6, child: _buildContent()),
         ],
       ),
     );
@@ -448,14 +543,19 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
           child: child,
         );
       },
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: BoxFit.cover,
-        memCacheWidth: 400,
-        memCacheHeight: 400,
-        useOldImageOnUrlChange: true,
-        placeholder: (_, __) => Container(color: Colors.black),
-        errorWidget: (_, __, ___) => Container(color: Colors.black),
+      child: Container(
+        color: Colors.black, // Base color
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          memCacheWidth: 400,
+          memCacheHeight: 400,
+          fadeInDuration: Duration.zero, // Prevent flash
+          fadeOutDuration: Duration.zero,
+          useOldImageOnUrlChange: true,
+          placeholder: (_, __) => Container(color: Colors.black),
+          errorWidget: (_, __, ___) => Container(color: Colors.black),
+        ),
       ),
     );
   }
@@ -465,7 +565,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-
           GestureDetector(
             onTap: widget.onClose,
             child: Container(
@@ -607,7 +706,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   Widget _buildWaitingDotsRow() {
-
     double opacity = 1.0;
     if (_timeUntilFirstLyric.inMilliseconds <= 500 &&
         _timeUntilFirstLyric.inMilliseconds > 0) {
@@ -622,7 +720,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       child: AnimatedBuilder(
         animation: _dotsController,
         builder: (context, child) {
-
           final beatIndex = (_dotsController.value * 3).floor() % 3;
 
           return Padding(
@@ -637,11 +734,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                 double dotOpacity = 0.4;
 
                 if (isActive) {
-
                   scale = 1.0 + (0.8 * (1.0 - (progress * 2 - 1).abs()));
                   dotOpacity = 0.8 + (0.2 * (1.0 - (progress * 2 - 1).abs()));
                 } else if (!_isPlaying) {
-
                   scale = 1.0;
                   dotOpacity = 0.5;
                 }
@@ -707,7 +802,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         itemCount: itemCount,
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
-
           if (showWaitingDots && index == 0) {
             return _buildWaitingDotsRow();
           }
@@ -755,7 +849,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           child: Column(
             children: [
-
               SliderTheme(
                 data: SliderThemeData(
                   trackHeight: 3,

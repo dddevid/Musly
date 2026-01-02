@@ -8,6 +8,7 @@ import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import 'album_artwork.dart';
+import 'animated_equalizer.dart';
 import '../screens/album_screen.dart';
 import '../screens/artist_screen.dart';
 
@@ -40,17 +41,17 @@ class SongTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playerProvider = Provider.of<PlayerProvider>(context);
-    final isPlaying = playerProvider.currentSong?.id == song.id;
+    final isCurrentSong = playerProvider.currentSong?.id == song.id;
     final theme = Theme.of(context);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: _buildLeading(context, isPlaying),
+      leading: _buildLeading(context, isCurrentSong),
       title: Text(
         song.title,
         style: theme.textTheme.bodyLarge?.copyWith(
-          color: isPlaying ? AppTheme.appleMusicRed : null,
-          fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
+          color: isCurrentSong ? AppTheme.appleMusicRed : null,
+          fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -69,16 +70,17 @@ class SongTile extends StatelessWidget {
     );
   }
 
-  Widget? _buildLeading(BuildContext context, bool isPlaying) {
+  Widget? _buildLeading(BuildContext context, bool isCurrentSong) {
+    final playerProvider = Provider.of<PlayerProvider>(context);
+    
     if (showTrackNumber && !showArtwork) {
       return SizedBox(
         width: 30,
         child: Center(
-          child: isPlaying
-              ? Icon(
-                  Icons.equalizer_rounded,
+          child: isCurrentSong
+              ? AnimatedEqualizer(
                   color: AppTheme.appleMusicRed,
-                  size: 20,
+                  isPlaying: playerProvider.isPlaying,
                 )
               : Text(
                   '${song.track ?? index ?? 1}',
@@ -94,17 +96,18 @@ class SongTile extends StatelessWidget {
       return Stack(
         children: [
           AlbumArtwork(coverArt: song.coverArt, size: 50, borderRadius: 6),
-          if (isPlaying)
+          if (isCurrentSong)
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(
-                  Icons.equalizer_rounded,
-                  color: Colors.white,
-                  size: 24,
+                child: Center(
+                  child: AnimatedEqualizer(
+                    color: Colors.white,
+                    isPlaying: playerProvider.isPlaying,
+                  ),
                 ),
               ),
             ),

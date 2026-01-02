@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -69,33 +71,94 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  bool get _isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
+
+  final GlobalKey<NavigatorState> _desktopNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
-    final playerProvider = Provider.of<PlayerProvider>(context);
-    final hasCurrentSong = playerProvider.currentSong != null;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-
-          IndexedStack(index: _currentIndex, children: _screens),
-
-          if (hasCurrentSong)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+    if (_isDesktop) {
+      return Scaffold(
+        body: Column(
+          children: [
+            Expanded(
+              child: Row(
                 children: [
-                  MiniPlayer(onTap: _openNowPlaying),
-                  _buildBottomNav(context),
+                  DesktopNavigationSidebar(
+                    selectedIndex: _currentIndex,
+                    onDestinationSelected: (index) {
+                      setState(() => _currentIndex = index);
+                      _desktopNavigatorKey.currentState?.popUntil(
+                        (route) => route.isFirst,
+                      );
+                    },
+                    navigatorKey: _desktopNavigatorKey,
+                  ),
+                  const VerticalDivider(width: 1, thickness: 1),
+                  Expanded(
+                    child: Navigator(
+                      key: _desktopNavigatorKey,
+                      onGenerateRoute: (settings) {
+                        return PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => IndexedStack(
+                            index: _currentIndex,
+                            children: _screens,
+                          ),
+                          transitionsBuilder: (_, animation, __, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-        ],
-      ),
-      bottomNavigationBar: hasCurrentSong ? null : _buildBottomNav(context),
+            Selector<PlayerProvider, bool>(
+              selector: (_, p) => p.currentSong != null,
+              builder: (context, hasCurrentSong, _) {
+                return hasCurrentSong
+                    ? DesktopPlayerBar(navigatorKey: _desktopNavigatorKey)
+                    : const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Selector<PlayerProvider, bool>(
+      selector: (_, p) => p.currentSong != null,
+      builder: (context, hasCurrentSong, _) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              IndexedStack(index: _currentIndex, children: _screens),
+              if (hasCurrentSong)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MiniPlayer(onTap: _openNowPlaying),
+                      _buildBottomNav(context),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          bottomNavigationBar: hasCurrentSong ? null : _buildBottomNav(context),
+        );
+      },
     );
   }
 
