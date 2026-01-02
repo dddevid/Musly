@@ -567,6 +567,19 @@
             margin-top: 4rem;
         }
 
+        @media (min-width: 1100px) {
+            .roadmap-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .roadmap-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1400px;
+            }
+        }
+
         .roadmap-card {
             background: rgba(28, 28, 30, 0.6);
             backdrop-filter: blur(20px);
