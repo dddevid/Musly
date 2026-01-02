@@ -10,7 +10,7 @@
     <!-- Meta tags for Discord embed -->
     <meta property="og:title" content="Musly - Your Subsonic Music Client">
     <meta property="og:description"
-        content="Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and completely yours.">
+        content="Experience your Subsonic library with an Apple Music-inspired interface. Now out of beta with Windows support!">
     <meta property="og:image"
         content="https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true">
     <meta property="og:url" content="https://dddevid.github.io/Musly/">
@@ -21,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Musly - Your Subsonic Music Client">
     <meta name="twitter:description"
-        content="Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and completely yours.">
+        content="Experience your Subsonic library with an Apple Music-inspired interface. Now out of beta with Windows support!">
     <meta name="twitter:image"
         content="https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true">
 
@@ -31,10 +31,6 @@
     <link rel="icon" type="image/png"
         href="https://github.com/dddevid/Musly/blob/master/assets/Musly%20Big%202X.png?raw=true">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- Framer Motion via CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
         data-id="devidd" data-description="Support me on Buy me a coffee!" data-message="" data-color="#FA243C"
@@ -78,12 +74,10 @@
         }
 
         @keyframes gradientShift {
-
             0%,
             100% {
                 transform: scale(1) rotate(0deg);
             }
-
             50% {
                 transform: scale(1.1) rotate(5deg);
             }
@@ -123,29 +117,13 @@
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -1px;
-            animation: logoGlow 3s ease-in-out infinite;
         }
 
         .logo img {
             height: 45px;
             width: auto;
             filter: drop-shadow(0 0 10px rgba(250, 36, 60, 0.4));
-        }
-
-        @keyframes logoGlow {
-
-            0%,
-            100% {
-                filter: drop-shadow(0 0 8px rgba(250, 36, 60, 0.3));
-            }
-
-            50% {
-                filter: drop-shadow(0 0 20px rgba(250, 36, 60, 0.6));
-            }
-        }
-
-        .logo img {
-            animation: none;
+            transition: filter 0.3s ease;
         }
 
         .logo:hover img {
@@ -236,7 +214,6 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -326,7 +303,6 @@
                 opacity: 0;
                 transform: translateX(50px);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -341,12 +317,10 @@
         }
 
         @keyframes float {
-
             0%,
             100% {
                 transform: translateY(0px) rotate(-2deg);
             }
-
             50% {
                 transform: translateY(-20px) rotate(2deg);
             }
@@ -666,15 +640,107 @@
         }
 
         @keyframes pulse-dot {
-
             0%,
             100% {
                 opacity: 1;
             }
-
             50% {
                 opacity: 0.5;
             }
+        }
+
+        /* Download Section */
+        .download-section {
+            padding: 8rem 5%;
+            background: rgba(28, 28, 30, 0.3);
+        }
+
+        .download-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 0.6rem 1.8rem;
+            background: rgba(250, 36, 60, 0.15);
+            border: 1px solid rgba(250, 36, 60, 0.3);
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+        }
+
+        .version-badge i {
+            margin-right: 0.5rem;
+            color: var(--primary-red);
+        }
+
+        .whats-new {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            text-align: left;
+        }
+
+        .whats-new h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .whats-new ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .whats-new li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .whats-new li:last-child {
+            border-bottom: none;
+        }
+
+        .whats-new li i {
+            color: var(--primary-red);
+            font-size: 1.2rem;
+        }
+
+        .download-note {
+            background: rgba(255, 159, 10, 0.1);
+            border: 1px solid rgba(255, 159, 10, 0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .download-note i {
+            color: #FF9F0A;
+            margin-right: 0.5rem;
+        }
+
+        .download-note a {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .download-note a:hover {
+            text-decoration: underline;
         }
 
         /* Footer */
@@ -780,11 +846,11 @@
             }
         }
 
-        /* Scroll Reveal */
+        /* Improved Scroll Reveal - Fixed trigger point */
         .reveal {
             opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .reveal.active {
@@ -792,149 +858,9 @@
             transform: translateY(0);
         }
 
-        /* Stagger animation for grid items */
-        .reveal:nth-child(1) {
-            transition-delay: 0.1s;
-        }
-
-        .reveal:nth-child(2) {
-            transition-delay: 0.2s;
-        }
-
-        .reveal:nth-child(3) {
-            transition-delay: 0.3s;
-        }
-
-        .reveal:nth-child(4) {
-            transition-delay: 0.4s;
-        }
-
-        .reveal:nth-child(5) {
-            transition-delay: 0.5s;
-        }
-
-        .reveal:nth-child(6) {
-            transition-delay: 0.6s;
-        }
-
         /* Smooth scroll */
         html {
             scroll-behavior: smooth;
-        }
-
-        /* Enhanced animations */
-        @keyframes slideInFromLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-100px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInFromRight {
-            from {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .animate-left {
-            animation: slideInFromLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-right {
-            animation: slideInFromRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-scale {
-            animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Magnetic button effect */
-        .btn-primary,
-        .btn-secondary,
-        .download-btn {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::before,
-        .btn-secondary::before,
-        .download-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn-primary:hover::before,
-        .btn-secondary:hover::before,
-        .download-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        /* Card shine effect */
-        .feature-card,
-        .platform-card,
-        .roadmap-card {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::after,
-        .platform-card::after,
-        .roadmap-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg,
-                    transparent,
-                    rgba(255, 255, 255, 0.03),
-                    transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s;
-        }
-
-        .feature-card:hover::after,
-        .platform-card:hover::after,
-        .roadmap-card:hover::after {
-            left: 100%;
-        }
-
-        /* Parallax elements */
-        .parallax {
-            transition: transform 0.1s ease-out;
         }
     </style>
 </head>
@@ -956,7 +882,7 @@
                 <li><a href="#download">Download</a></li>
             </ul>
             <button class="download-btn" onclick="scrollToDownload()">
-                <i class="fas fa-download"></i> Download Beta
+                <i class="fas fa-download"></i> Download v1.0.1
             </button>
         </div>
     </nav>
@@ -965,11 +891,10 @@
         <div class="hero-content">
             <div class="hero-text">
                 <h1>Your Music, <br><span class="hero-highlight">Beautifully Streaming</span></h1>
-                <p>Experience your Subsonic library with an Apple Music-inspired interface. Beautiful, powerful, and
-                    completely yours.</p>
+                <p>Experience your Subsonic library with an Apple Music-inspired interface. Now officially out of beta with Windows support!</p>
                 <div class="hero-buttons">
                     <button class="btn-primary" onclick="scrollToDownload()">
-                        <i class="fas fa-cloud-download-alt"></i> Download Now
+                        <i class="fas fa-cloud-download-alt"></i> Download v1.0.1
                     </button>
                     <button class="btn-secondary" onclick="window.open('https://github.com/dddevid/Musly', '_blank')">
                         <i class="fab fa-github"></i> View on GitHub
@@ -1000,14 +925,12 @@
             <div class="feature-card reveal">
                 <div class="feature-icon"><i class="fas fa-palette"></i></div>
                 <h3>Apple Music UI</h3>
-                <p>Beautiful, modern interface inspired by Apple Music with dark/light mode support and responsive
-                    design.</p>
+                <p>Beautiful, modern interface inspired by Apple Music with dark/light mode support and responsive design.</p>
             </div>
             <div class="feature-card reveal">
                 <div class="feature-icon"><i class="fas fa-music"></i></div>
                 <h3>Music Streaming</h3>
-                <p>Stream music seamlessly from your Subsonic server with full playback controls and queue management.
-                </p>
+                <p>Stream music seamlessly from your Subsonic server with full playback controls and queue management.</p>
             </div>
             <div class="feature-card reveal">
                 <div class="feature-icon"><i class="fas fa-car"></i></div>
@@ -1047,17 +970,17 @@
                 </span>
             </div>
             <div class="platform-card reveal">
-                <div class="platform-icon"><i class="fab fa-apple"></i></div>
-                <h3>iOS</h3>
-                <p>Compatible with iPhone and iPad - requires manual build</p>
-                <span class="platform-status status-build">
-                    <i class="fas fa-hammer"></i> Build from Source
-                </span>
-            </div>
-            <div class="platform-card reveal">
                 <div class="platform-icon"><i class="fab fa-windows"></i></div>
                 <h3>Windows</h3>
                 <p>Native desktop application for Windows 10/11</p>
+                <span class="platform-status status-available">
+                    <i class="fas fa-check-circle"></i> Available Now
+                </span>
+            </div>
+            <div class="platform-card reveal">
+                <div class="platform-icon"><i class="fab fa-apple"></i></div>
+                <h3>iOS</h3>
+                <p>Compatible with iPhone and iPad - requires manual build</p>
                 <span class="platform-status status-build">
                     <i class="fas fa-hammer"></i> Build from Source
                 </span>
@@ -1090,18 +1013,16 @@
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-desktop"></i></div>
                 <h3>Custom PC UX</h3>
-                <p>A dedicated desktop-optimized interface designed specifically for larger screens, moving beyond the
-                    mobile-adapted layout.</p>
-                <div class="roadmap-status">
-                    <span class="status-dot"></span>
-                    In Planning
+                <p>A dedicated desktop-optimized interface designed specifically for larger screens, moving beyond the mobile-adapted layout.</p>
+                <div class="roadmap-status" style="background: rgba(52, 199, 89, 0.15); border-color: rgba(52, 199, 89, 0.3); color: #34C759;">
+                    <span class="status-dot" style="background: #34C759;"></span>
+                    Semi-Completed
                 </div>
             </div>
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-car-side"></i></div>
                 <h3>CarPlay Support</h3>
-                <p>Native CarPlay integration with a dedicated browsing interface for safe and intuitive in-car music
-                    control.</p>
+                <p>Native CarPlay integration with a dedicated browsing interface for safe and intuitive in-car music control.</p>
                 <div class="roadmap-status">
                     <span class="status-dot"></span>
                     In Planning
@@ -1110,8 +1031,7 @@
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-heart"></i></div>
                 <h3>Last.fm Integration</h3>
-                <p>Automatic scrobbling support and rich metadata for artists and albums from Last.fm's extensive
-                    database.</p>
+                <p>Automatic scrobbling support and rich metadata for artists and albums from Last.fm's extensive database.</p>
                 <div class="roadmap-status">
                     <span class="status-dot"></span>
                     In Planning
@@ -1120,8 +1040,7 @@
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-layer-group"></i></div>
                 <h3>Local Playlists</h3>
-                <p>Create and manage playlists locally on your device, independent of the Subsonic server for greater
-                    flexibility.</p>
+                <p>Create and manage playlists locally on your device, independent of the Subsonic server for greater flexibility.</p>
                 <div class="roadmap-status">
                     <span class="status-dot"></span>
                     In Planning
@@ -1130,8 +1049,7 @@
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-server"></i></div>
                 <h3>Custom API Server</h3>
-                <p>Support for custom backend implementations and extended APIs beyond standard Subsonic compatibility.
-                </p>
+                <p>Support for custom backend implementations and extended APIs beyond standard Subsonic compatibility.</p>
                 <div class="roadmap-status">
                     <span class="status-dot"></span>
                     In Planning
@@ -1140,8 +1058,7 @@
             <div class="roadmap-card reveal">
                 <div class="roadmap-icon"><i class="fas fa-sync"></i></div>
                 <h3>Improved Sync</h3>
-                <p>Enhanced synchronization capabilities for offline music, ensuring your library is always up to date.
-                </p>
+                <p>Enhanced synchronization capabilities for offline music, ensuring your library is always up to date.</p>
                 <div class="roadmap-status">
                     <span class="status-dot"></span>
                     In Planning
@@ -1150,19 +1067,52 @@
         </div>
     </section>
 
-    <section class="features" id="download">
+    <section class="download-section" id="download">
         <div class="section-title reveal">
-            <h2>Download Beta</h2>
-            <p>Get the latest version and start streaming today</p>
+            <h2>Download Musly</h2>
+            <p>Get the latest stable release</p>
         </div>
-        <div style="text-align: center; margin-top: 3rem;">
-            <button class="btn-primary" style="font-size: 1.3rem; padding: 1.5rem 4rem;"
-                onclick="window.open('https://github.com/dddevid/Musly/releases/tag/v1.0.0', '_blank')">
-                <i class="fas fa-cloud-download-alt"></i> Download v1.0.0-beta (APK)
-            </button>
-            <p style="margin-top: 2rem; color: var(--text-secondary);">
-                Currently available for Android. iOS and desktop versions require building from source.
-            </p>
+        <div class="download-content reveal">
+            <div class="version-badge">
+                <i class="fas fa-rocket"></i> Version 1.0.1 - Stable Release
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button class="btn-primary" style="font-size: 1.3rem; padding: 1.5rem 4rem; margin-bottom: 2rem;"
+                    onclick="window.open('https://github.com/dddevid/Musly/releases/tag/v1.0.1', '_blank')">
+                    <i class="fas fa-cloud-download-alt"></i> Download v1.0.1
+                </button>
+            </div>
+
+            <div class="whats-new">
+                <h3><i class="fas fa-sparkles"></i> What's New in v1.0.1</h3>
+                <ul>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span><strong>First Stable Release:</strong> Musly is officially out of beta!</span>
+                    </li>
+                    <li>
+                        <i class="fab fa-windows"></i>
+                        <span><strong>Windows Support:</strong> Now available for Windows 10/11</span>
+                    </li>
+                    <li>
+                        <i class="fab fa-android"></i>
+                        <span><strong>Android APK:</strong> Ready to install on your Android device</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-bug"></i>
+                        <span><strong>Bug Fixes:</strong> Various improvements and stability enhancements</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="download-note">
+                <i class="fas fa-info-circle"></i>
+                <strong>Note:</strong> This release may contain bugs as it hasn't been thoroughly tested across all configurations. 
+                If you encounter issues, please <a href="https://github.com/dddevid/Musly/issues" target="_blank">report them on GitHub</a>.
+                <br><br>
+                <i class="fas fa-hammer"></i> iOS, Linux, and macOS versions require building from source.
+            </div>
         </div>
     </section>
 
@@ -1203,24 +1153,28 @@
             }
         });
 
-        // Advanced scroll reveal with stagger
+        // IMPROVED scroll reveal - triggers earlier
         const reveals = document.querySelectorAll('.reveal');
 
         const revealOnScroll = () => {
-            reveals.forEach((element, index) => {
+            const windowHeight = window.innerHeight;
+            
+            reveals.forEach(element => {
                 const elementTop = element.getBoundingClientRect().top;
-                const windowHeight = window.innerHeight;
-
-                if (elementTop < windowHeight - 100) {
-                    setTimeout(() => {
-                        element.classList.add('active');
-                    }, index * 50);
+                // Trigger when element is 70% visible instead of almost completely visible
+                const triggerPoint = windowHeight * 0.85;
+                
+                if (elementTop < triggerPoint) {
+                    element.classList.add('active');
                 }
             });
         };
 
-        window.addEventListener('scroll', revealOnScroll);
+        // Initial check
         revealOnScroll();
+        
+        // Check on scroll
+        window.addEventListener('scroll', revealOnScroll);
 
         // Smooth scroll to download
         function scrollToDownload() {
@@ -1237,7 +1191,6 @@
                 hero.style.transform = `translateY(${scrolled * 0.3}px)`;
             }
 
-            // Parallax for background
             const bgGradient = document.querySelector('.bg-gradient');
             if (bgGradient) {
                 bgGradient.style.transform = `translateY(${scrolled * 0.5}px) scale(${1 + scrolled * 0.0002})`;
@@ -1289,65 +1242,7 @@
                 card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
             });
         });
-
-        // Animate logo on load
-        window.addEventListener('load', () => {
-            const logo = document.querySelector('.logo');
-            if (logo) {
-                logo.classList.add('animate-scale');
-            }
-        });
-
-        // Intersection Observer for advanced animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0) scale(1)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe all sections
-        document.querySelectorAll('section').forEach(section => {
-            observer.observe(section);
-        });
-
-        // Cursor trail effect (subtle)
-        let mouseX = 0;
-        let mouseY = 0;
-        let cursorX = 0;
-        let cursorY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-
-        function animateCursor() {
-            const diffX = mouseX - cursorX;
-            const diffY = mouseY - cursorY;
-
-            cursorX += diffX * 0.1;
-            cursorY += diffY * 0.1;
-
-            requestAnimationFrame(animateCursor);
-        }
-
-        animateCursor();
-
-        // Add entrance animations
-        setTimeout(() => {
-            document.querySelector('.hero-text')?.classList.add('animate-left');
-            document.querySelector('.hero-visual')?.classList.add('animate-right');
-        }, 100);
     </script>
 </body>
-
 
 </html>
