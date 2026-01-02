@@ -30,13 +30,13 @@ Musly is a cross-platform application that supports:
 - 🐧 **Linux**
 - 🍎 **macOS**
 
-## Download Beta
+## Download
 
-You can download the latest beta release (APK for Android) from the GitHub releases page:
+You can download the latest release (APK for Android) from the GitHub releases page:
 👉 **[Download Musly v1.0.1](https://github.com/dddevid/Musly/releases/tag/v1.0.1)**
 
 > [!NOTE]  
-> Currently, only **Android** has a prebuilt APK. For **iOS** and desktop platforms, you will need to build the app from source.
+> Prebuilt binaries are available: an APK for **Android**, and a prebuilt exe build for **Windows**. For **iOS** and other desktop platforms, you still need to build the app from source.
 
 ## Support Development
 
@@ -94,19 +94,6 @@ Your support helps me dedicate more time to improving Musly, adding new features
 3. Enter your username and password
 4. Toggle "Legacy Authentication" if using an older server
 5. Tap "Connect"
-
-## Project Structure
-
-```
-lib/
-├── main.dart              # App entry point
-├── models/                # Data models
-├── services/              # API and storage services
-├── providers/             # State management
-├── screens/               # UI screens
-├── widgets/               # Reusable widgets
-└── theme/                 # App theming
-```
 
 ## Supported Servers
 
