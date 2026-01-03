@@ -67,6 +67,7 @@ Your support helps me dedicate more time to improving Musly, adding new features
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
 - [ ] Improved synchronization for offline music.
 - [ ] Tizen OS (Samsung TV) and WebOS (LG TV) port
+- [ ] Jellyfin / Emby support
 
 ## Screenshots
 
