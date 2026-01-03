@@ -66,11 +66,11 @@
         "ratingCount": "150"
       },
       "description": "Musly is a beautiful, free Subsonic music client with an Apple Music-inspired interface. Stream music from your Subsonic, Navidrome, or Airsonic server on Android, iOS, Windows, Linux, and macOS.",
-      "image": "https://github.com/dddevid/Musly/blob/master/assets/Musly%20Big%202X.png?raw=true",
-      "screenshot": "https://github.com/dddevid/Musly/blob/website/screenshots/Screenshot_20260101_024751.png?raw=true",
+      "image": "https://musly.devid.ink/assets/logo.png",
+      "screenshot": "https://musly.devid.ink/assets/screenshot.png",
       "softwareVersion": "1.0.1",
       "downloadUrl": "https://github.com/dddevid/Musly/releases/tag/v1.0.1",
-      "url": "https://dddevid.github.io/Musly/",
+      "url": "https://musly.devid.ink/",
       "author": {
         "@type": "Organization",
         "name": "Musly Development"
@@ -596,6 +596,15 @@
             transform: translateY(0);
         }
 
+        @keyframes pulse-dot {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
         html {
             scroll-behavior: smooth;
         }
@@ -652,6 +661,7 @@
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#platforms">Platforms</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
                 <li><a href="#download">Download</a></li>
             </ul>
             <button class="download-btn" onclick="scrollToDownload()" aria-label="Download Musly v1.0.1">
@@ -778,7 +788,99 @@
             </div>
         </section>
 
-        <section class="features" id="download" aria-labelledby="download-title" style="padding: 8rem 5%; background: rgba(28, 28, 30, 0.3);">
+        <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title" style="padding: 8rem 5%; background: rgba(0, 0, 0, 0.3);">
+            <div class="section-title reveal">
+                <h2 id="roadmap-title">Roadmap</h2>
+                <p>What's coming next to Musly</p>
+            </div>
+            <div style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-top: 4rem;">
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-desktop"></i></div>
+                    <h3>Custom PC UX</h3>
+                    <p>A dedicated desktop-optimized interface designed specifically for larger screens, moving beyond the mobile-adapted layout.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(52, 199, 89, 0.15); border: 1px solid rgba(52, 199, 89, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #34C759; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #34C759; border-radius: 50%;"></span>
+                        Semi-Completed
+                    </div>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-car-side"></i></div>
+                    <h3>CarPlay Support</h3>
+                    <p>Native CarPlay integration with a dedicated browsing interface for safe and intuitive in-car music control.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #FF9F0A; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #FF9F0A; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;"></span>
+                        In Planning
+                    </div>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-heart"></i></div>
+                    <h3>Last.fm Integration</h3>
+                    <p>Automatic scrobbling support and rich metadata for artists and albums from Last.fm's extensive database.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #FF9F0A; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #FF9F0A; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;"></span>
+                        In Planning
+                    </div>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>Local Playlists</h3>
+                    <p>Create and manage playlists locally on your device, independent of the Subsonic server for greater flexibility.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #FF9F0A; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #FF9F0A; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;"></span>
+                        In Planning
+                    </div>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-server"></i></div>
+                    <h3>Custom API Server</h3>
+                    <p>Support for custom backend implementations and extended APIs beyond standard Subsonic compatibility.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #FF9F0A; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #FF9F0A; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;"></span>
+                        In Planning
+                    </div>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fas fa-sync"></i></div>
+                    <h3>Improved Sync</h3>
+                    <p>Enhanced synchronization capabilities for offline music, ensuring your library is always up to date.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255, 159, 10, 0.15); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #FF9F0A; margin-top: 1rem;">
+                        <span style="width: 8px; height: 8px; background: #FF9F0A; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;"></span>
+                        In Planning
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section style="padding: 6rem 5%; background: rgba(28, 28, 30, 0.3);" aria-labelledby="compatibility-title">
+            <div class="section-title reveal">
+                <h2 id="compatibility-title">Compatible Subsonic Servers</h2>
+                <p>Musly works seamlessly with all Subsonic-compatible music servers</p>
+            </div>
+            <div style="max-width: 1200px; margin: 3rem auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <article class="platform-card reveal">
+                    <div class="platform-icon"><i class="fas fa-server"></i></div>
+                    <h3>Subsonic</h3>
+                    <p>Original Subsonic music server - full compatibility</p>
+                </article>
+                <article class="platform-card reveal">
+                    <div class="platform-icon"><i class="fas fa-compact-disc"></i></div>
+                    <h3>Navidrome</h3>
+                    <p>Modern, fast Subsonic server - fully supported</p>
+                </article>
+                <article class="platform-card reveal">
+                    <div class="platform-icon"><i class="fas fa-music"></i></div>
+                    <h3>Airsonic</h3>
+                    <p>Fork of Subsonic - complete integration</p>
+                </article>
+                <article class="platform-card reveal">
+                    <div class="platform-icon"><i class="fas fa-headphones"></i></div>
+                    <h3>Gonic</h3>
+                    <p>Lightweight Subsonic server - works perfectly</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="features" id="download" aria-labelledby="download-title" style="padding: 8rem 5%; background: rgba(0, 0, 0, 0.3);">
             <div class="section-title reveal">
                 <h2 id="download-title">Download Musly - Free Subsonic Client</h2>
                 <p>Get the latest stable release of the best Subsonic music client</p>
@@ -828,35 +930,6 @@
                     <br><br>
                     <i class="fas fa-hammer" style="color: #FF9F0A; margin-right: 0.5rem;"></i> iOS, Linux, and macOS versions require building from source.
                 </div>
-            </div>
-        </section>
-
-        <section style="padding: 6rem 5%; background: rgba(0, 0, 0, 0.3);" aria-labelledby="compatibility-title">
-            <div class="section-title reveal">
-                <h2 id="compatibility-title">Compatible Subsonic Servers</h2>
-                <p>Musly works seamlessly with all Subsonic-compatible music servers</p>
-            </div>
-            <div style="max-width: 1200px; margin: 3rem auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                <article class="platform-card reveal">
-                    <div class="platform-icon"><i class="fas fa-server"></i></div>
-                    <h3>Subsonic</h3>
-                    <p>Original Subsonic music server - full compatibility</p>
-                </article>
-                <article class="platform-card reveal">
-                    <div class="platform-icon"><i class="fas fa-compact-disc"></i></div>
-                    <h3>Navidrome</h3>
-                    <p>Modern, fast Subsonic server - fully supported</p>
-                </article>
-                <article class="platform-card reveal">
-                    <div class="platform-icon"><i class="fas fa-music"></i></div>
-                    <h3>Airsonic</h3>
-                    <p>Fork of Subsonic - complete integration</p>
-                </article>
-                <article class="platform-card reveal">
-                    <div class="platform-icon"><i class="fas fa-headphones"></i></div>
-                    <h3>Gonic</h3>
-                    <p>Lightweight Subsonic server - works perfectly</p>
-                </article>
             </div>
         </section>
     </main>
