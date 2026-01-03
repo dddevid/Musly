@@ -1,0 +1,90 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: 'Build mode'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+          - profile
+
+jobs:
+  build_ios:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Build iOS (without codesigning)
+        run: |
+          flutter build ios --${{ inputs.build_mode }} --no-codesign
+
+      - name: Create IPA manually
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r app-${{ inputs.build_mode }}-unsigned.ipa Payload
+          rm -rf Payload
+
+      - name: Get latest release
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+            });
+            
+            if (releases.data.length === 0) {
+              core.setFailed('No releases found. Please create a release first.');
+              return;
+            }
+            
+            const latestRelease = releases.data[0];
+            core.setOutput('upload_url', latestRelease.upload_url);
+            core.setOutput('release_id', latestRelease.id);
+            core.setOutput('release_tag', latestRelease.tag_name);
+            console.log(`Found release: ${latestRelease.tag_name}`);
+
+      - name: Upload IPA to latest release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_release.outputs.release_tag }}
+          files: ./app-${{ inputs.build_mode }}-unsigned.ipa
+          name: app-ios-${{ inputs.build_mode }}-${{ steps.get_release.outputs.release_tag }}.ipa
+
+      - name: Upload IPA artifact (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ inputs.build_mode }}-unsigned.ipa
+          path: app-${{ inputs.build_mode }}-unsigned.ipa
+          retention-days: 30
