@@ -24,9 +24,17 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.1'
+          flutter-version: '3.38.2'
           channel: 'stable'
           cache: false
+
+      - name: Fix Dart SDK version constraint
+        run: |
+          # Correggi il constraint del Dart SDK se necessario
+          if grep -q "sdk: '\^3\.10\.0'" pubspec.yaml; then
+            sed -i '' "s/sdk: '\^3\.10\.0'/sdk: '>=3.0.0 <4.0.0'/" pubspec.yaml
+            echo "Fixed Dart SDK constraint in pubspec.yaml"
+          fi
 
       - name: Install dependencies
         run: flutter pub get
