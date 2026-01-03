@@ -4,7 +4,6 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-    <!-- Homepage -->
     <url>
         <loc>https://musly.devid.ink/</loc>
         <lastmod>2026-01-03</lastmod>
@@ -12,7 +11,6 @@
         <priority>1.0</priority>
     </url>
 
-    <!-- Features Section -->
     <url>
         <loc>https://musly.devid.ink/#features</loc>
         <lastmod>2026-01-03</lastmod>
@@ -20,7 +18,6 @@
         <priority>0.8</priority>
     </url>
 
-    <!-- Platforms Section -->
     <url>
         <loc>https://musly.devid.ink/#platforms</loc>
         <lastmod>2026-01-03</lastmod>
@@ -28,7 +25,6 @@
         <priority>0.8</priority>
     </url>
 
-    <!-- Roadmap Section -->
     <url>
         <loc>https://musly.devid.ink/#roadmap</loc>
         <lastmod>2026-01-03</lastmod>
@@ -36,7 +32,6 @@
         <priority>0.7</priority>
     </url>
 
-    <!-- Download Section -->
     <url>
         <loc>https://musly.devid.ink/#download</loc>
         <lastmod>2026-01-03</lastmod>
@@ -44,7 +39,6 @@
         <priority>0.9</priority>
     </url>
 
-    <!-- GitHub Repository -->
     <url>
         <loc>https://github.com/dddevid/Musly</loc>
         <lastmod>2026-01-03</lastmod>
@@ -52,7 +46,6 @@
         <priority>0.7</priority>
     </url>
 
-    <!-- GitHub Releases -->
     <url>
         <loc>https://github.com/dddevid/Musly/releases</loc>
         <lastmod>2026-01-03</lastmod>
@@ -60,7 +53,6 @@
         <priority>0.9</priority>
     </url>
 
-    <!-- Latest Release -->
     <url>
         <loc>https://github.com/dddevid/Musly/releases/tag/v1.0.1</loc>
         <lastmod>2026-01-03</lastmod>
