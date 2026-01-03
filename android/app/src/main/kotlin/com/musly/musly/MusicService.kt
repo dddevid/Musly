@@ -50,6 +50,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private var currentArtist: String = ""
     private var currentAlbum: String = ""
     private var currentArtworkUrl: String? = null
+    private var currentArtworkBitmap: Bitmap? = null
     private var currentDuration: Long = 0
     private var currentPosition: Long = 0
     private var isPlaying: Boolean = false
@@ -461,26 +462,44 @@ class MusicService : MediaBrowserServiceCompat() {
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
 
-        mediaSession.setMetadata(metadataBuilder.build())
+        val url = currentArtworkUrl
 
-        currentArtworkUrl?.let { url ->
-            serviceScope.launch(Dispatchers.IO) {
-                try {
-                    val bitmap = BitmapFactory.decodeStream(URL(url).openStream())
-                    withContext(Dispatchers.Main) {
-                        val updatedMetadata = MediaMetadataCompat.Builder()
-                            .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
-                            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
-                            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
-                            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
-                            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
-                            .build()
-                        mediaSession.setMetadata(updatedMetadata)
-                        showNotification()
-                    }
-                } catch (e: Exception) {
+        // Avoid clearing existing album art while loading a new one to prevent flicker in Android Auto.
+        if (url.isNullOrEmpty()) {
+            if (currentArtworkBitmap != null) {
+                val updatedMetadata = MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
+                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentArtworkBitmap)
+                    .build()
+                mediaSession.setMetadata(updatedMetadata)
+            } else {
+                mediaSession.setMetadata(metadataBuilder.build())
+            }
+            return
+        }
+
+        // Load new artwork asynchronously; do not clear current artwork until new bitmap is ready.
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                val bitmap = BitmapFactory.decodeStream(URL(url).openStream())
+                currentArtworkBitmap = bitmap
+                withContext(Dispatchers.Main) {
+                    val updatedMetadata = MediaMetadataCompat.Builder()
+                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
+                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
+                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                        .build()
+                    mediaSession.setMetadata(updatedMetadata)
+                    showNotification()
                 }
+            } catch (e: Exception) {
             }
         }
     }

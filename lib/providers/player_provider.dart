@@ -374,10 +374,11 @@ class PlayerProvider extends ChangeNotifier {
         lastNotified = position;
         notifyListeners();
       }
-      
+
       // Update system services progress (SMTC, Taskbar) every 1s
-      if (lastSystemUpdate == null || 
-          (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() > 1000) {
+      if (lastSystemUpdate == null ||
+          (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() >
+              1000) {
         lastSystemUpdate = position;
         _updateAllServices();
       }
@@ -448,6 +449,10 @@ class PlayerProvider extends ChangeNotifier {
       _updateAndroidAuto();
     } catch (e) {
       debugPrint('Error playing song: $e');
+      // Ensure Android Auto reflects stopped state on error
+      _isPlaying = false;
+      _position = Duration.zero;
+      _updateAndroidAuto();
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -467,6 +472,7 @@ class PlayerProvider extends ChangeNotifier {
     _isPlaying = false;
     _position = Duration.zero;
     notifyListeners();
+    _updateAndroidAuto();
   }
 
   Future<void> togglePlayPause() async {
@@ -577,7 +583,10 @@ class PlayerProvider extends ChangeNotifier {
     _currentIndex = -1;
     _currentSong = null;
     _audioPlayer.stop();
+    _isPlaying = false;
+    _position = Duration.zero;
     notifyListeners();
+    _updateAndroidAuto();
   }
 
   void reorderQueue(int oldIndex, int newIndex) {

@@ -17,6 +17,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import '../models/lyrics.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
@@ -87,6 +89,20 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     _setupPositionListener();
     _initializeBPM();
     _setupScrollListener();
+    _maybeSetHighRefreshRate();
+  }
+
+  Future<void> _maybeSetHighRefreshRate() async {
+    try {
+      if (!Platform.isAndroid) return;
+      final battery = Battery();
+      final level = await battery.batteryLevel;
+      if (level > 15) {
+        await FlutterDisplayMode.setHighRefreshRate();
+      }
+    } catch (e) {
+      debugPrint('Display mode change failed: $e');
+    }
   }
 
   void _setupScrollListener() {
@@ -211,12 +227,11 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
         final newIndex = _lyrics!.getCurrentLineIndex(position);
         if (newIndex != _currentLineIndex) {
+          // Only rebuild when the highlighted line changes.
           setState(() {
             _currentLineIndex = newIndex;
           });
           _scrollToCurrentLine();
-        } else {
-          setState(() {});
         }
       }
     });

@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  battery_plus
   just_audio_windows
   permission_handler_windows
   volume_controller

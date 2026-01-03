@@ -57,6 +57,8 @@ dependencies:
   dotlottie_loader: ^0.0.5
   smtc_windows: ^1.1.0
   windows_taskbar: ^1.1.2
+  battery_plus: ^4.0.2
+  flutter_displaymode: ^0.6.0
 
 dev_dependencies:
   flutter_test:
