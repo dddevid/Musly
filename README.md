@@ -15,6 +15,8 @@ A beautiful Flutter music streaming client with an Apple Music-inspired UI for S
 - 🔀 **Shuffle & Repeat** - Control playback modes
 - 📊 **Queue Management** - View and modify the play queue
 - 🚗 **Android Auto** - Full support for Android Auto integration
+- 🎧 **Synced Lyrics** - Time-synced lyrics with Apple Music–style desktop fullscreen mode
+- 🧠 **Smart Recommendations** - Personalized mixes, "For You" feed, and listening history
 
 ### Prerequisites
 
@@ -33,7 +35,7 @@ Musly is a cross-platform application that supports:
 ## Download
 
 You can download the latest release (APK for Android) from the GitHub releases page:
-👉 **[Download Musly v1.0.1](https://github.com/dddevid/Musly/releases/tag/v1.0.1)**
+👉 **[Download Musly v1.0.2](https://github.com/dddevid/Musly/releases/tag/v1.0.2)**
 
 > [!NOTE]  
 > Prebuilt binaries are available: an APK for **Android**, and a prebuilt exe build for **Windows**. For **iOS** and other desktop platforms, you still need to build the app from source.
@@ -55,12 +57,7 @@ Your support helps me dedicate more time to improving Musly, adding new features
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
-- [ ] **Lyrics for PC**: Currently under development (barely working) and disabled by default on Desktop. 
-    > [!TIP]  
-    > To re-enable the lyrics button on PC for testing or development:
-    > 1. Open `lib/widgets/desktop_player_bar.dart`.
-    > 2. Locate the commented-out `IconButton` with `Icons.lyrics_rounded`.
-    > 3. Remove the comments to show the button in the player bar.
+- [x] **Desktop Lyrics & Fullscreen Mode**: Apple Music–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
 - [ ] **CarPlay Support**: Add a dedicated browsing interface for CarPlay.
 - [ ] **Last.fm Integration**: Support for scrobbling and artist/album metadata.
 - [ ] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
