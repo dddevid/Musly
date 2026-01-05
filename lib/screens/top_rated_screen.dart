@@ -55,6 +55,7 @@ class _TopRatedScreenState extends State<TopRatedScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

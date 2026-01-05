@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../services/android_auto_service.dart';
@@ -17,9 +19,17 @@ class LibraryProvider extends ChangeNotifier {
   List<String> _genres = [];
   SearchResult? _starred;
 
+  List<Album> _cachedAllAlbums = [];
+  List<Song> _cachedAllSongs = [];
+  DateTime? _lastCacheUpdate;
+
   bool _isLoading = false;
   bool _isInitialized = false;
   String? _error;
+
+  static const String _allAlbumsCacheKey = 'cached_all_albums';
+  static const String _allSongsCacheKey = 'cached_all_songs';
+  static const String _lastUpdateKey = 'last_cache_update';
 
   LibraryProvider(this._subsonicService);
   SubsonicService get subsonicService => _subsonicService;
@@ -41,6 +51,9 @@ class LibraryProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
+  List<Album> get cachedAllAlbums => _cachedAllAlbums;
+  List<Song> get cachedAllSongs => _cachedAllSongs;
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -49,6 +62,8 @@ class LibraryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _loadCachedData();
+
       await Future.wait([
         loadRecentAlbums(),
         loadRandomSongs(),
@@ -57,11 +72,116 @@ class LibraryProvider extends ChangeNotifier {
       _isInitialized = true;
 
       _preloadCoverArt();
+      _scheduleBackgroundRefresh();
     } catch (e) {
       _error = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadCachedData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final albumsJson = prefs.getString(_allAlbumsCacheKey);
+      if (albumsJson != null) {
+        final List<dynamic> albumsList = json.decode(albumsJson);
+        _cachedAllAlbums = albumsList
+            .map((a) => Album.fromJson(a as Map<String, dynamic>))
+            .toList();
+      }
+
+      final songsJson = prefs.getString(_allSongsCacheKey);
+      if (songsJson != null) {
+        final List<dynamic> songsList = json.decode(songsJson);
+        _cachedAllSongs = songsList
+            .map((s) => Song.fromJson(s as Map<String, dynamic>))
+            .toList();
+      }
+
+      final lastUpdate = prefs.getInt(_lastUpdateKey);
+      if (lastUpdate != null) {
+        _lastCacheUpdate = DateTime.fromMillisecondsSinceEpoch(lastUpdate);
+      }
+
+      if (_cachedAllAlbums.isEmpty || _cachedAllSongs.isEmpty) {
+        await _refreshAllDataInBackground();
+      }
+    } catch (e) {
+      debugPrint('Error loading cached data: $e');
+    }
+  }
+
+  void _scheduleBackgroundRefresh() {
+    final shouldRefresh =
+        _lastCacheUpdate == null ||
+        DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 6);
+
+    if (shouldRefresh) {
+      Future.delayed(const Duration(seconds: 5), () {
+        _refreshAllDataInBackground();
+      });
+    }
+  }
+
+  Future<void> _refreshAllDataInBackground() async {
+    try {
+      final allArtists = await _subsonicService.getArtists();
+      final List<Album> allAlbums = [];
+      final List<Song> allSongs = [];
+
+      for (final artist in allArtists) {
+        try {
+          final albums = await _subsonicService.getArtistAlbums(artist.id);
+          allAlbums.addAll(albums);
+
+          for (final album in albums) {
+            try {
+              final songs = await _subsonicService.getAlbumSongs(album.id);
+              allSongs.addAll(songs);
+            } catch (e) {
+              debugPrint('Error loading album: $e');
+            }
+          }
+        } catch (e) {
+          debugPrint('Error loading artist: $e');
+        }
+      }
+
+      _cachedAllAlbums = allAlbums;
+      _cachedAllSongs = allSongs;
+      _lastCacheUpdate = DateTime.now();
+
+      await _saveCachedData();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error refreshing all data: $e');
+    }
+  }
+
+  Future<void> _saveCachedData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final albumsJson = json.encode(
+        _cachedAllAlbums.map((a) => a.toJson()).toList(),
+      );
+      await prefs.setString(_allAlbumsCacheKey, albumsJson);
+
+      final songsJson = json.encode(
+        _cachedAllSongs.map((s) => s.toJson()).toList(),
+      );
+      await prefs.setString(_allSongsCacheKey, songsJson);
+
+      await prefs.setInt(
+        _lastUpdateKey,
+        _lastCacheUpdate?.millisecondsSinceEpoch ??
+            DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (e) {
+      debugPrint('Error saving cached data: $e');
     }
   }
 
@@ -262,24 +382,55 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<List<Song>> getAllSongs() async {
     try {
-      final allAlbums = await _subsonicService.getAlbumList(
-        type: 'alphabeticalByName',
-        size: 500,
-      );
+      final allArtists = await _subsonicService.getArtists();
 
       final List<Song> allSongs = [];
-      for (final album in allAlbums) {
+
+      for (final artist in allArtists) {
         try {
-          final songs = await _subsonicService.getAlbumSongs(album.id);
-          allSongs.addAll(songs);
+          final artistAlbums = await _subsonicService.getArtistAlbums(
+            artist.id,
+          );
+          for (final album in artistAlbums) {
+            try {
+              final songs = await _subsonicService.getAlbumSongs(album.id);
+              allSongs.addAll(songs);
+            } catch (e) {
+              debugPrint('Error loading album ${album.id}: $e');
+            }
+          }
         } catch (e) {
-          debugPrint('Error loading album ${album.id}: $e');
+          debugPrint('Error loading albums for artist ${artist.name}: $e');
         }
       }
 
       return allSongs;
     } catch (e) {
       debugPrint('Error loading all songs: $e');
+      return [];
+    }
+  }
+
+  Future<List<Album>> getAllAlbums() async {
+    try {
+      final allArtists = await _subsonicService.getArtists();
+
+      final List<Album> allAlbums = [];
+
+      for (final artist in allArtists) {
+        try {
+          final artistAlbums = await _subsonicService.getArtistAlbums(
+            artist.id,
+          );
+          allAlbums.addAll(artistAlbums);
+        } catch (e) {
+          debugPrint('Error loading albums for artist ${artist.name}: $e');
+        }
+      }
+
+      return allAlbums;
+    } catch (e) {
+      debugPrint('Error loading all albums: $e');
       return [];
     }
   }

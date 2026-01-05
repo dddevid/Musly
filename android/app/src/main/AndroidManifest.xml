@@ -24,6 +24,19 @@
     <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
     
+    <!-- Queries for url_launcher package -->
+    <queries>
+        <!-- For opening web URLs -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+    
     <application
         android:label="musly"
         android:name="${applicationName}"

@@ -67,10 +67,13 @@ class AlbumArtwork extends StatelessWidget {
           child: imageUrl.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl: imageUrl,
-                  key: ValueKey(coverArt),
+                  cacheKey: '${coverArt}_$cacheSize',
+                  key: ValueKey('${coverArt}_$cacheSize'),
                   fit: BoxFit.cover,
                   memCacheWidth: cacheSize,
                   memCacheHeight: cacheSize,
+                  maxWidthDiskCache: cacheSize,
+                  maxHeightDiskCache: cacheSize,
                   fadeInDuration: const Duration(milliseconds: 100),
                   fadeOutDuration: Duration.zero,
                   useOldImageOnUrlChange: true,

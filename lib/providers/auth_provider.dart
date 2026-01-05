@@ -44,8 +44,19 @@ class AuthProvider extends ChangeNotifier {
     _state = AuthState.authenticating;
     notifyListeners();
 
-    final success = await _subsonicService.ping();
-    if (success) {
+    final pingResult = await _subsonicService.pingWithError();
+    if (pingResult.success) {
+      if (_config != null) {
+        final updatedConfig = _config!.copyWith(
+          serverType: pingResult.serverType,
+          serverVersion: pingResult.serverVersion,
+        );
+        if (updatedConfig.serverType != _config!.serverType ||
+            updatedConfig.serverVersion != _config!.serverVersion) {
+          _config = updatedConfig;
+          await _storageService.saveServerConfig(updatedConfig);
+        }
+      }
       _state = AuthState.authenticated;
     } else {
       _state = AuthState.unauthenticated;
@@ -73,24 +84,49 @@ class AuthProvider extends ChangeNotifier {
     _subsonicService.configure(config);
 
     try {
-      final success = await _subsonicService.ping();
-      if (success) {
-        _config = config;
-        await _storageService.saveServerConfig(config);
+      final pingResult = await _subsonicService.pingWithError();
+      if (pingResult.success) {
+        final updatedConfig = config.copyWith(
+          serverType: pingResult.serverType,
+          serverVersion: pingResult.serverVersion,
+        );
+        _config = updatedConfig;
+        await _storageService.saveServerConfig(updatedConfig);
         _state = AuthState.authenticated;
         notifyListeners();
         return true;
       } else {
-        _error = 'Failed to connect to server';
+        _error = pingResult.error ?? 'Failed to connect to server';
         _state = AuthState.error;
         notifyListeners();
         return false;
       }
     } catch (e) {
-      _error = e.toString();
+      _error = _formatError(e);
       _state = AuthState.error;
       notifyListeners();
       return false;
+    }
+  }
+
+  String _formatError(dynamic error) {
+    final errorStr = error.toString();
+    if (errorStr.contains('SocketException') ||
+        errorStr.contains('Connection refused')) {
+      return 'Cannot connect to server. Check the URL and your internet connection.';
+    } else if (errorStr.contains('HandshakeException') ||
+        errorStr.contains('CERTIFICATE_VERIFY_FAILED')) {
+      return 'SSL certificate error. Try using http:// instead of https://';
+    } else if (errorStr.contains('TimeoutException')) {
+      return 'Connection timed out. Check your server URL.';
+    } else if (errorStr.contains('FormatException')) {
+      return 'Invalid server URL format.';
+    } else if (errorStr.contains('401') || errorStr.contains('Unauthorized')) {
+      return 'Invalid username or password.';
+    } else if (errorStr.contains('404') || errorStr.contains('Not Found')) {
+      return 'Server not found. Check your URL path.';
+    } else {
+      return errorStr.replaceAll('Exception:', '').trim();
     }
   }
 

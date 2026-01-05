@@ -7,14 +7,21 @@ import '../screens/artist_screen.dart';
 import '../widgets/synced_lyrics_view.dart';
 import 'album_artwork.dart';
 
-class DesktopPlayerBar extends StatelessWidget {
+class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
 
   const DesktopPlayerBar({super.key, this.navigatorKey});
 
+  @override
+  State<DesktopPlayerBar> createState() => _DesktopPlayerBarState();
+}
+
+class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
+  bool _lyricsOpen = false;
+
   void _navigateToArtist(BuildContext context, String artistId) {
-    if (navigatorKey?.currentState != null) {
-      navigatorKey!.currentState!.push(
+    if (widget.navigatorKey?.currentState != null) {
+      widget.navigatorKey!.currentState!.push(
         MaterialPageRoute(
           builder: (context) => ArtistScreen(artistId: artistId),
         ),
@@ -28,25 +35,35 @@ class DesktopPlayerBar extends StatelessWidget {
     }
   }
 
-  void _openLyrics(BuildContext context, Song song) {
-    if (navigatorKey?.currentState != null) {
-      navigatorKey!.currentState!.push(
-        MaterialPageRoute(
-          builder: (context) => SyncedLyricsView(
-            song: song,
-            onClose: () => Navigator.pop(context),
-          ),
-        ),
-      );
+  void _toggleLyrics(BuildContext context, Song song) {
+    if (_lyricsOpen) {
+      // Close lyrics
+      if (widget.navigatorKey?.currentState != null) {
+        widget.navigatorKey!.currentState!.pop();
+      } else {
+        Navigator.of(context).pop();
+      }
+      setState(() => _lyricsOpen = false);
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SyncedLyricsView(
-            song: song,
-            onClose: () => Navigator.pop(context),
-          ),
-        ),
-      );
+      // Open lyrics
+      final nav = widget.navigatorKey?.currentState ?? Navigator.of(context);
+      nav
+          .push(
+            MaterialPageRoute(
+              builder: (ctx) => SyncedLyricsView(
+                song: song,
+                onClose: () {
+                  Navigator.pop(ctx);
+                  setState(() => _lyricsOpen = false);
+                },
+              ),
+            ),
+          )
+          .then((_) {
+            // In case user closes via back gesture or other means
+            if (mounted) setState(() => _lyricsOpen = false);
+          });
+      setState(() => _lyricsOpen = true);
     }
   }
 
@@ -177,14 +194,17 @@ class DesktopPlayerBar extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    /* 
                     IconButton(
-                      icon: const Icon(Icons.lyrics_rounded, size: 20),
-                      onPressed: () => _openLyrics(context, currentSong),
-                      tooltip: 'Lyrics',
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      icon: Icon(
+                        Icons.lyrics_rounded,
+                        size: 20,
+                        color: _lyricsOpen
+                            ? AppTheme.appleMusicRed
+                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                      ),
+                      onPressed: () => _toggleLyrics(context, currentSong),
+                      tooltip: _lyricsOpen ? 'Close Lyrics' : 'Lyrics',
                     ),
-                    */
                     IconButton(
                       icon: const Icon(Icons.queue_music_rounded, size: 20),
                       onPressed: () {},

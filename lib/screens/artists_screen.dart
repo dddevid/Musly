@@ -36,6 +36,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     final libraryProvider = Provider.of<LibraryProvider>(context);
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: const Text('Artists')),
       body: _isLoading
           ? ListView.builder(

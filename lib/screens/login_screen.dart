@@ -30,9 +30,24 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final serverUrl = _serverController.text.trim();
+
+    if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Server URL must start with http:// or https://'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.login(
-      serverUrl: _serverController.text.trim(),
+      serverUrl: serverUrl,
       username: _usernameController.text.trim(),
       password: _passwordController.text,
       useLegacyAuth: _useLegacyAuth,
@@ -43,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(authProvider.error ?? 'Failed to connect'),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
         ),
       );
     }
@@ -64,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   Center(
                     child: Container(
                       width: 100,
@@ -122,6 +137,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter server URL';
+                      }
+                      final url = value.trim();
+                      if (!url.startsWith('http://') &&
+                          !url.startsWith('https://')) {
+                        return 'URL must start with http:// or https://';
                       }
                       return null;
                     },

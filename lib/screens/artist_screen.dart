@@ -67,7 +67,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
 
     try {
-
       List<Song> allSongs = [];
       for (final album in _albums) {
         final songs = await libraryProvider.getAlbumSongs(album.id);
@@ -103,6 +102,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
@@ -110,10 +110,12 @@ class _ArtistScreenState extends State<ArtistScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: Text('Artist not found')),
+        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -146,7 +148,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-
                   Center(
                     child: Padding(
                       padding: EdgeInsets.only(

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../providers/auth_provider.dart';
 import '../providers/library_provider.dart';
 import '../services/bpm_analyzer_service.dart';
 import '../services/cache_settings_service.dart';
 import '../services/offline_service.dart';
 import '../services/subsonic_service.dart';
+import '../services/recommendation_service.dart';
+import '../services/storage_service.dart';
+import '../models/models.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mini_player.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -33,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _imageCacheEnabled = true;
   bool _musicCacheEnabled = true;
   bool _bpmCacheEnabled = true;
+  bool _recommendationsEnabled = true;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -78,10 +86,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _loadOfflineInfo();
 
     final state = _offlineService.downloadState.value;
+    final recommendationService = Provider.of<RecommendationService>(
+      context,
+      listen: false,
+    );
+
     setState(() {
       _imageCacheEnabled = _cacheSettings.getImageCacheEnabled();
       _musicCacheEnabled = _cacheSettings.getMusicCacheEnabled();
       _bpmCacheEnabled = _cacheSettings.getBpmCacheEnabled();
+      _recommendationsEnabled = recommendationService.enabled;
       _isDownloading = state.isDownloading;
       _downloadProgress = state.currentProgress;
       _downloadTotal = state.totalCount;
@@ -102,7 +116,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final serverType = authProvider.config?.serverType;
+    final serverVersion = authProvider.config?.serverVersion;
+
+    String serverSubtitle = 'Subsonic API';
+    if (serverType != null && serverType.isNotEmpty) {
+      serverSubtitle = serverType;
+      if (serverVersion != null && serverVersion.isNotEmpty) {
+        serverSubtitle += ' $serverVersion';
+      }
+    }
+
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       backgroundColor: _isDark
           ? AppTheme.darkBackground
           : AppTheme.lightBackground,
@@ -162,6 +189,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
+          const SizedBox(height: 24),
+          _buildSection(
+            title: 'SMART RECOMMENDATIONS',
+            children: [
+              _buildRecommendationsToggle(),
+              _buildDivider(),
+              _buildRecommendationsStats(),
+              _buildDivider(),
+              _buildClearRecommendationsButton(),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            title: 'MUSIC FOLDERS',
+            children: [_buildMusicFoldersButton()],
+          ),
+          const SizedBox(height: 24),
           _buildSection(
             title: 'GESTIONE CACHE',
             children: [
@@ -234,9 +278,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildInfoTile(
                 icon: CupertinoIcons.music_note_2,
                 iconColor: AppTheme.appleMusicRed,
-                title: 'Server',
-                subtitle: 'Subsonic API',
+                title: 'Server Type',
+                subtitle: serverSubtitle,
               ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            title: 'DEVELOPER',
+            children: [
+              _buildDeveloperInfo(),
+              _buildDivider(),
+              _buildDonationButtons(),
             ],
           ),
           const SizedBox(height: 40),
@@ -385,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            '$_currentProgress di $_totalSongs canzoni',
+            '$_currentProgress of $_totalSongs songs',
             style: TextStyle(
               fontSize: 12,
               color: _isDark
@@ -537,6 +590,259 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildDeveloperInfo() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF5856D6), Color(0xFFAF52DE)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.code_rounded, color: Colors.white, size: 18),
+      ),
+      title: const Text('Made by dddevid', style: TextStyle(fontSize: 16)),
+      subtitle: const Text(
+        'github.com/dddevid',
+        style: TextStyle(fontSize: 13),
+      ),
+      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+      onTap: () => _openUrl('https://github.com/dddevid'),
+    );
+  }
+
+  Widget _buildDonationButtons() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Support Development',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildDonationButton(
+                label: 'Buy Me a Coffee',
+                icon: Icons.coffee_rounded,
+                color: const Color(0xFFFFDD00),
+                onTap: () => _openUrl('https://buymeacoffee.com/devidd'),
+              ),
+              _buildDonationButton(
+                label: 'Bitcoin',
+                icon: Icons.currency_bitcoin_rounded,
+                color: const Color(0xFFF7931A),
+                onTap: () => _showCryptoAddress(
+                  'Bitcoin Address',
+                  'bc1qrfv880kc8qamanalc5kcqs9q5wszh90e5eggyz',
+                ),
+              ),
+              _buildDonationButton(
+                label: 'Solana',
+                icon: Icons.toll_rounded,
+                color: const Color(0xFF14F195),
+                onTap: () => _showCryptoAddress(
+                  'Solana Address',
+                  'E3JUcjyR6UCJtppU24iDrq82FyPeV9nhL1PKHx57iPXu',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDonationButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _isDark ? Colors.white : Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showSnackBar('Cannot open URL');
+      }
+    } catch (e) {
+      _showSnackBar('Error opening URL: $e');
+    }
+  }
+
+  void _showCryptoAddress(String title, String address) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              address,
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: address));
+                  Navigator.pop(context);
+                  _showSnackBar('Address copied to clipboard');
+                },
+                icon: const Icon(Icons.copy_rounded, size: 18),
+                label: const Text('Copy Address'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.appleMusicRed,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMusicFoldersButton() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFF9500), Color(0xFFFFCC00)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.folder_rounded, color: Colors.white, size: 18),
+      ),
+      title: const Text('Select Music Folders', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        'Filter music by server folders',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: const Icon(CupertinoIcons.chevron_right, size: 18),
+      onTap: _showMusicFoldersDialog,
+    );
+  }
+
+  Future<void> _showMusicFoldersDialog() async {
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
+
+    _showSnackBar('Loading music folders...');
+
+    final folders = await subsonicService.getMusicFolders();
+
+    if (!mounted) return;
+
+    if (folders.isEmpty) {
+      _showSnackBar('No music folders found');
+      return;
+    }
+
+    final currentConfig = subsonicService.config;
+    if (currentConfig == null) return;
+
+    final selectedIds = List<String>.from(currentConfig.selectedMusicFolderIds);
+
+    final result = await showDialog<List<String>>(
+      context: context,
+      builder: (context) =>
+          _MusicFoldersDialog(folders: folders, selectedIds: selectedIds),
+    );
+
+    if (result != null && mounted) {
+      final storageService = Provider.of<StorageService>(
+        context,
+        listen: false,
+      );
+
+      final updatedConfig = currentConfig.copyWith(
+        selectedMusicFolderIds: result,
+      );
+
+      subsonicService.configure(updatedConfig);
+      await storageService.saveServerConfig(updatedConfig);
+
+      final libraryProvider = Provider.of<LibraryProvider>(
+        context,
+        listen: false,
+      );
+
+      libraryProvider.refresh();
+
+      _showSnackBar(
+        result.isEmpty
+            ? 'Showing all music folders'
+            : 'Selected ${result.length} folder(s)',
+      );
+    }
   }
 
   Widget _buildCacheToggle({
@@ -1068,6 +1374,222 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
+    );
+  }
+
+  Widget _buildRecommendationsToggle() {
+    return _buildCacheToggle(
+      icon: CupertinoIcons.sparkles,
+      iconGradient: const [Color(0xFFFF2D55), Color(0xFFFF375F)],
+      title: 'Smart Recommendations',
+      subtitle: 'AI-powered suggestions based on your listening',
+      value: _recommendationsEnabled,
+      onChanged: _toggleRecommendations,
+    );
+  }
+
+  Widget _buildRecommendationsStats() {
+    final recommendationService = Provider.of<RecommendationService>(
+      context,
+      listen: false,
+    );
+    final stats = recommendationService.getListeningStats();
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF5E5CE6), Color(0xFF7B68EE)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.chart_bar,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text('Listening Statistics', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        '${stats['totalPlays']} plays • ${stats['uniqueSongs']} songs • ${stats['uniqueArtists']} artists',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClearRecommendationsButton() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFF3B30), Color(0xFFFF453A)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 18),
+      ),
+      title: const Text('Clear Learning Data', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        'Reset all learning data and start fresh',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: Icon(
+        CupertinoIcons.chevron_right,
+        size: 16,
+        color: _isDark
+            ? AppTheme.darkSecondaryText
+            : AppTheme.lightSecondaryText,
+      ),
+      onTap: _clearRecommendationsData,
+    );
+  }
+
+  Future<void> _toggleRecommendations(bool value) async {
+    final recommendationService = Provider.of<RecommendationService>(
+      context,
+      listen: false,
+    );
+
+    setState(() => _recommendationsEnabled = value);
+    await recommendationService.setEnabled(value);
+
+    _showSnackBar(
+      value
+          ? 'Smart recommendations enabled'
+          : 'Smart recommendations disabled',
+    );
+  }
+
+  Future<void> _clearRecommendationsData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Learning Data'),
+        content: const Text(
+          'Are you sure you want to clear all learning data? '
+          'This will reset your personalized recommendations and the algorithm will start learning from scratch.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Clear Data'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final recommendationService = Provider.of<RecommendationService>(
+        context,
+        listen: false,
+      );
+
+      try {
+        await recommendationService.clearData();
+        _showSnackBar('Learning data cleared successfully');
+      } catch (e) {
+        _showSnackBar('Error clearing data: $e');
+      }
+    }
+  }
+}
+
+class _MusicFoldersDialog extends StatefulWidget {
+  final List<MusicFolder> folders;
+  final List<String> selectedIds;
+
+  const _MusicFoldersDialog({required this.folders, required this.selectedIds});
+
+  @override
+  State<_MusicFoldersDialog> createState() => _MusicFoldersDialogState();
+}
+
+class _MusicFoldersDialogState extends State<_MusicFoldersDialog> {
+  late List<String> _selectedIds;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIds = List.from(widget.selectedIds);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Music Folders'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Choose which music folders to display. Leave all unchecked to show all folders.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.folders.length,
+                itemBuilder: (context, index) {
+                  final folder = widget.folders[index];
+                  final isSelected = _selectedIds.contains(folder.id);
+
+                  return CheckboxListTile(
+                    title: Text(folder.name),
+                    value: isSelected,
+                    activeColor: AppTheme.appleMusicRed,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value == true) {
+                          _selectedIds.add(folder.id);
+                        } else {
+                          _selectedIds.remove(folder.id);
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _selectedIds),
+          child: const Text('Apply'),
+        ),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mini_player.dart';
 import 'genre_screen.dart';
 
 class GenresScreen extends StatefulWidget {
@@ -50,6 +51,7 @@ class _GenresScreenState extends State<GenresScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -147,7 +149,6 @@ class _GenreChip extends StatelessWidget {
   const _GenreChip({required this.genre});
 
   Color _getGenreColor(String genre) {
-
     final colors = [
       Colors.red,
       Colors.pink,

@@ -5,6 +5,7 @@ import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
+import '../widgets/mini_player.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import 'genres_screen.dart';
@@ -75,6 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -192,7 +194,6 @@ class _SearchScreenState extends State<SearchScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         if (result.artists.isNotEmpty) ...[
           const SectionHeader(title: 'Artists'),
           ...result.artists

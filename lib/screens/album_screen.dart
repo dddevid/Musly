@@ -150,134 +150,139 @@ class _AlbumScreenState extends State<AlbumScreen> {
     final minutes = (totalDuration % 3600) ~/ 60;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 360,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.5)
-                      : Colors.white.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 360,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.5)
+                          : Colors.white.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      CupertinoIcons.back,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                child: Icon(
-                  CupertinoIcons.back,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 60,
-                      left: 40,
-                      right: 40,
-                      bottom: 80,
-                    ),
-                    child: AlbumArtwork(
-                      coverArt: _album!.coverArt,
-                      size: 280,
-                      borderRadius: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    _album!.name,
-                    style: theme.textTheme.headlineLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () {
-                      if (_album!.artistId != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ArtistScreen(artistId: _album!.artistId!),
-                          ),
-                        );
-                      }
-                    },
-                    child: Text(
-                      _album!.artist ?? 'Unknown Artist',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: AppTheme.appleMusicRed,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    [
-                      if (_album!.genre != null) _album!.genre!.toUpperCase(),
-                      if (_album!.year != null) _album!.year.toString(),
-                      if (hours > 0)
-                        '$hours HR $minutes MIN'
-                      else
-                        '$minutes MIN',
-                    ].join(' • '),
-                    style: theme.textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  Row(
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Expanded(
-                        child: _PlayButton(
-                          icon: CupertinoIcons.play_fill,
-                          label: 'Play',
-                          onTap: () => _playAll(),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + 60,
+                          left: 40,
+                          right: 40,
+                          bottom: 80,
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _PlayButton(
-                          icon: CupertinoIcons.shuffle,
-                          label: 'Shuffle',
-                          onTap: () => _playAll(shuffle: true),
+                        child: AlbumArtwork(
+                          coverArt: _album!.coverArt,
+                          size: 280,
+                          borderRadius: 10,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                ],
+                ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        _album!.name,
+                        style: theme.textTheme.headlineLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: () {
+                          if (_album!.artistId != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ArtistScreen(artistId: _album!.artistId!),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          _album!.artist ?? 'Unknown Artist',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: AppTheme.appleMusicRed,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        [
+                          if (_album!.genre != null)
+                            _album!.genre!.toUpperCase(),
+                          if (_album!.year != null) _album!.year.toString(),
+                          if (hours > 0)
+                            '$hours HR $minutes MIN'
+                          else
+                            '$minutes MIN',
+                        ].join(' • '),
+                        style: theme.textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _PlayButton(
+                              icon: CupertinoIcons.play_fill,
+                              label: 'Play',
+                              onTap: () => _playAll(),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _PlayButton(
+                              icon: CupertinoIcons.shuffle,
+                              label: 'Shuffle',
+                              onTap: () => _playAll(shuffle: true),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final song = _songs[index];
+                  return SongTile(
+                    song: song,
+                    playlist: _songs,
+                    index: index,
+                    showArtwork: false,
+                    showTrackNumber: true,
+                    showArtist: false,
+                  );
+                }, childCount: _songs.length),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 150)),
+            ],
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final song = _songs[index];
-              return SongTile(
-                song: song,
-                playlist: _songs,
-                index: index,
-                showArtwork: false,
-                showTrackNumber: true,
-                showArtist: false,
-              );
-            }, childCount: _songs.length),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 150)),
+          Positioned(left: 0, right: 0, bottom: 0, child: const MiniPlayer()),
         ],
       ),
     );

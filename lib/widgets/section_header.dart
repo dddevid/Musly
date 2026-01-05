@@ -66,12 +66,14 @@ class SectionHeader extends StatelessWidget {
   final String title;
   final String? actionText;
   final VoidCallback? onActionTap;
+  final IconData? icon;
 
   const SectionHeader({
     super.key,
     required this.title,
     this.actionText,
     this.onActionTap,
+    this.icon,
   });
 
   @override
@@ -83,7 +85,15 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: theme.textTheme.headlineLarge),
+          Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 24, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+              ],
+              Text(title, style: theme.textTheme.headlineLarge),
+            ],
+          ),
           if (actionText != null && onActionTap != null)
             TextButton(
               onPressed: onActionTap,

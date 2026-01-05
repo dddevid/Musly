@@ -8,6 +8,7 @@ import '../services/android_system_service.dart';
 import '../services/windows_system_service.dart';
 import '../services/bluetooth_avrcp_service.dart';
 import '../services/samsung_integration_service.dart';
+import '../services/recommendation_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -23,6 +24,7 @@ class PlayerProvider extends ChangeNotifier {
   final SamsungIntegrationService _samsungService = SamsungIntegrationService();
 
   LibraryProvider? _libraryProvider;
+  RecommendationService? _recommendationService;
 
   List<Song> _queue = [];
   int _currentIndex = -1;
@@ -45,8 +47,12 @@ class PlayerProvider extends ChangeNotifier {
     _libraryProvider = libraryProvider;
   }
 
-  void _initializeSystemServices() {
-    _androidSystemService.initialize();
+  void setRecommendationService(RecommendationService recommendationService) {
+    _recommendationService = recommendationService;
+  }
+
+  Future<void> _initializeSystemServices() async {
+    await _androidSystemService.initialize();
     _androidSystemService.onPlay = play;
     _androidSystemService.onPause = pause;
     _androidSystemService.onStop = stop;
@@ -56,7 +62,7 @@ class PlayerProvider extends ChangeNotifier {
     _androidSystemService.onHeadsetHook = togglePlayPause;
     _androidSystemService.onHeadsetDoubleClick = skipNext;
 
-    _windowsService.initialize();
+    await _windowsService.initialize();
     _windowsService.onPlay = play;
     _windowsService.onPause = pause;
     _windowsService.onStop = stop;
@@ -80,7 +86,7 @@ class PlayerProvider extends ChangeNotifier {
       pause();
     };
 
-    _bluetoothService.initialize();
+    await _bluetoothService.initialize();
     _bluetoothService.onPlay = play;
     _bluetoothService.onPause = pause;
     _bluetoothService.onStop = stop;
@@ -94,6 +100,8 @@ class PlayerProvider extends ChangeNotifier {
     _bluetoothService.onDeviceDisconnected = (device) {
       debugPrint('Bluetooth device disconnected: ${device.name}');
     };
+    // Register absolute volume control when available (AVRCP 1.6 capable devices).
+    _bluetoothService.registerAbsoluteVolumeControl();
 
     _samsungService.initialize();
     _samsungService.onDexModeEnter = () {
@@ -351,46 +359,74 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _initializePlayer() {
-    _audioPlayer.playerStateStream.listen((state) {
-      final wasPlaying = _isPlaying;
-      _isPlaying = state.playing;
+    // Note: just_audio_windows may print "Error accessing BufferingProgress" messages.
+    // This is a known harmless issue in the plugin and doesn't affect playback.
+    // See: https://github.com/bdlukaa/just_audio_windows/issues
 
-      if (state.processingState == ProcessingState.completed) {
-        _onSongComplete();
-      }
+    _audioPlayer.playerStateStream.listen(
+      (state) {
+        final wasPlaying = _isPlaying;
+        _isPlaying = state.playing;
 
-      if (wasPlaying != _isPlaying) {
-        notifyListeners();
-        _updateAndroidAuto();
-      }
-    });
+        if (state.processingState == ProcessingState.completed) {
+          _onSongComplete();
+        }
+
+        if (wasPlaying != _isPlaying) {
+          notifyListeners();
+          _updateAndroidAuto();
+        }
+      },
+      onError: (error) {
+        // Silently handle stream errors (e.g., buffering progress access issues on Windows)
+        debugPrint('Player state stream error (can be ignored): $error');
+      },
+    );
 
     Duration? lastNotified;
     Duration? lastSystemUpdate;
-    _audioPlayer.positionStream.listen((position) {
-      _position = position;
-      if (lastNotified == null ||
-          position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
-        lastNotified = position;
+    _audioPlayer.positionStream.listen(
+      (position) {
+        _position = position;
+        if (lastNotified == null ||
+            position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
+          lastNotified = position;
+          notifyListeners();
+        }
+
+        // Update system services progress (SMTC, Taskbar) every 1s
+        if (lastSystemUpdate == null ||
+            (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() >
+                1000) {
+          lastSystemUpdate = position;
+          _updateAllServices();
+        }
+      },
+      onError: (error) {
+        debugPrint('Position stream error (can be ignored): $error');
+      },
+    );
+
+    _audioPlayer.durationStream.listen(
+      (duration) {
+        _duration = duration ?? Duration.zero;
         notifyListeners();
-      }
-
-      // Update system services progress (SMTC, Taskbar) every 1s
-      if (lastSystemUpdate == null ||
-          (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() >
-              1000) {
-        lastSystemUpdate = position;
-        _updateAllServices();
-      }
-    });
-
-    _audioPlayer.durationStream.listen((duration) {
-      _duration = duration ?? Duration.zero;
-      notifyListeners();
-    });
+      },
+      onError: (error) {
+        debugPrint('Duration stream error (can be ignored): $error');
+      },
+    );
   }
 
   void _onSongComplete() {
+    if (_currentSong != null && _recommendationService != null) {
+      _recommendationService!.trackSongPlay(
+        _currentSong!,
+        durationPlayed: _duration.inSeconds,
+        completed: true,
+      );
+    }
+
     switch (_repeatMode) {
       case RepeatMode.one:
         seek(Duration.zero);
@@ -446,6 +482,15 @@ class PlayerProvider extends ChangeNotifier {
       await _audioPlayer.play();
 
       _subsonicService.scrobble(song.id, submission: false);
+
+      if (_recommendationService != null) {
+        _recommendationService!.trackSongPlay(
+          song,
+          durationPlayed: 0,
+          completed: false,
+        );
+      }
+
       _updateAndroidAuto();
     } catch (e) {
       debugPrint('Error playing song: $e');
@@ -495,6 +540,19 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> skipNext() async {
+    if (_currentSong != null && _recommendationService != null) {
+      final played = _position.inSeconds;
+      final total = _duration.inSeconds;
+      if (total > 0 && played < total * 0.8) {
+        _recommendationService!.trackSkip(_currentSong!);
+      } else if (played > 0) {
+        _recommendationService!.trackSongPlay(
+          _currentSong!,
+          durationPlayed: played,
+          completed: played >= total * 0.8,
+        );
+      }
+    }
     if (_currentIndex < _queue.length - 1) {
       await skipToIndex(_currentIndex + 1);
     }

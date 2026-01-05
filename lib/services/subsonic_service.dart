@@ -4,6 +4,20 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 
+class PingResult {
+  final bool success;
+  final String? error;
+  final String? serverType;
+  final String? serverVersion;
+
+  PingResult({
+    required this.success,
+    this.error,
+    this.serverType,
+    this.serverVersion,
+  });
+}
+
 class SubsonicService {
   final Dio _dio;
   ServerConfig? _config;
@@ -56,6 +70,10 @@ class SubsonicService {
       params.addAll(extraParams);
     }
 
+    if (_config!.selectedMusicFolderIds.isNotEmpty) {
+      params['musicFolderId'] = _config!.selectedMusicFolderIds.first;
+    }
+
     final queryString = params.entries
         .map(
           (e) =>
@@ -102,6 +120,39 @@ class SubsonicService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<PingResult> pingWithError() async {
+    try {
+      final response = await _request('ping');
+      return PingResult(
+        success: true,
+        serverType: response['type'],
+        serverVersion: response['serverVersion'],
+      );
+    } catch (e) {
+      return PingResult(success: false, error: e.toString());
+    }
+  }
+
+  Future<List<MusicFolder>> getMusicFolders() async {
+    try {
+      final response = await _request('getMusicFolders');
+      final folders = <MusicFolder>[];
+
+      final foldersData = response['musicFolders']?['musicFolder'];
+      if (foldersData is List) {
+        folders.addAll(
+          foldersData.map(
+            (f) => MusicFolder.fromJson(f as Map<String, dynamic>),
+          ),
+        );
+      }
+
+      return folders;
+    } catch (e) {
+      return [];
     }
   }
 

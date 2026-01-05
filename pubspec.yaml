@@ -41,6 +41,8 @@ dependencies:
   shared_preferences: ^2.2.2
   path_provider: ^2.1.2
   
+  url_launcher: ^6.3.1
+  
   flutter_sliding_up_panel: ^2.0.0+1
   palette_generator: ^0.3.3+4
   shimmer: ^3.0.0
@@ -59,6 +61,7 @@ dependencies:
   windows_taskbar: ^1.1.2
   battery_plus: ^4.0.2
   flutter_displaymode: ^0.6.0
+  window_manager: ^0.3.9
 
 dev_dependencies:
   flutter_test:

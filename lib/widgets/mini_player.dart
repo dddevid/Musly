@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/song.dart';
@@ -12,6 +14,9 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop =
+        !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+    if (isDesktop) return const SizedBox.shrink();
 
     return Selector<PlayerProvider, Song?>(
       selector: (_, p) => p.currentSong,
@@ -41,7 +46,6 @@ class MiniPlayer extends StatelessWidget {
               ),
               child: Column(
                 children: [
-
                   Selector<PlayerProvider, double>(
                     selector: (_, p) => p.progress,
                     builder: (_, progress, __) => LinearProgressIndicator(
@@ -58,7 +62,6 @@ class MiniPlayer extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-
                           AlbumArtwork(
                             coverArt: currentSong.coverArt,
                             size: 44,

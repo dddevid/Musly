@@ -2,15 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
+import '../services/recommendation_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
+import 'history_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Map<String, List<Song>> _cachedMixes = const {};
+  List<Song> _cachedPersonalized = const [];
+  String _lastRandomKey = '';
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -19,14 +31,20 @@ class HomeScreen extends StatelessWidget {
     return 'Good evening';
   }
 
+  String _computeRandomKey(List<Song> songs) {
+    if (songs.isEmpty) return '';
+    // Stable key based on song ids to avoid regenerating mixes on every rebuild.
+    return songs.map((s) => s.id).join('|');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
-
           SliverAppBar(
             pinned: true,
             floating: true,
@@ -46,33 +64,53 @@ class HomeScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: Icon(
-                  CupertinoIcons.bell,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(
                   CupertinoIcons.clock,
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HistoryScreen(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
 
           SliverToBoxAdapter(
-            child: Consumer<LibraryProvider>(
-              builder: (context, libraryProvider, _) {
+            child: Consumer2<LibraryProvider, RecommendationService>(
+              builder: (context, libraryProvider, recommendationService, _) {
                 if (libraryProvider.isLoading &&
                     !libraryProvider.isInitialized) {
                   return _buildLoadingState();
                 }
 
+                final allSongs = libraryProvider.randomSongs;
+                final key = _computeRandomKey(allSongs);
+
+                if (recommendationService.enabled && key.isNotEmpty) {
+                  if (key != _lastRandomKey) {
+                    _cachedMixes = recommendationService.generateMixes(
+                      allSongs,
+                    );
+                    _cachedPersonalized = recommendationService
+                        .getPersonalizedFeed(allSongs, limit: 10);
+                    _lastRandomKey = key;
+                  }
+                } else {
+                  _cachedMixes = const {};
+                  _cachedPersonalized = const [];
+                  _lastRandomKey = '';
+                }
+
+                final mixes = _cachedMixes;
+                final personalizedFeed = _cachedPersonalized;
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     if (libraryProvider.recentAlbums.isNotEmpty ||
                         libraryProvider.playlists.isNotEmpty) ...[
                       const SizedBox(height: 16),
@@ -83,6 +121,94 @@ class HomeScreen extends StatelessWidget {
                     ],
 
                     const SizedBox(height: 24),
+
+                    if (recommendationService.enabled &&
+                        personalizedFeed.isNotEmpty) ...[
+                      const SectionHeader(
+                        title: 'For You',
+                        icon: Icons.stars_rounded,
+                      ),
+                      ...personalizedFeed.take(5).map((song) {
+                        return SongTile(
+                          song: song,
+                          playlist: personalizedFeed,
+                          index: personalizedFeed.indexOf(song),
+                          showAlbum: true,
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+
+                    if (mixes.containsKey('Quick Picks')) ...[
+                      const SectionHeader(
+                        title: 'Quick Picks',
+                        icon: Icons.bolt_rounded,
+                      ),
+                      ...mixes['Quick Picks']!.take(5).map((song) {
+                        return SongTile(
+                          song: song,
+                          playlist: mixes['Quick Picks']!,
+                          index: mixes['Quick Picks']!.indexOf(song),
+                          showAlbum: true,
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+
+                    if (mixes.containsKey('Discover Mix')) ...[
+                      const SectionHeader(
+                        title: 'Discover Mix',
+                        icon: Icons.explore_rounded,
+                      ),
+                      ...mixes['Discover Mix']!.take(5).map((song) {
+                        return SongTile(
+                          song: song,
+                          playlist: mixes['Discover Mix']!,
+                          index: mixes['Discover Mix']!.indexOf(song),
+                          showAlbum: true,
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+
+                    for (final entry in mixes.entries.where(
+                      (e) =>
+                          e.key != 'Quick Picks' &&
+                          e.key != 'Discover Mix' &&
+                          !e.key.contains('Vibes'),
+                    )) ...[
+                      SectionHeader(
+                        title: entry.key,
+                        icon: Icons.album_rounded,
+                      ),
+                      ...entry.value.take(5).map((song) {
+                        return SongTile(
+                          song: song,
+                          playlist: entry.value,
+                          index: entry.value.indexOf(song),
+                          showAlbum: true,
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+
+                    for (final entry in mixes.entries.where(
+                      (e) => e.key.contains('Vibes'),
+                    )) ...[
+                      SectionHeader(
+                        title: entry.key,
+                        icon: Icons.nightlight_round,
+                      ),
+                      ...entry.value.take(5).map((song) {
+                        return SongTile(
+                          song: song,
+                          playlist: entry.value,
+                          index: entry.value.indexOf(song),
+                          showAlbum: true,
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
 
                     if (libraryProvider.recentAlbums.isNotEmpty) ...[
                       HorizontalScrollSection(
@@ -125,7 +251,8 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                     ],
 
-                    if (libraryProvider.randomSongs.isNotEmpty) ...[
+                    if (!recommendationService.enabled &&
+                        libraryProvider.randomSongs.isNotEmpty) ...[
                       const SectionHeader(title: 'Made For You'),
                       ...libraryProvider.randomSongs.take(5).map((song) {
                         final index = libraryProvider.randomSongs.indexOf(song);
@@ -137,39 +264,6 @@ class HomeScreen extends StatelessWidget {
                         );
                       }),
                       const SizedBox(height: 24),
-                    ],
-
-                    if (libraryProvider.recentAlbums.length > 10) ...[
-                      HorizontalScrollSection(
-                        title: 'Discover',
-                        children: libraryProvider.recentAlbums
-                            .skip(10)
-                            .take(10)
-                            .map(
-                              (album) => AlbumCard(
-                                album: album,
-                                size: 150,
-                                onTap: () => _openAlbum(context, album.id),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    if (libraryProvider.randomSongs.length > 5) ...[
-                      const SectionHeader(title: 'More to Explore'),
-                      ...libraryProvider.randomSongs.skip(5).take(10).map((
-                        song,
-                      ) {
-                        final index = libraryProvider.randomSongs.indexOf(song);
-                        return SongTile(
-                          song: song,
-                          playlist: libraryProvider.randomSongs,
-                          index: index,
-                          showAlbum: true,
-                        );
-                      }),
                     ],
 
                     const SizedBox(height: 150),
@@ -232,6 +326,10 @@ class _QuickAccessGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [...albums, ...playlists].take(6).toList();
+
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

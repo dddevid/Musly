@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
+import 'dart:io';
+import 'package:window_manager/window_manager.dart';
 
 import 'services/services.dart';
 import 'services/bpm_analyzer_service.dart';
@@ -14,6 +16,15 @@ import 'utils/image_cache.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
+    const windowOptions = WindowOptions();
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   ImageCacheConfig.configure();
 
@@ -29,6 +40,7 @@ void main() async {
   final subsonicService = SubsonicService();
   final bpmAnalyzer = BpmAnalyzerService();
   final offlineService = OfflineService();
+  final recommendationService = RecommendationService();
 
   bpmAnalyzer.initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -36,12 +48,18 @@ void main() async {
   offlineService.initialize().catchError((e) {
     debugPrint('Failed to initialize offline service: $e');
   });
+  recommendationService.initialize().catchError((e) {
+    debugPrint('Failed to initialize recommendation service: $e');
+  });
 
   runApp(
     MultiProvider(
       providers: [
         Provider<StorageService>.value(value: storageService),
         Provider<SubsonicService>.value(value: subsonicService),
+        ChangeNotifierProvider<RecommendationService>.value(
+          value: recommendationService,
+        ),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(subsonicService, storageService),
         ),

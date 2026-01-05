@@ -6,10 +6,13 @@ import '../providers/providers.dart';
 import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mini_player.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
 import 'favorites_screen.dart';
 import 'settings_screen.dart';
+import 'all_albums_screen.dart';
+import 'all_songs_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -28,6 +31,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -118,6 +122,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     subtitle: 'Playlist',
                     isGradient: true,
                     onTap: () => _navigate(context, const FavoritesScreen()),
+                  ),
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.music_albums,
+                    iconColor: const Color(0xFFEC4899),
+                    title: 'All Albums',
+                    subtitle: 'Albums',
+                    isGradient: false,
+                    onTap: () => _navigate(context, const AllAlbumsScreen()),
+                  ),
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.music_note_list,
+                    iconColor: const Color(0xFF10B981),
+                    title: 'All Songs',
+                    subtitle: 'Songs',
+                    isGradient: false,
+                    onTap: () => _navigate(context, const AllSongsScreen()),
                   ),
                 ],
               ],
@@ -349,7 +369,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             decoration: InputDecoration(
               hintText: 'Playlist name',
               filled: true,
-              fillColor: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+              fillColor: isDark
+                  ? const Color(0xFF2C2C2E)
+                  : const Color(0xFFF2F2F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide.none,

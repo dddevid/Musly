@@ -1,24 +1,14 @@
-/*
-  ATTENTION: The PC (Desktop) layout of this view is currently under development 
-  and may not be graphically correct or centered as expected.
-  
-  If you wish to contribute to fixing it, you are welcome! 
-  
-  TO RE-ENABLE THE LYRICS BUTTON ON PC:
-  1. Go to the file 'lib/widgets/desktop_player_bar.dart'
-  2. Search for the commented code block related to the IconButton with the 'Icons.lyrics_rounded' icon
-  3. Remove the /* ... */ comments to show the button again in the desktop player bar.
-*/
-
 import 'dart:async';
 import 'dart:ui';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:window_manager/window_manager.dart';
 import '../models/lyrics.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
@@ -62,6 +52,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   bool _isUserScrolling = false;
   bool _showReturnButton = false;
   Timer? _userScrollTimer;
+  bool _isFullscreen = false;
 
   bool get _isDesktop {
     if (kIsWeb) return false;
@@ -105,6 +96,18 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     }
   }
 
+  Future<void> _setWindowFullscreen(bool enable) async {
+    if (!_isDesktop) return;
+    unawaited(() async {
+      try {
+        await windowManager.setFullScreen(enable);
+        await windowManager.focus();
+      } catch (e) {
+        debugPrint('Failed to toggle fullscreen: $e');
+      }
+    }());
+  }
+
   void _setupScrollListener() {
     _scrollController.addListener(_onScroll);
   }
@@ -125,16 +128,24 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   void _checkScrollDistance() {
     if (_lyrics == null || _currentLineIndex < 0) return;
 
-    final screenHeight = MediaQuery.of(context).size.height;
     double expectedOffset = 0.0;
     for (int i = 0; i < _currentLineIndex; i++) {
       expectedOffset += _estimateLineHeight(_lyrics!.lines[i].text);
     }
 
+    if (_scrollController.hasClients) {
+      expectedOffset = expectedOffset.clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      );
+    }
+
     final currentOffset = _scrollController.offset;
     final distance = (currentOffset - expectedOffset).abs();
 
-    final threshold = screenHeight / 3;
+    final threshold = _isDesktop
+        ? 250.0
+        : MediaQuery.of(context).size.height / 3;
     if (distance > threshold && !_showReturnButton) {
       setState(() {
         _showReturnButton = true;
@@ -154,10 +165,17 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       expectedOffset += _estimateLineHeight(_lyrics!.lines[i].text);
     }
 
+    if (_scrollController.hasClients) {
+      expectedOffset = expectedOffset.clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      );
+    }
+
     final currentOffset = _scrollController.offset;
     final distance = (currentOffset - expectedOffset).abs();
 
-    final threshold = 150.0;
+    final threshold = _isDesktop ? 220.0 : 150.0;
     if (distance <= threshold) {
       _isUserScrolling = false;
       setState(() {
@@ -227,7 +245,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
         final newIndex = _lyrics!.getCurrentLineIndex(position);
         if (newIndex != _currentLineIndex) {
-          // Only rebuild when the highlighted line changes.
           setState(() {
             _currentLineIndex = newIndex;
           });
@@ -376,9 +393,26 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       targetOffset += _estimateLineHeight(_lyrics!.lines[i].text);
     }
 
+    if (_isDesktop) {
+      final activeHeight = _estimateLineHeight(
+        _lyrics!.lines[_currentLineIndex].text,
+        isActive: true,
+      );
+      final avgLineHeight = 50.0;
+      final adjustment = (activeHeight - avgLineHeight) / 2;
+      targetOffset += adjustment;
+    }
+
+    final maxOffset = _scrollController.position.maxScrollExtent;
+    final clampedTarget = targetOffset.clamp(0.0, maxOffset);
+    final current = _scrollController.offset;
+    final distance = (clampedTarget - current).abs();
+
+    final durationMs = distance.clamp(120.0, 650.0).toInt();
+
     _scrollController.animateTo(
-      targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 300),
+      clampedTarget,
+      duration: Duration(milliseconds: durationMs),
       curve: Curves.easeOutCubic,
     );
   }
@@ -400,6 +434,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     _fadeController.dispose();
     _bgAnimationController.dispose();
     _dotsController.dispose();
+    if (_isDesktop && _isFullscreen) {
+      _setWindowFullscreen(false);
+    }
     super.dispose();
   }
 
@@ -426,32 +463,61 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
           ),
 
           if (_isDesktop)
-            _buildDesktopContent(context, imageUrl)
+            _isFullscreen
+                ? _buildFullscreenContent(context, imageUrl)
+                : _buildDesktopContent(context, imageUrl)
           else
-            SafeArea(
-              child: Column(
-                children: [
-                  _buildHeader(context),
-                  Expanded(child: _buildContent()),
-                  _buildBottomControls(context),
-                ],
-              ),
-            ),
+            _buildMobileContent(context),
 
           if (_isDesktop)
             Positioned(
               top: 24,
               right: 24,
-              child: IconButton(
-                onPressed: widget.onClose,
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      final next = !_isFullscreen;
+                      setState(() => _isFullscreen = next);
+                      _setWindowFullscreen(next);
+                    },
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isFullscreen
+                            ? Icons.fullscreen_exit_rounded
+                            : Icons.fullscreen_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    tooltip: _isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 20),
-                ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () {
+                      _setWindowFullscreen(false);
+                      widget.onClose?.call();
+                    },
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -460,21 +526,28 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   Widget _buildDesktopContent(BuildContext context, String imageUrl) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final artSize = math
+        .min(screenWidth * 0.25, screenHeight * 0.45)
+        .clamp(200.0, 380.0);
+
     return Padding(
-      padding: const EdgeInsets.all(64.0),
+      padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 32.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left Side: Artwork & Info
-          Expanded(
-            flex: 4,
+          SizedBox(
+            width: artSize + 40,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Hero(
-                  tag: 'lyrics_artwork',
-                  child: AspectRatio(
-                    aspectRatio: 1,
+                RepaintBoundary(
+                  child: SizedBox(
+                    height: artSize,
+                    width: artSize,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
@@ -485,18 +558,18 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                             offset: const Offset(0, 20),
                           ),
                         ],
-                        color: Colors
-                            .grey[900], // Background color to prevent flash
+                        color: Colors.grey[900],
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
-                          memCacheWidth: 600, // Optimized for desktop view
+                          memCacheWidth: 600,
                           memCacheHeight: 600,
-                          fadeInDuration: Duration.zero, // Prevent flash
+                          fadeInDuration: Duration.zero,
                           fadeOutDuration: Duration.zero,
+                          useOldImageOnUrlChange: true,
                           placeholder: (_, __) =>
                               Container(color: Colors.grey[900]),
                           errorWidget: (_, __, ___) =>
@@ -506,24 +579,24 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 Text(
                   widget.song.title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 if (widget.song.artist != null)
                   Text(
                     widget.song.artist!,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.7),
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -533,12 +606,414 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
             ),
           ),
 
-          const SizedBox(width: 64),
+          const SizedBox(width: 48),
 
-          // Right Side: Lyrics
-          Expanded(flex: 6, child: _buildContent()),
+          Expanded(child: _buildDesktopLyricsContent()),
         ],
       ),
+    );
+  }
+
+  Widget _buildFullscreenContent(BuildContext context, String imageUrl) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 48.0),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: _buildFullscreenLyricsContent(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullscreenLyricsContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+      );
+    }
+
+    if (_error != null || _lyrics == null || _lyrics!.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.music_note_rounded,
+                size: 80,
+                color: Colors.white.withOpacity(0.2),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No lyrics available',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        FadeTransition(
+          opacity: _fadeController,
+          child: _buildFullscreenLyricsList(),
+        ),
+        if (_showReturnButton)
+          Positioned(
+            top: 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _returnToSyncedPosition,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Back to current',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFullscreenLyricsList() {
+    final hasSyncedTimestamps = _lyrics!.lines.any(
+      (line) => line.timestamp != Duration.zero,
+    );
+
+    final showWaitingDots =
+        hasSyncedTimestamps &&
+        _lyrics!.lines.first.timestamp > Duration.zero &&
+        _timeUntilFirstLyric.inMilliseconds > 0;
+
+    final itemCount = _lyrics!.lines.length + (showWaitingDots ? 1 : 0);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final avgLineHeight = 60.0;
+        final verticalPadding = (constraints.maxHeight - avgLineHeight) / 2;
+
+        return ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.white,
+                Colors.white,
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.15, 0.85, 1.0],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: verticalPadding,
+              ),
+              itemCount: itemCount,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                if (showWaitingDots && index == 0) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Center(child: _buildWaitingDotsRow()),
+                  );
+                }
+
+                final lyricIndex = showWaitingDots ? index - 1 : index;
+                final line = _lyrics!.lines[lyricIndex];
+                final isActive = lyricIndex == _currentLineIndex;
+                final isPast = lyricIndex < _currentLineIndex;
+
+                return GestureDetector(
+                  onTap: hasSyncedTimestamps
+                      ? () => _seekToLine(lyricIndex)
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      vertical: isActive ? 18 : 12,
+                      horizontal: 4,
+                    ),
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                      style: TextStyle(
+                        fontSize: isActive ? 38 : 30,
+                        fontWeight: isActive
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: isActive
+                            ? Colors.white
+                            : isPast
+                            ? Colors.white.withOpacity(0.25)
+                            : Colors.white.withOpacity(0.4),
+                        height: 1.3,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                      child: Text(line.text, textAlign: TextAlign.center),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileContent(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(child: _buildContent()),
+          _buildBottomControls(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLyricsContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+      );
+    }
+
+    if (_error != null || _lyrics == null || _lyrics!.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.music_note_rounded,
+                size: 80,
+                color: Colors.white.withOpacity(0.2),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No lyrics available',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Lyrics for this song couldn\'t be found',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        FadeTransition(
+          opacity: _fadeController,
+          child: _buildDesktopLyricsList(),
+        ),
+        if (_showReturnButton)
+          Positioned(
+            top: 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _returnToSyncedPosition,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Back to current',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLyricsList() {
+    final hasSyncedTimestamps = _lyrics!.lines.any(
+      (line) => line.timestamp != Duration.zero,
+    );
+
+    final showWaitingDots =
+        hasSyncedTimestamps &&
+        _lyrics!.lines.first.timestamp > Duration.zero &&
+        _currentLineIndex < 0;
+
+    final itemCount = _lyrics!.lines.length + (showWaitingDots ? 1 : 0);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final avgLineHeight = 50.0;
+        final verticalPadding = (constraints.maxHeight - avgLineHeight) / 2;
+
+        return ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.white,
+                Colors.white,
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.12, 0.88, 1.0],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: verticalPadding,
+              ),
+              itemCount: itemCount,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                if (showWaitingDots && index == 0) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Center(child: _buildWaitingDotsRow()),
+                  );
+                }
+
+                final lyricIndex = showWaitingDots ? index - 1 : index;
+                final line = _lyrics!.lines[lyricIndex];
+                final isActive = lyricIndex == _currentLineIndex;
+                final isPast = lyricIndex < _currentLineIndex;
+
+                return GestureDetector(
+                  onTap: hasSyncedTimestamps
+                      ? () => _seekToLine(lyricIndex)
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      vertical: isActive ? 14 : 8,
+                      horizontal: 4,
+                    ),
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                      style: TextStyle(
+                        fontSize: isActive ? 28 : 22,
+                        fontWeight: isActive
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: isActive
+                            ? Colors.white
+                            : isPast
+                            ? Colors.white.withOpacity(0.25)
+                            : Colors.white.withOpacity(0.4),
+                        height: 1.3,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                      child: Text(line.text, textAlign: TextAlign.center),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -559,13 +1034,13 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         );
       },
       child: Container(
-        color: Colors.black, // Base color
+        color: Colors.black,
         child: CachedNetworkImage(
           imageUrl: imageUrl,
           fit: BoxFit.cover,
           memCacheWidth: 400,
           memCacheHeight: 400,
-          fadeInDuration: Duration.zero, // Prevent flash
+          fadeInDuration: Duration.zero,
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
           placeholder: (_, __) => Container(color: Colors.black),
@@ -638,32 +1113,37 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
     if (_error != null || _lyrics == null || _lyrics!.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.music_note_rounded,
-              size: 80,
-              color: Colors.white.withOpacity(0.2),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _error ?? 'No lyrics available',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.music_note_rounded,
+                size: 80,
+                color: Colors.white.withOpacity(0.2),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Lyrics for this song couldn\'t be found',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.3),
-                fontSize: 14,
+              const SizedBox(height: 24),
+              Text(
+                'No lyrics available',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                'Lyrics for this song couldn\'t be found',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -740,6 +1220,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: Row(
+              mainAxisAlignment: _isDesktop
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: List.generate(3, (index) {
                 final isActive = index == beatIndex && _isPlaying;
@@ -789,7 +1272,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     final showWaitingDots =
         hasSyncedTimestamps &&
         _lyrics!.lines.first.timestamp > Duration.zero &&
-        _currentLineIndex < 0;
+        _timeUntilFirstLyric.inMilliseconds > 0;
 
     final itemCount = _lyrics!.lines.length + (showWaitingDots ? 1 : 0);
 

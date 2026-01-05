@@ -50,6 +50,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(
         title: const Text('Favorites'),
         bottom: PreferredSize(
@@ -216,13 +217,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       itemCount: _favoriteAlbums.length,
       itemBuilder: (context, index) {
         final album = _favoriteAlbums[index];
-        return AlbumCard(
-          album: album,
-          size: double.infinity,
-          onTap: () {
-
-          },
-        );
+        return AlbumCard(album: album, size: double.infinity, onTap: () {});
       },
     );
   }

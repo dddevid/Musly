@@ -3,12 +3,18 @@ class ServerConfig {
   final String username;
   final String password;
   final bool useLegacyAuth;
+  final List<String> selectedMusicFolderIds;
+  final String? serverType;
+  final String? serverVersion;
 
   ServerConfig({
     required this.serverUrl,
     required this.username,
     required this.password,
     this.useLegacyAuth = false,
+    this.selectedMusicFolderIds = const [],
+    this.serverType,
+    this.serverVersion,
   });
 
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
@@ -17,6 +23,13 @@ class ServerConfig {
       username: json['username'] ?? '',
       password: json['password'] ?? '',
       useLegacyAuth: json['useLegacyAuth'] ?? false,
+      selectedMusicFolderIds:
+          (json['selectedMusicFolderIds'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      serverType: json['serverType'],
+      serverVersion: json['serverVersion'],
     );
   }
 
@@ -26,7 +39,31 @@ class ServerConfig {
       'username': username,
       'password': password,
       'useLegacyAuth': useLegacyAuth,
+      'selectedMusicFolderIds': selectedMusicFolderIds,
+      'serverType': serverType,
+      'serverVersion': serverVersion,
     };
+  }
+
+  ServerConfig copyWith({
+    String? serverUrl,
+    String? username,
+    String? password,
+    bool? useLegacyAuth,
+    List<String>? selectedMusicFolderIds,
+    String? serverType,
+    String? serverVersion,
+  }) {
+    return ServerConfig(
+      serverUrl: serverUrl ?? this.serverUrl,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      useLegacyAuth: useLegacyAuth ?? this.useLegacyAuth,
+      selectedMusicFolderIds:
+          selectedMusicFolderIds ?? this.selectedMusicFolderIds,
+      serverType: serverType ?? this.serverType,
+      serverVersion: serverVersion ?? this.serverVersion,
+    );
   }
 
   String get normalizedUrl {

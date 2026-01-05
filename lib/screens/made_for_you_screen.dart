@@ -58,6 +58,7 @@ class _MadeForYouScreenState extends State<MadeForYouScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/album.dart';
+import '../models/artist.dart';
 import '../services/subsonic_service.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
@@ -15,9 +16,9 @@ class AlbumsScreen extends StatefulWidget {
 class _AlbumsScreenState extends State<AlbumsScreen> {
   final List<Album> _albums = [];
   bool _isLoading = true;
-  bool _hasMore = true;
-  int _offset = 0;
-  final int _pageSize = 50;
+  bool _hasMore = false;
+  int _currentArtistIndex = 0;
+  List<Artist> _allArtists = [];
 
   final ScrollController _scrollController = ScrollController();
 
@@ -48,17 +49,15 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
 
     try {
-      final albums = await subsonicService.getAlbumList(
-        type: 'alphabeticalByName',
-        size: _pageSize,
-        offset: 0,
-      );
+      // First, get all artists
+      _allArtists = await subsonicService.getArtists();
+
+      // Then load albums from the first batch of artists
+      await _loadAlbumsFromArtists(0, 20);
 
       if (mounted) {
         setState(() {
-          _albums.addAll(albums);
-          _offset = albums.length;
-          _hasMore = albums.length == _pageSize;
+          _hasMore = _currentArtistIndex < _allArtists.length;
           _isLoading = false;
         });
       }
@@ -69,28 +68,46 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     }
   }
 
-  Future<void> _loadMore() async {
-    if (_isLoading || !_hasMore) return;
-
-    setState(() => _isLoading = true);
-
+  Future<void> _loadAlbumsFromArtists(int startIndex, int count) async {
     final subsonicService = Provider.of<SubsonicService>(
       context,
       listen: false,
     );
 
+    final endIndex = (startIndex + count).clamp(0, _allArtists.length);
+
+    for (int i = startIndex; i < endIndex; i++) {
+      try {
+        final artistAlbums = await subsonicService.getArtistAlbums(
+          _allArtists[i].id,
+        );
+        _albums.addAll(artistAlbums);
+      } catch (e) {
+        debugPrint(
+          'Error loading albums for artist ${_allArtists[i].name}: $e',
+        );
+      }
+    }
+
+    // Sort albums alphabetically by name
+    _albums.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+
+    _currentArtistIndex = endIndex;
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoading || !_hasMore) return;
+
+    setState(() => _isLoading = true);
+
     try {
-      final albums = await subsonicService.getAlbumList(
-        type: 'alphabeticalByName',
-        size: _pageSize,
-        offset: _offset,
-      );
+      await _loadAlbumsFromArtists(_currentArtistIndex, 20);
 
       if (mounted) {
         setState(() {
-          _albums.addAll(albums);
-          _offset += albums.length;
-          _hasMore = albums.length == _pageSize;
+          _hasMore = _currentArtistIndex < _allArtists.length;
           _isLoading = false;
         });
       }
@@ -104,6 +121,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: const Text('Albums')),
       body: _albums.isEmpty && _isLoading
           ? GridView.builder(

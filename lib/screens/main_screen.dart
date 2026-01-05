@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
+import '../services/recommendation_service.dart';
 import '../widgets/widgets.dart';
 import 'home_screen.dart';
 import 'library_screen.dart';
@@ -38,8 +39,13 @@ class _MainScreenState extends State<MainScreen> {
         context,
         listen: false,
       );
+      final recommendationService = Provider.of<RecommendationService>(
+        context,
+        listen: false,
+      );
 
       playerProvider.setLibraryProvider(libraryProvider);
+      playerProvider.setRecommendationService(recommendationService);
 
       libraryProvider.initialize();
     });
