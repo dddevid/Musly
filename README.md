@@ -1,8 +1,16 @@
-# Musly - Subsonic Client
+# Musly - Best Free Navidrome Client & Subsonic Music Player
 
-A beautiful Flutter music streaming client with an Apple Music-inspired UI for Subsonic-compatible servers.
+**Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful Apple Music-inspired interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
 
-## Features
+🌐 **Website:** [musly.devid.ink](https://musly.devid.ink)
+
+[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.2-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.2)
+[![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.ink)
+[![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.ink)
+
+## Why Choose Musly as Your Navidrome Client?
+
+Musly is the best Navidrome client for 2026, offering:
 
 - 🎵 **Music Streaming** - Stream music from your Subsonic server
 - 🎨 **Apple Music UI** - Beautiful, modern interface inspired by Apple Music
@@ -32,13 +40,13 @@ Musly is a cross-platform application that supports:
 - 🐧 **Linux**
 - 🍎 **macOS**
 
-## Download
+## Download Musly - Best Navidrome Client
 
-You can download the latest release (APK for Android) from the GitHub releases page:
-👉 **[Download Musly v1.0.2](https://github.com/dddevid/Musly/releases/tag/v1.0.2)**
+You can download the latest release of Musly (the best Navidrome client):
+👉 **[Download Musly v1.0.2 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.2)**
 
 > [!NOTE]  
-> Prebuilt binaries are available: an APK for **Android**, and a prebuilt exe build for **Windows**. For **iOS** and other desktop platforms, you still need to build the app from source.
+> Prebuilt binaries are available: an APK for **Android** (best Navidrome Android client), and a prebuilt exe build for **Windows** (best Navidrome Windows client). For **iOS** (Navidrome iOS client) and other desktop platforms, you still need to build the app from source.
 
 ## Support Development
 
@@ -98,8 +106,8 @@ Your support helps me dedicate more time to improving Musly, adding new features
 
 Musly works with any Subsonic API-compatible server:
 
+- [Navidrome](https://www.navidrome.org/) - **Best with Musly!**
 - [Subsonic](http://www.subsonic.org/)
-- [Navidrome](https://www.navidrome.org/)
 - [Airsonic](https://airsonic.github.io/)
 - [Gonic](https://github.com/sentriz/gonic)
 

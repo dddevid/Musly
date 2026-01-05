@@ -1,0 +1,9 @@
+Contact: https://github.com/dddevid/Musly/issues
+Expires: 2027-01-05T23:59:59.000Z
+Preferred-Languages: en, it
+Canonical: https://musly.devid.ink/.well-known/security.txt
+Policy: https://github.com/dddevid/Musly/blob/master/LICENSE
+Acknowledgments: https://github.com/dddevid/Musly/graphs/contributors
+
+# Musly - Best Free Navidrome Client & Subsonic Music Player
+# Security vulnerability reporting

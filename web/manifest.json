@@ -1,0 +1,81 @@
+{
+  "name": "Musly - Navidrome Client & Subsonic Music Player",
+  "short_name": "Musly",
+  "description": "The best free Navidrome client and Subsonic music player with Apple Music-style UI. Stream your self-hosted music library on any device.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FA243C",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["music", "entertainment", "multimedia"],
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/screenshot1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Musly Navidrome Client - Home Screen"
+    },
+    {
+      "src": "/assets/screenshot2.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Musly Desktop - Now Playing"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Download Musly",
+      "short_name": "Download",
+      "description": "Download Musly for your platform",
+      "url": "/#download",
+      "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Features",
+      "short_name": "Features",
+      "description": "View Musly features",
+      "url": "/#features",
+      "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://github.com/dddevid/Musly/releases",
+      "id": "ink.devid.musly"
+    }
+  ]
+}

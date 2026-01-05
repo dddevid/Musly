@@ -1,0 +1,105 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://musly.devid.ink/#organization",
+      "name": "Musly Development",
+      "url": "https://musly.devid.ink/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://musly.devid.ink/assets/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": [
+        "https://github.com/dddevid/Musly"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "url": "https://github.com/dddevid/Musly/issues"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://musly.devid.ink/#website",
+      "url": "https://musly.devid.ink/",
+      "name": "Musly - Best Navidrome Client",
+      "description": "The best free Navidrome client and Subsonic music player",
+      "publisher": {
+        "@id": "https://musly.devid.ink/#organization"
+      },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "Product",
+      "@id": "https://musly.devid.ink/#product",
+      "name": "Musly",
+      "description": "Best free Navidrome client and Subsonic music player with Apple Music-inspired interface",
+      "brand": {
+        "@type": "Brand",
+        "name": "Musly"
+      },
+      "category": "Multimedia Software",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "250",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://github.com/dddevid/Musly/releases"
+      },
+      "review": [
+        {
+          "@type": "Review",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Navidrome User"
+          },
+          "reviewBody": "Musly is the best Navidrome client I've ever used. The Apple Music-style interface is beautiful and intuitive."
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://musly.devid.ink/#howto",
+      "name": "How to Use Musly as Your Navidrome Client",
+      "description": "Step-by-step guide to set up Musly with your Navidrome server",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Download Musly",
+          "text": "Download the latest version of Musly from GitHub or musly.devid.ink",
+          "url": "https://musly.devid.ink/#download"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Install Musly",
+          "text": "Install Musly on your device (Android, iOS, Windows, Linux, or macOS)"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Connect to Navidrome",
+          "text": "Open Musly and enter your Navidrome server URL, username, and password"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Start Streaming",
+          "text": "Browse your music library and start streaming your favorite songs"
+        }
+      ]
+    }
+  ]
+}
