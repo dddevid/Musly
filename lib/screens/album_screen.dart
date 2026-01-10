@@ -282,7 +282,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 150)),
             ],
           ),
-          Positioned(left: 0, right: 0, bottom: 0, child: const MiniPlayer()),
         ],
       ),
     );

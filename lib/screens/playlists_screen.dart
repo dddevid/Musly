@@ -277,7 +277,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
@@ -285,12 +284,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: Text('Playlist not found')),
-        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: Text(_playlist!.name)),
       body: Column(
         children: [

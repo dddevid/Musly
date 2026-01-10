@@ -63,7 +63,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: const Text('Listening History')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

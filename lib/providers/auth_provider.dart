@@ -69,6 +69,8 @@ class AuthProvider extends ChangeNotifier {
     required String username,
     required String password,
     bool useLegacyAuth = false,
+    bool allowSelfSignedCertificates = false,
+    String? customCertificatePath,
   }) async {
     _state = AuthState.authenticating;
     _error = null;
@@ -79,6 +81,8 @@ class AuthProvider extends ChangeNotifier {
       username: username,
       password: password,
       useLegacyAuth: useLegacyAuth,
+      allowSelfSignedCertificates: allowSelfSignedCertificates,
+      customCertificatePath: customCertificatePath,
     );
 
     _subsonicService.configure(config);
@@ -116,7 +120,7 @@ class AuthProvider extends ChangeNotifier {
       return 'Cannot connect to server. Check the URL and your internet connection.';
     } else if (errorStr.contains('HandshakeException') ||
         errorStr.contains('CERTIFICATE_VERIFY_FAILED')) {
-      return 'SSL certificate error. Try using http:// instead of https://';
+      return 'SSL certificate error. Enable "Allow Self-Signed Certificates" for custom CA servers.';
     } else if (errorStr.contains('TimeoutException')) {
       return 'Connection timed out. Check your server URL.';
     } else if (errorStr.contains('FormatException')) {

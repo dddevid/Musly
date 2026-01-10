@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/library_provider.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import 'artist_screen.dart';
 
@@ -36,7 +37,6 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     final libraryProvider = Provider.of<LibraryProvider>(context);
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: const Text('Artists')),
       body: _isLoading
           ? ListView.builder(
@@ -67,11 +67,9 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
                 final artist = libraryProvider.artists[index];
                 return ArtistTile(
                   artist: artist,
-                  onTap: () => Navigator.push(
+                  onTap: () => NavigationHelper.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ArtistScreen(artistId: artist.id),
-                    ),
+                    ArtistScreen(artistId: artist.id),
                   ),
                 );
               },

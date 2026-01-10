@@ -6,13 +6,18 @@ import '../providers/providers.dart';
 import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/mini_player.dart';
+import '../utils/navigation_helper.dart';
 import 'album_screen.dart';
-import 'playlist_screen.dart';
+import 'package:musly/screens/genres_screen.dart';
+import 'package:musly/screens/playlist_screen.dart';
 import 'favorites_screen.dart';
 import 'settings_screen.dart';
 import 'all_albums_screen.dart';
 import 'all_songs_screen.dart';
+import 'search_screen.dart';
+import 'library_search_delegate.dart';
+import 'artist_screen.dart';
+import 'radio_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -31,7 +36,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -53,7 +57,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   CupertinoIcons.search,
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                onPressed: () {},
+                onPressed: () => _showLibrarySearch(context),
               ),
               IconButton(
                 icon: Icon(
@@ -138,6 +142,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     subtitle: 'Songs',
                     isGradient: false,
                     onTap: () => _navigate(context, const AllSongsScreen()),
+                  ),
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.radiowaves_right,
+                    iconColor: const Color(0xFF3B82F6),
+                    title: 'Radio Stations',
+                    subtitle: 'Internet Radio',
+                    isGradient: false,
+                    onTap: () => _navigate(context, const RadioScreen()),
                   ),
                 ],
               ],
@@ -278,29 +290,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void _openItem(BuildContext context, _LibraryItem item) {
     switch (item.type) {
       case 'Playlist':
-        Navigator.push(
+        NavigationHelper.push(
           context,
-          MaterialPageRoute(
-            builder: (context) =>
-                PlaylistScreen(playlistId: item.id, playlistName: item.name),
-          ),
+          PlaylistScreen(playlistId: item.id, playlistName: item.name),
         );
         break;
       case 'Album':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AlbumScreen(albumId: item.id),
-          ),
-        );
+        NavigationHelper.push(context, AlbumScreen(albumId: item.id));
         break;
     }
   }
 
   void _navigate(BuildContext context, Widget screen) {
-    Navigator.of(
-      context,
-    ).push(CupertinoPageRoute(builder: (context) => screen));
+    NavigationHelper.push(context, screen);
   }
 
   void _showDeletePlaylistDialog(BuildContext context, _LibraryItem item) {
@@ -420,6 +422,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
             child: const Text('Create'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLibrarySearch(BuildContext context) {
+    final libraryProvider = Provider.of<LibraryProvider>(
+      context,
+      listen: false,
+    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showSearch(
+      context: context,
+      delegate: LibrarySearchDelegate(
+        libraryProvider: libraryProvider,
+        isDark: isDark,
       ),
     );
   }
@@ -596,12 +614,7 @@ class _SettingsSheet extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
+                NavigationHelper.push(context, const SettingsScreen());
               },
             ),
             ListTile(

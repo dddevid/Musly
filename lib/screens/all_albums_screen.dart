@@ -51,7 +51,6 @@ class _AllAlbumsScreenState extends State<AllAlbumsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(
         title: Text(
           _albums.isEmpty ? 'All Albums' : 'All Albums (${_albums.length})',

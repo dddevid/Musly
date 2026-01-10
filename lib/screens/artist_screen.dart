@@ -102,7 +102,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
@@ -110,12 +109,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: Text('Artist not found')),
-        bottomNavigationBar: const MiniPlayer(),
       );
     }
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

@@ -9,6 +9,8 @@ import '../services/windows_system_service.dart';
 import '../services/bluetooth_avrcp_service.dart';
 import '../services/samsung_integration_service.dart';
 import '../services/recommendation_service.dart';
+import '../services/replay_gain_service.dart';
+import '../services/auto_dj_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -22,6 +24,8 @@ class PlayerProvider extends ChangeNotifier {
   final WindowsSystemService _windowsService = WindowsSystemService();
   final BluetoothAvrcpService _bluetoothService = BluetoothAvrcpService();
   final SamsungIntegrationService _samsungService = SamsungIntegrationService();
+  final ReplayGainService _replayGainService = ReplayGainService();
+  final AutoDjService _autoDjService = AutoDjService();
 
   LibraryProvider? _libraryProvider;
   RecommendationService? _recommendationService;
@@ -37,10 +41,15 @@ class PlayerProvider extends ChangeNotifier {
   Song? _currentSong;
   double _volume = 1.0;
 
+  // Radio station support
+  RadioStation? _currentRadioStation;
+  bool _isPlayingRadio = false;
+
   PlayerProvider(this._subsonicService) {
     _initializePlayer();
     _initializeAndroidAuto();
     _initializeSystemServices();
+    _initializeAutoDj();
   }
 
   void setLibraryProvider(LibraryProvider libraryProvider) {
@@ -49,6 +58,14 @@ class PlayerProvider extends ChangeNotifier {
 
   void setRecommendationService(RecommendationService recommendationService) {
     _recommendationService = recommendationService;
+    _autoDjService.setServices(_subsonicService, recommendationService);
+  }
+
+  AutoDjService get autoDjService => _autoDjService;
+
+  Future<void> _initializeAutoDj() async {
+    await _autoDjService.initialize();
+    _autoDjService.setServices(_subsonicService, _recommendationService);
   }
 
   Future<void> _initializeSystemServices() async {
@@ -351,6 +368,10 @@ class PlayerProvider extends ChangeNotifier {
   bool get hasPrevious => _currentIndex > 0;
   double get volume => _volume;
 
+  // Radio station getters
+  RadioStation? get currentRadioStation => _currentRadioStation;
+  bool get isPlayingRadio => _isPlayingRadio;
+
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
 
   double get progress {
@@ -442,8 +463,21 @@ class PlayerProvider extends ChangeNotifier {
       case RepeatMode.off:
         if (_currentIndex < _queue.length - 1) {
           skipNext();
+        } else {
+          // End of queue - try Auto DJ
+          _handleEndOfQueue();
         }
         break;
+    }
+  }
+
+  Future<void> _handleEndOfQueue() async {
+    if (_autoDjService.isEnabled) {
+      await _addAutoDjSongs();
+      // If songs were added, play the next one
+      if (_currentIndex < _queue.length - 1) {
+        await skipToIndex(_currentIndex + 1);
+      }
     }
   }
 
@@ -453,10 +487,14 @@ class PlayerProvider extends ChangeNotifier {
     int? startIndex,
   }) async {
     // If the song is already the current one, toggle play/pause
-    if (_currentSong?.id == song.id) {
+    if (_currentSong?.id == song.id && !_isPlayingRadio) {
       await togglePlayPause();
       return;
     }
+
+    // Clear radio state when playing a song
+    _isPlayingRadio = false;
+    _currentRadioStation = null;
 
     _isLoading = true;
     notifyListeners();
@@ -479,6 +517,10 @@ class PlayerProvider extends ChangeNotifier {
       final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
 
       await _audioPlayer.setUrl(playUrl);
+
+      // Apply ReplayGain volume adjustment
+      await _applyReplayGain(song);
+
       await _audioPlayer.play();
 
       _subsonicService.scrobble(song.id, submission: false);
@@ -502,6 +544,81 @@ class PlayerProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Play an internet radio station stream.
+  Future<void> playRadioStation(RadioStation station) async {
+    // If the same station is already playing, toggle play/pause
+    if (_isPlayingRadio && _currentRadioStation?.id == station.id) {
+      await togglePlayPause();
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Clear song queue and set radio state
+      _currentSong = null;
+      _queue = [];
+      _currentIndex = -1;
+      _isPlayingRadio = true;
+      _currentRadioStation = station;
+      _position = Duration.zero;
+      _duration = Duration.zero;
+
+      await _audioPlayer.setUrl(station.streamUrl);
+
+      // Apply full volume for radio (no ReplayGain)
+      await _audioPlayer.setVolume(_volume);
+
+      await _audioPlayer.play();
+
+      // Update system services with radio info
+      _updateSystemServicesForRadio(station);
+    } catch (e) {
+      debugPrint('Error playing radio station: $e');
+      _isPlaying = false;
+      _isPlayingRadio = false;
+      _currentRadioStation = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Stop radio playback and clear radio state.
+  void stopRadio() {
+    if (_isPlayingRadio) {
+      _audioPlayer.stop();
+      _isPlayingRadio = false;
+      _currentRadioStation = null;
+      _isPlaying = false;
+      notifyListeners();
+    }
+  }
+
+  void _updateSystemServicesForRadio(RadioStation station) {
+    // Update Windows SMTC with radio info
+    _windowsService.updatePlaybackState(
+      song: null,
+      isPlaying: true,
+      position: Duration.zero,
+      duration: Duration.zero,
+      artworkUrl: null,
+    );
+
+    // Update Android system service
+    _androidSystemService.updatePlaybackState(
+      songId: station.id,
+      title: station.name,
+      artist: 'Internet Radio',
+      album: station.homePageUrl ?? '',
+      artworkUrl: null,
+      duration: Duration.zero,
+      position: Duration.zero,
+      isPlaying: true,
+    );
   }
 
   Future<void> play() async {
@@ -529,6 +646,8 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> seek(Duration position) async {
+    _position = position;
+    notifyListeners();
     await _audioPlayer.seek(position);
   }
 
@@ -553,8 +672,35 @@ class PlayerProvider extends ChangeNotifier {
         );
       }
     }
+
+    // Check if Auto DJ should add more songs
+    if (_autoDjService.shouldAddSongs(_currentIndex, _queue.length)) {
+      await _addAutoDjSongs();
+    }
+
     if (_currentIndex < _queue.length - 1) {
       await skipToIndex(_currentIndex + 1);
+    }
+  }
+
+  /// Add songs to the queue using Auto DJ
+  Future<void> _addAutoDjSongs() async {
+    if (!_autoDjService.isEnabled) return;
+
+    try {
+      final songsToAdd = await _autoDjService.getSongsToQueue(
+        currentSong: _currentSong,
+        currentQueue: _queue,
+        availableSongs: _libraryProvider?.cachedAllSongs,
+      );
+
+      if (songsToAdd.isNotEmpty) {
+        _queue.addAll(songsToAdd);
+        notifyListeners();
+        debugPrint('Auto DJ added ${songsToAdd.length} songs to queue');
+      }
+    } catch (e) {
+      debugPrint('Auto DJ error: $e');
     }
   }
 
@@ -668,9 +814,34 @@ class PlayerProvider extends ChangeNotifier {
 
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
-    await _audioPlayer.setVolume(_volume);
+    await _applyReplayGain(_currentSong);
     notifyListeners();
   }
+
+  /// Apply ReplayGain volume adjustment for the current song
+  Future<void> _applyReplayGain(Song? song) async {
+    await _replayGainService.initialize();
+
+    final replayGainMultiplier = _replayGainService.calculateVolumeMultiplier(
+      trackGain: song?.replayGainTrackGain,
+      albumGain: song?.replayGainAlbumGain,
+      trackPeak: song?.replayGainTrackPeak,
+      albumPeak: song?.replayGainAlbumPeak,
+    );
+
+    // Apply both user volume and ReplayGain adjustment
+    final effectiveVolume = _volume * replayGainMultiplier;
+    await _audioPlayer.setVolume(effectiveVolume);
+  }
+
+  /// Refresh ReplayGain settings (call when settings change)
+  Future<void> refreshReplayGain() async {
+    await _applyReplayGain(_currentSong);
+    notifyListeners();
+  }
+
+  /// Get the ReplayGain service for settings access
+  ReplayGainService get replayGainService => _replayGainService;
 
   Future<void> toggleFavorite() async {
     if (_currentSong == null) return;

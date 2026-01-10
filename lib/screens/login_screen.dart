@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -17,7 +18,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _useLegacyAuth = false;
+  bool _allowSelfSignedCertificates = false;
   bool _obscurePassword = true;
+  bool _showAdvancedOptions = false;
+  String? _customCertificatePath;
+  String? _customCertificateName;
 
   @override
   void dispose() {
@@ -25,6 +30,32 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickCertificateFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pem', 'crt', 'cer', 'p12', 'pfx', 'der'],
+        dialogTitle: 'Select TLS/SSL Certificate',
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _customCertificatePath = result.files.single.path;
+          _customCertificateName = result.files.single.name;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select certificate: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _login() async {
@@ -51,6 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
       username: _usernameController.text.trim(),
       password: _passwordController.text,
       useLegacyAuth: _useLegacyAuth,
+      allowSelfSignedCertificates: _allowSelfSignedCertificates,
+      customCertificatePath: _customCertificatePath,
     );
 
     if (!success && mounted) {
@@ -227,6 +260,156 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      CupertinoSwitch(
+                        value: _allowSelfSignedCertificates,
+                        activeTrackColor: AppTheme.appleMusicRed,
+                        onChanged: (value) {
+                          setState(() {
+                            _allowSelfSignedCertificates = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Allow Self-Signed Certificates',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            Text(
+                              'For servers with custom TLS/SSL certificates',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Advanced Options
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _showAdvancedOptions = !_showAdvancedOptions;
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          _showAdvancedOptions
+                              ? CupertinoIcons.chevron_down
+                              : CupertinoIcons.chevron_right,
+                          size: 18,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Advanced Options',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (_showAdvancedOptions) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.brightness == Brightness.dark
+                            ? const Color(0xFF2C2C2E)
+                            : const Color(0xFFF2F2F7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Custom TLS/SSL Certificate',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Upload a custom certificate for servers with non-standard CA',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                          if (_customCertificateName != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: theme.brightness == Brightness.dark
+                                    ? const Color(0xFF3C3C3E)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    CupertinoIcons.doc_fill,
+                                    size: 20,
+                                    color: AppTheme.appleMusicRed,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _customCertificateName!,
+                                      style: theme.textTheme.bodyMedium,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      CupertinoIcons.xmark_circle_fill,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _customCertificatePath = null;
+                                        _customCertificateName = null;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _pickCertificateFile,
+                                icon: const Icon(
+                                  CupertinoIcons.doc_on_clipboard,
+                                ),
+                                label: const Text('Select Certificate File'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.appleMusicRed,
+                                  side: BorderSide(
+                                    color: AppTheme.appleMusicRed.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 32),
 
                   SizedBox(

@@ -121,7 +121,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(title: const Text('Albums')),
       body: _albums.isEmpty && _isLoading
           ? GridView.builder(

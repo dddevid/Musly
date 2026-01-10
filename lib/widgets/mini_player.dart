@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/song.dart';
+import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import 'album_artwork.dart';
@@ -18,13 +19,36 @@ class MiniPlayer extends StatelessWidget {
         !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
     if (isDesktop) return const SizedBox.shrink();
 
-    return Selector<PlayerProvider, Song?>(
-      selector: (_, p) => p.currentSong,
-      builder: (context, currentSong, _) {
-        if (currentSong == null) return const SizedBox.shrink();
+    return Selector<PlayerProvider, (Song?, RadioStation?, bool)>(
+      selector: (_, p) =>
+          (p.currentSong, p.currentRadioStation, p.isPlayingRadio),
+      builder: (context, data, _) {
+        final (currentSong, currentRadioStation, isPlayingRadio) = data;
+
+        // Show nothing if no song and no radio
+        if (currentSong == null && !isPlayingRadio)
+          return const SizedBox.shrink();
 
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
+
+        // Determine what to display
+        final String title;
+        final String? subtitle;
+        final String? coverArt;
+
+        if (isPlayingRadio && currentRadioStation != null) {
+          title = currentRadioStation.name;
+          subtitle = 'Internet Radio • LIVE';
+          coverArt =
+              null; // Radio stations don't have cover art in this implementation
+        } else if (currentSong != null) {
+          title = currentSong.title;
+          subtitle = currentSong.artist;
+          coverArt = currentSong.coverArt;
+        } else {
+          return const SizedBox.shrink();
+        }
 
         return RepaintBoundary(
           child: GestureDetector(
@@ -46,27 +70,54 @@ class MiniPlayer extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Selector<PlayerProvider, double>(
-                    selector: (_, p) => p.progress,
-                    builder: (_, progress, __) => LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.transparent,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppTheme.appleMusicRed,
+                  // Hide progress bar for radio (live stream has no duration)
+                  if (!isPlayingRadio)
+                    Selector<PlayerProvider, double>(
+                      selector: (_, p) => p.progress,
+                      builder: (_, progress, __) => LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: Colors.transparent,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppTheme.appleMusicRed,
+                        ),
+                        minHeight: 2,
                       ),
-                      minHeight: 2,
-                    ),
-                  ),
+                    )
+                  else
+                    const SizedBox(height: 2), // Keep consistent height
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-                          AlbumArtwork(
-                            coverArt: currentSong.coverArt,
-                            size: 44,
-                            borderRadius: 6,
-                          ),
+                          if (isPlayingRadio)
+                            // Radio icon instead of album art
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFFFF2D55),
+                                    Color(0xFFFF6B35),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.radio,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            )
+                          else
+                            AlbumArtwork(
+                              coverArt: coverArt,
+                              size: 44,
+                              borderRadius: 6,
+                            ),
                           const SizedBox(width: 12),
 
                           Expanded(
@@ -75,25 +126,58 @@ class MiniPlayer extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  currentSong.title,
+                                  title,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                if (currentSong.artist != null)
-                                  Text(
-                                    currentSong.artist!,
-                                    style: theme.textTheme.bodySmall,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                if (subtitle != null)
+                                  Row(
+                                    children: [
+                                      if (isPlayingRadio) ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 1,
+                                          ),
+                                          margin: const EdgeInsets.only(
+                                            right: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.appleMusicRed,
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'LIVE',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      Expanded(
+                                        child: Text(
+                                          isPlayingRadio
+                                              ? 'Internet Radio'
+                                              : subtitle,
+                                          style: theme.textTheme.bodySmall,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                               ],
                             ),
                           ),
 
-                          const _MiniPlayerControls(),
+                          _MiniPlayerControls(isRadio: isPlayingRadio),
                         ],
                       ),
                     ),
@@ -109,7 +193,9 @@ class MiniPlayer extends StatelessWidget {
 }
 
 class _MiniPlayerControls extends StatelessWidget {
-  const _MiniPlayerControls();
+  final bool isRadio;
+
+  const _MiniPlayerControls({this.isRadio = false});
 
   @override
   Widget build(BuildContext context) {
@@ -133,11 +219,13 @@ class _MiniPlayerControls extends StatelessWidget {
               ),
               color: color,
             ),
-            IconButton(
-              onPressed: hasNext ? provider.skipNext : null,
-              icon: const Icon(Icons.skip_next_rounded, size: 28),
-              color: color,
-            ),
+            // Hide skip button for radio
+            if (!isRadio)
+              IconButton(
+                onPressed: hasNext ? provider.skipNext : null,
+                icon: const Icon(Icons.skip_next_rounded, size: 28),
+                color: color,
+              ),
           ],
         );
       },

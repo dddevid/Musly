@@ -3,6 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/song.dart';
 import 'bpm_analyzer_service.dart';
+import 'subsonic_service.dart';
+import 'recommendation_service.dart';
+
+/// Auto DJ modes for automatic queue continuation
+enum AutoDjMode {
+  off,
+  shuffleLibrary,
+  similarSongs,
+  sameGenre,
+  sameArtist,
+  smartMix,
+}
 
 class SongAnalysis {
   final String songId;
@@ -40,7 +52,7 @@ class SongAnalysis {
   );
 }
 
-class AutoDjService {
+class AutoDjService extends ChangeNotifier {
   static final AutoDjService _instance = AutoDjService._internal();
   factory AutoDjService() => _instance;
   AutoDjService._internal();
@@ -50,6 +62,22 @@ class AutoDjService {
   bool _isInitialized = false;
 
   final Map<String, SongAnalysis> _analysisCache = {};
+
+  // Auto-continue settings
+  static const String _modeKey = 'auto_dj_mode';
+  static const String _countKey = 'auto_dj_songs_to_add';
+  static const String _thresholdKey = 'auto_dj_threshold';
+
+  AutoDjMode _mode = AutoDjMode.off;
+  int _songsToAdd = 5;
+  int _triggerThreshold = 2;
+
+  // Cache for avoiding repeated songs
+  final Set<String> _recentlyAddedIds = {};
+  static const int _maxRecentlyAdded = 100;
+
+  SubsonicService? _subsonicService;
+  RecommendationService? _recommendationService;
 
   bool _isAnalyzing = false;
   double _analysisProgress = 0.0;
@@ -61,6 +89,19 @@ class AutoDjService {
   double get analysisProgress => _analysisProgress;
   String get analysisStatus => _analysisStatus;
 
+  AutoDjMode get mode => _mode;
+  int get songsToAdd => _songsToAdd;
+  int get triggerThreshold => _triggerThreshold;
+  bool get isEnabled => _mode != AutoDjMode.off;
+
+  void setServices(
+    SubsonicService subsonicService,
+    RecommendationService? recommendationService,
+  ) {
+    _subsonicService = subsonicService;
+    _recommendationService = recommendationService;
+  }
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -68,9 +109,281 @@ class AutoDjService {
       _prefs = await SharedPreferences.getInstance();
       await _bpmAnalyzer.initialize();
       await _loadAnalysisCache();
+
+      // Load mode settings
+      final modeIndex = _prefs?.getInt(_modeKey) ?? 0;
+      _mode =
+          AutoDjMode.values[modeIndex.clamp(0, AutoDjMode.values.length - 1)];
+      _songsToAdd = _prefs?.getInt(_countKey) ?? 5;
+      _triggerThreshold = _prefs?.getInt(_thresholdKey) ?? 2;
+
       _isInitialized = true;
     } catch (e) {
       debugPrint('Error initializing AutoDJ: $e');
+    }
+  }
+
+  Future<void> setMode(AutoDjMode mode) async {
+    _mode = mode;
+    await _prefs?.setInt(_modeKey, mode.index);
+    notifyListeners();
+  }
+
+  Future<void> setSongsToAdd(int count) async {
+    _songsToAdd = count.clamp(1, 20);
+    await _prefs?.setInt(_countKey, _songsToAdd);
+    notifyListeners();
+  }
+
+  Future<void> setTriggerThreshold(int threshold) async {
+    _triggerThreshold = threshold.clamp(1, 10);
+    await _prefs?.setInt(_thresholdKey, _triggerThreshold);
+    notifyListeners();
+  }
+
+  /// Check if Auto DJ should add songs to the queue
+  bool shouldAddSongs(int currentIndex, int queueLength) {
+    if (!isEnabled) return false;
+    final remaining = queueLength - currentIndex - 1;
+    return remaining <= _triggerThreshold;
+  }
+
+  /// Get songs to add to the queue based on the current mode
+  Future<List<Song>> getSongsToQueue({
+    required Song? currentSong,
+    required List<Song> currentQueue,
+    List<Song>? availableSongs,
+  }) async {
+    if (!isEnabled || _subsonicService == null) return [];
+
+    final existingIds = currentQueue.map((s) => s.id).toSet();
+
+    try {
+      switch (_mode) {
+        case AutoDjMode.off:
+          return [];
+
+        case AutoDjMode.shuffleLibrary:
+          return await _getShuffledLibrarySongs(existingIds);
+
+        case AutoDjMode.similarSongs:
+          if (currentSong == null)
+            return await _getShuffledLibrarySongs(existingIds);
+          return await _getSimilarSongs(currentSong, existingIds);
+
+        case AutoDjMode.sameGenre:
+          if (currentSong?.genre == null)
+            return await _getShuffledLibrarySongs(existingIds);
+          return await _getSameGenreSongs(currentSong!.genre!, existingIds);
+
+        case AutoDjMode.sameArtist:
+          if (currentSong?.artistId == null)
+            return await _getShuffledLibrarySongs(existingIds);
+          return await _getSameArtistSongs(currentSong!.artistId!, existingIds);
+
+        case AutoDjMode.smartMix:
+          return await _getSmartMixSongs(
+            currentSong,
+            existingIds,
+            availableSongs,
+          );
+      }
+    } catch (e) {
+      debugPrint('Auto DJ error: $e');
+      return await _getShuffledLibrarySongs(existingIds);
+    }
+  }
+
+  Future<List<Song>> _getShuffledLibrarySongs(Set<String> existingIds) async {
+    final songs = await _subsonicService!.getRandomSongs(size: _songsToAdd * 2);
+    return _filterAndLimit(songs, existingIds);
+  }
+
+  Future<List<Song>> _getSimilarSongs(
+    Song song,
+    Set<String> existingIds,
+  ) async {
+    final similarSongs = await _subsonicService!.getSimilarSongs(
+      song.id,
+      count: _songsToAdd * 2,
+    );
+
+    if (similarSongs.isNotEmpty) {
+      return _filterAndLimit(similarSongs, existingIds);
+    }
+
+    // Fallback: try same genre or artist
+    if (song.genre != null) {
+      final genreSongs = await _getSameGenreSongs(song.genre!, existingIds);
+      if (genreSongs.isNotEmpty) return genreSongs;
+    }
+
+    if (song.artistId != null) {
+      final artistSongs = await _getSameArtistSongs(
+        song.artistId!,
+        existingIds,
+      );
+      if (artistSongs.isNotEmpty) return artistSongs;
+    }
+
+    return await _getShuffledLibrarySongs(existingIds);
+  }
+
+  Future<List<Song>> _getSameGenreSongs(
+    String genre,
+    Set<String> existingIds,
+  ) async {
+    final songs = await _subsonicService!.getSongsByGenre(
+      genre,
+      count: _songsToAdd * 2,
+    );
+    final filtered = _filterAndLimit(songs, existingIds);
+
+    if (filtered.isEmpty) {
+      return await _getShuffledLibrarySongs(existingIds);
+    }
+    return filtered;
+  }
+
+  Future<List<Song>> _getSameArtistSongs(
+    String artistId,
+    Set<String> existingIds,
+  ) async {
+    final topSongs = await _subsonicService!.getArtistTopSongs(
+      artistId,
+      count: _songsToAdd * 2,
+    );
+    final filtered = _filterAndLimit(topSongs, existingIds);
+
+    if (filtered.isEmpty) {
+      return await _getShuffledLibrarySongs(existingIds);
+    }
+    return filtered;
+  }
+
+  Future<List<Song>> _getSmartMixSongs(
+    Song? currentSong,
+    Set<String> existingIds,
+    List<Song>? availableSongs,
+  ) async {
+    final List<Song> results = [];
+    final List<Future<List<Song>>> futures = [];
+
+    if (currentSong != null) {
+      // 40% similar songs
+      futures.add(
+        _subsonicService!.getSimilarSongs(
+          currentSong.id,
+          count: (_songsToAdd * 0.4).ceil(),
+        ),
+      );
+
+      // 30% same genre
+      if (currentSong.genre != null) {
+        futures.add(
+          _subsonicService!.getSongsByGenre(
+            currentSong.genre!,
+            count: (_songsToAdd * 0.3).ceil(),
+          ),
+        );
+      }
+    }
+
+    // Use recommendation service for intelligent picks
+    if (_recommendationService != null) {
+      final topGenres = _recommendationService!.getRecommendedGenres(limit: 3);
+      for (final genre in topGenres.take(2)) {
+        futures.add(_subsonicService!.getSongsByGenre(genre, count: 3));
+      }
+    }
+
+    // Add some random for variety
+    futures.add(
+      _subsonicService!.getRandomSongs(size: (_songsToAdd * 0.3).ceil()),
+    );
+
+    // If we have BPM analysis and available songs, use smart transition
+    if (currentSong != null &&
+        availableSongs != null &&
+        _analysisCache.containsKey(currentSong.id)) {
+      final smartQueue = generateQueue(
+        seedSong: currentSong,
+        availableSongs: availableSongs
+            .where((s) => !existingIds.contains(s.id))
+            .toList(),
+        queueLength: _songsToAdd,
+      );
+      if (smartQueue.length > 1) {
+        return smartQueue.skip(1).toList(); // Skip the seed song
+      }
+    }
+
+    final allResults = await Future.wait(futures);
+    for (final songList in allResults) {
+      results.addAll(songList);
+    }
+
+    results.shuffle(Random());
+    return _filterAndLimit(results, existingIds);
+  }
+
+  List<Song> _filterAndLimit(List<Song> songs, Set<String> existingIds) {
+    final filtered = songs.where((s) {
+      return !existingIds.contains(s.id) && !_recentlyAddedIds.contains(s.id);
+    }).toList();
+
+    filtered.shuffle(Random());
+    final result = filtered.take(_songsToAdd).toList();
+
+    // Add to recently added cache
+    for (final song in result) {
+      _recentlyAddedIds.add(song.id);
+      if (_recentlyAddedIds.length > _maxRecentlyAdded) {
+        _recentlyAddedIds.remove(_recentlyAddedIds.first);
+      }
+    }
+
+    return result;
+  }
+
+  /// Clear the recently added cache
+  void clearRecentlyAdded() {
+    _recentlyAddedIds.clear();
+  }
+
+  /// Get display name for mode
+  static String getModeDisplayName(AutoDjMode mode) {
+    switch (mode) {
+      case AutoDjMode.off:
+        return 'Off';
+      case AutoDjMode.shuffleLibrary:
+        return 'Shuffle Library';
+      case AutoDjMode.similarSongs:
+        return 'Similar Songs';
+      case AutoDjMode.sameGenre:
+        return 'Same Genre';
+      case AutoDjMode.sameArtist:
+        return 'Same Artist';
+      case AutoDjMode.smartMix:
+        return 'Smart Mix';
+    }
+  }
+
+  /// Get description for mode
+  static String getModeDescription(AutoDjMode mode) {
+    switch (mode) {
+      case AutoDjMode.off:
+        return 'Playback stops when queue ends';
+      case AutoDjMode.shuffleLibrary:
+        return 'Add random songs from your library';
+      case AutoDjMode.similarSongs:
+        return 'Add songs similar to what\'s playing';
+      case AutoDjMode.sameGenre:
+        return 'Add songs from the same genre';
+      case AutoDjMode.sameArtist:
+        return 'Add more songs by the same artist';
+      case AutoDjMode.smartMix:
+        return 'Intelligent mix based on tempo, genre, and listening habits';
     }
   }
 

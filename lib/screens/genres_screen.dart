@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/mini_player.dart';
 import 'genre_screen.dart';
 
@@ -51,7 +52,6 @@ class _GenresScreenState extends State<GenresScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -179,10 +179,7 @@ class _GenreChip extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => GenreScreen(genre: genre)),
-          );
+          NavigationHelper.push(context, GenreScreen(genre: genre));
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(

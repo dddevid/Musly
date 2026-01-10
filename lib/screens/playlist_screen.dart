@@ -97,7 +97,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       final song = _songs.removeAt(oldIndex);
       _songs.insert(newIndex, song);
     });
-
   }
 
   Future<void> _extractDominantColor() async {
@@ -114,7 +113,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     }
 
     if (coverArtId == null) {
-
       final hash = widget.playlistName.hashCode;
       final colors = [
         const Color(0xFF1DB954),
@@ -164,7 +162,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       }
     } catch (e) {
       print('Error extracting dominant color: $e');
-
     }
   }
 
@@ -178,7 +175,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     );
 
     if (isCurrentPlaylist && playerProvider.currentSong != null) {
-
       if (playerProvider.isPlaying) {
         playerProvider.pause();
       } else {
@@ -241,7 +237,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             ),
             child: CustomScrollView(
               slivers: [
-
                 SliverAppBar(
                   pinned: true,
                   expandedHeight: 340,
@@ -284,7 +279,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-
                           Hero(
                             tag: 'playlist_${widget.playlistId}',
                             child: Container(
@@ -349,10 +343,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     child: Column(
                       children: [
-
                         Row(
                           children: [
-
                             IconButton(
                               onPressed: () {},
                               icon: const Icon(CupertinoIcons.heart),
@@ -524,17 +516,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               ],
             ),
           ),
-
-          if (!_isDesktop)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [MiniPlayer(), _buildBottomNav(context, isDark)],
-              ),
-            ),
         ],
       ),
       floatingActionButton: _isReorderMode
@@ -683,7 +664,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 title: const Text('Edit Playlist'),
                 onTap: () {
                   Navigator.pop(context);
-
                 },
               ),
               ListTile(
@@ -691,7 +671,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 title: const Text('Share'),
                 onTap: () {
                   Navigator.pop(context);
-
                 },
               ),
               ListTile(

@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers.dart';
 import '../services/recommendation_service.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import 'home_screen.dart';
 import 'library_screen.dart';
@@ -30,6 +32,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Register callback for tab switching
+    NavigationHelper.registerTabChangeCallback((index) {
+      setState(() => _currentIndex = index);
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final libraryProvider = Provider.of<LibraryProvider>(
         context,
@@ -54,6 +62,8 @@ class _MainScreenState extends State<MainScreen> {
   void _openNowPlaying() {
     Navigator.of(context).push(
       PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.transparent,
         pageBuilder: (context, animation, secondaryAnimation) {
           return const NowPlayingScreen();
         },
@@ -82,9 +92,6 @@ class _MainScreenState extends State<MainScreen> {
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   }
 
-  final GlobalKey<NavigatorState> _desktopNavigatorKey =
-      GlobalKey<NavigatorState>();
-
   @override
   Widget build(BuildContext context) {
     if (_isDesktop) {
@@ -98,16 +105,15 @@ class _MainScreenState extends State<MainScreen> {
                     selectedIndex: _currentIndex,
                     onDestinationSelected: (index) {
                       setState(() => _currentIndex = index);
-                      _desktopNavigatorKey.currentState?.popUntil(
-                        (route) => route.isFirst,
-                      );
+                      NavigationHelper.desktopNavigatorKey.currentState
+                          ?.popUntil((route) => route.isFirst);
                     },
-                    navigatorKey: _desktopNavigatorKey,
+                    navigatorKey: NavigationHelper.desktopNavigatorKey,
                   ),
                   const VerticalDivider(width: 1, thickness: 1),
                   Expanded(
                     child: Navigator(
-                      key: _desktopNavigatorKey,
+                      key: NavigationHelper.desktopNavigatorKey,
                       onGenerateRoute: (settings) {
                         return PageRouteBuilder(
                           pageBuilder: (_, __, ___) => IndexedStack(
@@ -128,10 +134,12 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             Selector<PlayerProvider, bool>(
-              selector: (_, p) => p.currentSong != null,
+              selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
               builder: (context, hasCurrentSong, _) {
                 return hasCurrentSong
-                    ? DesktopPlayerBar(navigatorKey: _desktopNavigatorKey)
+                    ? DesktopPlayerBar(
+                        navigatorKey: NavigationHelper.desktopNavigatorKey,
+                      )
                     : const SizedBox.shrink();
               },
             ),
@@ -140,32 +148,68 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
+    // Mobile layout with nested navigator for persistent bottom bar
     return Selector<PlayerProvider, bool>(
-      selector: (_, p) => p.currentSong != null,
+      selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
       builder: (context, hasCurrentSong, _) {
-        return Scaffold(
-          body: Stack(
-            children: [
-              IndexedStack(index: _currentIndex, children: _screens),
-              if (hasCurrentSong)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MiniPlayer(onTap: _openNowPlaying),
-                      _buildBottomNav(context),
-                    ],
+        final bottomBarHeight = hasCurrentSong ? 64.0 + 83.0 : 83.0;
+
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            _handleBackButton();
+          },
+          child: Scaffold(
+            resizeToAvoidBottomInset:
+                false, // Prevent miniplayer from moving with keyboard
+            body: Column(
+              children: [
+                Expanded(
+                  child: Navigator(
+                    key: NavigationHelper.mobileNavigatorKey,
+                    onGenerateRoute: (settings) {
+                      return MaterialPageRoute(
+                        builder: (_) => IndexedStack(
+                          index: _currentIndex,
+                          children: _screens,
+                        ),
+                      );
+                    },
                   ),
                 ),
-            ],
+                // Persistent bottom bar
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasCurrentSong) MiniPlayer(onTap: _openNowPlaying),
+                    _buildBottomNav(context),
+                  ],
+                ),
+              ],
+            ),
           ),
-          bottomNavigationBar: hasCurrentSong ? null : _buildBottomNav(context),
         );
       },
     );
+  }
+
+  void _handleBackButton() {
+    // First, try to pop the nested navigator
+    final navigatorState = NavigationHelper.mobileNavigatorKey.currentState;
+    if (navigatorState != null && navigatorState.canPop()) {
+      navigatorState.pop();
+      return;
+    }
+
+    // If we're not on the home tab, go to home
+    if (_currentIndex != 0) {
+      setState(() => _currentIndex = 0);
+      return;
+    }
+
+    // We're on home tab and can't pop - exit the app
+    SystemNavigator.pop();
   }
 
   Widget _buildBottomNav(BuildContext context) {

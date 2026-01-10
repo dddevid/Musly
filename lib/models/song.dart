@@ -16,6 +16,10 @@ class Song {
   final int? size;
   final String? path;
   final bool? starred;
+  final double? replayGainTrackGain;
+  final double? replayGainAlbumGain;
+  final double? replayGainTrackPeak;
+  final double? replayGainAlbumPeak;
 
   Song({
     required this.id,
@@ -35,9 +39,16 @@ class Song {
     this.size,
     this.path,
     this.starred,
+    this.replayGainTrackGain,
+    this.replayGainAlbumGain,
+    this.replayGainTrackPeak,
+    this.replayGainAlbumPeak,
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
+    // Parse ReplayGain data - Subsonic API provides it in a nested 'replayGain' object
+    final replayGain = json['replayGain'] as Map<String, dynamic>?;
+
     return Song(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? 'Unknown Title',
@@ -56,6 +67,10 @@ class Song {
       size: json['size'] as int?,
       path: json['path']?.toString(),
       starred: json['starred'] != null ? true : false,
+      replayGainTrackGain: (replayGain?['trackGain'] as num?)?.toDouble(),
+      replayGainAlbumGain: (replayGain?['albumGain'] as num?)?.toDouble(),
+      replayGainTrackPeak: (replayGain?['trackPeak'] as num?)?.toDouble(),
+      replayGainAlbumPeak: (replayGain?['albumPeak'] as num?)?.toDouble(),
     );
   }
 
@@ -77,6 +92,12 @@ class Song {
       'contentType': contentType,
       'size': size,
       'path': path,
+      'replayGain': {
+        if (replayGainTrackGain != null) 'trackGain': replayGainTrackGain,
+        if (replayGainAlbumGain != null) 'albumGain': replayGainAlbumGain,
+        if (replayGainTrackPeak != null) 'trackPeak': replayGainTrackPeak,
+        if (replayGainAlbumPeak != null) 'albumPeak': replayGainAlbumPeak,
+      },
     };
   }
 
@@ -105,6 +126,10 @@ class Song {
     int? size,
     String? path,
     bool? starred,
+    double? replayGainTrackGain,
+    double? replayGainAlbumGain,
+    double? replayGainTrackPeak,
+    double? replayGainAlbumPeak,
   }) {
     return Song(
       id: id ?? this.id,
@@ -124,6 +149,10 @@ class Song {
       size: size ?? this.size,
       path: path ?? this.path,
       starred: starred ?? this.starred,
+      replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
+      replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
+      replayGainTrackPeak: replayGainTrackPeak ?? this.replayGainTrackPeak,
+      replayGainAlbumPeak: replayGainAlbumPeak ?? this.replayGainAlbumPeak,
     );
   }
 }

@@ -6,12 +6,16 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../providers/library_provider.dart';
+import '../providers/player_provider.dart';
 import '../services/bpm_analyzer_service.dart';
 import '../services/cache_settings_service.dart';
 import '../services/offline_service.dart';
 import '../services/subsonic_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/storage_service.dart';
+import '../services/replay_gain_service.dart';
+import '../services/auto_dj_service.dart';
+import '../services/player_ui_settings_service.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/mini_player.dart';
@@ -27,6 +31,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _bpmAnalyzer = BpmAnalyzerService();
   final _cacheSettings = CacheSettingsService();
   final _offlineService = OfflineService();
+  final _replayGainService = ReplayGainService();
+  final _playerUiSettings = PlayerUiSettingsService();
   bool _isCaching = false;
   int _currentProgress = 0;
   int _totalSongs = 0;
@@ -41,6 +47,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _musicCacheEnabled = true;
   bool _bpmCacheEnabled = true;
   bool _recommendationsEnabled = true;
+
+  // ReplayGain settings
+  ReplayGainMode _replayGainMode = ReplayGainMode.off;
+  double _replayGainPreamp = 0.0;
+  bool _replayGainPreventClipping = true;
+  double _replayGainFallback = -6.0;
+
+  // Auto DJ settings
+  AutoDjMode _autoDjMode = AutoDjMode.off;
+  int _autoDjSongsToAdd = 5;
+
+  // Player UI settings
+  bool _showVolumeSlider = true;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -83,6 +102,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadCacheSettings() async {
     await _cacheSettings.initialize();
     await _offlineService.initialize();
+    await _replayGainService.initialize();
+    await _playerUiSettings.initialize();
     await _loadOfflineInfo();
 
     final state = _offlineService.downloadState.value;
@@ -90,6 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context,
       listen: false,
     );
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
 
     setState(() {
       _imageCacheEnabled = _cacheSettings.getImageCacheEnabled();
@@ -100,6 +122,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _downloadProgress = state.currentProgress;
       _downloadTotal = state.totalCount;
       _downloadedCount = state.downloadedCount;
+      // Load ReplayGain settings
+      _replayGainMode = _replayGainService.getMode();
+      _replayGainPreamp = _replayGainService.getPreampGain();
+      _replayGainPreventClipping = _replayGainService.getPreventClipping();
+      _replayGainFallback = _replayGainService.getFallbackGain();
+      // Load Auto DJ settings
+      _autoDjMode = playerProvider.autoDjService.mode;
+      _autoDjSongsToAdd = playerProvider.autoDjService.songsToAdd;
+      // Load Player UI settings
+      _showVolumeSlider = _playerUiSettings.getShowVolumeSlider();
     });
   }
 
@@ -129,7 +161,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       backgroundColor: _isDark
           ? AppTheme.darkBackground
           : AppTheme.lightBackground,
@@ -191,6 +222,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           const SizedBox(height: 24),
           _buildSection(
+            title: 'AUTO DJ',
+            children: [
+              _buildAutoDjModeSelector(),
+              if (_autoDjMode != AutoDjMode.off) ...[
+                _buildDivider(),
+                _buildAutoDjSongsSlider(),
+              ],
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            title: 'PLAYER INTERFACE',
+            children: [_buildVolumeSliderToggle()],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
             title: 'SMART RECOMMENDATIONS',
             children: [
               _buildRecommendationsToggle(),
@@ -198,6 +245,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildRecommendationsStats(),
               _buildDivider(),
               _buildClearRecommendationsButton(),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            title: 'VOLUME NORMALIZATION (REPLAYGAIN)',
+            children: [
+              _buildReplayGainModeSelector(),
+              if (_replayGainMode != ReplayGainMode.off) ...[
+                _buildDivider(),
+                _buildReplayGainPreampSlider(),
+                _buildDivider(),
+                _buildReplayGainClippingToggle(),
+                _buildDivider(),
+                _buildReplayGainFallbackSlider(),
+              ],
             ],
           ),
           const SizedBox(height: 24),
@@ -1480,6 +1542,431 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // ReplayGain widgets
+  Widget _buildReplayGainModeSelector() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.speaker_2,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text('ReplayGain Mode', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        _getReplayGainModeDescription(),
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _isDark ? AppTheme.darkCard : Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: DropdownButton<ReplayGainMode>(
+          value: _replayGainMode,
+          underline: const SizedBox(),
+          isDense: true,
+          items: ReplayGainMode.values.map((mode) {
+            return DropdownMenuItem(
+              value: mode,
+              child: Text(
+                _getReplayGainModeName(mode),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (mode) => _setReplayGainMode(mode!),
+        ),
+      ),
+    );
+  }
+
+  String _getReplayGainModeName(ReplayGainMode mode) {
+    switch (mode) {
+      case ReplayGainMode.off:
+        return 'Off';
+      case ReplayGainMode.track:
+        return 'Track';
+      case ReplayGainMode.album:
+        return 'Album';
+    }
+  }
+
+  String _getReplayGainModeDescription() {
+    switch (_replayGainMode) {
+      case ReplayGainMode.off:
+        return 'Volume normalization disabled';
+      case ReplayGainMode.track:
+        return 'Normalize each track individually';
+      case ReplayGainMode.album:
+        return 'Preserve album dynamics';
+    }
+  }
+
+  Future<void> _setReplayGainMode(ReplayGainMode mode) async {
+    setState(() => _replayGainMode = mode);
+    await _replayGainService.setMode(mode);
+
+    // Refresh the player's volume
+    if (mounted) {
+      final playerProvider = Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      );
+      await playerProvider.refreshReplayGain();
+    }
+
+    _showSnackBar('ReplayGain mode: ${_getReplayGainModeName(mode)}');
+  }
+
+  Widget _buildReplayGainPreampSlider() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFF9500), Color(0xFFFF3B30)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.slider_horizontal_3,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Pre-amp Gain', style: TextStyle(fontSize: 16)),
+          Text(
+            '${_replayGainPreamp.toStringAsFixed(1)} dB',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.appleMusicRed,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppTheme.appleMusicRed,
+              inactiveTrackColor: _isDark ? Colors.white24 : Colors.black12,
+              thumbColor: AppTheme.appleMusicRed,
+              overlayColor: AppTheme.appleMusicRed.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: _replayGainPreamp,
+              min: -15.0,
+              max: 15.0,
+              divisions: 30,
+              onChanged: (value) {
+                setState(() => _replayGainPreamp = value);
+              },
+              onChangeEnd: (value) => _setReplayGainPreamp(value),
+            ),
+          ),
+          Text(
+            'Additional volume adjustment (-15 to +15 dB)',
+            style: TextStyle(
+              fontSize: 12,
+              color: _isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setReplayGainPreamp(double value) async {
+    await _replayGainService.setPreampGain(value);
+
+    if (mounted) {
+      final playerProvider = Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      );
+      await playerProvider.refreshReplayGain();
+    }
+  }
+
+  Widget _buildReplayGainClippingToggle() {
+    return _buildCacheToggle(
+      icon: CupertinoIcons.waveform_path,
+      iconGradient: const [Color(0xFF34C759), Color(0xFF30D158)],
+      title: 'Prevent Clipping',
+      subtitle: 'Limit volume to avoid distortion',
+      value: _replayGainPreventClipping,
+      onChanged: _setReplayGainPreventClipping,
+    );
+  }
+
+  Future<void> _setReplayGainPreventClipping(bool value) async {
+    setState(() => _replayGainPreventClipping = value);
+    await _replayGainService.setPreventClipping(value);
+
+    if (mounted) {
+      final playerProvider = Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      );
+      await playerProvider.refreshReplayGain();
+    }
+  }
+
+  Widget _buildReplayGainFallbackSlider() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF5856D6), Color(0xFFAF52DE)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.question_circle,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Fallback Gain', style: TextStyle(fontSize: 16)),
+          Text(
+            '${_replayGainFallback.toStringAsFixed(1)} dB',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.appleMusicRed,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppTheme.appleMusicRed,
+              inactiveTrackColor: _isDark ? Colors.white24 : Colors.black12,
+              thumbColor: AppTheme.appleMusicRed,
+              overlayColor: AppTheme.appleMusicRed.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: _replayGainFallback,
+              min: -15.0,
+              max: 0.0,
+              divisions: 15,
+              onChanged: (value) {
+                setState(() => _replayGainFallback = value);
+              },
+              onChangeEnd: (value) => _setReplayGainFallback(value),
+            ),
+          ),
+          Text(
+            'Used when tracks have no ReplayGain data',
+            style: TextStyle(
+              fontSize: 12,
+              color: _isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setReplayGainFallback(double value) async {
+    await _replayGainService.setFallbackGain(value);
+
+    if (mounted) {
+      final playerProvider = Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      );
+      await playerProvider.refreshReplayGain();
+    }
+  }
+
+  // Auto DJ widgets
+  Widget _buildAutoDjModeSelector() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.wand_stars,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text('Auto DJ Mode', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        AutoDjService.getModeDescription(_autoDjMode),
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _isDark ? AppTheme.darkCard : Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: DropdownButton<AutoDjMode>(
+          value: _autoDjMode,
+          underline: const SizedBox(),
+          isDense: true,
+          items: AutoDjMode.values.map((mode) {
+            return DropdownMenuItem(
+              value: mode,
+              child: Text(
+                AutoDjService.getModeDisplayName(mode),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (mode) => _setAutoDjMode(mode!),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _setAutoDjMode(AutoDjMode mode) async {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    await playerProvider.autoDjService.setMode(mode);
+    setState(() => _autoDjMode = mode);
+  }
+
+  Widget _buildAutoDjSongsSlider() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF5856D6), Color(0xFFAF52DE)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.music_note_list,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Songs to Add', style: TextStyle(fontSize: 16)),
+          Text(
+            '$_autoDjSongsToAdd songs',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.appleMusicRed,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppTheme.appleMusicRed,
+              inactiveTrackColor: _isDark ? Colors.white24 : Colors.black12,
+              thumbColor: AppTheme.appleMusicRed,
+              overlayColor: AppTheme.appleMusicRed.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: _autoDjSongsToAdd.toDouble(),
+              min: 1.0,
+              max: 20.0,
+              divisions: 19,
+              onChanged: (value) {
+                setState(() => _autoDjSongsToAdd = value.round());
+              },
+              onChangeEnd: (value) => _setAutoDjSongsToAdd(value.round()),
+            ),
+          ),
+          Text(
+            'Number of songs to add when queue is ending',
+            style: TextStyle(
+              fontSize: 12,
+              color: _isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setAutoDjSongsToAdd(int count) async {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    await playerProvider.autoDjService.setSongsToAdd(count);
+  }
+
   Future<void> _clearRecommendationsData() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1516,6 +2003,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _showSnackBar('Error clearing data: $e');
       }
     }
+  }
+
+  // Player UI widgets
+  Widget _buildVolumeSliderToggle() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.speaker_2,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text('Show Volume Slider', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        'Display volume control in Now Playing screen',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _showVolumeSlider,
+        activeTrackColor: AppTheme.appleMusicRed,
+        onChanged: (value) async {
+          setState(() => _showVolumeSlider = value);
+          await _playerUiSettings.setShowVolumeSlider(value);
+        },
+      ),
+    );
   }
 }
 

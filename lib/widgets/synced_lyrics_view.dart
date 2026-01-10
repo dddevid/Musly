@@ -54,6 +54,13 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   Timer? _userScrollTimer;
   bool _isFullscreen = false;
 
+  // GlobalKeys for each lyric line for precise scrolling
+  final Map<int, GlobalKey> _itemKeys = {};
+
+  // Cache for line heights to avoid expensive TextPainter calculations
+  final Map<String, double> _heightCache = {};
+  final Map<String, double> _activeHeightCache = {};
+
   bool get _isDesktop {
     if (kIsWeb) return false;
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -128,7 +135,22 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   void _checkScrollDistance() {
     if (_lyrics == null || _currentLineIndex < 0) return;
 
+    // Check if waiting dots are being shown
+    final hasSyncedTimestamps = _lyrics!.lines.any(
+      (line) => line.timestamp != Duration.zero,
+    );
+    final showWaitingDots =
+        hasSyncedTimestamps &&
+        _lyrics!.lines.first.timestamp > Duration.zero &&
+        _timeUntilFirstLyric.inMilliseconds > 0;
+
     double expectedOffset = 0.0;
+
+    // Account for waiting dots row if present
+    if (showWaitingDots) {
+      expectedOffset += 50.0;
+    }
+
     for (int i = 0; i < _currentLineIndex; i++) {
       expectedOffset += _estimateLineHeight(_lyrics!.lines[i].text);
     }
@@ -160,7 +182,22 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   void _checkAutoResync() {
     if (_lyrics == null || _currentLineIndex < 0) return;
 
+    // Check if waiting dots are being shown
+    final hasSyncedTimestamps = _lyrics!.lines.any(
+      (line) => line.timestamp != Duration.zero,
+    );
+    final showWaitingDots =
+        hasSyncedTimestamps &&
+        _lyrics!.lines.first.timestamp > Duration.zero &&
+        _timeUntilFirstLyric.inMilliseconds > 0;
+
     double expectedOffset = 0.0;
+
+    // Account for waiting dots row if present
+    if (showWaitingDots) {
+      expectedOffset += 50.0;
+    }
+
     for (int i = 0; i < _currentLineIndex; i++) {
       expectedOffset += _estimateLineHeight(_lyrics!.lines[i].text);
     }
@@ -345,6 +382,14 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   double _estimateLineHeight(String text, {bool isActive = false}) {
+    // Use cached value if available
+    final cacheKey = '$text-$isActive';
+    final cache = isActive ? _activeHeightCache : _heightCache;
+
+    if (cache.containsKey(cacheKey)) {
+      return cache[cacheKey]!;
+    }
+
     final fontSize = isActive ? 28.0 : 22.0;
     final verticalPadding = isActive ? 14.0 * 2 : 8.0 * 2;
 
@@ -354,12 +399,28 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         ? (screenWidth * 0.6) - 100
         : screenWidth - 28 * 2 - 4 * 2;
 
-    final charWidth = fontSize * 0.45;
-    final charsPerLine = (availableWidth / charWidth).floor().clamp(10, 100);
+    // Use TextPainter for precise measurements
+    final textStyle = TextStyle(
+      fontSize: fontSize,
+      fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+      height: 1.3,
+    );
 
-    final numLines = (text.length / charsPerLine).ceil().clamp(1, 10);
-    final textHeight = fontSize * 1.3 * numLines;
-    return textHeight + verticalPadding;
+    final textSpan = TextSpan(text: text, style: textStyle);
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      maxLines: null,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout(maxWidth: availableWidth);
+
+    // Cache the result for future use
+    final height = textPainter.height + verticalPadding;
+    cache[cacheKey] = height;
+
+    return height;
   }
 
   void _updateCurrentLineAndScroll() {
@@ -380,41 +441,53 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     }
   }
 
-  void _scrollToCurrentLine() {
-    if (!_scrollController.hasClients ||
-        _currentLineIndex < 0 ||
-        _lyrics == null)
-      return;
-
+  void _scrollToCurrentLine({bool isRetry = false}) {
+    if (_currentLineIndex < 0) return;
+    if (_lyrics == null) return;
     if (_isUserScrolling) return;
 
-    double targetOffset = 0;
-    for (int i = 0; i < _currentLineIndex; i++) {
-      targetOffset += _estimateLineHeight(_lyrics!.lines[i].text);
+    // Get or create the GlobalKey for the current line
+    final key = _itemKeys[_currentLineIndex];
+    if (key == null) {
+      if (!isRetry) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _scrollToCurrentLine(isRetry: true);
+          }
+        });
+      }
+      return;
     }
 
-    if (_isDesktop) {
-      final activeHeight = _estimateLineHeight(
-        _lyrics!.lines[_currentLineIndex].text,
-        isActive: true,
+    final currentContext = key.currentContext;
+    if (currentContext == null) {
+      if (!isRetry) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _scrollToCurrentLine(isRetry: true);
+          }
+        });
+      }
+      return;
+    }
+
+    // Schedule scroll after frame to let AnimatedPadding settle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_isUserScrolling) return;
+
+      final ctx = key.currentContext;
+      if (ctx == null) return;
+
+      // Use Scrollable.ensureVisible for precise scrolling
+      // alignment 0.5 = exact center
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.linear,
+        alignment: 0.5,
       );
-      final avgLineHeight = 50.0;
-      final adjustment = (activeHeight - avgLineHeight) / 2;
-      targetOffset += adjustment;
-    }
-
-    final maxOffset = _scrollController.position.maxScrollExtent;
-    final clampedTarget = targetOffset.clamp(0.0, maxOffset);
-    final current = _scrollController.offset;
-    final distance = (clampedTarget - current).abs();
-
-    final durationMs = distance.clamp(120.0, 650.0).toInt();
-
-    _scrollController.animateTo(
-      clampedTarget,
-      duration: Duration(milliseconds: durationMs),
-      curve: Curves.easeOutCubic,
-    );
+    });
   }
 
   void _seekToLine(int index) {
@@ -772,34 +845,42 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                 final isActive = lyricIndex == _currentLineIndex;
                 final isPast = lyricIndex < _currentLineIndex;
 
+                // Get or create GlobalKey for this lyric line
+                _itemKeys[lyricIndex] ??= GlobalKey();
+
                 return GestureDetector(
+                  key: _itemKeys[lyricIndex],
                   onTap: hasSyncedTimestamps
                       ? () => _seekToLine(lyricIndex)
                       : null,
-                  child: Container(
-                    width: double.infinity,
+                  child: AnimatedPadding(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
                     padding: EdgeInsets.symmetric(
                       vertical: isActive ? 18 : 12,
                       horizontal: 4,
                     ),
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOut,
-                      style: TextStyle(
-                        fontSize: isActive ? 38 : 30,
-                        fontWeight: isActive
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: isActive
-                            ? Colors.white
-                            : isPast
-                            ? Colors.white.withOpacity(0.25)
-                            : Colors.white.withOpacity(0.4),
-                        height: 1.3,
-                        letterSpacing: -0.5,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                        style: TextStyle(
+                          fontSize: isActive ? 38 : 30,
+                          fontWeight: isActive
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isActive
+                              ? Colors.white
+                              : isPast
+                              ? Colors.white.withOpacity(0.25)
+                              : Colors.white.withOpacity(0.4),
+                          height: 1.3,
+                          letterSpacing: -0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                        child: Text(line.text, textAlign: TextAlign.center),
                       ),
-                      textAlign: TextAlign.center,
-                      child: Text(line.text, textAlign: TextAlign.center),
                     ),
                   ),
                 );
@@ -978,34 +1059,42 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                 final isActive = lyricIndex == _currentLineIndex;
                 final isPast = lyricIndex < _currentLineIndex;
 
+                // Get or create GlobalKey for this lyric line
+                _itemKeys[lyricIndex] ??= GlobalKey();
+
                 return GestureDetector(
+                  key: _itemKeys[lyricIndex],
                   onTap: hasSyncedTimestamps
                       ? () => _seekToLine(lyricIndex)
                       : null,
-                  child: Container(
-                    width: double.infinity,
+                  child: AnimatedPadding(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
                     padding: EdgeInsets.symmetric(
                       vertical: isActive ? 14 : 8,
                       horizontal: 4,
                     ),
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOut,
-                      style: TextStyle(
-                        fontSize: isActive ? 28 : 22,
-                        fontWeight: isActive
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: isActive
-                            ? Colors.white
-                            : isPast
-                            ? Colors.white.withOpacity(0.25)
-                            : Colors.white.withOpacity(0.4),
-                        height: 1.3,
-                        letterSpacing: -0.5,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                        style: TextStyle(
+                          fontSize: isActive ? 28 : 22,
+                          fontWeight: isActive
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isActive
+                              ? Colors.white
+                              : isPast
+                              ? Colors.white.withOpacity(0.25)
+                              : Colors.white.withOpacity(0.4),
+                          height: 1.3,
+                          letterSpacing: -0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                        child: Text(line.text, textAlign: TextAlign.center),
                       ),
-                      textAlign: TextAlign.center,
-                      child: Text(line.text, textAlign: TextAlign.center),
                     ),
                   ),
                 );
@@ -1264,7 +1353,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   Widget _buildLyricsList() {
-    final screenHeight = MediaQuery.of(context).size.height;
     final hasSyncedTimestamps = _lyrics!.lines.any(
       (line) => line.timestamp != Duration.zero,
     );
@@ -1276,67 +1364,90 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
     final itemCount = _lyrics!.lines.length + (showWaitingDots ? 1 : 0);
 
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.white,
-            Colors.white,
-            Colors.transparent,
-          ],
-          stops: const [0.0, 0.1, 0.9, 1.0],
-        ).createShader(bounds);
-      },
-      blendMode: BlendMode.dstIn,
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.symmetric(
-          horizontal: 28,
-          vertical: screenHeight / 3,
-        ),
-        itemCount: itemCount,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          if (showWaitingDots && index == 0) {
-            return _buildWaitingDotsRow();
-          }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final avgLineHeight = 45.0;
+        final verticalPadding = (constraints.maxHeight - avgLineHeight) / 2;
 
-          final lyricIndex = showWaitingDots ? index - 1 : index;
-          final line = _lyrics!.lines[lyricIndex];
-          final isActive = lyricIndex == _currentLineIndex;
-          final isPast = lyricIndex < _currentLineIndex;
-
-          return GestureDetector(
-            onTap: hasSyncedTimestamps ? () => _seekToLine(lyricIndex) : null,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: isActive ? 14 : 8,
-                horizontal: 4,
-              ),
-              child: AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOut,
-                style: TextStyle(
-                  fontSize: isActive ? 28 : 22,
-                  fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
-                  color: isActive
-                      ? Colors.white
-                      : isPast
-                      ? Colors.white.withOpacity(0.25)
-                      : Colors.white.withOpacity(0.4),
-                  height: 1.3,
-                  letterSpacing: -0.5,
-                ),
-                textAlign: TextAlign.left,
-                child: Text(line.text),
-              ),
+        return ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.white,
+                Colors.white,
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.12, 0.88, 1.0],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: verticalPadding,
             ),
-          );
-        },
-      ),
+            itemCount: itemCount,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              if (showWaitingDots && index == 0) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: Center(child: _buildWaitingDotsRow()),
+                );
+              }
+
+              final lyricIndex = showWaitingDots ? index - 1 : index;
+              final line = _lyrics!.lines[lyricIndex];
+              final isActive = lyricIndex == _currentLineIndex;
+              final isPast = lyricIndex < _currentLineIndex;
+
+              // Get or create GlobalKey for this lyric line
+              _itemKeys[lyricIndex] ??= GlobalKey();
+
+              return GestureDetector(
+                key: _itemKeys[lyricIndex],
+                onTap: hasSyncedTimestamps
+                    ? () => _seekToLine(lyricIndex)
+                    : null,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.symmetric(
+                    vertical: isActive ? 14 : 8,
+                    horizontal: 4,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                      style: TextStyle(
+                        fontSize: isActive ? 28 : 22,
+                        fontWeight: isActive
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: isActive
+                            ? Colors.white
+                            : isPast
+                            ? Colors.white.withOpacity(0.25)
+                            : Colors.white.withOpacity(0.4),
+                        height: 1.3,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                      child: Text(line.text, textAlign: TextAlign.center),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

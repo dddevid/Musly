@@ -62,6 +62,7 @@ dependencies:
   battery_plus: ^4.0.2
   flutter_displaymode: ^0.6.0
   window_manager: ^0.3.9
+  file_picker: ^8.1.4
 
 dev_dependencies:
   flutter_test:

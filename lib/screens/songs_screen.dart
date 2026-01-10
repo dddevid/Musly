@@ -37,7 +37,6 @@ class _SongsScreenState extends State<SongsScreen> {
     final libraryProvider = Provider.of<LibraryProvider>(context);
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(
         title: const Text('Songs'),
         actions: [

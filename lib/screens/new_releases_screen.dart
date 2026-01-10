@@ -55,7 +55,6 @@ class _NewReleasesScreenState extends State<NewReleasesScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

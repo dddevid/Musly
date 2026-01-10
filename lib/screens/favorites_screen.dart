@@ -50,7 +50,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       appBar: AppBar(
         title: const Text('Favorites'),
         bottom: PreferredSize(

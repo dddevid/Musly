@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 
@@ -19,7 +21,7 @@ class PingResult {
 }
 
 class SubsonicService {
-  final Dio _dio;
+  Dio _dio;
   ServerConfig? _config;
 
   static const String _clientName = 'Musly';
@@ -32,6 +34,45 @@ class SubsonicService {
 
   void configure(ServerConfig config) {
     _config = config;
+    _configureCertificateValidation(
+      config.allowSelfSignedCertificates,
+      config.customCertificatePath,
+    );
+  }
+
+  void _configureCertificateValidation(
+    bool allowSelfSigned, [
+    String? customCertPath,
+  ]) {
+    _dio = Dio();
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+
+    if (customCertPath != null && customCertPath.isNotEmpty) {
+      // Use custom certificate
+      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        try {
+          final file = File(customCertPath);
+          if (file.existsSync()) {
+            final bytes = file.readAsBytesSync();
+            final context = SecurityContext();
+            context.setTrustedCertificatesBytes(bytes);
+            return HttpClient(context: context);
+          }
+        } catch (e) {
+          print('Failed to load custom certificate: $e');
+        }
+        // Fallback to default client
+        return HttpClient();
+      };
+    } else if (allowSelfSigned) {
+      // Bypass certificate validation
+      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) => true;
+        return client;
+      };
+    }
   }
 
   ServerConfig? get config => _config;
@@ -478,6 +519,132 @@ class SubsonicService {
           .toList();
     }
     return [];
+  }
+
+  /// Get all internet radio stations from the server.
+  Future<List<RadioStation>> getInternetRadioStations() async {
+    try {
+      final response = await _request('getInternetRadioStations');
+      final stationsData =
+          response['internetRadioStations']?['internetRadioStation'];
+      if (stationsData is List) {
+        return stationsData
+            .map((s) => RadioStation.fromJson(s as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      // Server might not support radio stations
+      return [];
+    }
+  }
+
+  /// Create a new internet radio station.
+  Future<void> createInternetRadioStation({
+    required String name,
+    required String streamUrl,
+    String? homePageUrl,
+  }) async {
+    final params = <String, String>{'name': name, 'streamUrl': streamUrl};
+    if (homePageUrl != null && homePageUrl.isNotEmpty) {
+      params['homepageUrl'] = homePageUrl;
+    }
+    await _request('createInternetRadioStation', params);
+  }
+
+  /// Update an existing internet radio station.
+  Future<void> updateInternetRadioStation({
+    required String id,
+    required String name,
+    required String streamUrl,
+    String? homePageUrl,
+  }) async {
+    final params = <String, String>{
+      'id': id,
+      'name': name,
+      'streamUrl': streamUrl,
+    };
+    if (homePageUrl != null && homePageUrl.isNotEmpty) {
+      params['homepageUrl'] = homePageUrl;
+    }
+    await _request('updateInternetRadioStation', params);
+  }
+
+  /// Delete an internet radio station.
+  Future<void> deleteInternetRadioStation(String id) async {
+    await _request('deleteInternetRadioStation', {'id': id});
+  }
+
+  /// Get songs similar to a given song.
+  Future<List<Song>> getSimilarSongs(String id, {int count = 50}) async {
+    try {
+      final response = await _request('getSimilarSongs2', {
+        'id': id,
+        'count': count.toString(),
+      });
+      final songsData = response['similarSongs2']?['song'];
+      if (songsData is List) {
+        return songsData
+            .map((s) => Song.fromJson(s as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      // Fallback to getSimilarSongs (older API)
+      try {
+        final response = await _request('getSimilarSongs', {
+          'id': id,
+          'count': count.toString(),
+        });
+        final songsData = response['similarSongs']?['song'];
+        if (songsData is List) {
+          return songsData
+              .map((s) => Song.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (_) {}
+      return [];
+    }
+  }
+
+  /// Get top songs for an artist.
+  Future<List<Song>> getArtistTopSongs(
+    String artistId, {
+    int count = 50,
+  }) async {
+    try {
+      // First get artist name
+      final artist = await getArtist(artistId);
+      if (artist == null) return [];
+
+      final response = await _request('getTopSongs', {
+        'artist': artist.name,
+        'count': count.toString(),
+      });
+      final songsData = response['topSongs']?['song'];
+      if (songsData is List) {
+        return songsData
+            .map((s) => Song.fromJson(s as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      // Fallback: get songs from artist's albums
+      try {
+        final albums = await getArtistAlbums(artistId);
+        if (albums.isEmpty) return [];
+
+        final songs = <Song>[];
+        for (final album in albums.take(3)) {
+          final albumSongs = await getAlbumSongs(album.id);
+          songs.addAll(albumSongs);
+          if (songs.length >= count) break;
+        }
+        return songs.take(count).toList();
+      } catch (_) {
+        return [];
+      }
+    }
   }
 }
 

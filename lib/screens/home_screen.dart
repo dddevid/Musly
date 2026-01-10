@@ -7,6 +7,7 @@ import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/recommendation_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
@@ -42,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      bottomNavigationBar: const MiniPlayer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -68,12 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: isDark ? Colors.white : Colors.black,
                 ),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const HistoryScreen(),
-                    ),
-                  );
+                  NavigationHelper.push(context, const HistoryScreen());
                 },
               ),
             ],
