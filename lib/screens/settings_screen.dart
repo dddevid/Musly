@@ -334,7 +334,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: CupertinoIcons.info,
                 iconColor: AppTheme.appleMusicRed,
                 title: 'Version',
-                subtitle: '1.0.2',
+                subtitle: '1.0.3',
               ),
               _buildDivider(),
               _buildInfoTile(

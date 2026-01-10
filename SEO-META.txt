@@ -15,7 +15,7 @@ site_language: English
 site_country: Global
 site_release_date: 2024-01-01
 site_last_updated: 2026-01-05
-site_version: 1.0.2
+site_version: 1.0.3
 
 # Primary Keywords (most important)
 primary_keywords:

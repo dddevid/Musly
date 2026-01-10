@@ -4,7 +4,7 @@
 
 🌐 **Website:** [musly.devid.ink](https://musly.devid.ink)
 
-[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.2-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.2)
+[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.3-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.3)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.ink)
 [![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.ink)
 
@@ -43,7 +43,7 @@ Musly is a cross-platform application that supports:
 ## Download Musly - Best Navidrome Client
 
 You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v1.0.2 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.2)**
+👉 **[Download Musly v1.0.3 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.3)**
 
 > [!NOTE]  
 > Prebuilt binaries are available: an APK for **Android** (best Navidrome Android client), and a prebuilt exe build for **Windows** (best Navidrome Windows client). For **iOS** (Navidrome iOS client) and other desktop platforms, you still need to build the app from source.
