@@ -14,6 +14,7 @@ import '../services/player_ui_settings_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/synced_lyrics_view.dart';
+import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 
@@ -98,6 +99,130 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
+  Widget _buildLandscapeLayout(
+    BuildContext context,
+    Song song,
+    double screenWidth,
+    double screenHeight,
+    Duration animDuration,
+    Curve animCurve,
+  ) {
+    final artworkSize = (screenHeight * 0.75).clamp(200.0, screenWidth * 0.40);
+
+    return Row(
+      children: [
+        // Left side: Album artwork
+        Expanded(
+          flex: 4,
+          child: Center(
+            child: AnimatedContainer(
+              duration: animDuration,
+              curve: animCurve,
+              transform: Matrix4.identity()
+                ..translate(0.0, -_morphProgress * 10)
+                ..scale(1.0 + _morphProgress * 0.03),
+              transformAlignment: Alignment.center,
+              child: _AlbumArtworkSection(
+                imageUrl: _cachedImageUrl ?? '',
+                size: artworkSize,
+              ),
+            ),
+          ),
+        ),
+
+        // Right side: Song info and controls OR lyrics
+        Expanded(
+          flex: 5,
+          child: _showLyrics
+              ? // Show lyrics when active
+                Column(
+                  children: [
+                    // Header with lyrics toggle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: _PlayerHeader(
+                        albumName: song.album ?? 'Unknown Album',
+                        albumId: song.albumId,
+                        showLyricsButton: true,
+                        isLyricsActive: _showLyrics,
+                        onLyricsPressed: () {
+                          setState(() {
+                            _showLyrics = !_showLyrics;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: CompactLyricsView(
+                        song: song,
+                        onClose: () {
+                          setState(() {
+                            _showLyrics = false;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                )
+              : // Show controls when lyrics not active
+                SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with close button
+                      AnimatedOpacity(
+                        duration: animDuration,
+                        opacity: (1.0 - _morphProgress * 1.5).clamp(0.0, 1.0),
+                        child: _PlayerHeader(
+                          albumName: song.album ?? 'Unknown Album',
+                          albumId: song.albumId,
+                          showLyricsButton: true,
+                          isLyricsActive: _showLyrics,
+                          onLyricsPressed: () {
+                            setState(() {
+                              _showLyrics = !_showLyrics;
+                            });
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Controls
+                      AnimatedOpacity(
+                        duration: animDuration,
+                        opacity: (1.0 - _morphProgress * 1.2).clamp(0.0, 1.0),
+                        child: AnimatedContainer(
+                          duration: animDuration,
+                          curve: animCurve,
+                          transform: Matrix4.translationValues(
+                            0,
+                            _morphProgress * 15,
+                            0,
+                          ),
+                          child: _PlayerControls(
+                            formatDuration: _formatDuration,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Selector<PlayerProvider, (Song?, RadioStation?, bool)>(
@@ -175,6 +300,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 final screenHeight = constraints.maxHeight;
                                 final screenWidth = constraints.maxWidth;
 
+                                // Check if landscape mode
+                                final isLandscape = screenWidth > screenHeight;
+
+                                if (isLandscape) {
+                                  // Landscape layout: artwork on left, controls on right
+                                  return _buildLandscapeLayout(
+                                    context,
+                                    song,
+                                    screenWidth,
+                                    screenHeight,
+                                    animDuration,
+                                    animCurve,
+                                  );
+                                }
+
+                                // Portrait layout (original)
                                 final artworkSize = (screenWidth * 0.80).clamp(
                                   200.0,
                                   screenHeight * 0.38,
@@ -277,20 +418,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             ),
                           ),
 
-                          if (_showLyrics)
-                            AnimatedOpacity(
-                              opacity: _showLyrics ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: SyncedLyricsView(
-                                song: song,
-                                imageUrl: _cachedImageUrl,
-                                onClose: () {
-                                  setState(() {
-                                    _showLyrics = false;
-                                  });
-                                },
-                              ),
-                            ),
+                          // Fullscreen lyrics overlay - only in portrait mode
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isPortrait =
+                                  constraints.maxHeight > constraints.maxWidth;
+                              if (_showLyrics && isPortrait) {
+                                return AnimatedOpacity(
+                                  opacity: 1.0,
+                                  duration: const Duration(milliseconds: 300),
+                                  child: SyncedLyricsView(
+                                    song: song,
+                                    imageUrl: _cachedImageUrl,
+                                    onClose: () {
+                                      setState(() {
+                                        _showLyrics = false;
+                                      });
+                                    },
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -902,8 +1052,45 @@ class _SongInfoState extends State<_SongInfo> {
 
     if (artistName == null) return;
 
-    // Check if there are multiple artists (separated by /)
-    final artists = artistName.split('/').map((a) => a.trim()).toList();
+    // Check if there are multiple artists (separated by common delimiters)
+    // Support: /, &, feat., ft., featuring
+    List<String> artists = [];
+
+    // First split by / which is most common
+    final slashParts = artistName.split('/');
+    for (final part in slashParts) {
+      // Then split by &
+      final ampParts = part.split('&');
+      for (final ampPart in ampParts) {
+        // Then split by feat., ft., featuring
+        String remaining = ampPart;
+        final featPatterns = [
+          ' feat. ',
+          ' feat ',
+          ' ft. ',
+          ' ft ',
+          ' featuring ',
+        ];
+        for (final pattern in featPatterns) {
+          if (remaining.toLowerCase().contains(pattern.toLowerCase())) {
+            final parts = remaining.split(
+              RegExp(pattern, caseSensitive: false),
+            );
+            artists.addAll(
+              parts.map((a) => a.trim()).where((a) => a.isNotEmpty),
+            );
+            remaining = '';
+            break;
+          }
+        }
+        if (remaining.isNotEmpty) {
+          artists.add(remaining.trim());
+        }
+      }
+    }
+
+    // Remove duplicates and empty strings
+    artists = artists.where((a) => a.isNotEmpty).toSet().toList();
 
     if (artists.length > 1) {
       // Show dialog to choose which artist
@@ -912,6 +1099,62 @@ class _SongInfoState extends State<_SongInfo> {
       // Single artist with known ID
       Navigator.pop(context);
       NavigationHelper.push(context, ArtistScreen(artistId: artistId));
+    } else if (artists.isNotEmpty) {
+      // Single artist without ID - search for it
+      _searchAndNavigateToArtist(context, artists.first);
+    }
+  }
+
+  Future<void> _searchAndNavigateToArtist(
+    BuildContext context,
+    String artistName,
+  ) async {
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
+
+    try {
+      final result = await subsonicService.search(
+        artistName,
+        artistCount: 5,
+        albumCount: 0,
+        songCount: 0,
+      );
+
+      if (result.artists.isNotEmpty) {
+        // Find exact match or closest match
+        final matchedArtist = result.artists.firstWhere(
+          (a) => a.name.toLowerCase() == artistName.toLowerCase(),
+          orElse: () => result.artists.first,
+        );
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          NavigationHelper.push(
+            context,
+            ArtistScreen(artistId: matchedArtist.id),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Artist "$artistName" not found'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error searching for artist: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -1024,7 +1267,15 @@ class _SongInfoState extends State<_SongInfo> {
 
     // Check if artist is clickable (has ID or has multiple artists that can be searched)
     final artistName = widget.song!.artist;
-    final hasMultipleArtists = artistName != null && artistName.contains('/');
+    final hasMultipleArtists =
+        artistName != null &&
+        (artistName.contains('/') ||
+            artistName.contains('&') ||
+            artistName.toLowerCase().contains(' feat.') ||
+            artistName.toLowerCase().contains(' feat ') ||
+            artistName.toLowerCase().contains(' ft.') ||
+            artistName.toLowerCase().contains(' ft ') ||
+            artistName.toLowerCase().contains(' featuring '));
     final isArtistClickable =
         widget.song!.artistId != null || hasMultipleArtists;
 

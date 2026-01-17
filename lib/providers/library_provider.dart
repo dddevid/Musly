@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
@@ -64,13 +65,28 @@ class LibraryProvider extends ChangeNotifier {
     try {
       await _loadCachedData();
 
-      await Future.wait([
-        loadRecentAlbums(),
-        loadRandomSongs(),
-        loadPlaylists(),
-      ]);
-      _isInitialized = true;
+      // Try to load from server - will fail gracefully if not configured
+      try {
+        await Future.wait([
+          loadRecentAlbums(),
+          loadRandomSongs(),
+          loadPlaylists(),
+          loadArtists(),
+        ]).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            debugPrint(
+              'Server initialization timed out - continuing in local mode',
+            );
+            throw TimeoutException('Server not responding');
+          },
+        );
+      } catch (serverError) {
+        // Server not configured or error - that's ok for local mode
+        debugPrint('Server initialization skipped: $serverError');
+      }
 
+      _isInitialized = true;
       _preloadCoverArt();
       _scheduleBackgroundRefresh();
     } catch (e) {

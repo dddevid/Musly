@@ -408,8 +408,16 @@ class PlayerProvider extends ChangeNotifier {
     Duration? lastSystemUpdate;
     _audioPlayer.positionStream.listen(
       (position) {
+        // Detect if song changed (position went backwards significantly)
+        final positionJumpedBack =
+            _position.inMilliseconds > 0 &&
+            position.inMilliseconds < _position.inMilliseconds - 1000;
+
         _position = position;
-        if (lastNotified == null ||
+
+        // Always notify immediately if song changed, otherwise throttle to 250ms
+        if (positionJumpedBack ||
+            lastNotified == null ||
             position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
           lastNotified = position;
           notifyListeners();
@@ -513,6 +521,10 @@ class PlayerProvider extends ChangeNotifier {
       }
 
       _currentSong = song;
+
+      // Reset position to avoid showing stale position from previous song
+      _position = Duration.zero;
+      notifyListeners();
 
       final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
 

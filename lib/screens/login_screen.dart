@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../providers/auth_provider.dart';
+import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -95,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+    // Support dialog is now shown by AuthWrapper after successful login
   }
 
   @override
@@ -443,6 +445,94 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Divider with "OR"
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppTheme.lightSecondaryText,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Use Local Files button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              final localService =
+                                  Provider.of<LocalMusicService>(
+                                    context,
+                                    listen: false,
+                                  );
+
+                              // Request permission and scan
+                              final granted = await localService
+                                  .requestPermission();
+                              if (granted) {
+                                await localService.scanForMusic();
+
+                                if (localService.songs.isNotEmpty && mounted) {
+                                  // Navigate to main screen in local-only mode
+                                  final authProvider =
+                                      Provider.of<AuthProvider>(
+                                        context,
+                                        listen: false,
+                                      );
+                                  await authProvider.setLocalOnlyMode(true);
+                                } else if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'No music files found on your device',
+                                      ),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                }
+                              } else if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Storage permission required to scan local files',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      icon: const Icon(CupertinoIcons.folder),
+                      label: const Text(
+                        'Use Local Files',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.appleMusicRed,
+                        side: const BorderSide(color: AppTheme.appleMusicRed),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
                 ],

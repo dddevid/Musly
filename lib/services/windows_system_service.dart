@@ -6,7 +6,8 @@ import 'package:windows_taskbar/windows_taskbar.dart';
 import '../models/song.dart';
 
 class WindowsSystemService {
-  static final WindowsSystemService _instance = WindowsSystemService._internal();
+  static final WindowsSystemService _instance =
+      WindowsSystemService._internal();
   factory WindowsSystemService() => _instance;
   WindowsSystemService._internal();
 
@@ -36,13 +37,16 @@ class WindowsSystemService {
             rewindEnabled: false,
           ),
         );
-        
+
         // smtc_windows 1.1.0 initialization
         _isInitialized = true;
         debugPrint('WindowsSystemService initialized (SMTC & Taskbar)');
-        debugPrint('WindowsSystemService initialized (SMTC & Taskbar)');
       } catch (e) {
         debugPrint('Error initializing WindowsSystemService: $e');
+        debugPrint(
+          'SMTC will be disabled. This is normal if flutter_rust_bridge is not initialized.',
+        );
+        // Don't rethrow - allow app to continue without SMTC
       }
     }
   }
@@ -57,15 +61,19 @@ class WindowsSystemService {
     if (!kIsWeb && Platform.isWindows && _isInitialized) {
       try {
         // SMTC Updates (Verified to compile)
-        _smtc?.setPlaybackStatus(isPlaying ? PlaybackStatus.playing : PlaybackStatus.paused);
+        _smtc?.setPlaybackStatus(
+          isPlaying ? PlaybackStatus.playing : PlaybackStatus.paused,
+        );
 
         if (song != null) {
-          _smtc?.updateMetadata(MusicMetadata(
-            title: song.title,
-            artist: song.artist ?? 'Unknown Artist',
-            album: song.album ?? 'Unknown Album',
-            thumbnail: artworkUrl,
-          ));
+          _smtc?.updateMetadata(
+            MusicMetadata(
+              title: song.title,
+              artist: song.artist ?? 'Unknown Artist',
+              album: song.album ?? 'Unknown Album',
+              thumbnail: artworkUrl,
+            ),
+          );
         }
 
         _smtc?.setPosition(position);
@@ -82,7 +90,6 @@ class WindowsSystemService {
         } else {
           WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
         }
-
       } catch (e) {
         debugPrint('Error updating Windows playback state: $e');
       }

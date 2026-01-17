@@ -14,7 +14,9 @@ import 'search_screen.dart';
 import 'now_playing_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final bool isOfflineMode;
+
+  const MainScreen({super.key, this.isOfflineMode = false});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -165,6 +167,39 @@ class _MainScreenState extends State<MainScreen> {
                 false, // Prevent miniplayer from moving with keyboard
             body: Column(
               children: [
+                // Offline mode banner
+                if (widget.isOfflineMode)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.orange,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
+                    child: const SafeArea(
+                      bottom: false,
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.wifi_slash,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Offline Mode - Playing downloaded music only',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 Expanded(
                   child: Navigator(
                     key: NavigationHelper.mobileNavigatorKey,
@@ -230,7 +265,13 @@ class _MainScreenState extends State<MainScreen> {
         top: false,
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            // Pop nested navigator to root when switching tabs
+            final navigatorState =
+                NavigationHelper.mobileNavigatorKey.currentState;
+            navigatorState?.popUntil((route) => route.isFirst);
+            setState(() => _currentIndex = index);
+          },
           items: const [
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.music_house),

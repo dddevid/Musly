@@ -12,6 +12,8 @@
 .swiftpm/
 migrate_working_dir/
 CHANGELOG.md
+installer.nsi
+musly-1.0.4-setup.exe
 
 # IntelliJ related
 *.iml

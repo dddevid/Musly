@@ -207,7 +207,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    if (_selectedFilter == 'All' || _selectedFilter == 'Artists') {}
+    if (_selectedFilter == 'Artists') {
+      items.addAll(
+        provider.artists.map(
+          (a) => _LibraryItem(
+            type: 'Artist',
+            id: a.id,
+            name: a.name,
+            subtitle: '${a.albumCount ?? 0} albums',
+            coverArt: a.coverArt,
+          ),
+        ),
+      );
+    }
 
     return items;
   }
@@ -297,6 +309,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
         break;
       case 'Album':
         NavigationHelper.push(context, AlbumScreen(albumId: item.id));
+        break;
+      case 'Artist':
+        NavigationHelper.push(context, ArtistScreen(artistId: item.id));
         break;
     }
   }

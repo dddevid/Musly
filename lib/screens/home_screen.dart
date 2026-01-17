@@ -261,6 +261,48 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 24),
                     ],
 
+                    // Show empty state if no content is available
+                    if (libraryProvider.recentAlbums.isEmpty &&
+                        libraryProvider.playlists.isEmpty &&
+                        libraryProvider.randomSongs.isEmpty &&
+                        mixes.isEmpty) ...[
+                      const SizedBox(height: 48),
+                      Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.music_note_rounded,
+                              size: 64,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No content available',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try refreshing or check your server connection',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () => libraryProvider.refresh(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refresh'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: 150),
                   ],
                 );
@@ -306,9 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openAlbum(BuildContext context, String albumId) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => AlbumScreen(albumId: albumId)),
-    );
+    NavigationHelper.push(context, AlbumScreen(albumId: albumId));
   }
 }
 

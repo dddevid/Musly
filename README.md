@@ -48,6 +48,18 @@ You can download the latest release of Musly (the best Navidrome client):
 > [!NOTE]  
 > Prebuilt binaries are available: an APK for **Android** (best Navidrome Android client), and a prebuilt exe build for **Windows** (best Navidrome Windows client). For **iOS** (Navidrome iOS client) and other desktop platforms, you still need to build the app from source.
 
+## Community
+
+Join our Discord community to get support, share feedback, and connect with other Musly users!
+
+<div align="center">
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/k9FqpbT65M)
+
+**[Join Discord Server](https://discord.gg/k9FqpbT65M)** 💬
+
+</div>
+
 ## Support Development
 
 If you enjoy using Musly and want to support its development, consider buying me a coffee! ☕

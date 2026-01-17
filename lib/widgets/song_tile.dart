@@ -40,47 +40,57 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playerProvider = Provider.of<PlayerProvider>(context);
-    final isCurrentSong = playerProvider.currentSong?.id == song.id;
     final theme = Theme.of(context);
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: _buildLeading(context, isCurrentSong),
-      title: Text(
-        song.title,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          color: isCurrentSong ? AppTheme.appleMusicRed : null,
-          fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: showArtist || showAlbum
-          ? Text(
-              _buildSubtitle(),
-              style: theme.textTheme.bodySmall,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      trailing: _buildTrailing(context),
-      onTap: onTap ?? () => _playSong(context),
-      onLongPress: onLongPress ?? () => _showOptions(context),
+    // Use Selector to only rebuild when currentSong.id changes
+    return Selector<PlayerProvider, String?>(
+      selector: (_, provider) => provider.currentSong?.id,
+      builder: (context, currentSongId, _) {
+        final isCurrentSong = currentSongId == song.id;
+
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: _buildLeading(context, isCurrentSong),
+          title: Text(
+            song.title,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: isCurrentSong ? AppTheme.appleMusicRed : null,
+              fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: showArtist || showAlbum
+              ? Text(
+                  _buildSubtitle(),
+                  style: theme.textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : null,
+          trailing: _buildTrailing(context),
+          onTap: onTap ?? () => _playSong(context),
+          onLongPress: onLongPress ?? () => _showOptions(context),
+        );
+      },
     );
   }
 
   Widget? _buildLeading(BuildContext context, bool isCurrentSong) {
-    final playerProvider = Provider.of<PlayerProvider>(context);
-    
     if (showTrackNumber && !showArtwork) {
       return SizedBox(
         width: 30,
         child: Center(
           child: isCurrentSong
-              ? AnimatedEqualizer(
-                  color: AppTheme.appleMusicRed,
-                  isPlaying: playerProvider.isPlaying,
+              ? Selector<PlayerProvider, bool>(
+                  selector: (_, p) => p.isPlaying,
+                  builder: (_, isPlaying, __) => AnimatedEqualizer(
+                    color: AppTheme.appleMusicRed,
+                    isPlaying: isPlaying,
+                  ),
                 )
               : Text(
                   '${song.track ?? index ?? 1}',
@@ -104,9 +114,12 @@ class SongTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
-                  child: AnimatedEqualizer(
-                    color: Colors.white,
-                    isPlaying: playerProvider.isPlaying,
+                  child: Selector<PlayerProvider, bool>(
+                    selector: (_, p) => p.isPlaying,
+                    builder: (_, isPlaying, __) => AnimatedEqualizer(
+                      color: Colors.white,
+                      isPlaying: isPlaying,
+                    ),
                   ),
                 ),
               ),
@@ -335,6 +348,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                         }
                       },
                     ),
+                    _buildRatingTile(context),
                     _buildDownloadTile(context),
                     const SizedBox(height: 16),
                   ],
@@ -369,7 +383,6 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         title: 'Downloaded',
         iconColor: Colors.green,
         onTap: () async {
-
           final confirm = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
@@ -466,6 +479,111 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Download error: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildRatingTile(BuildContext context) {
+    final rating = widget.song.userRating ?? 0;
+    return _OptionTile(
+      icon: Icons.star_rounded,
+      title: rating > 0
+          ? 'Rate Song ($rating ${rating == 1 ? "star" : "stars"})'
+          : 'Rate Song',
+      iconColor: rating > 0 ? Colors.amber : null,
+      onTap: () => _showRatingDialog(context),
+    );
+  }
+
+  Future<void> _showRatingDialog(BuildContext context) async {
+    final currentRating = widget.song.userRating ?? 0;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rate Song'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.song.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                final starValue = index + 1;
+                return Flexible(
+                  child: IconButton(
+                    icon: Icon(
+                      starValue <= currentRating
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: Colors.amber,
+                      size: 32,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await _setRating(context, starValue);
+                    },
+                  ),
+                );
+              }),
+            ),
+            if (currentRating > 0) ...[
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _setRating(context, 0);
+                },
+                child: const Text('Remove Rating'),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setRating(BuildContext context, int rating) async {
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
+
+    try {
+      await subsonicService.setRating(widget.song.id, rating);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              rating > 0
+                  ? 'Rated ${rating} ${rating == 1 ? "star" : "stars"}'
+                  : 'Rating removed',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to set rating: $e'),
             duration: const Duration(seconds: 2),
           ),
         );

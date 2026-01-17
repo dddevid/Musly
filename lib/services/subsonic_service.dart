@@ -436,6 +436,14 @@ class SubsonicService {
     await _request('unstar', params);
   }
 
+  /// Set rating for a song (1-5 stars, 0 to remove rating)
+  Future<void> setRating(String id, int rating) async {
+    if (rating < 0 || rating > 5) {
+      throw ArgumentError('Rating must be between 0 and 5');
+    }
+    await _request('setRating', {'id': id, 'rating': rating.toString()});
+  }
+
   Future<SearchResult> getStarred() async {
     final response = await _request('getStarred2');
     final starred = response['starred2'];

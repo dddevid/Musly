@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../models/server_config.dart';
 import '../services/services.dart';
+import '../services/offline_service.dart';
 
 enum AuthState {
   unknown,
   unauthenticated,
   authenticating,
   authenticated,
+  offlineMode, // Server unreachable but has downloaded content
   error,
 }
 
@@ -59,7 +61,18 @@ class AuthProvider extends ChangeNotifier {
       }
       _state = AuthState.authenticated;
     } else {
-      _state = AuthState.unauthenticated;
+      // Check if we have offline content
+      final offlineService = OfflineService();
+      await offlineService.initialize();
+      final downloadedCount = offlineService.getDownloadedCount();
+
+      if (downloadedCount > 0) {
+        // Allow offline mode if we have downloaded content
+        _state = AuthState.offlineMode;
+        _error = 'Server unreachable. Playing offline content only.';
+      } else {
+        _state = AuthState.unauthenticated;
+      }
     }
     notifyListeners();
   }
@@ -133,6 +146,27 @@ class AuthProvider extends ChangeNotifier {
       return errorStr.replaceAll('Exception:', '').trim();
     }
   }
+
+  /// Set local-only mode (no server, just local files)
+  Future<void> setLocalOnlyMode(bool enabled) async {
+    if (enabled) {
+      _config = ServerConfig(
+        serverUrl: 'local',
+        username: 'local',
+        password: '',
+        serverType: 'local',
+      );
+      await _storageService.saveServerConfig(_config!);
+      _state = AuthState.authenticated;
+    } else {
+      _config = null;
+      _state = AuthState.unauthenticated;
+      await _storageService.clearAll();
+    }
+    notifyListeners();
+  }
+
+  bool get isLocalOnlyMode => _config?.serverType == 'local';
 
   Future<void> logout() async {
     final offlineService = OfflineService();

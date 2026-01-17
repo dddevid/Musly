@@ -8,6 +8,7 @@ import 'package:palette_generator/palette_generator.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
+import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
@@ -170,11 +171,32 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
 
-    final isCurrentPlaylist = playerProvider.queue.any(
-      (song) => _songs.any((s) => s.id == song.id),
-    );
+    // Check if we're playing from THIS specific playlist by comparing the queue
+    // The queue should match this playlist's songs in order (or shuffled order)
+    final queueIds = playerProvider.queue.map((s) => s.id).toList();
+    final playlistIds = _songs.map((s) => s.id).toSet();
 
-    if (isCurrentPlaylist && playerProvider.currentSong != null) {
+    // We're playing from this playlist if ALL queue songs are from this playlist
+    // and the current song is in this playlist
+    final isPlayingFromThisPlaylist =
+        playerProvider.currentSong != null &&
+        playlistIds.contains(playerProvider.currentSong!.id) &&
+        queueIds.every((id) => playlistIds.contains(id));
+
+    // If shuffle is requested, always start a new shuffled playlist
+    if (shuffle) {
+      List<Song> playlist = List.from(_songs);
+      playlist.shuffle();
+      playerProvider.playSong(
+        playlist.first,
+        playlist: playlist,
+        startIndex: 0,
+      );
+      return;
+    }
+
+    // If playing from this playlist, toggle play/pause
+    if (isPlayingFromThisPlaylist) {
       if (playerProvider.isPlaying) {
         playerProvider.pause();
       } else {
@@ -183,12 +205,66 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       return;
     }
 
+    // Otherwise, start playing this playlist from the beginning
     List<Song> playlist = List.from(_songs);
-    if (shuffle) {
-      playlist.shuffle();
+    playerProvider.playSong(playlist.first, playlist: playlist, startIndex: 0);
+  }
+
+  Future<void> _downloadPlaylist(BuildContext context) async {
+    if (_songs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No songs to download'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
     }
 
-    playerProvider.playSong(playlist.first, playlist: playlist, startIndex: 0);
+    final offlineService = Provider.of<OfflineService>(context, listen: false);
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Downloading ${_songs.length} songs...'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      await offlineService.downloadSongs(
+        _songs,
+        subsonicService,
+        onProgress: (current, total) {
+          // Progress updates are handled by the service
+        },
+        onComplete: () {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Downloaded ${_songs.length} songs'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Download failed: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -324,12 +400,25 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                           ),
                           const SizedBox(height: 8),
 
-                          Text(
-                            '${_songs.length} songs • ${_playlist!.formattedDuration}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 14,
-                            ),
+                          Builder(
+                            builder: (context) {
+                              final totalSeconds = _songs.fold<int>(
+                                0,
+                                (sum, song) => sum + (song.duration ?? 0),
+                              );
+                              final hours = totalSeconds ~/ 3600;
+                              final minutes = (totalSeconds % 3600) ~/ 60;
+                              final durationStr = hours > 0
+                                  ? '$hours hr $minutes min'
+                                  : '$minutes min';
+                              return Text(
+                                '${_songs.length} songs • $durationStr',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontSize: 14,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -351,7 +440,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             ),
 
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () => _downloadPlaylist(context),
                               icon: const Icon(
                                 CupertinoIcons.arrow_down_circle,
                               ),
@@ -372,13 +461,25 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
                             Consumer<PlayerProvider>(
                               builder: (context, playerProvider, _) {
-                                final isCurrentPlaylist = playerProvider.queue
-                                    .any(
-                                      (song) =>
-                                          _songs.any((s) => s.id == song.id),
+                                // Check if we're playing from THIS specific playlist
+                                final queueIds = playerProvider.queue
+                                    .map((s) => s.id)
+                                    .toList();
+                                final playlistIds = _songs
+                                    .map((s) => s.id)
+                                    .toSet();
+
+                                final isPlayingFromThisPlaylist =
+                                    playerProvider.currentSong != null &&
+                                    playlistIds.contains(
+                                      playerProvider.currentSong!.id,
+                                    ) &&
+                                    queueIds.every(
+                                      (id) => playlistIds.contains(id),
                                     );
+
                                 final isPlaying =
-                                    isCurrentPlaylist &&
+                                    isPlayingFromThisPlaylist &&
                                     playerProvider.isPlaying;
 
                                 return GestureDetector(

@@ -232,8 +232,20 @@ class _PlayerControls extends StatelessWidget {
     final color = isDark ? Colors.white : Colors.black;
     final disabledColor = isDark ? Colors.grey[800] : Colors.grey[300];
 
-    return Consumer<PlayerProvider>(
-      builder: (context, provider, _) {
+    // Use Selector with a tuple of only the properties we need
+    return Selector<PlayerProvider, (bool, bool, bool, bool, RepeatMode)>(
+      selector: (_, p) => (
+        p.isPlaying,
+        p.shuffleEnabled,
+        p.hasPrevious,
+        p.hasNext,
+        p.repeatMode,
+      ),
+      builder: (context, data, _) {
+        final (isPlaying, shuffleEnabled, hasPrevious, hasNext, repeatMode) =
+            data;
+        final provider = context.read<PlayerProvider>();
+
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -241,7 +253,7 @@ class _PlayerControls extends StatelessWidget {
               icon: Icon(
                 Icons.shuffle_rounded,
                 size: 20,
-                color: provider.shuffleEnabled
+                color: shuffleEnabled
                     ? AppTheme.appleMusicRed
                     : (isDark ? Colors.grey[400] : Colors.grey[600]),
               ),
@@ -251,7 +263,7 @@ class _PlayerControls extends StatelessWidget {
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.skip_previous_rounded, size: 28),
-              onPressed: provider.hasPrevious ? provider.skipPrevious : null,
+              onPressed: hasPrevious ? provider.skipPrevious : null,
               color: color,
               disabledColor: disabledColor,
             ),
@@ -270,9 +282,7 @@ class _PlayerControls extends StatelessWidget {
               ),
               child: IconButton(
                 icon: Icon(
-                  provider.isPlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                   size: 32,
                   color: Colors.black,
                 ),
@@ -283,18 +293,18 @@ class _PlayerControls extends StatelessWidget {
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.skip_next_rounded, size: 28),
-              onPressed: provider.hasNext ? provider.skipNext : null,
+              onPressed: hasNext ? provider.skipNext : null,
               color: color,
               disabledColor: disabledColor,
             ),
             const SizedBox(width: 8),
             IconButton(
               icon: Icon(
-                provider.repeatMode == RepeatMode.one
+                repeatMode == RepeatMode.one
                     ? Icons.repeat_one_rounded
                     : Icons.repeat_rounded,
                 size: 20,
-                color: provider.repeatMode != RepeatMode.off
+                color: repeatMode != RepeatMode.off
                     ? AppTheme.appleMusicRed
                     : (isDark ? Colors.grey[400] : Colors.grey[600]),
               ),
@@ -326,13 +336,18 @@ class _ProgressBar extends StatelessWidget {
       color: isDark ? Colors.grey[400] : Colors.grey[600],
     );
 
-    return Consumer<PlayerProvider>(
-      builder: (context, provider, _) {
+    // Use Selector to only rebuild when position/duration changes
+    return Selector<PlayerProvider, (Duration, Duration)>(
+      selector: (_, p) => (p.position, p.duration),
+      builder: (context, data, _) {
+        final (position, duration) = data;
+        final provider = context.read<PlayerProvider>();
+
         return SizedBox(
           width: 400,
           child: Row(
             children: [
-              Text(_formatDuration(provider.position), style: timeStyle),
+              Text(_formatDuration(position), style: timeStyle),
               const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
@@ -355,12 +370,12 @@ class _ProgressBar extends StatelessWidget {
                           .withOpacity(0.12),
                     ),
                     child: Slider(
-                      value: provider.position.inMilliseconds.toDouble().clamp(
+                      value: position.inMilliseconds.toDouble().clamp(
                         0.0,
-                        provider.duration.inMilliseconds.toDouble(),
+                        duration.inMilliseconds.toDouble(),
                       ),
                       min: 0.0,
-                      max: provider.duration.inMilliseconds.toDouble(),
+                      max: duration.inMilliseconds.toDouble(),
                       onChanged: (value) {
                         provider.seek(Duration(milliseconds: value.round()));
                       },
@@ -369,7 +384,7 @@ class _ProgressBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(_formatDuration(provider.duration), style: timeStyle),
+              Text(_formatDuration(duration), style: timeStyle),
             ],
           ),
         );
@@ -383,11 +398,13 @@ class _VolumeControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerProvider>(
-      builder: (context, provider, _) {
-        final volume = provider.volume;
+    // Use Selector to only rebuild when volume changes
+    return Selector<PlayerProvider, double>(
+      selector: (_, p) => p.volume,
+      builder: (context, volume, _) {
         final isMuted = volume == 0;
         final isDark = Theme.of(context).brightness == Brightness.dark;
+        final provider = context.read<PlayerProvider>();
 
         return Row(
           mainAxisSize: MainAxisSize.min,

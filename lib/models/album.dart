@@ -9,6 +9,7 @@ class Album {
   final int? year;
   final String? genre;
   final DateTime? created;
+  final bool isLocal;
 
   Album({
     required this.id,
@@ -21,6 +22,7 @@ class Album {
     this.year,
     this.genre,
     this.created,
+    this.isLocal = false,
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {

@@ -16,6 +16,8 @@ class Song {
   final int? size;
   final String? path;
   final bool? starred;
+  final int? userRating; // 1-5 stars, null if not rated
+  final bool isLocal;
   final double? replayGainTrackGain;
   final double? replayGainAlbumGain;
   final double? replayGainTrackPeak;
@@ -39,6 +41,8 @@ class Song {
     this.size,
     this.path,
     this.starred,
+    this.userRating,
+    this.isLocal = false,
     this.replayGainTrackGain,
     this.replayGainAlbumGain,
     this.replayGainTrackPeak,
@@ -67,6 +71,7 @@ class Song {
       size: json['size'] as int?,
       path: json['path']?.toString(),
       starred: json['starred'] != null ? true : false,
+      userRating: json['userRating'] as int?,
       replayGainTrackGain: (replayGain?['trackGain'] as num?)?.toDouble(),
       replayGainAlbumGain: (replayGain?['albumGain'] as num?)?.toDouble(),
       replayGainTrackPeak: (replayGain?['trackPeak'] as num?)?.toDouble(),
@@ -126,6 +131,8 @@ class Song {
     int? size,
     String? path,
     bool? starred,
+    int? userRating,
+    bool? isLocal,
     double? replayGainTrackGain,
     double? replayGainAlbumGain,
     double? replayGainTrackPeak,
@@ -149,6 +156,8 @@ class Song {
       size: size ?? this.size,
       path: path ?? this.path,
       starred: starred ?? this.starred,
+      userRating: userRating ?? this.userRating,
+      isLocal: isLocal ?? this.isLocal,
       replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
       replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
       replayGainTrackPeak: replayGainTrackPeak ?? this.replayGainTrackPeak,

@@ -4,6 +4,7 @@ class Artist {
   final String? coverArt;
   final int? albumCount;
   final String? artistImageUrl;
+  final bool isLocal;
 
   Artist({
     required this.id,
@@ -11,6 +12,7 @@ class Artist {
     this.coverArt,
     this.albumCount,
     this.artistImageUrl,
+    this.isLocal = false,
   });
 
   factory Artist.fromJson(Map<String, dynamic> json) {
