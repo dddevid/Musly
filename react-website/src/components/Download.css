@@ -1,0 +1,186 @@
+.download {
+    background: linear-gradient(180deg, var(--color-bg-secondary) 0%, transparent 100%);
+}
+
+/* Header */
+.download-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto var(--spacing-2xl);
+}
+
+.download-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary-light);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.download-title {
+    font-size: clamp(2rem, 4vw, var(--font-size-4xl));
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+}
+
+.download-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+}
+
+/* Version */
+.download-version {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.download-version-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+}
+
+.download-version-number {
+    font-size: var(--font-size-xl);
+    font-weight: 800;
+}
+
+.download-version-label {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+.download-version-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+}
+
+/* Platforms */
+.download-platforms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    max-width: 900px;
+    margin: 0 auto var(--spacing-3xl);
+}
+
+.download-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-normal);
+}
+
+.download-card:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
+}
+
+.download-card.available {
+    border-color: rgba(250, 36, 60, 0.3);
+}
+
+.download-card.available:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 30px rgba(250, 36, 60, 0.15);
+}
+
+.download-card-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+.download-card.available .download-card-icon {
+    background: var(--gradient-primary);
+}
+
+.download-card-content {
+    flex: 1;
+}
+
+.download-card-name {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.download-card-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.download-card-action {
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.download-card.available .download-card-action {
+    color: var(--color-primary);
+}
+
+/* GitHub */
+.download-github {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.download-github-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.download-github-content h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.download-github-content p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .download-platforms {
+        grid-template-columns: 1fr;
+    }
+
+    .download-github {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .download-github-content {
+        flex-direction: column;
+    }
+}

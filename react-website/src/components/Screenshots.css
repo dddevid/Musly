@@ -1,0 +1,228 @@
+.screenshots {
+    background: var(--color-bg-secondary);
+}
+
+/* Header */
+.screenshots-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto var(--spacing-4xl);
+}
+
+.screenshots-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary-light);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.screenshots-title {
+    font-size: clamp(2rem, 4vw, var(--font-size-4xl));
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+}
+
+.screenshots-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+}
+
+/* Gallery */
+.screenshots-gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xl);
+}
+
+/* Display */
+.screenshots-display {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.screenshot-main {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.screenshot-phone {
+    background: #1a1a1a;
+    border-radius: 40px;
+    padding: 8px;
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    max-width: 300px;
+}
+
+.screenshot-image {
+    width: 100%;
+    height: auto;
+    border-radius: 32px;
+    display: block;
+}
+
+.screenshot-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(ellipse, rgba(250, 36, 60, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Navigation */
+.screenshot-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-normal);
+    z-index: 10;
+}
+
+.screenshot-nav:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.screenshot-nav-prev {
+    left: -60px;
+}
+
+.screenshot-nav-next {
+    right: -60px;
+}
+
+/* Info */
+.screenshot-info {
+    text-align: center;
+}
+
+.screenshot-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.screenshot-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+/* Thumbnails */
+.screenshots-thumbnails {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.screenshot-thumbnail {
+    width: 60px;
+    height: 120px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    transition: all var(--transition-normal);
+    padding: 0;
+    background: #1a1a1a;
+}
+
+.screenshot-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    transition: opacity var(--transition-normal);
+}
+
+.screenshot-thumbnail:hover img {
+    opacity: 0.9;
+}
+
+.screenshot-thumbnail.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(250, 36, 60, 0.3);
+}
+
+.screenshot-thumbnail.active img {
+    opacity: 1;
+}
+
+/* Dots */
+.screenshots-dots {
+    display: none;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.screenshot-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+    border: none;
+    transition: all var(--transition-normal);
+    padding: 0;
+}
+
+.screenshot-dot.active {
+    background: var(--color-primary);
+    width: 30px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .screenshot-nav-prev {
+        left: 10px;
+    }
+
+    .screenshot-nav-next {
+        right: 10px;
+    }
+
+    .screenshots-thumbnails {
+        display: none;
+    }
+
+    .screenshots-dots {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .screenshot-phone {
+        max-width: 250px;
+        border-radius: 32px;
+        padding: 6px;
+    }
+
+    .screenshot-image {
+        border-radius: 26px;
+    }
+
+    .screenshot-nav {
+        width: 40px;
+        height: 40px;
+    }
+}

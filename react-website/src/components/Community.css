@@ -1,0 +1,166 @@
+.community {
+    background: linear-gradient(180deg, transparent 0%, rgba(250, 36, 60, 0.02) 100%);
+}
+
+/* Header */
+.community-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto var(--spacing-3xl);
+}
+
+.community-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary-light);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.community-title {
+    font-size: clamp(2rem, 4vw, var(--font-size-4xl));
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+}
+
+.community-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+}
+
+/* Cards */
+.community-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.community-card {
+    padding: var(--spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    height: 100%;
+}
+
+.community-card-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+}
+
+.discord-icon {
+    background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+}
+
+.support-icon {
+    background: linear-gradient(135deg, #FFDD00 0%, #FFA500 100%);
+    color: #000;
+}
+
+.contribute-icon {
+    background: var(--gradient-primary);
+}
+
+.community-card-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+}
+
+.community-card-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    flex: 1;
+}
+
+/* Discord Button */
+.btn-discord {
+    background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    transition: all var(--transition-normal);
+    width: fit-content;
+}
+
+.btn-discord:hover {
+    box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);
+}
+
+/* Coffee Button */
+.btn-coffee {
+    background: linear-gradient(135deg, #FFDD00 0%, #FFA500 100%);
+    color: #000;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    transition: all var(--transition-normal);
+    width: fit-content;
+}
+
+.btn-coffee:hover {
+    box-shadow: 0 0 30px rgba(255, 165, 0, 0.4);
+}
+
+.community-support-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* Crypto */
+.community-crypto {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+}
+
+.community-crypto-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.community-crypto-options {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.crypto-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.crypto-sol {
+    font-size: var(--font-size-lg);
+    color: #9945FF;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .community-cards {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
