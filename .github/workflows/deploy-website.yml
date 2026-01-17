@@ -2,7 +2,7 @@ name: Deploy React Website to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - 'react-website/**'
   workflow_dispatch:
