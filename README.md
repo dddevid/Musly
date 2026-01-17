@@ -2,7 +2,7 @@
 
 **Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful Apple Music-inspired interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
 
-🌐 **Website:** [musly.devid.ink](https://musly.devid.ink)
+🌐 **Website:** ~~[musly.devid.ink](`https://musly.devid.ink`)~~
 
 [![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.3-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.3)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.ink)
@@ -43,7 +43,7 @@ Musly is a cross-platform application that supports:
 ## Download Musly - Best Navidrome Client
 
 You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v1.0.3 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.3)**
+👉 **[Download Musly v1.0.4 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.4)**
 
 > [!NOTE]  
 > Prebuilt binaries are available: an APK for **Android** (best Navidrome Android client), and a prebuilt exe build for **Windows** (best Navidrome Windows client). For **iOS** (Navidrome iOS client) and other desktop platforms, you still need to build the app from source.
@@ -80,9 +80,9 @@ Your support helps me dedicate more time to improving Musly, adding new features
 - [x] **Desktop Lyrics & Fullscreen Mode**: Apple Music–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
 - [ ] **CarPlay Support**: Add a dedicated browsing interface for CarPlay.
 - [ ] **Last.fm Integration**: Support for scrobbling and artist/album metadata.
-- [ ] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
+- [X] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
-- [ ] Improved synchronization for offline music.
+- [X] Improved synchronization for offline music.
 - [ ] Tizen OS (Samsung TV) and WebOS (LG TV) port
 - [ ] Jellyfin / Emby support
 
@@ -135,3 +135,4 @@ This project is open source and available under the **Creative Commons Attributi
 <div align="center">
   <sub>Made with <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2764.svg" width="14" height="14" alt="❤️"> in Italy <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ee-1f1f9.svg" width="14" height="14" alt="🇮🇹"> by an Albanian developer <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e6-1f1f1.svg" width="14" height="14" alt="🇦🇱"></sub>
 </div>
+
