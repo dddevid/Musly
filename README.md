@@ -136,6 +136,12 @@ This project is open source and available under the **Creative Commons Attributi
   <sub>Made with <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2764.svg" width="14" height="14" alt="❤️"> in Italy <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ee-1f1f9.svg" width="14" height="14" alt="🇮🇹"> by an Albanian developer <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e6-1f1f1.svg" width="14" height="14" alt="🇦🇱"></sub>
 </div>
 
+<br/>
 
+<div align="center">
+
+[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
+
+</div>
 
 
