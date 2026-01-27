@@ -115,6 +115,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final authProvider = Provider.of<AuthProvider>(context);
+    final storageService = Provider.of<StorageService>(context, listen: false);
     final currentState = authProvider.state;
 
     // Show support dialog when transitioning to authenticated state
@@ -122,13 +123,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
         currentState == AuthState.authenticated &&
         !_hasShownDialog) {
       _hasShownDialog = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const SupportDialog(),
-          );
+          final shouldHide = await storageService.getHideSupportDialog();
+          if (!shouldHide && mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const SupportDialog(),
+            );
+          }
         }
       });
     }

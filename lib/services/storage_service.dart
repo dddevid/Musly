@@ -9,6 +9,7 @@ class StorageService {
   static const String _queueIndexKey = 'queue_index';
   static const String _shuffleModeKey = 'shuffle_mode';
   static const String _repeatModeKey = 'repeat_mode';
+  static const String _hideSupportDialogKey = 'hide_support_dialog';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -84,6 +85,16 @@ class StorageService {
   Future<int> getRepeatMode() async {
     final prefs = await _prefs;
     return prefs.getInt(_repeatModeKey) ?? 0;
+  }
+
+  Future<void> saveHideSupportDialog(bool hide) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_hideSupportDialogKey, hide);
+  }
+
+  Future<bool> getHideSupportDialog() async {
+    final prefs = await _prefs;
+    return prefs.getBool(_hideSupportDialogKey) ?? false;
   }
 
   Future<void> clearAll() async {
