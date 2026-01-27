@@ -1,7 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/services.dart';
 
 class SupportDialog extends StatefulWidget {
   const SupportDialog({super.key});
@@ -11,32 +12,7 @@ class SupportDialog extends StatefulWidget {
 }
 
 class _SupportDialogState extends State<SupportDialog> {
-  bool _canClose = false;
-  int _remainingSeconds = 5;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _startTimer();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
-        setState(() => _remainingSeconds--);
-      } else {
-        setState(() => _canClose = true);
-        timer.cancel();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  bool _doNotShowAgain = false;
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
@@ -66,12 +42,13 @@ class _SupportDialogState extends State<SupportDialog> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500),
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Row(
-              children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Row(
+                children: [
                 Icon(Icons.favorite_rounded, color: Colors.red, size: 28),
                 const SizedBox(width: 12),
                 Expanded(
@@ -84,29 +61,10 @@ class _SupportDialogState extends State<SupportDialog> {
                     ),
                   ),
                 ),
-                if (_canClose)
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$_remainingSeconds',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ],
             ),
 
@@ -219,16 +177,36 @@ class _SupportDialogState extends State<SupportDialog> {
 
             const SizedBox(height: 16),
 
-            Text(
-              'Your support helps keep development going! 🚀',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-              ),
-              textAlign: TextAlign.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: _doNotShowAgain,
+                  onChanged: (value) {
+                    setState(() {
+                      _doNotShowAgain = value ?? false;
+                    });
+                    Provider.of<StorageService>(
+                      context,
+                      listen: false,
+                    ).saveHideSupportDialog(_doNotShowAgain);
+                  },
+                ),
+                const Text("Don't show again"),
+              ],
             ),
-          ],
+
+              Text(
+                'Your support helps keep development going! 🚀',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
