@@ -4,8 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ImageCacheConfig {
   static void configure() {
 
-    PaintingBinding.instance.imageCache.maximumSize = 500;
-    PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20;
+    // Reduced cache size to prevent OOM on low-end devices.
+    // 100 images or 50MB, whichever comes first.
+    PaintingBinding.instance.imageCache.maximumSize = 100;
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20;
   }
 }
 
