@@ -3,6 +3,36 @@ import 'package:provider/provider.dart';
 import 'package:musly/providers/providers.dart';
 import 'package:musly/services/services.dart';
 
+class FakeCastService extends CastService {
+  @override
+  bool get isConnected => false;
+
+  @override
+  Future<void> initContext() async {}
+
+  @override
+  Future<void> loadMedia({
+    required String url,
+    required String title,
+    required String artist,
+    required String imageUrl,
+    int? durationMillis,
+    bool autoPlay = true,
+  }) async {}
+
+  @override
+  Future<void> play() async {}
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> seek(Duration position) async {}
+}
+
 Widget createTestApp({
   required Widget child,
   SubsonicService? subsonicService,
@@ -22,7 +52,9 @@ Widget createTestApp({
         create: (_) => authProvider ?? AuthProvider(service, storage),
       ),
       ChangeNotifierProvider<PlayerProvider>(
-        create: (_) => playerProvider ?? PlayerProvider(service),
+        create: (_) =>
+            playerProvider ??
+            PlayerProvider(service, storage, FakeCastService()),
       ),
       ChangeNotifierProvider<LibraryProvider>(
         create: (_) => libraryProvider ?? LibraryProvider(service),

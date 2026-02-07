@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   battery_plus
+  dart_discord_rpc
   just_audio_windows
   permission_handler_windows
   screen_retriever

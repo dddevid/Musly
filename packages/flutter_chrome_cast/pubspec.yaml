@@ -1,0 +1,37 @@
+name: flutter_chrome_cast
+description: this is a flutter plugin for google cast
+version: 0.0.11
+repository: https://github.com/felnanuke2/flutter_google_cast
+license: BSD-3-Clause
+
+environment:
+  sdk: ">=2.17.1 <3.0.0"
+  flutter: ">=2.5.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  get: ^4.6.5
+  permission_handler: ^11.3.1
+  plugin_platform_interface: ^2.0.2
+  rxdart: ^0.27.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  pigeon: ^3.2.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.felnanuke.google_cast
+        pluginClass: GoogleCastPlugin
+      ios:
+        pluginClass: GoogleCastPlugin
+  

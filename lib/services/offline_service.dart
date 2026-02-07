@@ -188,7 +188,6 @@ class OfflineService {
     try {
       for (int i = 0; i < songs.length; i++) {
         if (!_isBackgroundDownloadActive) {
-
           break;
         }
 
@@ -216,7 +215,6 @@ class OfflineService {
     } catch (e) {
       debugPrint('Error during background download: $e');
     } finally {
-
       _isBackgroundDownloadActive = false;
       downloadState.value = downloadState.value.copyWith(isDownloading: false);
     }
@@ -291,6 +289,11 @@ class OfflineService {
   }
 
   String getPlayableUrl(Song song, SubsonicService subsonicService) {
+    // If it's a local file, return the file URI directly
+    if (song.isLocal == true && song.path != null) {
+      return 'file://${song.path}';
+    }
+
     final localPath = getLocalPath(song.id);
     if (localPath != null) {
       return 'file://$localPath';

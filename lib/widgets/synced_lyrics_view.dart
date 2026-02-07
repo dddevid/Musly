@@ -14,7 +14,6 @@ import '../models/lyrics.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../services/subsonic_service.dart';
-import '../services/bpm_analyzer_service.dart';
 
 class SyncedLyricsView extends StatefulWidget {
   final Song song;
@@ -39,14 +38,12 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   String? _error;
   late AnimationController _fadeController;
   late AnimationController _bgAnimationController;
-  late AnimationController _dotsController;
   StreamSubscription<Duration>? _positionSubscription;
 
-  Duration _timeUntilFirstLyric = Duration.zero;
-  bool _isPlaying = false;
+  // Track song internally to handle updates independent of parent
+  late Song _song;
 
-  final _bpmAnalyzer = BpmAnalyzerService();
-  bool _bpmInitialized = false;
+  bool _isPlaying = false;
 
   bool _isFullscreen = false;
   bool _showReturnButton = false;
@@ -74,15 +71,51 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       duration: const Duration(seconds: 30), // Slower animation = less GPU work
     )..repeat(reverse: true);
 
-    _dotsController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    )..repeat();
-
+    _song = widget.song;
     _loadLyrics();
     _setupPositionListener();
-    _initializeBPM();
     _maybeSetHighRefreshRate();
+
+    // Listen to Song changes from provider directly (since this is a pushed route)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      ).addListener(_onPlayerStateChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Try/catch in case provider is already disposed
+    try {
+      Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      ).removeListener(_onPlayerStateChanged);
+    } catch (_) {}
+
+    _positionSubscription?.cancel();
+    _fadeController.dispose();
+    _bgAnimationController.dispose();
+    _lyricController?.dispose();
+    if (_isDesktop && _isFullscreen) {
+      _setWindowFullscreen(false);
+    }
+    super.dispose();
+  }
+
+  void _onPlayerStateChanged() {
+    if (!mounted) return;
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final currentSong = playerProvider.currentSong;
+
+    if (currentSong != null && currentSong.id != _song.id) {
+      setState(() {
+        _song = currentSong;
+      });
+      _loadLyrics();
+    }
   }
 
   Future<void> _maybeSetHighRefreshRate() async {
@@ -110,71 +143,49 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     }());
   }
 
-  Future<void> _initializeBPM() async {
-    if (_bpmInitialized) return;
-
-    try {
-      final subsonicService = Provider.of<SubsonicService>(
-        context,
-        listen: false,
-      );
-      final audioUrl = subsonicService.getStreamUrl(widget.song.id);
-
-      final bpm = await _bpmAnalyzer.getBPM(widget.song, audioUrl);
-
-      if (mounted) {
-        final beatDuration = (60000 / bpm).round();
-        _dotsController.duration = Duration(milliseconds: beatDuration);
-        _bpmInitialized = true;
-      }
-    } catch (e) {
-      debugPrint('Error initializing BPM: $e');
-    }
-  }
-
   @override
   void didUpdateWidget(SyncedLyricsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.song.id != widget.song.id) {
-      _bpmInitialized = false;
-      _loadLyrics();
-      _initializeBPM();
+      // If parent triggers update, sync internal state
+      if (widget.song.id != _song.id) {
+        setState(() {
+          _song = widget.song;
+        });
+        _loadLyrics();
+      }
     }
   }
 
   void _setupPositionListener() {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     _positionSubscription = playerProvider.positionStream.listen((position) {
-      // Throttle updates - only update every 100ms to reduce CPU usage
-      // BUT: always allow the update if position went backwards (song changed)
+      // Throttle updates - update more frequently (approx 30fps) to catch fast lyrics
       final diff = (position - _lastUpdatePosition).abs();
       final wentBackwards = position < _lastUpdatePosition;
 
-      if (diff.inMilliseconds >= 100 || wentBackwards) {
+      if (diff.inMilliseconds >= 32 || wentBackwards) {
         _lastUpdatePosition = position;
         _lyricController?.setProgress(position);
       }
 
-      if (_lyrics != null && _lyrics!.isNotEmpty) {
-        final firstTimestamp = _lyrics!.lines.first.timestamp;
-        _timeUntilFirstLyric = firstTimestamp - position;
-
-        final isNowPlaying = playerProvider.isPlaying;
-        if (isNowPlaying != _isPlaying) {
-          _isPlaying = isNowPlaying;
-          if (_isPlaying) {
-            _dotsController.repeat();
-          } else {
-            _dotsController.stop();
-          }
-        }
+      if (playerProvider.isPlaying != _isPlaying) {
+        _isPlaying = playerProvider.isPlaying;
       }
     });
   }
 
+  bool _canShowReturnButton = false;
+
   void _initializeLyricController() {
     _lyricController?.dispose();
     _lyricController = LyricController();
+
+    // Ignore updates during initial layout
+    _canShowReturnButton = false;
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _canShowReturnButton = true;
+    });
 
     // Set up tap callback to seek
     _lyricController!.setOnTapLineCallback((Duration position) {
@@ -183,11 +194,15 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         listen: false,
       );
       playerProvider.seek(position);
+
+      if (mounted) {
+        setState(() => _showReturnButton = true);
+      }
     });
 
     // Listen for selection events to show/hide return button
     _lyricController!.registerEvent(LyricEvent.stopSelection, (_) {
-      if (mounted) {
+      if (mounted && _canShowReturnButton) {
         setState(() => _showReturnButton = true);
       }
     });
@@ -225,9 +240,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         listen: false,
       );
 
-      final syncedData = await subsonicService.getLyricsBySongId(
-        widget.song.id,
-      );
+      final syncedData = await subsonicService.getLyricsBySongId(_song.id);
 
       if (syncedData != null) {
         final structuredLyrics = syncedData['structuredLyrics'];
@@ -261,8 +274,8 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       }
 
       final plainData = await subsonicService.getLyrics(
-        artist: widget.song.artist,
-        title: widget.song.title,
+        artist: _song.artist,
+        title: _song.title,
       );
 
       if (plainData != null) {
@@ -305,19 +318,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     setState(() {
       _showReturnButton = false;
     });
-  }
-
-  @override
-  void dispose() {
-    _positionSubscription?.cancel();
-    _fadeController.dispose();
-    _bgAnimationController.dispose();
-    _dotsController.dispose();
-    _lyricController?.dispose();
-    if (_isDesktop && _isFullscreen) {
-      _setWindowFullscreen(false);
-    }
-    super.dispose();
   }
 
   LyricStyle _buildLyricStyle({bool isFullscreen = false}) {
@@ -374,9 +374,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       context,
       listen: false,
     );
-    final imageUrl =
-        widget.imageUrl ??
-        subsonicService.getCoverArtUrl(widget.song.coverArt, size: 600);
+    final imageUrl = (_song.id == widget.song.id && widget.imageUrl != null)
+        ? widget.imageUrl!
+        : subsonicService.getCoverArtUrl(_song.coverArt, size: 600);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -514,7 +514,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  widget.song.title,
+                  _song.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -524,9 +524,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                if (widget.song.artist != null)
+                if (_song.artist != null)
                   Text(
-                    widget.song.artist!,
+                    _song.artist!,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.7),
                       fontSize: 18,
@@ -615,35 +615,15 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       );
     }
 
-    final hasSyncedTimestamps = _lyrics!.lines.any(
-      (line) => line.timestamp != Duration.zero,
-    );
-
-    final showWaitingDots =
-        hasSyncedTimestamps &&
-        _lyrics!.lines.first.timestamp > Duration.zero &&
-        _timeUntilFirstLyric.inMilliseconds > 0;
-
     return Stack(
       children: [
         FadeTransition(
           opacity: _fadeController,
-          child: Column(
-            children: [
-              if (showWaitingDots)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: _buildWaitingDotsRow(),
-                ),
-              Expanded(
-                child: LyricView(
-                  controller: _lyricController!,
-                  style: _buildLyricStyle(isFullscreen: isFullscreen),
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-              ),
-            ],
+          child: LyricView(
+            controller: _lyricController!,
+            style: _buildLyricStyle(isFullscreen: isFullscreen),
+            width: double.infinity,
+            height: double.infinity,
           ),
         ),
         if (_showReturnButton)
@@ -691,67 +671,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildWaitingDotsRow() {
-    double opacity = 1.0;
-    if (_timeUntilFirstLyric.inMilliseconds <= 500 &&
-        _timeUntilFirstLyric.inMilliseconds > 0) {
-      opacity = _timeUntilFirstLyric.inMilliseconds / 500.0;
-    } else if (_timeUntilFirstLyric.inMilliseconds <= 0) {
-      opacity = 0.0;
-    }
-
-    return AnimatedOpacity(
-      opacity: opacity,
-      duration: const Duration(milliseconds: 100),
-      child: AnimatedBuilder(
-        animation: _dotsController,
-        builder: (context, child) {
-          final beatIndex = (_dotsController.value * 3).floor() % 3;
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(3, (index) {
-                final isActive = index == beatIndex && _isPlaying;
-
-                final progress = (_dotsController.value * 3) % 1.0;
-                double scale = 1.0;
-                double dotOpacity = 0.4;
-
-                if (isActive) {
-                  scale = 1.0 + (0.8 * (1.0 - (progress * 2 - 1).abs()));
-                  dotOpacity = 0.8 + (0.2 * (1.0 - (progress * 2 - 1).abs()));
-                } else if (!_isPlaying) {
-                  scale = 1.0;
-                  dotOpacity = 0.5;
-                }
-
-                return Container(
-                  margin: const EdgeInsets.only(right: 10),
-                  width: 10,
-                  height: 10,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(dotOpacity),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          );
-        },
-      ),
     );
   }
 
@@ -817,7 +736,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.song.title,
+                  _song.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -826,9 +745,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.song.artist != null)
+                if (_song.artist != null)
                   Text(
-                    widget.song.artist!,
+                    _song.artist!,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.7),
                       fontSize: 14,

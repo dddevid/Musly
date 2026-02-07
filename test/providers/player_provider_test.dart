@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
+import 'package:musly/services/storage_service.dart';
+import '../test_helpers.dart';
 
 void main() {
   group('PlayerProvider', () {
@@ -10,7 +12,12 @@ void main() {
 
     setUp(() {
       subsonicService = SubsonicService();
-      playerProvider = PlayerProvider(subsonicService);
+      subsonicService = SubsonicService();
+      playerProvider = PlayerProvider(
+        subsonicService,
+        StorageService(),
+        FakeCastService(),
+      );
     });
 
     tearDown(() {
@@ -85,7 +92,6 @@ void main() {
       for (var song in songs) {
         playerProvider.addToQueue(song);
       }
-
     });
   });
 }

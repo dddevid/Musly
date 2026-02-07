@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../services/recommendation_service.dart';
 import '../services/player_ui_settings_service.dart';
+import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 
 class SettingsDisplayTab extends StatefulWidget {
@@ -15,6 +18,11 @@ class SettingsDisplayTab extends StatefulWidget {
 class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   final _playerUiSettings = PlayerUiSettingsService();
   bool _showVolumeSlider = true;
+
+  bool get _isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -39,7 +47,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       children: [
         _buildSection(
           title: 'PLAYER INTERFACE',
-          children: [_buildVolumeSliderToggle()],
+          children: [
+            _buildVolumeSliderToggle(),
+            if (_isDesktop) ...[_buildDivider(), _buildDiscordRpcToggle()],
+          ],
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -260,6 +271,51 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDiscordRpcToggle() {
+    return Consumer<PlayerProvider>(
+      builder: (context, player, _) {
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF5865F2), // Discord Blurple
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.game_controller,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: const Text('Discord Status', style: TextStyle(fontSize: 16)),
+          subtitle: Text(
+            'Show playing song on Discord profile',
+            style: TextStyle(
+              fontSize: 13,
+              color: _isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
+            ),
+          ),
+          trailing: CupertinoSwitch(
+            value: player.discordRpcEnabled,
+            activeTrackColor: AppTheme.appleMusicRed,
+            onChanged: (value) async {
+              await player.setDiscordRpcEnabled(value);
+              // Force rebuild to update switch state since provider might not notify
+              setState(() {});
+            },
           ),
         );
       },

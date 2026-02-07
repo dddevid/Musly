@@ -45,6 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Google Cast Support -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Musly uses the local network to discover and connect to Google Cast devices.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_googlecast._tcp</string>
+		<string>_CC1AD845._googlecast._tcp</string>
+	</array>
 	
 	<!-- Background Modes for Audio Playback -->
 	<key>UIBackgroundModes</key>

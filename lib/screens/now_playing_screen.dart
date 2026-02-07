@@ -17,6 +17,7 @@ import '../widgets/synced_lyrics_view.dart';
 import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
+import '../widgets/cast_button.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -157,6 +158,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     ),
                     Expanded(
                       child: CompactLyricsView(
+                        key: ValueKey(song.id),
                         song: song,
                         onClose: () {
                           setState(() {
@@ -855,7 +857,7 @@ class _PlayerHeader extends StatelessWidget {
                 IconButton(
                   onPressed: onLyricsPressed,
                   icon: Icon(
-                    Icons.lyrics_rounded,
+                    CupertinoIcons.music_note_list,
                     color: isLyricsActive
                         ? AppTheme.appleMusicRed
                         : Colors.white,
@@ -870,6 +872,8 @@ class _PlayerHeader extends StatelessWidget {
                   size: 24,
                 ),
               ),
+              const SizedBox(width: 8),
+              const CastButton(),
             ],
           ),
         ],

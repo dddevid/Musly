@@ -12,3 +12,4 @@ export 'recommendation_service.dart';
 export 'auto_dj_service.dart';
 export 'dj_mixer_service.dart';
 export 'player_ui_settings_service.dart';
+export 'cast_service.dart';

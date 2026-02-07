@@ -1,0 +1,43 @@
+PODS:
+  - Flutter (1.0.0)
+  - google-cast-sdk-no-bluetooth (4.7.0):
+    - google-cast-sdk-no-bluetooth/Core (= 4.7.0)
+    - Protobuf (~> 3.13)
+  - google-cast-sdk-no-bluetooth/Core (4.7.0):
+    - Protobuf (~> 3.13)
+  - google_cast (0.0.1):
+    - Flutter
+    - google-cast-sdk-no-bluetooth
+    - Protobuf
+  - permission_handler_apple (9.0.4):
+    - Flutter
+  - Protobuf (3.21.1)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - google_cast (from `.symlinks/plugins/google_cast/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+
+SPEC REPOS:
+  trunk:
+    - google-cast-sdk-no-bluetooth
+    - Protobuf
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  google_cast:
+    :path: ".symlinks/plugins/google_cast/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  google-cast-sdk-no-bluetooth: 5313156110d6e71fa336f6d742f1ee641e91fdca
+  google_cast: 9f2ef79d3f84fc0f01b7bde52d9c8c61f788ef9e
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
+  Protobuf: 9e88c1e667d75aa2491d211f26ccddde4e8ad4cf
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.11.3

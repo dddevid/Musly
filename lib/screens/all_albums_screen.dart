@@ -40,10 +40,14 @@ class _AllAlbumsScreenState extends State<AllAlbumsScreen> {
       listen: false,
     );
 
-    setState(() {
-      _albums = libraryProvider.cachedAllAlbums;
-      _isLoading = false;
-    });
+    await libraryProvider.ensureLibraryLoaded();
+
+    if (mounted) {
+      setState(() {
+        _albums = libraryProvider.cachedAllAlbums;
+        _isLoading = false;
+      });
+    }
   }
 
   @override

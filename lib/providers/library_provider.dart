@@ -63,7 +63,7 @@ class LibraryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _loadCachedData();
+      await _loadCachedData(loadFullLibrary: false);
 
       // Try to load from server - will fail gracefully if not configured
       try {
@@ -97,33 +97,47 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadCachedData() async {
+  Future<void> ensureLibraryLoaded() async {
+    if (_cachedAllSongs.isNotEmpty) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    await _loadCachedData(loadFullLibrary: true);
+
+    if (_cachedAllSongs.isEmpty) {
+      await _refreshAllDataInBackground();
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadCachedData({bool loadFullLibrary = false}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      final albumsJson = prefs.getString(_allAlbumsCacheKey);
-      if (albumsJson != null) {
-        final List<dynamic> albumsList = json.decode(albumsJson);
-        _cachedAllAlbums = albumsList
-            .map((a) => Album.fromJson(a as Map<String, dynamic>))
-            .toList();
-      }
+      if (loadFullLibrary) {
+        final albumsJson = prefs.getString(_allAlbumsCacheKey);
+        if (albumsJson != null) {
+          final List<dynamic> albumsList = json.decode(albumsJson);
+          _cachedAllAlbums = albumsList
+              .map((a) => Album.fromJson(a as Map<String, dynamic>))
+              .toList();
+        }
 
-      final songsJson = prefs.getString(_allSongsCacheKey);
-      if (songsJson != null) {
-        final List<dynamic> songsList = json.decode(songsJson);
-        _cachedAllSongs = songsList
-            .map((s) => Song.fromJson(s as Map<String, dynamic>))
-            .toList();
+        final songsJson = prefs.getString(_allSongsCacheKey);
+        if (songsJson != null) {
+          final List<dynamic> songsList = json.decode(songsJson);
+          _cachedAllSongs = songsList
+              .map((s) => Song.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       final lastUpdate = prefs.getInt(_lastUpdateKey);
       if (lastUpdate != null) {
         _lastCacheUpdate = DateTime.fromMillisecondsSinceEpoch(lastUpdate);
-      }
-
-      if (_cachedAllAlbums.isEmpty || _cachedAllSongs.isEmpty) {
-        await _refreshAllDataInBackground();
       }
     } catch (e) {
       debugPrint('Error loading cached data: $e');
@@ -131,6 +145,9 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void _scheduleBackgroundRefresh() {
+    // Only schedule if we already have data loaded, otherwise wait for explicit load
+    if (_cachedAllSongs.isEmpty) return;
+
     final shouldRefresh =
         _lastCacheUpdate == null ||
         DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 6);

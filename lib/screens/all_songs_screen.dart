@@ -52,11 +52,15 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
       listen: false,
     );
 
-    setState(() {
-      _songs = libraryProvider.cachedAllSongs;
-      _sortSongs();
-      _isLoading = false;
-    });
+    await libraryProvider.ensureLibraryLoaded();
+
+    if (mounted) {
+      setState(() {
+        _songs = libraryProvider.cachedAllSongs;
+        _sortSongs();
+        _isLoading = false;
+      });
+    }
   }
 
   void _sortSongs() {

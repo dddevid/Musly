@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  dart_discord_rpc
   screen_retriever
   url_launcher_linux
   volume_controller

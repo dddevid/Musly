@@ -103,6 +103,33 @@ class SubsonicService {
     return params;
   }
 
+  Map<String, String>? _stableAuthParams;
+
+  void _ensureStableAuthParams() {
+    if (_stableAuthParams != null) return;
+    if (_config == null) return;
+
+    final params = <String, String>{
+      'u': _config!.username,
+      'v': _apiVersion,
+      'c': _clientName,
+      'f': 'json',
+    };
+
+    if (_config!.useLegacyAuth) {
+      params['p'] = _config!.password;
+    } else {
+      // Use a fixed salt for stable URLs (images/streams) to allow caching
+      const salt = 'musly_stable';
+      final token = md5
+          .convert(utf8.encode('${_config!.password}$salt'))
+          .toString();
+      params['t'] = token;
+      params['s'] = salt;
+    }
+    _stableAuthParams = params;
+  }
+
   String _buildUrl(String endpoint, [Map<String, String>? extraParams]) {
     if (_config == null) throw Exception('Server not configured');
 
@@ -201,7 +228,26 @@ class SubsonicService {
     if (coverArt == null || _config == null) {
       return '';
     }
-    return _buildUrl('getCoverArt', {'id': coverArt, 'size': size.toString()});
+    _ensureStableAuthParams();
+
+    final params = Map<String, String>.from(
+      _stableAuthParams ?? _getAuthParams(),
+    );
+    params['id'] = coverArt;
+    params['size'] = size.toString();
+
+    if (_config!.selectedMusicFolderIds.isNotEmpty) {
+      params['musicFolderId'] = _config!.selectedMusicFolderIds.first;
+    }
+
+    final queryString = params.entries
+        .map(
+          (e) =>
+              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+        )
+        .join('&');
+
+    return '${_config!.normalizedUrl}/rest/getCoverArt?$queryString';
   }
 
   String getStreamUrl(String songId, {int? maxBitRate, String? format}) {

@@ -42,8 +42,6 @@ class SettingsAboutTab extends StatelessWidget {
           title: 'DEVELOPER',
           children: [
             _buildDeveloperInfo(context),
-            _buildDivider(context),
-            _buildDonationButtons(context),
           ],
         ),
         const SizedBox(height: 24),
@@ -187,96 +185,6 @@ class SettingsAboutTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDonationButtons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Support Development',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _isDark(context) ? Colors.white : Colors.black,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildDonationButton(
-                context,
-                label: 'Buy Me a Coffee',
-                icon: Icons.coffee_rounded,
-                color: const Color(0xFFFFDD00),
-                onTap: () => _openUrl('https://buymeacoffee.com/devidd'),
-              ),
-              _buildDonationButton(
-                context,
-                label: 'Bitcoin',
-                icon: Icons.currency_bitcoin_rounded,
-                color: const Color(0xFFF7931A),
-                onTap: () => _showCryptoAddress(
-                  context,
-                  'Bitcoin Address',
-                  'bc1qrfv880kc8qamanalc5kcqs9q5wszh90e5eggyz',
-                ),
-              ),
-              _buildDonationButton(
-                context,
-                label: 'Solana',
-                icon: Icons.toll_rounded,
-                color: const Color(0xFF14F195),
-                onTap: () => _showCryptoAddress(
-                  context,
-                  'Solana Address',
-                  'E3JUcjyR6UCJtppU24iDrq82FyPeV9nhL1PKHx57iPXu',
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDonationButton(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _isDark(context) ? Colors.white : Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildLinkTile(
     BuildContext context, {
@@ -318,45 +226,4 @@ class SettingsAboutTab extends StatelessWidget {
     }
   }
 
-  void _showCryptoAddress(BuildContext context, String title, String address) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SelectableText(
-              address,
-              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: address));
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Address copied to clipboard'),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.copy_rounded),
-                label: const Text('Copy Address'),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
 }

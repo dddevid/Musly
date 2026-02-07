@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
+import 'package:musly/services/storage_service.dart';
 import 'package:musly/widgets/song_tile.dart';
+import '../test_helpers.dart';
 
 void main() {
   group('SongTile', () {
@@ -13,7 +15,12 @@ void main() {
 
     setUp(() {
       subsonicService = SubsonicService();
-      playerProvider = PlayerProvider(subsonicService);
+      subsonicService = SubsonicService();
+      playerProvider = PlayerProvider(
+        subsonicService,
+        StorageService(),
+        FakeCastService(),
+      );
     });
 
     tearDown(() {

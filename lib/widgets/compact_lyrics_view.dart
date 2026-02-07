@@ -26,22 +26,69 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
   String? _error;
   SyncedLyrics? _lyrics;
   bool _showReturnButton = false;
+  bool _canShowReturnButton = false;
 
   // Throttle position updates for performance
   Duration _lastUpdatePosition = Duration.zero;
 
+  // Track song internally to handle updates independent of parent
+  late Song _song;
+
   @override
   void initState() {
     super.initState();
+    _song = widget.song;
     _loadLyrics();
     _setupPositionListener();
+
+    // Listen to Song changes from provider directly
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      ).addListener(_onPlayerStateChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Try/catch in case provider is already disposed
+    try {
+      Provider.of<PlayerProvider>(
+        context,
+        listen: false,
+      ).removeListener(_onPlayerStateChanged);
+    } catch (_) {}
+
+    _positionSubscription?.cancel();
+    _lyricController?.dispose();
+    super.dispose();
+  }
+
+  void _onPlayerStateChanged() {
+    if (!mounted) return;
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final currentSong = playerProvider.currentSong;
+
+    if (currentSong != null && currentSong.id != _song.id) {
+      setState(() {
+        _song = currentSong;
+      });
+      _loadLyrics();
+    }
   }
 
   @override
   void didUpdateWidget(CompactLyricsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.song.id != widget.song.id) {
-      _loadLyrics();
+      // If parent *does* update correctly, sync our internal state
+      if (widget.song.id != _song.id) {
+        setState(() {
+          _song = widget.song;
+        });
+        _loadLyrics();
+      }
     }
   }
 
@@ -57,8 +104,15 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       playerProvider.seek(position);
     });
 
+    // Ignore initial stopSelection events that might fire during layout/build
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _canShowReturnButton = true;
+    });
+
     _lyricController!.registerEvent(LyricEvent.stopSelection, (_) {
-      if (mounted) setState(() => _showReturnButton = true);
+      if (mounted && _canShowReturnButton) {
+        setState(() => _showReturnButton = true);
+      }
     });
 
     _lyricController!.registerEvent(LyricEvent.resumeActiveLine, (_) {
@@ -97,9 +151,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       );
 
       // Try structured getLyricsBySongId first
-      final syncedData = await subsonicService.getLyricsBySongId(
-        widget.song.id,
-      );
+      final syncedData = await subsonicService.getLyricsBySongId(_song.id);
 
       if (!mounted) return;
 
@@ -135,8 +187,8 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
 
       // Fallback to plain lyrics
       final plainData = await subsonicService.getLyrics(
-        artist: widget.song.artist,
-        title: widget.song.title,
+        artist: _song.artist,
+        title: _song.title,
       );
 
       if (plainData != null) {
@@ -191,13 +243,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
 
   void _returnToSyncedPosition() {
     setState(() => _showReturnButton = false);
-  }
-
-  @override
-  void dispose() {
-    _positionSubscription?.cancel();
-    _lyricController?.dispose();
-    super.dispose();
   }
 
   LyricStyle _buildCompactStyle() {

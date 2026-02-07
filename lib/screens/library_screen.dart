@@ -52,6 +52,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
             actions: [
+              // Code from https://github.com/dingtwo/Musly
+              IconButton(
+                icon: Icon(
+                  CupertinoIcons.refresh,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  final libraryProvider = Provider.of<LibraryProvider>(
+                    context,
+                    listen: false,
+                  );
+                  libraryProvider.refresh();
+                },
+              ),
               IconButton(
                 icon: Icon(
                   CupertinoIcons.search,

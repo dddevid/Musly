@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
@@ -11,6 +13,9 @@ import '../services/samsung_integration_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
+import '../services/discord_rpc_service.dart';
+import '../services/storage_service.dart';
+import '../services/cast_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -26,6 +31,8 @@ class PlayerProvider extends ChangeNotifier {
   final SamsungIntegrationService _samsungService = SamsungIntegrationService();
   final ReplayGainService _replayGainService = ReplayGainService();
   final AutoDjService _autoDjService = AutoDjService();
+  late final DiscordRpcService _discordRpcService;
+  final CastService _castService;
 
   LibraryProvider? _libraryProvider;
   RecommendationService? _recommendationService;
@@ -45,11 +52,18 @@ class PlayerProvider extends ChangeNotifier {
   RadioStation? _currentRadioStation;
   bool _isPlayingRadio = false;
 
-  PlayerProvider(this._subsonicService) {
+  PlayerProvider(
+    this._subsonicService,
+    StorageService storageService,
+    this._castService,
+  ) {
+    _discordRpcService = DiscordRpcService(storageService);
+    _castService.addListener(_onCastStateChanged);
     _initializePlayer();
     _initializeAndroidAuto();
     _initializeSystemServices();
     _initializeAutoDj();
+    _discordRpcService.initialize();
   }
 
   void setLibraryProvider(LibraryProvider libraryProvider) {
@@ -300,6 +314,18 @@ class PlayerProvider extends ChangeNotifier {
       isPlaying: _isPlaying,
     );
 
+    _androidAutoService.updatePlaybackState(
+      songId: _currentSong!.id,
+      title: _currentSong!.title,
+      artist: _currentSong!.artist ?? '',
+      album: _currentSong!.album ?? '',
+      artworkUrl: artworkUrl,
+      duration: _duration,
+      position: _position,
+      isPlaying: _isPlaying,
+    );
+
+    _updateDiscordRpc();
     _updateAllServices();
   }
 
@@ -440,6 +466,7 @@ class PlayerProvider extends ChangeNotifier {
       (duration) {
         _duration = duration ?? Duration.zero;
         notifyListeners();
+        _updateAndroidAuto(); // Ensure RPC gets updated with new duration (needed for endTime/progress)
       },
       onError: (error) {
         debugPrint('Duration stream error (can be ignored): $error');
@@ -526,14 +553,34 @@ class PlayerProvider extends ChangeNotifier {
       _position = Duration.zero;
       notifyListeners();
 
-      final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
+      if (_castService.isConnected) {
+        if (_audioPlayer.playing) {
+          await _audioPlayer.stop();
+        }
 
-      await _audioPlayer.setUrl(playUrl);
+        final playUrl = await _subsonicService.getStreamUrl(song.id);
+        final coverUrl = _subsonicService.getCoverArtUrl(
+          song.coverArt ?? song.id,
+        );
 
-      // Apply ReplayGain volume adjustment
-      await _applyReplayGain(song);
+        await _castService.loadMedia(
+          url: playUrl,
+          title: song.title,
+          artist: song.artist ?? 'Unknown Artist',
+          imageUrl: coverUrl,
+          autoPlay: true,
+        );
+        _isPlaying = true;
+      } else {
+        final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
 
-      await _audioPlayer.play();
+        await _audioPlayer.setUrl(playUrl);
+
+        // Apply ReplayGain volume adjustment
+        await _applyReplayGain(song);
+
+        await _audioPlayer.play();
+      }
 
       _subsonicService.scrobble(song.id, submission: false);
 
@@ -634,15 +681,32 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> play() async {
-    await _audioPlayer.play();
+    if (_castService.isConnected) {
+      await _castService.play();
+      _isPlaying = true;
+      notifyListeners();
+    } else {
+      await _audioPlayer.play();
+    }
   }
 
   Future<void> pause() async {
-    await _audioPlayer.pause();
+    if (_castService.isConnected) {
+      await _castService.pause();
+      _isPlaying = false;
+      notifyListeners();
+    } else {
+      await _audioPlayer.pause();
+    }
   }
 
   Future<void> stop() async {
-    await _audioPlayer.stop();
+    if (_castService.isConnected) {
+      await _castService.stop();
+    } else {
+      await _audioPlayer.stop();
+    }
+    // Shared cleanup
     _isPlaying = false;
     _position = Duration.zero;
     notifyListeners();
@@ -660,7 +724,11 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> seek(Duration position) async {
     _position = position;
     notifyListeners();
-    await _audioPlayer.seek(position);
+    if (_castService.isConnected) {
+      await _castService.seek(position);
+    } else {
+      await _audioPlayer.seek(position);
+    }
   }
 
   Future<void> seekToProgress(double progress) async {
@@ -798,6 +866,7 @@ class PlayerProvider extends ChangeNotifier {
     _queue.clear();
     _currentIndex = -1;
     _currentSong = null;
+    _discordRpcService.clearPresence();
     _audioPlayer.stop();
     _isPlaying = false;
     _position = Duration.zero;
@@ -886,6 +955,130 @@ class PlayerProvider extends ChangeNotifier {
     _windowsService.dispose();
     _bluetoothService.dispose();
     _samsungService.dispose();
+    // Discord RPC typically doesn't need explicit disposal if app closes, but we can clear presence
+    _discordRpcService.shutdown();
     super.dispose();
+  }
+
+  void _updateDiscordRpc() {
+    if (_currentSong == null) {
+      _discordRpcService.clearPresence();
+      return;
+    }
+
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    final int startTimestamp = now - _position.inMilliseconds;
+    final int? endTimestamp = _isPlaying && _duration.inMilliseconds > 0
+        ? startTimestamp + _duration.inMilliseconds
+        : null;
+
+    final currentSongTitle = _currentSong?.title;
+
+    // Initial update with placeholder
+    _discordRpcService.updatePresence(
+      state: _currentSong!.artist ?? 'Unknown Artist',
+      details: _currentSong!.title,
+      largeImageKey: 'musly_logo',
+      largeImageText: _currentSong!.album,
+      smallImageKey: 'musly_logo',
+      smallImageText: _isPlaying ? 'Playing' : 'Paused',
+      startTime: startTimestamp,
+      endTime: endTimestamp,
+    );
+
+    // Fetch public cover art asynchronously
+    if (_currentSong!.artist != null && _currentSong!.title != null) {
+      _fetchPublicCoverArt(_currentSong!.artist!, _currentSong!.title).then((
+        artworkUrl,
+      ) {
+        if (artworkUrl != null && _currentSong?.title == currentSongTitle) {
+          _discordRpcService.updatePresence(
+            state: _currentSong!.artist ?? 'Unknown Artist',
+            details: _currentSong!.title,
+            largeImageKey: artworkUrl,
+            largeImageText: _currentSong!.album,
+            smallImageKey: 'musly_logo',
+            smallImageText: _isPlaying ? 'Playing' : 'Paused',
+            startTime: startTimestamp,
+            endTime: endTimestamp,
+          );
+        }
+      });
+    }
+  }
+
+  Future<String?> _fetchPublicCoverArt(String artist, String title) async {
+    try {
+      final dio = Dio();
+
+      // Clean artist name: take text before first separator
+      String cleanArtist = artist.split(RegExp(r'[\\/,;&]')).first.trim();
+
+      // Search by Artist and Title (more precise for specific songs)
+      final searchTerm = '$cleanArtist $title';
+      debugPrint('Fetching cover art for: $searchTerm');
+
+      final term = Uri.encodeComponent(searchTerm);
+      final response = await dio.get(
+        'https://itunes.apple.com/search?term=$term&entity=song&limit=5',
+      );
+
+      if (response.statusCode == 200) {
+        dynamic data = response.data;
+        if (data is String) {
+          try {
+            data = jsonDecode(data);
+          } catch (e) {
+            debugPrint('Error decoding JSON from iTunes: $e');
+            return null;
+          }
+        }
+
+        if (data is Map && data['resultCount'] > 0) {
+          List results = data['results'];
+
+          // Filter results to find a good match for the artist
+          var match = results.firstWhere(
+            (r) => r['artistName'].toString().toLowerCase().contains(
+              cleanArtist.toLowerCase(),
+            ),
+            orElse: () => results.first,
+          );
+
+          String artworkUrl = match['artworkUrl100'];
+          final hqUrl = artworkUrl.replaceAll('100x100bb', '600x600bb');
+          debugPrint('Found cover art URL: $hqUrl');
+          return hqUrl;
+        } else {
+          debugPrint('No cover art found for: $searchTerm');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching public cover art: $e');
+    }
+    return null;
+  }
+
+  Future<void> setDiscordRpcEnabled(bool enabled) async {
+    await _discordRpcService.setEnabled(enabled);
+    if (enabled) {
+      _updateDiscordRpc();
+    }
+  }
+
+  bool get discordRpcEnabled => _discordRpcService.enabled;
+
+  void _onCastStateChanged() {
+    notifyListeners();
+    if (_castService.isConnected) {
+      _audioPlayer.pause(); // Ensure local is paused
+      if (_currentSong != null) {
+        playSong(_currentSong!);
+      }
+    } else {
+      // Cast disconnected
+      _isPlaying = false;
+      notifyListeners();
+    }
   }
 }
