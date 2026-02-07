@@ -3,7 +3,33 @@ base_url: "https://api.crowdin.com"
 
 preserve_hierarchy: true
 
+languages_mapping:
+  flutter_code:
+    it: it
+    fr: fr
+    es: es
+    de: de
+    da: da
+    fi: fi
+    el: el
+    hi: hi
+    id: id
+    ga-IE: ga
+    no: no
+    pl: pl
+    pt-PT: pt
+    ro: ro
+    ru: ru
+    sq: sq
+    sv-SE: sv
+    te: te
+    tr: tr
+    uk: uk
+    vi: vi
+    zh-CN: zh
+    bn: bn
+
 files:
   - source: /lib/l10n/app_en.arb
-    translation: /lib/l10n/app_%two_letters_code%.arb
+    translation: /lib/l10n/app_%flutter_code%.arb
     update_option: update_as_unapproved
