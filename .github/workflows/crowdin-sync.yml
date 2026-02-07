@@ -47,10 +47,9 @@ jobs:
           download_translations: true
           skip_untranslated_strings: true
           export_only_approved: false
+          create_pull_request: false # Explicitly disable to avoid conflicts
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Normalize ARB locales
         run: |
