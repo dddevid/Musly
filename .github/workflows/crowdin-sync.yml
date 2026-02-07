@@ -43,18 +43,32 @@ jobs:
           download_translations: true
           skip_untranslated_strings: true
           export_only_approved: false
-          commit_message: 'chore: update translations from Crowdin'
-          create_pull_request: true
-          pull_request_title: 'New Crowdin translations'
-          pull_request_body: 'New translations from Crowdin'
-          pull_request_base_branch_name: 'master'
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Normalize ARB locales
+        run: |
+          for file in lib/l10n/app_*.arb; do
+            locale=$(basename "$file" .arb | sed 's/app_//')
+            # Standardize @@locale to match the filename (e.g., es-ES -> es)
+            sed -i "s/\"@@locale\": \"[^\"]*\"/\"@@locale\": \"$locale\"/g" "$file"
+          done
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        id: cpr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update and normalize translations from Crowdin'
+          title: 'New Crowdin translations'
+          body: 'New translations from Crowdin with normalized @@locale entries to prevent build failures.'
+          branch: 'l10n_crowdin_action'
+          base: 'master'
+
       - name: Enable Pull Request Automerge
-        if: steps.crowdin_pull.outputs.pull_request_number != ''
-        run: gh pr merge "${{ steps.crowdin_pull.outputs.pull_request_number }}" --auto --merge
+        if: steps.cpr.outputs.pull_request-number != ''
+        run: gh pr merge "${{ steps.cpr.outputs.pull_request-number }}" --auto --merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
