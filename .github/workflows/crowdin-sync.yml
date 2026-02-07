@@ -35,6 +35,14 @@ jobs:
           CROWDIN_API_TOKEN: ${{ secrets.CROWDIN_API_TOKEN }}
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
 
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Crowdin pull (download translations)
         uses: crowdin/github-action@v2
         with:
@@ -43,12 +51,21 @@ jobs:
           download_translations: true
           skip_untranslated_strings: true
           export_only_approved: false
-          commit_message: 'chore: update translations from Crowdin'
-          create_pull_request: true
-          pull_request_title: 'New Crowdin translations'
-          pull_request_body: 'New translations from Crowdin'
-          pull_request_base_branch_name: 'master'
+          push_translations: false
+          create_pull_request: false
         env:
           CROWDIN_API_TOKEN: ${{ secrets.CROWDIN_API_TOKEN }}
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update translations from Crowdin'
+          title: 'New Crowdin translations'
+          body: 'New translations from Crowdin and updated generated Dart files.'
+          branch: l10n_crowdin_action
+          base: master
