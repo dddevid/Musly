@@ -8,7 +8,6 @@ import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
-import '../widgets/mini_player.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import 'genres_screen.dart';
@@ -95,14 +94,6 @@ class _SearchScreenState extends State<SearchScreen> {
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       _loadAutocomplete(value);
     });
-  }
-
-  void _selectSuggestion(String query) {
-    _searchController.text = query;
-    setState(() {
-      _showSuggestions = false;
-    });
-    _search(query);
   }
 
   Future<void> _search(String query) async {

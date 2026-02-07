@@ -22,6 +22,7 @@ class LibraryProvider extends ChangeNotifier {
 
   List<Album> _cachedAllAlbums = [];
   List<Song> _cachedAllSongs = [];
+  List<Playlist> _cachedPlaylists = [];
   DateTime? _lastCacheUpdate;
 
   bool _isLoading = false;
@@ -30,6 +31,7 @@ class LibraryProvider extends ChangeNotifier {
 
   static const String _allAlbumsCacheKey = 'cached_all_albums';
   static const String _allSongsCacheKey = 'cached_all_songs';
+  static const String _playlistsCacheKey = 'cached_playlists';
   static const String _lastUpdateKey = 'last_cache_update';
 
   LibraryProvider(this._subsonicService);
@@ -133,6 +135,15 @@ class LibraryProvider extends ChangeNotifier {
               .map((s) => Song.fromJson(s as Map<String, dynamic>))
               .toList();
         }
+
+        final playlistsJson = prefs.getString(_playlistsCacheKey);
+        if (playlistsJson != null) {
+          final List<dynamic> playlistsList = json.decode(playlistsJson);
+          _cachedPlaylists = playlistsList
+              .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
+              .toList();
+          _playlists = _cachedPlaylists;
+        }
       }
 
       final lastUpdate = prefs.getInt(_lastUpdateKey);
@@ -207,6 +218,11 @@ class LibraryProvider extends ChangeNotifier {
         _cachedAllSongs.map((s) => s.toJson()).toList(),
       );
       await prefs.setString(_allSongsCacheKey, songsJson);
+
+      final playlistsJson = json.encode(
+        _cachedPlaylists.map((p) => p.toJson()).toList(),
+      );
+      await prefs.setString(_playlistsCacheKey, playlistsJson);
 
       await prefs.setInt(
         _lastUpdateKey,
@@ -303,11 +319,44 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> loadPlaylists() async {
     try {
-      _playlists = await _subsonicService.getPlaylists();
+      final newPlaylists = await _subsonicService.getPlaylists();
+
+      // Merge with cached playlists to preserve song data
+      // New playlists (metadata only) + Cached playlists (with songs)
+      final List<Playlist> mergedPlaylists = [];
+
+      for (final newPlaylist in newPlaylists) {
+        final cachedIndex = _cachedPlaylists.indexWhere(
+          (p) => p.id == newPlaylist.id,
+        );
+        if (cachedIndex != -1) {
+          final cachedFn = _cachedPlaylists[cachedIndex];
+          // If cached has songs and (timestamp matches or unchanged), keep songs
+          // Subsonic playlists usually have a 'changed' field.
+          // If available, check it. If not, we opt to keep cached songs to allow offline play
+          // unless the user explicitly refreshes deep (which we don't have a button for yet).
+          if (cachedFn.songs != null && cachedFn.songs!.isNotEmpty) {
+            // If the server says songCount is different, we might be stale.
+            // But for offline support, stale is better than empty.
+            // We reuse the cached songs until getPlaylist(id) is called again.
+            mergedPlaylists.add(newPlaylist.copyWith(songs: cachedFn.songs));
+            continue;
+          }
+        }
+        mergedPlaylists.add(newPlaylist);
+      }
+
+      _playlists = mergedPlaylists;
+      _cachedPlaylists = _playlists;
+      _saveCachedData();
       notifyListeners();
       _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
     } catch (e) {
       debugPrint('Error loading playlists: $e');
+      if (_playlists.isEmpty && _cachedPlaylists.isNotEmpty) {
+        _playlists = _cachedPlaylists;
+        notifyListeners();
+      }
     }
   }
 
@@ -358,7 +407,37 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<Playlist> getPlaylist(String playlistId) async {
-    return await _subsonicService.getPlaylist(playlistId);
+    try {
+      final playlist = await _subsonicService.getPlaylist(playlistId);
+
+      // Update cache with detailed playlist (including songs)
+      final index = _playlists.indexWhere((p) => p.id == playlistId);
+      if (index != -1) {
+        _playlists[index] = playlist;
+      } else {
+        _playlists.add(playlist);
+      }
+
+      _cachedPlaylists = List.from(_playlists);
+      _saveCachedData();
+      notifyListeners();
+
+      return playlist;
+    } catch (e) {
+      debugPrint('Error loading playlist details: $e');
+
+      // Try to find in cache
+      final cachedPlaylist = _playlists.firstWhere(
+        (p) => p.id == playlistId,
+        orElse: () => throw e,
+      );
+
+      if (cachedPlaylist.songs != null && cachedPlaylist.songs!.isNotEmpty) {
+        return cachedPlaylist;
+      }
+
+      rethrow;
+    }
   }
 
   Future<void> createPlaylist(String name, {List<String>? songIds}) async {

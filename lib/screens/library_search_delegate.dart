@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/library_provider.dart';
-import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'playlist_screen.dart';
-import 'album_screen.dart';
-import 'artist_screen.dart';
 
 // Library Search Delegate
 class LibrarySearchDelegate extends SearchDelegate<String> {

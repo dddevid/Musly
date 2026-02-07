@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -36,11 +35,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   bool _isReorderMode = false;
   Set<int> _selectedIndices = {};
 
-  bool get _isDesktop {
-    if (kIsWeb) return false;
-    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -48,13 +42,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   Future<void> _loadPlaylist() async {
-    final subsonicService = Provider.of<SubsonicService>(
+    final libraryProvider = Provider.of<LibraryProvider>(
       context,
       listen: false,
     );
 
     try {
-      final playlist = await subsonicService.getPlaylist(widget.playlistId);
+      final playlist = await libraryProvider.getPlaylist(widget.playlistId);
       if (mounted) {
         setState(() {
           _playlist = playlist;
@@ -630,94 +624,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context,
-                icon: CupertinoIcons.music_house,
-                activeIcon: CupertinoIcons.music_house_fill,
-                label: 'Home',
-                isActive: false,
-                onTap: () => Navigator.pop(context),
-              ),
-              _buildNavItem(
-                context,
-                icon: CupertinoIcons.collections,
-                activeIcon: CupertinoIcons.collections_solid,
-                label: 'Library',
-                isActive: true,
-                onTap: () => Navigator.pop(context),
-              ),
-              _buildNavItem(
-                context,
-                icon: CupertinoIcons.search,
-                activeIcon: CupertinoIcons.search,
-                label: 'Search',
-                isActive: false,
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: isActive
-                  ? AppTheme.appleMusicRed
-                  : (isDark ? Colors.white54 : Colors.black45),
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isActive
-                    ? AppTheme.appleMusicRed
-                    : (isDark ? Colors.white54 : Colors.black45),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildPlaylistArtPlaceholder() {
     return Container(
       decoration: BoxDecoration(
@@ -878,7 +784,12 @@ class _SpotifySongTile extends StatelessWidget {
     final playerProvider = Provider.of<PlayerProvider>(context);
     final isPlaying = playerProvider.currentSong?.id == song.id;
 
+    final offlineService = Provider.of<OfflineService>(context);
+    final isDownloaded = offlineService.isSongDownloaded(song.id);
+
     return ListTile(
+      enabled:
+          true, // Always enabled, but maybe visually dimmed if not playable?
       selected: isSelected,
       selectedTileColor: AppTheme.appleMusicRed.withOpacity(0.15),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -910,24 +821,50 @@ class _SpotifySongTile extends StatelessWidget {
                           : Colors.black45),
               ),
             )
-          : SizedBox(
-              width: 48,
-              height: 48,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: AlbumArtwork(
-                  coverArt: song.coverArt,
-                  size: 48,
-                  borderRadius: 4,
+          : Stack(
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Opacity(
+                      opacity: isDownloaded ? 1.0 : 0.7,
+                      child: AlbumArtwork(
+                        coverArt: song.coverArt,
+                        size: 48,
+                        borderRadius: 4,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                if (isDownloaded)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AppTheme.appleMusicRed,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 8,
+                      ),
+                    ),
+                  ),
+              ],
             ),
       title: Text(
         song.title,
         style: TextStyle(
           color: isPlaying
               ? AppTheme.appleMusicRed
-              : (isDark ? Colors.white : Colors.black),
+              : (isDark ? Colors.white : Colors.black).withOpacity(
+                  isDownloaded ? 1.0 : 0.7,
+                ),
           fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
         ),
         maxLines: 1,
@@ -936,7 +873,9 @@ class _SpotifySongTile extends StatelessWidget {
       subtitle: Text(
         song.artist ?? '',
         style: TextStyle(
-          color: isDark ? Colors.white54 : Colors.black45,
+          color: (isDark ? Colors.white54 : Colors.black45).withOpacity(
+            isDownloaded ? 1.0 : 0.7,
+          ),
           fontSize: 13,
         ),
         maxLines: 1,

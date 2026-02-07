@@ -27,6 +27,34 @@ class Playlist {
     this.songs,
   });
 
+  Playlist copyWith({
+    String? id,
+    String? name,
+    String? comment,
+    String? owner,
+    bool? public,
+    int? songCount,
+    int? duration,
+    DateTime? created,
+    DateTime? changed,
+    String? coverArt,
+    List<Song>? songs,
+  }) {
+    return Playlist(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      comment: comment ?? this.comment,
+      owner: owner ?? this.owner,
+      public: public ?? this.public,
+      songCount: songCount ?? this.songCount,
+      duration: duration ?? this.duration,
+      created: created ?? this.created,
+      changed: changed ?? this.changed,
+      coverArt: coverArt ?? this.coverArt,
+      songs: songs ?? this.songs,
+    );
+  }
+
   factory Playlist.fromJson(Map<String, dynamic> json) {
     List<Song>? songsList;
     if (json['entry'] != null) {

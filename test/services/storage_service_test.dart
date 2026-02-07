@@ -11,20 +11,20 @@ void main() {
       storageService = StorageService();
     });
 
-    test('saveHideSupportDialog saves value', () async {
-      await storageService.saveHideSupportDialog(true);
-      expect(await storageService.getHideSupportDialog(), true);
+    test('saveDiscordRpcEnabled saves value', () async {
+      await storageService.saveDiscordRpcEnabled(true);
+      expect(await storageService.getDiscordRpcEnabled(), true);
     });
 
-    test('getHideSupportDialog returns false by default', () async {
-      expect(await storageService.getHideSupportDialog(), false);
+    test('getDiscordRpcEnabled returns true by default', () async {
+      expect(await storageService.getDiscordRpcEnabled(), true);
     });
 
-    test('saveHideSupportDialog updates value', () async {
-      await storageService.saveHideSupportDialog(true);
-      expect(await storageService.getHideSupportDialog(), true);
-      await storageService.saveHideSupportDialog(false);
-      expect(await storageService.getHideSupportDialog(), false);
+    test('saveDiscordRpcEnabled updates value', () async {
+      await storageService.saveDiscordRpcEnabled(true);
+      expect(await storageService.getDiscordRpcEnabled(), true);
+      await storageService.saveDiscordRpcEnabled(false);
+      expect(await storageService.getDiscordRpcEnabled(), false);
     });
   });
 }

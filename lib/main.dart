@@ -5,13 +5,11 @@ import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'services/services.dart';
-import 'services/bpm_analyzer_service.dart';
-import 'services/offline_service.dart';
 import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
-import 'services/cast_service.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'theme/theme.dart';
@@ -46,6 +44,7 @@ void main() async {
   final recommendationService = RecommendationService();
   final localMusicService = LocalMusicService();
   final castService = CastService();
+  final localeService = LocaleService();
 
   bpmAnalyzer.initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -58,6 +57,9 @@ void main() async {
   });
   localMusicService.initialize().catchError((e) {
     debugPrint('Failed to initialize local music service: $e');
+  });
+  localeService.loadSavedLocale().catchError((e) {
+    debugPrint('Failed to load saved locale: $e');
   });
 
   runApp(
@@ -81,6 +83,7 @@ void main() async {
           create: (_) => AuthProvider(subsonicService, storageService),
         ),
         ChangeNotifierProvider<CastService>.value(value: castService),
+        ChangeNotifierProvider<LocaleService>.value(value: localeService),
         ChangeNotifierProvider(
           create: (_) =>
               PlayerProvider(subsonicService, storageService, castService),
@@ -97,12 +100,51 @@ class MuslyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeService = Provider.of<LocaleService>(context);
+
     return MaterialApp(
       title: 'Musly',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
+
+      // Localization
+      locale: localeService.currentLocale,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
+      // Supported locales
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('sq'), // Albanian
+        Locale('it'), // Italian
+        Locale('bn'), // Bengali
+        Locale('zh'), // Chinese Simplified
+        Locale('da'), // Danish
+        Locale('fi'), // Finnish
+        Locale('fr'), // French
+        Locale('de'), // German
+        Locale('el'), // Greek
+        Locale('hi'), // Hindi
+        Locale('id'), // Indonesian
+        Locale('ga'), // Irish
+        Locale('no'), // Norwegian
+        Locale('pl'), // Polish
+        Locale('pt'), // Portuguese
+        Locale('ro'), // Romanian
+        Locale('ru'), // Russian
+        Locale('es'), // Spanish
+        Locale('sv'), // Swedish
+        Locale('te'), // Telugu
+        Locale('tr'), // Turkish
+        Locale('uk'), // Ukrainian
+        Locale('vi'), // Vietnamese
+      ],
+
       home: const AuthWrapper(),
     );
   }
@@ -116,17 +158,6 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  AuthState? _previousAuthState;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final authProvider = Provider.of<AuthProvider>(context);
-    final currentState = authProvider.state;
-
-    _previousAuthState = currentState;
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);

@@ -1,0 +1,533 @@
+{
+  "@@locale": "en",
+
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+
+  "goodMorning": "Good morning",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+
+  "goodAfternoon": "Good afternoon",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+
+  "goodEvening": "Good evening",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+
+  "forYou": "For You",
+  "@forYou": {
+    "description": "For You section title"
+  },
+
+  "quickPicks": "Quick Picks",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+
+  "discoverMix": "Discover Mix",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+
+  "recentlyPlayed": "Recently Played",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+
+  "yourPlaylists": "Your Playlists",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+
+  "madeForYou": "Made For You",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+
+  "topRated": "Top Rated",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+
+  "noContentAvailable": "No content available",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+
+  "tryRefreshing": "Try refreshing or check your server connection",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+
+  "errorLoadingSongs": "Error loading songs",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+
+  "noSongsInGenre": "No songs in this genre",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+
+  "errorLoadingAlbums": "Error loading albums",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
+
+  "noTopRatedAlbums": "No top rated albums",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+
+  "login": "Login",
+  "@login": {
+    "description": "Login button label"
+  },
+
+  "serverUrl": "Server URL",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+
+  "selectCertificate": "Select TLS/SSL Certificate",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+
+  "failedToSelectCertificate": "Failed to select certificate: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "serverUrlMustStartWith": "Server URL must start with http:// or https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+
+  "failedToConnect": "Failed to connect",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+
+  "library": "Library",
+  "@library": {
+    "description": "Library tab label"
+  },
+
+  "search": "Search",
+  "@search": {
+    "description": "Search tab label"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+
+  "albums": "Albums",
+  "@albums": {
+    "description": "Albums section label"
+  },
+
+  "artists": "Artists",
+  "@artists": {
+    "description": "Artists section label"
+  },
+
+  "songs": "Songs",
+  "@songs": {
+    "description": "Songs section label"
+  },
+
+  "playlists": "Playlists",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+
+  "genres": "Genres",
+  "@genres": {
+    "description": "Genres section label"
+  },
+
+  "favorites": "Favorites",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+
+  "nowPlaying": "Now Playing",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+
+  "queue": "Queue",
+  "@queue": {
+    "description": "Queue section label"
+  },
+
+  "lyrics": "Lyrics",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+
+  "play": "Play",
+  "@play": {
+    "description": "Play button label"
+  },
+
+  "pause": "Pause",
+  "@pause": {
+    "description": "Pause button label"
+  },
+
+  "next": "Next",
+  "@next": {
+    "description": "Next button label"
+  },
+
+  "previous": "Previous",
+  "@previous": {
+    "description": "Previous button label"
+  },
+
+  "shuffle": "Shuffle",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+
+  "repeat": "Repeat",
+  "@repeat": {
+    "description": "Repeat button label"
+  },
+
+  "repeatOne": "Repeat One",
+  "@repeatOne": {
+    "description": "Repeat one button label"
+  },
+
+  "repeatOff": "Repeat Off",
+  "@repeatOff": {
+    "description": "Repeat off button label"
+  },
+
+  "addToPlaylist": "Add to Playlist",
+  "@addToPlaylist": {
+    "description": "Add to playlist option"
+  },
+
+  "removeFromPlaylist": "Remove from Playlist",
+  "@removeFromPlaylist": {
+    "description": "Remove from playlist option"
+  },
+
+  "addToFavorites": "Add to Favorites",
+  "@addToFavorites": {
+    "description": "Add to favorites option"
+  },
+
+  "removeFromFavorites": "Remove from Favorites",
+  "@removeFromFavorites": {
+    "description": "Remove from favorites option"
+  },
+
+  "download": "Download",
+  "@download": {
+    "description": "Download button label"
+  },
+
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button label"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button label"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Save button label"
+  },
+
+  "close": "Close",
+  "@close": {
+    "description": "Close button label"
+  },
+
+  "general": "General",
+  "@general": {
+    "description": "General settings section"
+  },
+
+  "appearance": "Appearance",
+  "@appearance": {
+    "description": "Appearance settings section"
+  },
+
+  "playback": "Playback",
+  "@playback": {
+    "description": "Playback settings section"
+  },
+
+  "storage": "Storage",
+  "@storage": {
+    "description": "Storage settings section"
+  },
+
+  "about": "About",
+  "@about": {
+    "description": "About settings section"
+  },
+
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+
+  "language": "Language",
+  "@language": {
+    "description": "Language setting"
+  },
+
+  "version": "Version",
+  "@version": {
+    "description": "Version info label"
+  },
+
+  "madeBy": "Made by dddevid",
+  "@madeBy": {
+    "description": "Developer credit"
+  },
+
+  "githubRepository": "GitHub Repository",
+  "@githubRepository": {
+    "description": "GitHub repository link label"
+  },
+
+  "reportIssue": "Report Issue",
+  "@reportIssue": {
+    "description": "Report issue link label"
+  },
+
+  "joinDiscord": "Join Discord Community",
+  "@joinDiscord": {
+    "description": "Discord community link label"
+  },
+
+  "unknownArtist": "Unknown Artist",
+  "@unknownArtist": {
+    "description": "Placeholder for unknown artist"
+  },
+
+  "unknownAlbum": "Unknown Album",
+  "@unknownAlbum": {
+    "description": "Placeholder for unknown album"
+  },
+
+  "playAll": "Play All",
+  "@playAll": {
+    "description": "Play all button label"
+  },
+
+  "shuffleAll": "Shuffle All",
+  "@shuffleAll": {
+    "description": "Shuffle all button label"
+  },
+
+  "sortBy": "Sort by",
+  "@sortBy": {
+    "description": "Sort by label"
+  },
+
+  "sortByName": "Name",
+  "@sortByName": {
+    "description": "Sort by name option"
+  },
+
+  "sortByArtist": "Artist",
+  "@sortByArtist": {
+    "description": "Sort by artist option"
+  },
+
+  "sortByAlbum": "Album",
+  "@sortByAlbum": {
+    "description": "Sort by album option"
+  },
+
+  "sortByDate": "Date",
+  "@sortByDate": {
+    "description": "Sort by date option"
+  },
+
+  "sortByDuration": "Duration",
+  "@sortByDuration": {
+    "description": "Sort by duration option"
+  },
+
+  "ascending": "Ascending",
+  "@ascending": {
+    "description": "Ascending sort order"
+  },
+
+  "descending": "Descending",
+  "@descending": {
+    "description": "Descending sort order"
+  },
+
+  "noLyricsAvailable": "No lyrics available",
+  "@noLyricsAvailable": {
+    "description": "Message when lyrics are not available"
+  },
+
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading message"
+  },
+
+  "error": "Error",
+  "@error": {
+    "description": "Generic error label"
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button label"
+  },
+
+  "noResults": "No results",
+  "@noResults": {
+    "description": "No search results message"
+  },
+
+  "searchHint": "Search for songs, albums, artists...",
+  "@searchHint": {
+    "description": "Search field hint text"
+  },
+
+  "allSongs": "All Songs",
+  "@allSongs": {
+    "description": "All songs title"
+  },
+
+  "allAlbums": "All Albums",
+  "@allAlbums": {
+    "description": "All albums title"
+  },
+
+  "allArtists": "All Artists",
+  "@allArtists": {
+    "description": "All artists title"
+  },
+
+  "trackNumber": "Track {number}",
+  "@trackNumber": {
+    "description": "Track number label",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "songsCount": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}}",
+  "@songsCount": {
+    "description": "Songs count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "albumsCount": "{count, plural, =0{No albums} =1{1 album} other{{count} albums}}",
+  "@albumsCount": {
+    "description": "Albums count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button label"
+  },
+
+  "confirmLogout": "Are you sure you want to logout?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+
+  "yes": "Yes",
+  "@yes": {
+    "description": "Yes button label"
+  },
+
+  "no": "No",
+  "@no": {
+    "description": "No button label"
+  },
+
+  "offlineMode": "Offline Mode",
+  "@offlineMode": {
+    "description": "Offline mode label"
+  },
+
+  "radio": "Radio",
+  "@radio": {
+    "description": "Radio section label"
+  },
+
+  "changelog": "Changelog",
+  "@changelog": {
+    "description": "Changelog link label"
+  },
+
+  "platform": "Platform",
+  "@platform": {
+    "description": "Platform info label"
+  },
+
+  "server": "Server",
+  "@server": {
+    "description": "Server settings section"
+  },
+
+  "display": "Display",
+  "@display": {
+    "description": "Display settings section"
+  }
+}

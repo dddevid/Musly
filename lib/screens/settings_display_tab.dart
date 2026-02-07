@@ -3,8 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/recommendation_service.dart';
 import '../services/player_ui_settings_service.dart';
+import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -18,6 +20,7 @@ class SettingsDisplayTab extends StatefulWidget {
 class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   final _playerUiSettings = PlayerUiSettingsService();
   bool _showVolumeSlider = true;
+  bool _showStarRatings = false;
 
   bool get _isDesktop {
     if (kIsWeb) return false;
@@ -37,6 +40,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
     setState(() {
       _showVolumeSlider = _playerUiSettings.getShowVolumeSlider();
+      _showStarRatings = _playerUiSettings.getShowStarRatings();
     });
   }
 
@@ -46,9 +50,20 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         _buildSection(
+          title: 'LANGUAGE',
+          children: [
+            _buildLanguageSelector(),
+            _buildDivider(),
+            _buildTranslationCredit(),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildSection(
           title: 'PLAYER INTERFACE',
           children: [
             _buildVolumeSliderToggle(),
+            _buildDivider(),
+            _buildStarRatingsToggle(),
             if (_isDesktop) ...[_buildDivider(), _buildDiscordRpcToggle()],
           ],
         ),
@@ -148,6 +163,45 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         onChanged: (value) async {
           setState(() => _showVolumeSlider = value);
           await _playerUiSettings.setShowVolumeSlider(value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildStarRatingsToggle() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.star_fill,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text('Show Star Ratings', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        'Rate songs and view ratings',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _showStarRatings,
+        activeTrackColor: AppTheme.appleMusicRed,
+        onChanged: (value) async {
+          setState(() => _showStarRatings = value);
+          await _playerUiSettings.setShowStarRatings(value);
         },
       ),
     );
@@ -320,5 +374,206 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         );
       },
     );
+  }
+
+  Widget _buildLanguageSelector() {
+    return Consumer<LocaleService>(
+      builder: (context, localeService, _) {
+        final currentLocale = localeService.currentLocale;
+        final currentLanguageCode = currentLocale?.languageCode ?? 'en';
+        final currentLanguageName =
+            LocaleService.supportedLanguages[currentLanguageCode] ?? 'English';
+
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF34C759), Color(0xFF30D158)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.globe,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: const Text('Language', style: TextStyle(fontSize: 16)),
+          subtitle: Text(
+            currentLanguageName,
+            style: TextStyle(
+              fontSize: 13,
+              color: _isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right, size: 20),
+          onTap: () => _showLanguagePicker(context, localeService),
+        );
+      },
+    );
+  }
+
+  Widget _buildTranslationCredit() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: const Color(0xFF5AC8FA).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.heart_fill,
+          color: Color(0xFFFF3B30),
+          size: 18,
+        ),
+      ),
+      title: const Text(
+        'Translations by Community',
+        style: TextStyle(fontSize: 16),
+      ),
+      subtitle: Text(
+        'Help translate Musly on Crowdin',
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+      onTap: () => _launchUrl('https://crowdin.com/project/musly'),
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _showLanguagePicker(BuildContext context, LocaleService localeService) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: _isDark ? AppTheme.darkSurface : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 4),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: _isDark ? Colors.grey[600] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(CupertinoIcons.globe, size: 24),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Select Language',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // System default option
+            ListTile(
+              leading: const Icon(CupertinoIcons.device_phone_portrait),
+              title: const Text('System Default'),
+              trailing: localeService.currentLocale == null
+                  ? const Icon(Icons.check, color: AppTheme.appleMusicRed)
+                  : null,
+              onTap: () {
+                localeService.setLocale(null);
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(height: 1),
+            // Language list
+            Expanded(
+              child: ListView(
+                children: LocaleService.supportedLanguages.entries.map((entry) {
+                  final isSelected =
+                      localeService.currentLocale?.languageCode == entry.key;
+                  return ListTile(
+                    leading: Text(
+                      _getFlagEmoji(entry.key),
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                    title: Text(entry.value),
+                    trailing: isSelected
+                        ? const Icon(Icons.check, color: AppTheme.appleMusicRed)
+                        : null,
+                    onTap: () {
+                      localeService.setLocale(Locale(entry.key));
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getFlagEmoji(String languageCode) {
+    const Map<String, String> flagMap = {
+      'en': '🇬🇧',
+      'sq': '🇦🇱',
+      'it': '🇮🇹',
+      'bn': '🇧🇩',
+      'zh': '🇨🇳',
+      'da': '🇩🇰',
+      'fi': '🇫🇮',
+      'fr': '🇫🇷',
+      'de': '🇩🇪',
+      'el': '🇬🇷',
+      'hi': '🇮🇳',
+      'id': '🇮🇩',
+      'ga': '🇮🇪',
+      'no': '🇳🇴',
+      'pl': '🇵🇱',
+      'pt': '🇵🇹',
+      'ro': '🇷🇴',
+      'ru': '🇷🇺',
+      'es': '🇪🇸',
+      'sv': '🇸🇪',
+      'te': '🇮🇳',
+      'tr': '🇹🇷',
+      'uk': '🇺🇦',
+      'vi': '🇻🇳',
+    };
+    return flagMap[languageCode] ?? '🌐';
   }
 }

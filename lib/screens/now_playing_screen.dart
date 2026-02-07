@@ -11,6 +11,7 @@ import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/player_ui_settings_service.dart';
+import '../widgets/star_rating_widget.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/synced_lyrics_view.dart';
@@ -45,8 +46,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   // Derived morph values
   double get _scale => 1.0 - (_morphProgress * 0.15); // Scale down to 0.85
   double get _borderRadius => _morphProgress * 32.0; // Round corners
-  double get _contentOpacity => (1.0 - _morphProgress * 0.3).clamp(0.0, 1.0);
-  double get _backdropOpacity => (_morphProgress * 0.7).clamp(0.0, 1.0);
 
   @override
   void initState() {
@@ -903,7 +902,7 @@ class _AlbumArtworkSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: SizedBox(
         width: size,
-        height: size,
+        // height removed to allow aspect ratio flexibility
         child: RepaintBoundary(
           child: Container(
             decoration: BoxDecoration(
@@ -920,12 +919,14 @@ class _AlbumArtworkSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: imageUrl.isNotEmpty
                   ? CachedNetworkImage(
+                      key: ValueKey(imageUrl), // Optimize rebuilds
                       imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 600,
-                      memCacheHeight: 600,
+                      fit: BoxFit.contain, // Show full image (Issue #1)
+                      memCacheWidth: 600, // Maintain width quality
+                      // memCacheHeight removed to avoid distortion
                       useOldImageOnUrlChange: true,
-                      fadeInDuration: const Duration(milliseconds: 100),
+                      fadeInDuration:
+                          Duration.zero, // Prevent flashing (Issue #4)
                       fadeOutDuration: Duration.zero,
                       placeholder: (_, __) => _buildPlaceholder(),
                       errorWidget: (_, __, ___) => _buildPlaceholder(),
@@ -996,6 +997,33 @@ class _PlayerControlsState extends State<_PlayerControls> {
           ),
 
           const SizedBox(height: 12),
+
+          ValueListenableBuilder<bool>(
+            valueListenable: _playerUiSettings.showStarRatingsNotifier,
+            builder: (context, showRating, _) {
+              if (!showRating) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Selector<PlayerProvider, Song?>(
+                  selector: (_, p) => p.currentSong,
+                  builder: (context, song, _) {
+                    if (song == null) return const SizedBox.shrink();
+                    return StarRatingWidget(
+                      rating: song.userRating ?? 0,
+                      onRatingChanged: (rating) {
+                        context.read<PlayerProvider>().setRating(
+                          song.id,
+                          rating,
+                        );
+                      },
+                      color: Colors.white.withOpacity(0.7),
+                      size: 24,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
 
           Selector<PlayerProvider, (double, Duration, Duration)>(
             selector: (_, p) => (p.progress, p.position, p.duration),

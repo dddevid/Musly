@@ -669,7 +669,6 @@ class SubsonicService {
     try {
       // First get artist name
       final artist = await getArtist(artistId);
-      if (artist == null) return [];
 
       final response = await _request('getTopSongs', {
         'artist': artist.name,

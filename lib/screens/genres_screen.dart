@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
-import '../widgets/mini_player.dart';
 import 'genre_screen.dart';
 
 class GenresScreen extends StatefulWidget {

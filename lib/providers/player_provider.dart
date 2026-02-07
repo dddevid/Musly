@@ -586,7 +586,9 @@ class PlayerProvider extends ChangeNotifier {
           await _audioPlayer.setUrl(playUrl);
         } catch (e) {
           if (!_hasPlayedOnce) {
-            debugPrint('First playback failed (Android 16 Media3 issue), retrying: $e');
+            debugPrint(
+              'First playback failed (Android 16 Media3 issue), retrying: $e',
+            );
             // Wait a bit and retry
             await Future.delayed(const Duration(milliseconds: 100));
             await _audioPlayer.setUrl(playUrl);
@@ -651,7 +653,9 @@ class PlayerProvider extends ChangeNotifier {
         await _audioPlayer.setUrl(station.streamUrl);
       } catch (e) {
         if (!_hasPlayedOnce) {
-          debugPrint('First radio playback failed (Android 16 Media3 issue), retrying: $e');
+          debugPrint(
+            'First radio playback failed (Android 16 Media3 issue), retrying: $e',
+          );
           await Future.delayed(const Duration(milliseconds: 100));
           await _audioPlayer.setUrl(station.streamUrl);
           _hasPlayedOnce = true;
@@ -979,6 +983,24 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> setRating(String songId, int rating) async {
+    if (_currentSong?.id != songId) return;
+
+    // Optimistic update
+    final previousRating = _currentSong?.userRating;
+    _currentSong = _currentSong?.copyWith(userRating: rating);
+    notifyListeners();
+
+    try {
+      await _subsonicService.setRating(songId, rating);
+    } catch (e) {
+      // Revert if failed
+      _currentSong = _currentSong?.copyWith(userRating: previousRating);
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -1020,7 +1042,7 @@ class PlayerProvider extends ChangeNotifier {
 
     // Fetch public cover art asynchronously
     if (_currentSong!.artist != null && _currentSong!.title != null) {
-      _fetchPublicCoverArt(_currentSong!.artist!, _currentSong!.title).then((
+      _fetchPublicCoverArt(_currentSong!.artist!, _currentSong!.title!).then((
         artworkUrl,
       ) {
         if (artworkUrl != null && _currentSong?.title == currentSongTitle) {

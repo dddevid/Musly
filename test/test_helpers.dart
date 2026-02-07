@@ -8,17 +8,16 @@ class FakeCastService extends CastService {
   bool get isConnected => false;
 
   @override
-  Future<void> initContext() async {}
-
-  @override
-  Future<void> loadMedia({
+  Future<bool> loadMedia({
     required String url,
     required String title,
     required String artist,
     required String imageUrl,
-    int? durationMillis,
+    Duration? duration,
     bool autoPlay = true,
-  }) async {}
+  }) async {
+    return true;
+  }
 
   @override
   Future<void> play() async {}

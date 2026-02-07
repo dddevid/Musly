@@ -76,7 +76,7 @@ export default function Hero() {
                     <FadeIn delay={0.6}>
                         <div className="hero-stats">
                             <div className="hero-stat">
-                                <span className="hero-stat-value">v1.0.4</span>
+                                <span className="hero-stat-value">v1.0.5</span>
                                 <span className="hero-stat-label">Latest Version</span>
                             </div>
                             <div className="hero-stat-divider" />
