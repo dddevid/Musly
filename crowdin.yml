@@ -16,7 +16,7 @@ files:
         sq: sq        # Albanian
         it: it        # Italian
         bn: bn        # Bengali
-        zh-CN: zh      # Chinese Simplified
+        "zh-CN": zh  # Chinese Simplified
         da: da        # Danish
         fi: fi        # Finnish
         fr: fr        # French
@@ -25,7 +25,7 @@ files:
         hi: hi        # Hindi
         id: id        # Indonesian
         ga: ga        # Irish
-        "no": no        # Norwegian
+        "no": "no"      # Norwegian
         pl: pl        # Polish
         pt: pt        # Portuguese
         ro: ro        # Romanian
