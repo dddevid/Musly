@@ -5,7 +5,6 @@ import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/app_localizations.dart';
 import 'services/services.dart';

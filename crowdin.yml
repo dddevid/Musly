@@ -4,7 +4,7 @@ base_url: "https://api.crowdin.com"
 preserve_hierarchy: true
 
 languages_mapping:
-  flutter_code:
+  two_letters_code:
     it: it
     fr: fr
     es: es
@@ -31,5 +31,5 @@ languages_mapping:
 
 files:
   - source: /lib/l10n/app_en.arb
-    translation: /lib/l10n/app_%flutter_code%.arb
+    translation: /lib/l10n/app_%two_letters_code%.arb
     update_option: update_as_unapproved
