@@ -25,7 +25,7 @@ files:
         hi: hi        # Hindi
         id: id        # Indonesian
         ga: ga        # Irish
-        no: no        # Norwegian
+        "no": no        # Norwegian
         pl: pl        # Polish
         pt: pt        # Portuguese
         ro: ro        # Romanian
