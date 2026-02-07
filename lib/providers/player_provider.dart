@@ -52,6 +52,9 @@ class PlayerProvider extends ChangeNotifier {
   RadioStation? _currentRadioStation;
   bool _isPlayingRadio = false;
 
+  // Android 16 Media3 workaround: track first playback attempt
+  bool _hasPlayedOnce = false;
+
   PlayerProvider(
     this._subsonicService,
     StorageService storageService,
@@ -409,6 +412,10 @@ class PlayerProvider extends ChangeNotifier {
     // Note: just_audio_windows may print "Error accessing BufferingProgress" messages.
     // This is a known harmless issue in the plugin and doesn't affect playback.
     // See: https://github.com/bdlukaa/just_audio_windows/issues
+    //
+    // Android 16 workaround: Media3 1.4.x has a bug where the first setUrl() call
+    // may fail with IllegalArgumentException in getFramesPerEncodedSample().
+    // We implement a retry mechanism in playSong() and playRadioStation() to handle this.
 
     _audioPlayer.playerStateStream.listen(
       (state) {
@@ -574,7 +581,20 @@ class PlayerProvider extends ChangeNotifier {
       } else {
         final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
 
-        await _audioPlayer.setUrl(playUrl);
+        // Android 16 Media3 workaround: retry setUrl if first attempt fails
+        try {
+          await _audioPlayer.setUrl(playUrl);
+        } catch (e) {
+          if (!_hasPlayedOnce) {
+            debugPrint('First playback failed (Android 16 Media3 issue), retrying: $e');
+            // Wait a bit and retry
+            await Future.delayed(const Duration(milliseconds: 100));
+            await _audioPlayer.setUrl(playUrl);
+            _hasPlayedOnce = true;
+          } else {
+            rethrow;
+          }
+        }
 
         // Apply ReplayGain volume adjustment
         await _applyReplayGain(song);
@@ -626,7 +646,19 @@ class PlayerProvider extends ChangeNotifier {
       _position = Duration.zero;
       _duration = Duration.zero;
 
-      await _audioPlayer.setUrl(station.streamUrl);
+      // Android 16 Media3 workaround: retry setUrl if first attempt fails
+      try {
+        await _audioPlayer.setUrl(station.streamUrl);
+      } catch (e) {
+        if (!_hasPlayedOnce) {
+          debugPrint('First radio playback failed (Android 16 Media3 issue), retrying: $e');
+          await Future.delayed(const Duration(milliseconds: 100));
+          await _audioPlayer.setUrl(station.streamUrl);
+          _hasPlayedOnce = true;
+        } else {
+          rethrow;
+        }
+      }
 
       // Apply full volume for radio (no ReplayGain)
       await _audioPlayer.setVolume(_volume);
