@@ -7,32 +7,5 @@ preserve_hierarchy: true
 
 files:
   - source: /lib/l10n/app_en.arb
-    translation: /lib/l10n/app_%android_code%.arb
+    translation: /lib/l10n/app_%two_letters_code%.arb
     update_option: update_as_unapproved
-
-    # Language mapping for ARB files
-    languages_mapping:
-      android_code:
-        sq: sq        # Albanian
-        it: it        # Italian
-        bn: bn        # Bengali
-        "zh-CN": zh  # Chinese Simplified
-        da: da        # Danish
-        fi: fi        # Finnish
-        fr: fr        # French
-        de: de        # German
-        el: el        # Greek
-        hi: hi        # Hindi
-        id: id        # Indonesian
-        ga: ga        # Irish
-        "no": "no"      # Norwegian
-        pl: pl        # Polish
-        pt: pt        # Portuguese
-        ro: ro        # Romanian
-        ru: ru        # Russian
-        es: es        # Spanish
-        sv: sv        # Swedish
-        te: te        # Telugu
-        tr: tr        # Turkish
-        uk: uk        # Ukrainian
-        vi: vi        # Vietnamese
