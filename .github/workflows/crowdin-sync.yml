@@ -31,9 +31,8 @@ jobs:
           upload_sources: true
           upload_translations: false
           download_translations: false
-        env:
-          CROWDIN_API_TOKEN: ${{ secrets.CROWDIN_API_TOKEN }}
-          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
+          token: ${{ secrets.CROWDIN_API_TOKEN }}
 
       - name: Crowdin pull (download translations)
         uses: crowdin/github-action@v2
@@ -48,7 +47,6 @@ jobs:
           pull_request_title: 'New Crowdin translations'
           pull_request_body: 'New translations from Crowdin'
           pull_request_base_branch_name: 'master'
-        env:
-          CROWDIN_API_TOKEN: ${{ secrets.CROWDIN_API_TOKEN }}
-          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
+          token: ${{ secrets.CROWDIN_API_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
