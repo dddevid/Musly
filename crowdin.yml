@@ -3,33 +3,7 @@ base_url: "https://api.crowdin.com"
 
 preserve_hierarchy: true
 
-languages_mapping:
-  android_code:
-    "sq": "sq-rAL"        # Albanian
-    "it": "it-rIT"        # Italian
-    "bn": "bn-rBD"        # Bengali
-    "zh-CN": "zh-rCN"     # Chinese Simplified
-    "da": "da-rDK"        # Danish
-    "fi": "fi-rFI"        # Finnish
-    "fr": "fr-rFR"        # French
-    "de": "de-rDE"        # German
-    "el": "el-rGR"        # Greek
-    "hi": "hi-rIN"        # Hindi
-    "id": "in-rID"        # Indonesian
-    "ga-IE": "ga-rIE"     # Irish
-    "no": "no-rNO"        # Norwegian
-    "pl": "pl-rPL"        # Polish
-    "pt-PT": "pt-rPT"     # Portuguese
-    "ro": "ro-rRO"        # Romanian
-    "ru": "ru-rRU"        # Russian
-    "es": "es-rES"        # Spanish
-    "sv-SE": "sv-rSE"     # Swedish
-    "te": "te-rIN"        # Telugu
-    "tr": "tr-rTR"        # Turkish
-    "uk": "uk-rUA"        # Ukrainian
-    "vi": "vi-rVN"        # Vietnamese
-
 files:
   - source: /lib/l10n/app_en.arb
-    translation: /lib/l10n/app_%android_code%.arb
+    translation: /lib/l10n/app_%two_letters_code%.arb
     update_option: update_as_unapproved

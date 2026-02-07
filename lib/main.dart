@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'l10n/app_localizations.dart';
 import 'services/services.dart';
 import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
@@ -111,39 +112,8 @@ class MuslyApp extends StatelessWidget {
 
       // Localization
       locale: localeService.currentLocale,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-
-      // Supported locales
-      supportedLocales: const [
-        Locale('en'), // English
-        Locale('sq'), // Albanian
-        Locale('it'), // Italian
-        Locale('bn'), // Bengali
-        Locale('zh'), // Chinese Simplified
-        Locale('da'), // Danish
-        Locale('fi'), // Finnish
-        Locale('fr'), // French
-        Locale('de'), // German
-        Locale('el'), // Greek
-        Locale('hi'), // Hindi
-        Locale('id'), // Indonesian
-        Locale('ga'), // Irish
-        Locale('no'), // Norwegian
-        Locale('pl'), // Polish
-        Locale('pt'), // Portuguese
-        Locale('ro'), // Romanian
-        Locale('ru'), // Russian
-        Locale('es'), // Spanish
-        Locale('sv'), // Swedish
-        Locale('te'), // Telugu
-        Locale('tr'), // Turkish
-        Locale('uk'), // Ukrainian
-        Locale('vi'), // Vietnamese
-      ],
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
 
       home: const AuthWrapper(),
     );
