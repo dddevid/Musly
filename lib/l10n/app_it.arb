@@ -1,1 +1,44 @@
-{"@@locale": "it"}
+{
+  "@@locale": "it",
+  "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Buon giorno",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Buona sera",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Buon pomeriggio",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Per Te",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Scelte Rapide",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Mix Scoperta",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Riprodotte Recentemente",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Le Tue Playlist",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Fatte Per Te",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  }
+}
