@@ -74,8 +74,8 @@ jobs:
           branch: 'l10n_crowdin_action'
           base: 'master'
 
-      - name: Enable Pull Request Automerge
-        if: steps.cpr.outputs.pull_request-number != ''
-        run: gh pr merge "${{ steps.cpr.outputs.pull_request-number }}" --auto --merge
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Enable Pull Request Automerge
+      #   if: steps.cpr.outputs.pull_request-number != ''
+      #   run: gh pr merge "${{ steps.cpr.outputs.pull_request-number }}" --auto --merge
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
