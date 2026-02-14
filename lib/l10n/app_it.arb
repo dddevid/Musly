@@ -40,5 +40,78 @@
   "madeForYou": "Fatte Per Te",
   "@madeForYou": {
     "description": "Made for you section title"
+  },
+  "topRated": "Più Votata",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Nessun contenuto disponibile",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Prova ad aggiornare o controlla la connessione al server",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Aggiorna",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Errore durante il caricamento delle canzoni",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Nessun brano in questo genere",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Errore durante il caricamento album",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
+  "noTopRatedAlbums": "Nessun album classificato",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Accedi",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "URL Del Server",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "Seleziona Certificato TLS/SSL",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Impossibile selezionare il certificato: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "L'URL del server deve iniziare con http:// o https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Connessione fallita",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Libreria",
+  "@library": {
+    "description": "Library tab label"
   }
 }
