@@ -37,6 +37,8 @@ jobs:
           download_translations: false
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Crowdin pull (download translations)
         id: crowdin_pull
@@ -50,6 +52,8 @@ jobs:
           create_pull_request: false # Explicitly disable to avoid conflicts
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Normalize ARB locales
         run: |
