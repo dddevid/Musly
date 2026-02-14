@@ -57,11 +57,15 @@ jobs:
 
       - name: Normalize ARB locales
         run: |
+          set -x
+          git status
+          ls -R lib/l10n
           for file in lib/l10n/app_*.arb; do
             locale=$(basename "$file" .arb | sed 's/app_//')
             # Standardize @@locale to match the filename (e.g., es-ES -> es)
             sed -i "s/\"@@locale\": \"[^\"]*\"/\"@@locale\": \"$locale\"/g" "$file"
           done
+          git status
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
