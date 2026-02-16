@@ -60,20 +60,6 @@ Join our Discord community to get support, share feedback, and connect with othe
 
 </div>
 
-## Support Development
-
-If you enjoy using Musly and want to support its development, consider buying me a coffee! ☕
-
-<div align="center">
-  
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Development-fa243c?style=for-the-badge&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/devidd)
-
-**[Support on Buy Me a Coffee](https://buymeacoffee.com/devidd)** ⌨️
-
-</div>
-
-Your support helps me dedicate more time to improving Musly, adding new features, and maintaining the project. Every contribution is greatly appreciated! 💙
-
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
@@ -151,5 +137,6 @@ This project is open source and available under the **Creative Commons Attributi
 [![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
 
 </div>
+
 
 
