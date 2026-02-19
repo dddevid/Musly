@@ -1900,6 +1900,36 @@ abstract class AppLocalizations {
   /// **'Select Certificate File'**
   String get selectCertificateFile;
 
+  /// Label for the mutual TLS client certificate section
+  ///
+  /// In en, this message translates to:
+  /// **'Client Certificate (mTLS)'**
+  String get clientCertificate;
+
+  /// Subtitle for the client certificate (mTLS) section
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate this client using a certificate (requires mTLS-enabled server)'**
+  String get clientCertificateSubtitle;
+
+  /// Button label to open the client certificate file picker
+  ///
+  /// In en, this message translates to:
+  /// **'Select Client Certificate'**
+  String get selectClientCertificate;
+
+  /// Hint text for the PKCS12 client certificate password field
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate password (optional)'**
+  String get clientCertPassword;
+
+  /// Error message when client certificate selection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to select client certificate: {error}'**
+  String failedToSelectClientCert(String error);
+
   /// Login submit button label
   ///
   /// In en, this message translates to:

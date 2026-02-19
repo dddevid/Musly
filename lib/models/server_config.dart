@@ -7,7 +7,12 @@ class ServerConfig {
   final List<String> selectedMusicFolderIds;
   final String? serverType;
   final String? serverVersion;
-  final String? customCertificatePath; // Path to custom certificate file
+  final String?
+  customCertificatePath; // Path to custom server CA certificate file
+  final String?
+  clientCertificatePath; // Path to client certificate for mTLS (.p12/.pfx/.pem)
+  final String?
+  clientCertificatePassword; // Password for PKCS12 client certificate
 
   ServerConfig({
     required this.serverUrl,
@@ -19,6 +24,8 @@ class ServerConfig {
     this.serverType,
     this.serverVersion,
     this.customCertificatePath,
+    this.clientCertificatePath,
+    this.clientCertificatePassword,
   });
 
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
@@ -36,6 +43,8 @@ class ServerConfig {
       serverType: json['serverType'],
       serverVersion: json['serverVersion'],
       customCertificatePath: json['customCertificatePath'],
+      clientCertificatePath: json['clientCertificatePath'],
+      clientCertificatePassword: json['clientCertificatePassword'],
     );
   }
 
@@ -50,6 +59,8 @@ class ServerConfig {
       'serverType': serverType,
       'serverVersion': serverVersion,
       'customCertificatePath': customCertificatePath,
+      'clientCertificatePath': clientCertificatePath,
+      'clientCertificatePassword': clientCertificatePassword,
     };
   }
 
@@ -63,6 +74,8 @@ class ServerConfig {
     String? serverType,
     String? serverVersion,
     String? customCertificatePath,
+    String? clientCertificatePath,
+    String? clientCertificatePassword,
   }) {
     return ServerConfig(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -77,6 +90,10 @@ class ServerConfig {
       serverVersion: serverVersion ?? this.serverVersion,
       customCertificatePath:
           customCertificatePath ?? this.customCertificatePath,
+      clientCertificatePath:
+          clientCertificatePath ?? this.clientCertificatePath,
+      clientCertificatePassword:
+          clientCertificatePassword ?? this.clientCertificatePassword,
     );
   }
 

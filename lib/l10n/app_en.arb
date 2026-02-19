@@ -1119,6 +1119,26 @@
   "selectCertificateFile": "Select Certificate File",
   "@selectCertificateFile": { "description": "Button label to open the certificate file picker" },
 
+  "clientCertificate": "Client Certificate (mTLS)",
+  "@clientCertificate": { "description": "Label for the mutual TLS client certificate section" },
+
+  "clientCertificateSubtitle": "Authenticate this client using a certificate (requires mTLS-enabled server)",
+  "@clientCertificateSubtitle": { "description": "Subtitle for the client certificate (mTLS) section" },
+
+  "selectClientCertificate": "Select Client Certificate",
+  "@selectClientCertificate": { "description": "Button label to open the client certificate file picker" },
+
+  "clientCertPassword": "Certificate password (optional)",
+  "@clientCertPassword": { "description": "Hint text for the PKCS12 client certificate password field" },
+
+  "failedToSelectClientCert": "Failed to select client certificate: {error}",
+  "@failedToSelectClientCert": {
+    "description": "Error message when client certificate selection fails",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
   "connect": "Connect",
   "@connect": { "description": "Login submit button label" },
 

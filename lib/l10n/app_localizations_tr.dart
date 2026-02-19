@@ -969,6 +969,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get selectCertificateFile => 'Select Certificate File';
 
   @override
+  String get clientCertificate => 'Client Certificate (mTLS)';
+
+  @override
+  String get clientCertificateSubtitle =>
+      'Authenticate this client using a certificate (requires mTLS-enabled server)';
+
+  @override
+  String get selectClientCertificate => 'Select Client Certificate';
+
+  @override
+  String get clientCertPassword => 'Certificate password (optional)';
+
+  @override
+  String failedToSelectClientCert(String error) {
+    return 'Failed to select client certificate: $error';
+  }
+
+  @override
   String get connect => 'Connect';
 
   @override

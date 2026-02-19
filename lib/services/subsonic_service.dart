@@ -36,41 +36,67 @@ class SubsonicService {
     _config = config;
     _configureCertificateValidation(
       config.allowSelfSignedCertificates,
-      config.customCertificatePath,
+      customCertPath: config.customCertificatePath,
+      clientCertPath: config.clientCertificatePath,
+      clientCertPassword: config.clientCertificatePassword,
     );
   }
 
   void _configureCertificateValidation(
-    bool allowSelfSigned, [
+    bool allowSelfSigned, {
     String? customCertPath,
-  ]) {
+    String? clientCertPath,
+    String? clientCertPassword,
+  }) {
     _dio = Dio();
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
 
-    if (customCertPath != null && customCertPath.isNotEmpty) {
-      // Use custom certificate
+    final hasCustomServerCert =
+        customCertPath != null && customCertPath.isNotEmpty;
+    final hasClientCert = clientCertPath != null && clientCertPath.isNotEmpty;
+
+    if (hasCustomServerCert || allowSelfSigned || hasClientCert) {
       (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         try {
-          final file = File(customCertPath);
-          if (file.existsSync()) {
-            final bytes = file.readAsBytesSync();
-            final context = SecurityContext();
-            context.setTrustedCertificatesBytes(bytes);
-            return HttpClient(context: context);
+          final context = SecurityContext();
+
+          // Server CA certificate (for verifying the server identity)
+          if (hasCustomServerCert) {
+            final file = File(customCertPath!);
+            if (file.existsSync()) {
+              context.setTrustedCertificatesBytes(file.readAsBytesSync());
+            }
           }
+
+          // Client certificate for mutual TLS (mTLS)
+          if (hasClientCert) {
+            final file = File(clientCertPath!);
+            if (file.existsSync()) {
+              final bytes = file.readAsBytesSync();
+              final password = clientCertPassword;
+              // Load the client certificate chain (supports PEM and PKCS12)
+              context.useCertificateChainBytes(bytes, password: password);
+              // Load the private key (same file for PKCS12 / combined PEM)
+              context.usePrivateKeyBytes(bytes, password: password);
+            }
+          }
+
+          final client = HttpClient(context: context);
+          if (allowSelfSigned) {
+            // Allow self-signed or otherwise invalid server certs
+            client.badCertificateCallback = (cert, host, port) => true;
+          }
+          return client;
         } catch (e) {
-          print('Failed to load custom certificate: $e');
+          print('Failed to configure TLS: $e');
+          // Fallback: at minimum honour the allowSelfSigned flag
+          final client = HttpClient();
+          if (allowSelfSigned) {
+            client.badCertificateCallback = (cert, host, port) => true;
+          }
+          return client;
         }
-        // Fallback to default client
-        return HttpClient();
-      };
-    } else if (allowSelfSigned) {
-      // Bypass certificate validation
-      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-        final client = HttpClient();
-        client.badCertificateCallback = (cert, host, port) => true;
-        return client;
       };
     }
   }

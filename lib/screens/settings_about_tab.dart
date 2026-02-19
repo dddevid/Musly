@@ -58,7 +58,7 @@ class SettingsAboutTab extends StatelessWidget {
               context,
               icon: CupertinoIcons.doc_text,
               title: 'Changelog',
-              url: 'https://github.com/dddevid/Musly/blob/main/CHANGELOG.md',
+              url: 'https://github.com/dddevid/Musly/releases/tag/v1.0.5',
             ),
             _buildDivider(context),
             _buildLinkTile(

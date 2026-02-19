@@ -92,6 +92,8 @@ class AuthProvider extends ChangeNotifier {
     bool useLegacyAuth = false,
     bool allowSelfSignedCertificates = false,
     String? customCertificatePath,
+    String? clientCertificatePath,
+    String? clientCertificatePassword,
   }) async {
     _state = AuthState.authenticating;
     _error = null;
@@ -104,6 +106,8 @@ class AuthProvider extends ChangeNotifier {
       useLegacyAuth: useLegacyAuth,
       allowSelfSignedCertificates: allowSelfSignedCertificates,
       customCertificatePath: customCertificatePath,
+      clientCertificatePath: clientCertificatePath,
+      clientCertificatePassword: clientCertificatePassword,
     );
 
     _subsonicService.configure(config);

@@ -35,6 +35,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showAdvancedOptions = false;
   String? _customCertificatePath;
   String? _customCertificateName;
+  // mTLS client certificate
+  String? _clientCertificatePath;
+  String? _clientCertificateName;
+  final _clientCertPasswordController = TextEditingController();
+  bool _obscureClientCertPassword = true;
   bool _isScanning = false;
   double _scanProgress = 0.0;
   String _scanStatus = '';
@@ -216,7 +221,37 @@ class _LoginScreenState extends State<LoginScreen> {
     _serverController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _clientCertPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickClientCertificate() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['p12', 'pfx', 'pem'],
+        dialogTitle: 'Select Client Certificate',
+      );
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _clientCertificatePath = result.files.single.path;
+          _clientCertificateName = result.files.single.name;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToSelectClientCert(e.toString()),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _pickCertificateFile() async {
@@ -272,6 +307,10 @@ class _LoginScreenState extends State<LoginScreen> {
       useLegacyAuth: _useLegacyAuth,
       allowSelfSignedCertificates: _allowSelfSignedCertificates,
       customCertificatePath: _customCertificatePath,
+      clientCertificatePath: _clientCertificatePath,
+      clientCertificatePassword: _clientCertPasswordController.text.isEmpty
+          ? null
+          : _clientCertPasswordController.text,
     );
 
     if (!success && mounted) {
@@ -650,6 +689,123 @@ class _LoginScreenState extends State<LoginScreen> {
                                   AppLocalizations.of(
                                     context,
                                   )!.selectCertificateFile,
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.appleMusicRed,
+                                  side: BorderSide(
+                                    color: AppTheme.appleMusicRed.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // ── mTLS Client Certificate ──────────────────────
+                          const SizedBox(height: 20),
+                          const Divider(height: 1),
+                          const SizedBox(height: 16),
+                          Text(
+                            AppLocalizations.of(context)!.clientCertificate,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.clientCertificateSubtitle,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                          if (_clientCertificateName != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: theme.brightness == Brightness.dark
+                                    ? const Color(0xFF3C3C3E)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.security_rounded,
+                                    size: 20,
+                                    color: AppTheme.appleMusicRed,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _clientCertificateName!,
+                                      style: theme.textTheme.bodyMedium,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      CupertinoIcons.xmark_circle_fill,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _clientCertificatePath = null;
+                                        _clientCertificateName = null;
+                                        _clientCertPasswordController.clear();
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _clientCertPasswordController,
+                              obscureText: _obscureClientCertPassword,
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(
+                                  context,
+                                )!.clientCertPassword,
+                                prefixIcon: const Icon(
+                                  CupertinoIcons.lock,
+                                  size: 20,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureClientCertPassword
+                                        ? CupertinoIcons.eye
+                                        : CupertinoIcons.eye_slash,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => setState(() {
+                                    _obscureClientCertPassword =
+                                        !_obscureClientCertPassword;
+                                  }),
+                                ),
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                              ),
+                            ),
+                          ] else
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _pickClientCertificate,
+                                icon: const Icon(Icons.security_rounded),
+                                label: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.selectClientCertificate,
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppTheme.appleMusicRed,
