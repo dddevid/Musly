@@ -11,7 +11,6 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
-CHANGELOG.md
 musly-1.0.4-setup.exe
 .claude/
 /discord_sdk_temp
