@@ -1,4 +1,459 @@
 {
   "@@locale": "pt",
-  "@@last_modified": "2026-02-07T16:10:00Z"
+  "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Bom dia",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Boa tarde",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Boa noite",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Para você",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Escolhas Rápidas",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Mix de Descobertas",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Reproduzidos Recentemente",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Suas Playlists",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Feito para você",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Melhor Avaliados",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Sem conteúdo disponível",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Tente atualizar ou verifique a conexão do servidor",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Atualizar",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Erro ao carregar músicas",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Nenhuma música neste gênero",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Erro ao carregar álbuns",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
+  "noTopRatedAlbums": "Nenhum álbum avaliado",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Iniciar Sessão",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "URL do Servidor",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Nome de usuário",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Senha",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "Selecione o certificado TLS/SSL",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Falha ao selecionar certificado: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "O URL do servidor deve começar com http:// ou https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Falha ao conectar",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Biblioteca",
+  "@library": {
+    "description": "Library tab label"
+  },
+  "search": "Pesquisar",
+  "@search": {
+    "description": "Search tab label"
+  },
+  "settings": "Configurações",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "albums": "Álbuns",
+  "@albums": {
+    "description": "Albums section label"
+  },
+  "artists": "Artistas",
+  "@artists": {
+    "description": "Artists section label"
+  },
+  "songs": "Músicas",
+  "@songs": {
+    "description": "Songs section label"
+  },
+  "playlists": "Playlists",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+  "genres": "Gêneros",
+  "@genres": {
+    "description": "Genres section label"
+  },
+  "favorites": "Favoritos",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+  "nowPlaying": "Tocando agora",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+  "queue": "Fila",
+  "@queue": {
+    "description": "Queue section label"
+  },
+  "lyrics": "Letras",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+  "play": "Reproduzir",
+  "@play": {
+    "description": "Play button label"
+  },
+  "pause": "Pausar",
+  "@pause": {
+    "description": "Pause button label"
+  },
+  "next": "Próximo",
+  "@next": {
+    "description": "Next button label"
+  },
+  "previous": "Anterior",
+  "@previous": {
+    "description": "Previous button label"
+  },
+  "shuffle": "Aleatório",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+  "repeat": "Repetir",
+  "@repeat": {
+    "description": "Repeat button label"
+  },
+  "repeatOne": "Repetir Faixa",
+  "@repeatOne": {
+    "description": "Repeat one button label"
+  },
+  "repeatOff": "Não Repetir",
+  "@repeatOff": {
+    "description": "Repeat off button label"
+  },
+  "addToPlaylist": "Adicionar à Playlist",
+  "@addToPlaylist": {
+    "description": "Add to playlist option"
+  },
+  "removeFromPlaylist": "Remover da Playlist",
+  "@removeFromPlaylist": {
+    "description": "Remove from playlist option"
+  },
+  "addToFavorites": "Adicionar aos Favoritos",
+  "@addToFavorites": {
+    "description": "Add to favorites option"
+  },
+  "removeFromFavorites": "Remover dos Favoritos",
+  "@removeFromFavorites": {
+    "description": "Remove from favorites option"
+  },
+  "download": "Baixar",
+  "@download": {
+    "description": "Download button label"
+  },
+  "delete": "Excluir",
+  "@delete": {
+    "description": "Delete button label"
+  },
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button label"
+  },
+  "save": "Salvar",
+  "@save": {
+    "description": "Save button label"
+  },
+  "close": "Fechar",
+  "@close": {
+    "description": "Close button label"
+  },
+  "general": "Geral",
+  "@general": {
+    "description": "General settings section"
+  },
+  "appearance": "Aparência",
+  "@appearance": {
+    "description": "Appearance settings section"
+  },
+  "playback": "Reprodução",
+  "@playback": {
+    "description": "Playback settings section"
+  },
+  "storage": "Armazenamento",
+  "@storage": {
+    "description": "Storage settings section"
+  },
+  "about": "Sobre",
+  "@about": {
+    "description": "About settings section"
+  },
+  "darkMode": "Modo Escuro",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+  "language": "Idioma",
+  "@language": {
+    "description": "Language setting"
+  },
+  "version": "Versão",
+  "@version": {
+    "description": "Version info label"
+  },
+  "madeBy": "Feito por dddevid",
+  "@madeBy": {
+    "description": "Developer credit"
+  },
+  "githubRepository": "Repositório no GitHub",
+  "@githubRepository": {
+    "description": "GitHub repository link label"
+  },
+  "reportIssue": "Reportar Problema",
+  "@reportIssue": {
+    "description": "Report issue link label"
+  },
+  "joinDiscord": "Entrar na Comunidade do Discord",
+  "@joinDiscord": {
+    "description": "Discord community link label"
+  },
+  "unknownArtist": "Artista Desconhecido",
+  "@unknownArtist": {
+    "description": "Placeholder for unknown artist"
+  },
+  "unknownAlbum": "Álbum Desconhecido",
+  "@unknownAlbum": {
+    "description": "Placeholder for unknown album"
+  },
+  "playAll": "Reproduzir Tudo",
+  "@playAll": {
+    "description": "Play all button label"
+  },
+  "shuffleAll": "Reproduzir em Aleatório",
+  "@shuffleAll": {
+    "description": "Shuffle all button label"
+  },
+  "sortBy": "Ordenar por",
+  "@sortBy": {
+    "description": "Sort by label"
+  },
+  "sortByName": "Nome",
+  "@sortByName": {
+    "description": "Sort by name option"
+  },
+  "sortByArtist": "Artista",
+  "@sortByArtist": {
+    "description": "Sort by artist option"
+  },
+  "sortByAlbum": "Álbum",
+  "@sortByAlbum": {
+    "description": "Sort by album option"
+  },
+  "sortByDate": "Data",
+  "@sortByDate": {
+    "description": "Sort by date option"
+  },
+  "sortByDuration": "Duração",
+  "@sortByDuration": {
+    "description": "Sort by duration option"
+  },
+  "ascending": "Crescente",
+  "@ascending": {
+    "description": "Ascending sort order"
+  },
+  "descending": "Decrescente",
+  "@descending": {
+    "description": "Descending sort order"
+  },
+  "noLyricsAvailable": "Sem letras disponíveis",
+  "@noLyricsAvailable": {
+    "description": "Message when lyrics are not available"
+  },
+  "loading": "Carregando...",
+  "@loading": {
+    "description": "Loading message"
+  },
+  "error": "Erro",
+  "@error": {
+    "description": "Generic error label"
+  },
+  "retry": "Tentar Novamente",
+  "@retry": {
+    "description": "Retry button label"
+  },
+  "noResults": "Sem resultados",
+  "@noResults": {
+    "description": "No search results message"
+  },
+  "searchHint": "Buscar músicas, álbuns, artistas...",
+  "@searchHint": {
+    "description": "Search field hint text"
+  },
+  "allSongs": "Todas as músicas",
+  "@allSongs": {
+    "description": "All songs title"
+  },
+  "allAlbums": "Todos os Álbuns",
+  "@allAlbums": {
+    "description": "All albums title"
+  },
+  "allArtists": "Todos os Artistas",
+  "@allArtists": {
+    "description": "All artists title"
+  },
+  "trackNumber": "Faixa {number}",
+  "@trackNumber": {
+    "description": "Track number label",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "songsCount": "{count, plural, one {}=0{Sem músicas} =1{1 música} other{{count} músicas}}",
+  "@songsCount": {
+    "description": "Songs count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumsCount": "{count, plural, one {}=0{Sem álbuns} =1{1 álbum} other{{count} álbuns}}",
+  "@albumsCount": {
+    "description": "Albums count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logout": "Encerrar Sessão",
+  "@logout": {
+    "description": "Logout button label"
+  },
+  "confirmLogout": "Tem certeza que deseja encerrar a sessão?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+  "yes": "Sim",
+  "@yes": {
+    "description": "Yes button label"
+  },
+  "no": "Não",
+  "@no": {
+    "description": "No button label"
+  },
+  "offlineMode": "Modo Offline",
+  "@offlineMode": {
+    "description": "Offline mode label"
+  },
+  "radio": "Rádio",
+  "@radio": {
+    "description": "Radio section label"
+  },
+  "changelog": "Changelog",
+  "@changelog": {
+    "description": "Changelog link label"
+  },
+  "platform": "Plataforma",
+  "@platform": {
+    "description": "Platform info label"
+  },
+  "server": "Servidor",
+  "@server": {
+    "description": "Server settings section"
+  },
+  "display": "Personalização",
+  "@display": {
+    "description": "Display settings section"
+  },
+  "@_LIBRARY": {},
+  "@_SEARCH": {},
+  "@_SETTINGS_GENERAL": {},
+  "@_SETTINGS_PLAYBACK": {},
+  "@_SETTINGS_SERVER": {},
+  "@_SETTINGS_STORAGE": {},
+  "@_SETTINGS_ABOUT": {},
+  "@_PLAYER_AND_MENUS": {},
+  "@_ALBUM_ARTIST_SCREENS": {},
+  "@_PLAYER_SCREENS": {},
+  "@_PLAYLIST_SCREEN": {},
+  "@_FAVORITES_SCREEN": {},
+  "@_HISTORY_SCREEN": {},
+  "@_SORT_OPTIONS": {},
+  "@_RADIO_SCREEN": {},
+  "@_LOGIN_SCREEN": {},
+  "@_COMMON_ACTIONS": {},
+  "@_DESKTOP_SIDEBAR": {},
+  "@_LYRICS": {},
+  "@_BANNERS": {},
+  "@_UPDATE_DIALOG": {},
+  "@_ARTIST_SCREEN": {},
+  "@_CAST_DLNA": {},
+  "@_LIKED_SONGS_SNACKBARS": {},
+  "@_PLAYER_BAR": {},
+  "@_CAST_TOOLTIPS": {},
+  "@_ERROR_MESSAGES": {}
 }
