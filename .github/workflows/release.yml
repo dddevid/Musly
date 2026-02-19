@@ -76,12 +76,22 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
 
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install NSIS
         run: choco install nsis --yes
 
       - name: Build Windows Installer
         run: |
-          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" /DMUSLY_VERSION=${{ steps.version.outputs.VERSION }} installer.nsi
           Get-Item musly-*-setup.exe | Rename-Item -NewName "musly-windows-setup.exe"
 
       - name: Upload Windows artifact
