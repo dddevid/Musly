@@ -49,74 +49,6 @@ We use [Crowdin](https://crowdin.com/project/musly) to manage translations. It's
 5. **Maintainers** review and merge the PR
 6. **Users** get new translations in the next release!
 
-## 🚀 For Developers
-
-### Adding New Strings
-
-1. Add new strings to `lib/l10n/app_en.arb`:
-
-```json
-{
-  "myNewString": "Hello World",
-  "@myNewString": {
-    "description": "A friendly greeting"
-  }
-}
-```
-
-2. Run `flutter pub get` to generate the code
-
-3. Use in your Dart code:
-
-```dart
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-// In your widget:
-Text(AppLocalizations.of(context)!.myNewString)
-```
-
-### Strings with Parameters
-
-```json
-{
-  "welcome": "Welcome, {name}!",
-  "@welcome": {
-    "description": "Welcome message with user name",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  }
-}
-```
-
-Usage:
-```dart
-Text(AppLocalizations.of(context)!.welcome('John'))
-```
-
-### Plurals
-
-```json
-{
-  "songsCount": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}}",
-  "@songsCount": {
-    "description": "Songs count with plural support",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
-}
-```
-
-Usage:
-```dart
-Text(AppLocalizations.of(context)!.songsCount(5))
-```
-
 ## 📋 Translation Guidelines
 
 - **Be concise**: Mobile screens have limited space
@@ -146,3 +78,4 @@ Visit [Crowdin](https://crowdin.com/project/musly) to see our top contributors.
 ---
 
 Made with ❤️ by the Musly community
+
