@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
-import '../providers/library_provider.dart';
-import '../providers/player_provider.dart';
-import '../services/subsonic_service.dart';
+import '../providers/providers.dart';
 import '../theme/app_theme.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
 
@@ -20,32 +20,49 @@ class ArtistScreen extends StatefulWidget {
 
 class _ArtistScreenState extends State<ArtistScreen> {
   Artist? _artist;
+  List<Song> _topSongs = [];
   List<Album> _albums = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadArtist();
+    _loadArtistDetails();
   }
 
-  Future<void> _loadArtist() async {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
+  Future<void> _loadArtistDetails() async {
     final libraryProvider = Provider.of<LibraryProvider>(
       context,
       listen: false,
     );
+    final subsonicService = libraryProvider.subsonicService;
 
     try {
-      final artist = await subsonicService.getArtist(widget.artistId);
-      final albums = await libraryProvider.getArtistAlbums(widget.artistId);
+      Artist? artist;
+      List<Song> topSongs = [];
+      List<Album> albums = [];
+
+      if (libraryProvider.isLocalOnlyMode) {
+        // Local mode: look up data from cached library
+        artist = libraryProvider.artists.firstWhere(
+          (a) => a.id == widget.artistId,
+          orElse: () => Artist(id: widget.artistId, name: 'Unknown Artist'),
+        );
+        albums = await libraryProvider.getArtistAlbums(widget.artistId);
+        // Use all songs by the artist as "top songs"
+        topSongs = libraryProvider.cachedAllSongs
+            .where((s) => s.artistId == widget.artistId)
+            .toList();
+      } else {
+        artist = await subsonicService.getArtist(widget.artistId);
+        topSongs = await subsonicService.getArtistTopSongs(widget.artistId);
+        albums = await subsonicService.getArtistAlbums(widget.artistId);
+      }
 
       if (mounted) {
         setState(() {
           _artist = artist;
+          _topSongs = topSongs;
           _albums = albums;
           _isLoading = false;
         });
@@ -57,46 +74,22 @@ class _ArtistScreenState extends State<ArtistScreen> {
     }
   }
 
-  Future<void> _playAllSongs(bool shuffle) async {
-    if (_albums.isEmpty) return;
+  void _playTopSongs({bool shuffle = false}) {
+    if (_topSongs.isEmpty) return;
 
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
 
-    try {
-      List<Song> allSongs = [];
-      for (final album in _albums) {
-        final songs = await libraryProvider.getAlbumSongs(album.id);
-        allSongs.addAll(songs);
-      }
-
-      if (allSongs.isEmpty) return;
-
-      if (shuffle) {
-        allSongs.shuffle();
-      }
-
-      playerProvider.playSong(
-        allSongs.first,
-        playlist: allSongs,
-        startIndex: 0,
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading songs: $e')));
-      }
+    var songs = List<Song>.from(_topSongs);
+    if (shuffle) {
+      songs.shuffle();
     }
+
+    playerProvider.playSong(songs.first, playlist: songs, startIndex: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
       return Scaffold(
@@ -108,7 +101,9 @@ class _ArtistScreenState extends State<ArtistScreen> {
     if (_artist == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Artist not found')),
+        body: Center(
+          child: Text(AppLocalizations.of(context)!.artistDataNotFound),
+        ),
       );
     }
 
@@ -117,192 +112,109 @@ class _ArtistScreenState extends State<ArtistScreen> {
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 300,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.5)
-                      : Colors.white.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  CupertinoIcons.back,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
+            expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                _artist!.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 40,
-                        bottom: 60,
+              title: Text(_artist!.name),
+              background: _artist!.coverArt != null
+                  ? ShaderMask(
+                      shaderCallback: (rect) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black, Colors.transparent],
+                        ).createShader(
+                          Rect.fromLTRB(0, 0, rect.width, rect.height),
+                        );
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: AlbumArtwork(
+                        coverArt: _artist!.coverArt,
+                        size: 200,
                       ),
-                      child: Container(
-                        width: 180,
-                        height: 180,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: AlbumArtwork(
-                            coverArt: _artist!.coverArt,
-                            size: 180,
-                            borderRadius: 90,
-                            shadow: const BoxShadow(color: Colors.transparent),
-                          ),
+                    )
+                  : Container(
+                      color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
+                      child: const Center(
+                        child: Icon(
+                          CupertinoIcons.mic_fill,
+                          size: 64,
+                          color: AppTheme.appleMusicRed,
                         ),
                       ),
                     ),
-                  ),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          isDark
-                              ? Colors.black.withValues(alpha: 0.8)
-                              : Colors.black.withValues(alpha: 0.5),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _PlayButton(
-                          icon: CupertinoIcons.play_fill,
-                          label: 'Play',
-                          isPrimary: true,
-                          onTap: () => _playAllSongs(false),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _PlayButton(
-                          icon: CupertinoIcons.shuffle,
-                          label: 'Shuffle',
-                          isPrimary: false,
-                          onTap: () => _playAllSongs(true),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text('Albums', style: theme.textTheme.headlineLarge),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.75,
-              ),
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final album = _albums[index];
-                return AlbumCard(
-                  album: album,
-                  size: double.infinity,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AlbumScreen(albumId: album.id),
-                    ),
-                  ),
-                );
-              }, childCount: _albums.length),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 150)),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlayButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isPrimary;
-  final VoidCallback onTap;
-
-  const _PlayButton({
-    required this.icon,
-    required this.label,
-    required this.isPrimary,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isPrimary
-          ? AppTheme.appleMusicRed
-          : AppTheme.appleMusicRed.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isPrimary ? Colors.white : AppTheme.appleMusicRed,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isPrimary ? Colors.white : AppTheme.appleMusicRed,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+            actions: [
+              IconButton(
+                icon: const Icon(CupertinoIcons.play_circle_fill),
+                onPressed: () => _playTopSongs(),
               ),
             ],
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_topSongs.isNotEmpty) ...[
+                    Text(
+                      AppLocalizations.of(context)!.topSongs,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _topSongs.take(5).length,
+                      itemBuilder: (context, index) {
+                        final song = _topSongs[index];
+                        return SongTile(
+                          song: song,
+                          playlist: _topSongs,
+                          index: index,
+                          showAlbum: true,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  if (_albums.isNotEmpty) ...[
+                    Text(
+                      AppLocalizations.of(context)!.albums,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.8,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                      itemCount: _albums.length,
+                      itemBuilder: (context, index) {
+                        final album = _albums[index];
+                        return AlbumCard(
+                          album: album,
+                          size: (MediaQuery.of(context).size.width - 48) / 2,
+                          onTap: () => NavigationHelper.push(
+                            context,
+                            AlbumScreen(albumId: album.id),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

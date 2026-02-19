@@ -24,7 +24,7 @@ class SettingsAboutTab extends StatelessWidget {
               icon: CupertinoIcons.info,
               iconColor: AppTheme.appleMusicRed,
               title: 'Version',
-              subtitle: '1.0.4',
+              subtitle: '1.0.5',
             ),
             _buildDivider(context),
             _buildInfoTile(
@@ -40,9 +40,7 @@ class SettingsAboutTab extends StatelessWidget {
         _buildSection(
           context,
           title: 'DEVELOPER',
-          children: [
-            _buildDeveloperInfo(context),
-          ],
+          children: [_buildDeveloperInfo(context)],
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -185,7 +183,6 @@ class SettingsAboutTab extends StatelessWidget {
     );
   }
 
-
   Widget _buildLinkTile(
     BuildContext context, {
     required IconData icon,
@@ -225,5 +222,4 @@ class SettingsAboutTab extends StatelessWidget {
       debugPrint('Error opening URL: $e');
     }
   }
-
 }

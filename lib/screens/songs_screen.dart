@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/song.dart';
 import '../providers/library_provider.dart';
 import '../providers/player_provider.dart';
@@ -38,7 +39,7 @@ class _SongsScreenState extends State<SongsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Songs'),
+        title: Text(AppLocalizations.of(context)!.songs),
         actions: [
           IconButton(
             icon: const Icon(Icons.shuffle_rounded),
@@ -63,7 +64,7 @@ class _SongsScreenState extends State<SongsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : libraryProvider.randomSongs.isEmpty
-          ? const Center(child: Text('No songs found'))
+          ? Center(child: Text(AppLocalizations.of(context)!.noSongsFound))
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 150),
               itemCount: libraryProvider.randomSongs.length,

@@ -72,6 +72,7 @@ class Song {
       path: json['path']?.toString(),
       starred: json['starred'] != null ? true : false,
       userRating: json['userRating'] as int?,
+      isLocal: json['isLocal'] as bool? ?? false,
       replayGainTrackGain: (replayGain?['trackGain'] as num?)?.toDouble(),
       replayGainAlbumGain: (replayGain?['albumGain'] as num?)?.toDouble(),
       replayGainTrackPeak: (replayGain?['trackPeak'] as num?)?.toDouble(),
@@ -97,6 +98,7 @@ class Song {
       'contentType': contentType,
       'size': size,
       'path': path,
+      'isLocal': isLocal,
       'replayGain': {
         if (replayGainTrackGain != null) 'trackGain': replayGainTrackGain,
         if (replayGainAlbumGain != null) 'albumGain': replayGainAlbumGain,

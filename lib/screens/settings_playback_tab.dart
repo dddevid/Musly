@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/player_provider.dart';
 import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
@@ -147,7 +148,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           size: 18,
         ),
       ),
-      title: const Text('Auto DJ Mode', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.autoDjMode,
+        style: const TextStyle(fontSize: 16),
+      ),
       trailing: DropdownButton<AutoDjMode>(
         value: _autoDjMode,
         underline: const SizedBox(),

@@ -5,10 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../services/android_auto_service.dart';
+import '../services/local_music_service.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
   final AndroidAutoService _androidAutoService = AndroidAutoService();
+
+  bool _localOnlyMode = false;
+  LocalMusicService? _localMusicService;
 
   List<Artist> _artists = [];
   List<Album> _recentAlbums = [];
@@ -36,6 +40,40 @@ class LibraryProvider extends ChangeNotifier {
 
   LibraryProvider(this._subsonicService);
   SubsonicService get subsonicService => _subsonicService;
+
+  /// Call this to enable local-only mode backed by LocalMusicService
+  void setLocalMusicService(LocalMusicService service) {
+    // Remove old listener if switching service
+    _localMusicService?.removeListener(_onLocalMusicServiceChanged);
+    _localMusicService = service;
+    _localOnlyMode = true;
+    _isInitialized = false; // Force re-init with new data
+    service.addListener(_onLocalMusicServiceChanged);
+  }
+
+  void _onLocalMusicServiceChanged() {
+    if (_localOnlyMode &&
+        _localMusicService != null &&
+        !_localMusicService!.isScanning) {
+      // Scan just finished – reload library data
+      _cachedAllSongs = List.from(_localMusicService!.songs);
+      _cachedAllAlbums = List.from(_localMusicService!.albums);
+      _artists = List.from(_localMusicService!.artists);
+      _randomSongs = _cachedAllSongs.take(50).toList();
+      _recentAlbums = _cachedAllAlbums.take(20).toList();
+      _isInitialized = true;
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void setLocalOnlyMode(bool enabled) {
+    _localOnlyMode = enabled;
+    _isInitialized = false;
+    notifyListeners();
+  }
+
+  bool get isLocalOnlyMode => _localOnlyMode;
 
   String getCoverArtUrl(String? coverArt) {
     return _subsonicService.getCoverArtUrl(coverArt, size: 300);
@@ -65,9 +103,21 @@ class LibraryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (_localOnlyMode && _localMusicService != null) {
+        // Local-only: populate from LocalMusicService
+        _cachedAllSongs = List.from(_localMusicService!.songs);
+        _cachedAllAlbums = List.from(_localMusicService!.albums);
+        _artists = List.from(_localMusicService!.artists);
+        _randomSongs = _cachedAllSongs.take(50).toList();
+        _recentAlbums = _cachedAllAlbums.take(20).toList();
+        _isInitialized = true;
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
       await _loadCachedData(loadFullLibrary: false);
 
-      // Try to load from server - will fail gracefully if not configured
       try {
         await Future.wait([
           loadRecentAlbums(),
@@ -101,6 +151,17 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> ensureLibraryLoaded() async {
     if (_cachedAllSongs.isNotEmpty) return;
+
+    // In local-only mode, songs come from LocalMusicService, not Subsonic
+    if (_localOnlyMode && _localMusicService != null) {
+      _cachedAllSongs = List.from(_localMusicService!.songs);
+      _cachedAllAlbums = List.from(_localMusicService!.albums);
+      _artists = List.from(_localMusicService!.artists);
+      _randomSongs = _cachedAllSongs.take(50).toList();
+      _recentAlbums = _cachedAllAlbums.take(20).toList();
+      notifyListeners();
+      return;
+    }
 
     _isLoading = true;
     notifyListeners();
@@ -389,6 +450,9 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<List<Album>> getArtistAlbums(String artistId) async {
+    if (_localOnlyMode && _localMusicService != null) {
+      return _localMusicService!.getAlbumsByArtist(artistId);
+    }
     try {
       return await _subsonicService.getArtistAlbums(artistId);
     } catch (e) {
@@ -398,6 +462,10 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<List<Song>> getAlbumSongs(String albumId) async {
+    // Local-only mode
+    if (_localOnlyMode && _localMusicService != null) {
+      return _localMusicService!.getSongsByAlbum(albumId);
+    }
     try {
       return await _subsonicService.getAlbumSongs(albumId);
     } catch (e) {
@@ -458,7 +526,36 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<SearchResult> search(String query) async {
+    if (_localOnlyMode) {
+      return _searchLocal(query);
+    }
     return await _subsonicService.search(query);
+  }
+
+  SearchResult _searchLocal(String query) {
+    final q = query.toLowerCase();
+    final songs = _cachedAllSongs
+        .where(
+          (s) =>
+              s.title.toLowerCase().contains(q) ||
+              (s.artist?.toLowerCase().contains(q) ?? false) ||
+              (s.album?.toLowerCase().contains(q) ?? false),
+        )
+        .take(50)
+        .toList();
+    final artists = _artists
+        .where((a) => a.name.toLowerCase().contains(q))
+        .take(20)
+        .toList();
+    final albums = _cachedAllAlbums
+        .where(
+          (a) =>
+              a.name.toLowerCase().contains(q) ||
+              (a.artist?.toLowerCase().contains(q) ?? false),
+        )
+        .take(20)
+        .toList();
+    return SearchResult(songs: songs, artists: artists, albums: albums);
   }
 
   Future<void> star({String? songId, String? albumId, String? artistId}) async {
@@ -545,5 +642,11 @@ class LibraryProvider extends ChangeNotifier {
       debugPrint('Error loading all albums: $e');
       return [];
     }
+  }
+
+  @override
+  void dispose() {
+    _localMusicService?.removeListener(_onLocalMusicServiceChanged);
+    super.dispose();
   }
 }

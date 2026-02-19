@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:provider/provider.dart';
 import '../providers/library_provider.dart';
 import '../providers/player_provider.dart';
@@ -342,8 +342,8 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.appleMusicRed.withOpacity(
-                                      0.4,
+                                    color: AppTheme.appleMusicRed.withValues(
+                                      alpha: 0.4,
                                     ),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),

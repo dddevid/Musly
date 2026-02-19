@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/album_artwork.dart' show isLocalFilePath;
 import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
@@ -12,6 +14,7 @@ import '../widgets/widgets.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
 import 'history_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,9 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return AppLocalizations.of(context)!.goodMorning;
+    if (hour < 17) return AppLocalizations.of(context)!.goodAfternoon;
+    return AppLocalizations.of(context)!.goodEvening;
   }
 
   String _computeRandomKey(List<Song> songs) {
@@ -119,8 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (recommendationService.enabled &&
                         personalizedFeed.isNotEmpty) ...[
-                      const SectionHeader(
-                        title: 'For You',
+                      SectionHeader(
+                        title: AppLocalizations.of(context)!.forYou,
                         icon: Icons.stars_rounded,
                       ),
                       ...personalizedFeed.take(5).map((song) {
@@ -135,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
 
                     if (mixes.containsKey('Quick Picks')) ...[
-                      const SectionHeader(
-                        title: 'Quick Picks',
+                      SectionHeader(
+                        title: AppLocalizations.of(context)!.quickPicks,
                         icon: Icons.bolt_rounded,
                       ),
                       ...mixes['Quick Picks']!.take(5).map((song) {
@@ -151,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
 
                     if (mixes.containsKey('Discover Mix')) ...[
-                      const SectionHeader(
-                        title: 'Discover Mix',
+                      SectionHeader(
+                        title: AppLocalizations.of(context)!.discoverMix,
                         icon: Icons.explore_rounded,
                       ),
                       ...mixes['Discover Mix']!.take(5).map((song) {
@@ -207,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (libraryProvider.recentAlbums.isNotEmpty) ...[
                       HorizontalScrollSection(
-                        title: 'Recently Played',
+                        title: AppLocalizations.of(context)!.recentlyPlayed,
                         children: libraryProvider.recentAlbums
                             .take(10)
                             .map(
@@ -224,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (libraryProvider.playlists.isNotEmpty) ...[
                       HorizontalScrollSection(
-                        title: 'Your Playlists',
+                        title: AppLocalizations.of(context)!.yourPlaylists,
                         children: libraryProvider.playlists
                             .take(10)
                             .map(
@@ -248,7 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (!recommendationService.enabled &&
                         libraryProvider.randomSongs.isNotEmpty) ...[
-                      const SectionHeader(title: 'Made For You'),
+                      SectionHeader(
+                        title: AppLocalizations.of(context)!.madeForYou,
+                      ),
                       ...libraryProvider.randomSongs.take(5).map((song) {
                         final index = libraryProvider.randomSongs.indexOf(song);
                         return SongTile(
@@ -277,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No content available',
+                              AppLocalizations.of(context)!.noContentAvailable,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -286,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Try refreshing or check your server connection',
+                              AppLocalizations.of(context)!.tryRefreshing,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[500],
@@ -296,7 +301,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ElevatedButton.icon(
                               onPressed: () => libraryProvider.refresh(),
                               icon: const Icon(Icons.refresh),
-                              label: const Text('Refresh'),
+                              label: Text(
+                                AppLocalizations.of(context)!.refresh,
+                              ),
                             ),
                           ],
                         ),
@@ -393,7 +400,12 @@ class _QuickAccessGrid extends StatelessWidget {
           if (isPlaylist) {
             title = item.name;
             imageUrl = item.coverArt != null
-                ? subsonicService.getCoverArtUrl(item.coverArt!, size: 100)
+                ? (isLocalFilePath(item.coverArt)
+                      ? item.coverArt
+                      : subsonicService.getCoverArtUrl(
+                          item.coverArt!,
+                          size: 100,
+                        ))
                 : null;
             onTap = () => Navigator.push(
               context,
@@ -407,7 +419,12 @@ class _QuickAccessGrid extends StatelessWidget {
           } else {
             title = item.name;
             imageUrl = item.coverArt != null
-                ? subsonicService.getCoverArtUrl(item.coverArt!, size: 100)
+                ? (isLocalFilePath(item.coverArt)
+                      ? item.coverArt
+                      : subsonicService.getCoverArtUrl(
+                          item.coverArt!,
+                          size: 100,
+                        ))
                 : null;
             onTap = () => Navigator.push(
               context,
@@ -459,19 +476,31 @@ class _QuickAccessTile extends StatelessWidget {
                 width: 48,
                 height: 48,
                 child: imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: Colors.grey[800]),
-                        errorWidget: (_, __, ___) => Container(
-                          color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.music_note,
-                            color: Colors.white30,
-                          ),
-                        ),
-                      )
+                    ? (isLocalFilePath(imageUrl)
+                          ? Image.file(
+                              File(imageUrl!),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: Colors.grey[800],
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white30,
+                                ),
+                              ),
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) =>
+                                  Container(color: Colors.grey[800]),
+                              errorWidget: (_, __, ___) => Container(
+                                color: Colors.grey[800],
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white30,
+                                ),
+                              ),
+                            ))
                     : Container(
                         color: Colors.grey[800],
                         child: const Icon(
@@ -533,7 +562,7 @@ class _PlaylistCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),

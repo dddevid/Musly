@@ -85,16 +85,19 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Package Windows Build
+      - name: Install NSIS
+        run: choco install nsis --yes
+
+      - name: Build Windows Installer
         run: |
-          cd build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath ../../../../../musly-windows-x64.zip
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+          Get-Item musly-*-setup.exe | Rename-Item -NewName "musly-windows-setup.exe"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: musly-windows-x64.zip
+          path: musly-windows-setup.exe
 
   build-linux:
     name: Build Linux
@@ -180,7 +183,7 @@ jobs:
             - App Bundle: `app-release.aab` (for Play Store)
 
             **Windows:**
-            - `musly-windows-x64.zip` (extract and run Musly.exe)
+            - `musly-windows-setup.exe` (setup installer, run to install Musly)
 
             **Linux:**
             - `musly-linux-x64.tar.gz` (extract and run musly)
@@ -195,7 +198,7 @@ jobs:
           files: |
             artifacts/android-apk/*.apk
             artifacts/android-aab/*.aab
-            artifacts/windows-build/*.zip
+            artifacts/windows-build/*.exe
             artifacts/linux-build/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

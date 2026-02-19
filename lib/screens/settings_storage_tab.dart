@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/bpm_analyzer_service.dart';
@@ -277,9 +278,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await DefaultCacheManager().emptyCache();
     await _bpmAnalyzer.clearCache();
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('All cache cleared')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.allCacheCleared)),
+      );
       setState(() {});
     }
   }
@@ -302,9 +303,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 18,
         ),
       ),
-      title: const Text('Downloaded Songs', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.downloadedSongs,
+        style: const TextStyle(fontSize: 16),
+      ),
       trailing: Text(
-        '$_downloadedCount songs • $_downloadedSize',
+        AppLocalizations.of(
+          context,
+        )!.downloadedStats(_downloadedCount, _downloadedSize),
         style: TextStyle(
           fontSize: 14,
           color: _isDark
@@ -348,7 +354,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   ),
                 ),
                 title: Text(
-                  'Downloading Library... ${downloadState.currentProgress}/${downloadState.totalCount}',
+                  AppLocalizations.of(context)!.downloadingLibrary(
+                    downloadState.currentProgress,
+                    downloadState.totalCount,
+                  ),
                   style: const TextStyle(fontSize: 16),
                 ),
                 trailing: IconButton(
@@ -394,9 +403,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               size: 18,
             ),
           ),
-          title: const Text(
-            'Download All Library',
-            style: TextStyle(fontSize: 16, color: Color(0xFF34C759)),
+          title: Text(
+            AppLocalizations.of(context)!.downloadAllLibrary,
+            style: const TextStyle(fontSize: 16, color: Color(0xFF34C759)),
           ),
           onTap: _downloadAllLibrary,
         );
@@ -416,10 +425,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       if (allSongs.isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No songs available. Please load your library first.',
-            ),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.noSongsAvailable),
           ),
         );
         return;
@@ -429,20 +436,20 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Download All Library'),
+          title: Text(AppLocalizations.of(context)!.downloadAllLibrary),
           content: Text(
-            'This will download ${allSongs.length} songs to your device. '
-            'This may take a while and use significant storage space.\n\n'
-            'Continue?',
+            AppLocalizations.of(
+              context,
+            )!.downloadLibraryConfirm(allSongs.length),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Download'),
+              child: Text(AppLocalizations.of(context)!.download),
             ),
           ],
         ),
@@ -455,9 +462,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Library download started'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.libraryDownloadStarted),
+            duration: const Duration(seconds: 2),
           ),
         );
         await _loadOfflineInfo();
@@ -466,7 +473,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error starting download: $e'),
+            content: Text(
+              AppLocalizations.of(context)!.errorStartingDownload(e),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -492,16 +501,18 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 16,
         ),
       ),
-      title: const Text(
-        'Delete All Downloads',
-        style: TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
+      title: Text(
+        AppLocalizations.of(context)!.deleteDownloads,
+        style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       onTap: () async {
         await _offlineService.deleteAllDownloads();
         await _loadOfflineInfo();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('All downloads deleted')),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.downloadsDeleted),
+            ),
           );
         }
       },
@@ -527,7 +538,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 18,
         ),
       ),
-      title: const Text('Cached BPMs', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.cachedBpms,
+        style: const TextStyle(fontSize: 16),
+      ),
       trailing: Text(
         '$cachedCount',
         style: TextStyle(
@@ -563,7 +577,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           ),
           enabled: !_isCaching,
           title: Text(
-            'Cache All BPMs',
+            AppLocalizations.of(context)!.cacheAllBpms,
             style: TextStyle(
               fontSize: 16,
               color: _isCaching ? Colors.grey : null,
@@ -587,16 +601,18 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             horizontal: 16,
             vertical: 4,
           ),
-          title: const Text(
-            'Clear BPM Cache',
-            style: TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
+          title: Text(
+            AppLocalizations.of(context)!.clearBpmCache,
+            style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
           ),
           onTap: () async {
             await _bpmAnalyzer.clearCache();
             setState(() {});
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('BPM cache cleared')),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.bpmCacheCleared),
+                ),
               );
             }
           },

@@ -16,6 +16,7 @@ import 'made_for_you_screen.dart';
 import 'top_rated_screen.dart';
 import 'favorites_screen.dart';
 import 'radio_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -150,7 +151,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 expandedHeight: 120,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
-                    'Search',
+                    AppLocalizations.of(context)!.searchTitle,
                     style: theme.appBarTheme.titleTextStyle,
                   ),
                   titlePadding: const EdgeInsets.only(left: 16, bottom: 60),
@@ -162,7 +163,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: CupertinoSearchTextField(
                       controller: _searchController,
                       focusNode: _focusNode,
-                      placeholder: 'Artists, Songs, Albums',
+                      placeholder: AppLocalizations.of(
+                        context,
+                      )!.searchPlaceholder,
                       style: theme.textTheme.bodyLarge,
                       backgroundColor: isDark
                           ? AppTheme.darkCard
@@ -181,12 +184,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
                             Text(
-                              'Albums',
+                              AppLocalizations.of(context)!.albums,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -201,12 +204,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: const AlbumCardShimmer(size: 150),
                       ),
                       const SizedBox(height: 24),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
                             Text(
-                              'Songs',
+                              AppLocalizations.of(context)!.songs,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -234,12 +237,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No Results',
+                          AppLocalizations.of(context)!.noResults,
                           style: theme.textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Try a different search',
+                          AppLocalizations.of(context)!.tryDifferentSearch,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppTheme.lightSecondaryText,
                           ),
@@ -272,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (result.artists.isNotEmpty) ...[
-          const SectionHeader(title: 'Artists'),
+          SectionHeader(title: AppLocalizations.of(context)!.artists),
           ...result.artists
               .take(5)
               .map(
@@ -289,7 +292,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
         if (result.albums.isNotEmpty) ...[
           HorizontalScrollSection(
-            title: 'Albums',
+            title: AppLocalizations.of(context)!.albums,
             children: result.albums
                 .take(10)
                 .map(
@@ -308,7 +311,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
 
         if (result.songs.isNotEmpty) ...[
-          const SectionHeader(title: 'Songs'),
+          SectionHeader(title: AppLocalizations.of(context)!.songs),
           ...result.songs.asMap().entries.map(
             (entry) => SongTile(
               song: entry.value,
@@ -328,37 +331,37 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildBrowseCategories() {
     final categories = [
       _CategoryItem(
-        'Made For You',
+        AppLocalizations.of(context)!.categoryMadeForYou,
         Icons.person_outline_rounded,
         [Colors.purple, Colors.pink],
         () => NavigationHelper.push(context, const MadeForYouScreen()),
       ),
       _CategoryItem(
-        'New Releases',
+        AppLocalizations.of(context)!.categoryNewReleases,
         Icons.album_rounded,
         [Colors.orange, Colors.red],
         () => NavigationHelper.push(context, const NewReleasesScreen()),
       ),
       _CategoryItem(
-        'Top Rated',
+        AppLocalizations.of(context)!.categoryTopRated,
         Icons.star_rounded,
         [Colors.amber, Colors.orange],
         () => NavigationHelper.push(context, const TopRatedScreen()),
       ),
       _CategoryItem(
-        'Genres',
+        AppLocalizations.of(context)!.categoryGenres,
         Icons.library_music_rounded,
         [Colors.green, Colors.teal],
         () => NavigationHelper.push(context, const GenresScreen()),
       ),
       _CategoryItem(
-        'Favorites',
+        AppLocalizations.of(context)!.categoryFavorites,
         Icons.favorite_rounded,
         [Colors.red, Colors.pink],
         () => NavigationHelper.push(context, const FavoritesScreen()),
       ),
       _CategoryItem(
-        'Radio',
+        AppLocalizations.of(context)!.categoryRadio,
         Icons.radio_rounded,
         [Colors.blue, Colors.indigo],
         () => NavigationHelper.push(context, const RadioScreen()),
@@ -368,7 +371,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Browse Categories'),
+        SectionHeader(title: AppLocalizations.of(context)!.browseCategories),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GridView.builder(
@@ -423,7 +426,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.all(24),
                 child: Center(
                   child: Text(
-                    'No suggestions',
+                    AppLocalizations.of(context)!.noSuggestions,
                     style: TextStyle(
                       color: AppTheme.lightSecondaryText,
                       fontSize: 14,
@@ -439,7 +442,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                         child: Text(
-                          'Artists',
+                          AppLocalizations.of(context)!.artists,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -475,7 +478,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                         child: Text(
-                          'Albums',
+                          AppLocalizations.of(context)!.albums,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -519,7 +522,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                         child: Text(
-                          'Songs',
+                          AppLocalizations.of(context)!.songs,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

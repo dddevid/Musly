@@ -33,6 +33,8 @@ dependencies:
   
   just_audio: ^0.9.46
   just_audio_windows: ^0.2.2
+  just_audio_media_kit: ^2.1.0  # Linux (and macOS) audio backend via libmpv
+  media_kit_libs_linux: ^1.2.1  # Native libmpv binaries for Linux
   audio_session: ^0.1.25
   audio_service: ^0.18.12
   
@@ -56,6 +58,7 @@ dependencies:
   volume_controller: ^3.4.1
   
   permission_handler: ^11.3.1
+  audio_metadata_reader: ^1.4.2
   
   device_info_plus: ^10.1.2
   lottie: ^3.1.2

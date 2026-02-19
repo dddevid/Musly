@@ -530,5 +530,785 @@
   "display": "Display",
   "@display": {
     "description": "Display settings section"
+  },
+
+  "playerInterface": "Player Interface",
+  "@playerInterface": {
+    "description": "Player Interface settings section"
+  },
+
+  "smartRecommendations": "Smart Recommendations",
+  "@smartRecommendations": {
+    "description": "Smart Recommendations settings section title"
+  },
+
+  "showVolumeSlider": "Show Volume Slider",
+  "@showVolumeSlider": {
+    "description": "Show Volume Slider toggle label"
+  },
+
+  "showVolumeSliderSubtitle": "Display volume control in Now Playing screen",
+  "@showVolumeSliderSubtitle": {
+    "description": "Show Volume Slider toggle subtitle"
+  },
+
+  "showStarRatings": "Show Star Ratings",
+  "@showStarRatings": {
+    "description": "Show Star Ratings toggle label"
+  },
+
+  "showStarRatingsSubtitle": "Rate songs and view ratings",
+  "@showStarRatingsSubtitle": {
+    "description": "Show Star Ratings toggle subtitle"
+  },
+
+  "enableRecommendations": "Enable Recommendations",
+  "@enableRecommendations": {
+    "description": "Enable Recommendations toggle label"
+  },
+
+  "enableRecommendationsSubtitle": "Get personalized music suggestions",
+  "@enableRecommendationsSubtitle": {
+    "description": "Enable Recommendations toggle subtitle"
+  },
+
+  "listeningData": "Listening Data",
+  "@listeningData": {
+    "description": "Listening Data section label"
+  },
+
+  "totalPlays": "{count} total plays",
+  "@totalPlays": {
+    "description": "Total plays count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "clearListeningHistory": "Clear Listening History",
+  "@clearListeningHistory": {
+    "description": "Clear Listening History button label"
+  },
+
+  "confirmClearHistory": "This will reset all your listening data and recommendations. Are you sure?",
+  "@confirmClearHistory": {
+    "description": "Confirmation dialog for clearing history"
+  },
+
+  "historyCleared": "Listening history cleared",
+  "@historyCleared": {
+    "description": "SnackBar message when history is cleared"
+  },
+
+  "discordStatus": "Discord Status",
+  "@discordStatus": {
+    "description": "Discord RPC toggle label"
+  },
+
+  "discordStatusSubtitle": "Show playing song on Discord profile",
+  "@discordStatusSubtitle": {
+    "description": "Discord RPC toggle subtitle"
+  },
+
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+
+  "systemDefault": "System Default",
+  "@systemDefault": {
+    "description": "System default language option"
+  },
+
+  "communityTranslations": "Translations by Community",
+  "@communityTranslations": {
+    "description": "Community translations credit label"
+  },
+
+  "communityTranslationsSubtitle": "Help translate Musly on Crowdin",
+  "@communityTranslationsSubtitle": {
+    "description": "Community translations credit subtitle"
+  },
+
+  "@_LIBRARY": {},
+  "yourLibrary": "Your Library",
+  "filterAll": "All",
+  "filterPlaylists": "Playlists",
+  "filterAlbums": "Albums",
+  "filterArtists": "Artists",
+  "likedSongs": "Liked Songs",
+  "allAlbums": "All Albums",
+  "allSongs": "All Songs",
+  "radioStations": "Radio Stations",
+  "playlist": "Playlist",
+  "internetRadio": "Internet Radio",
+  "newPlaylist": "New Playlist",
+  "playlistName": "Playlist Name",
+  "create": "Create",
+  "deletePlaylist": "Delete Playlist",
+  "deletePlaylistConfirmation": "Are you sure you want to delete the playlist \"{name}\"?",
+  "@deletePlaylistConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDeleted": "Playlist \"{name}\" deleted",
+  "@playlistDeleted": {
+    "placeholders": {
+        "name": {
+            "type": "String"
+        }
+    }
+  },
+  "errorCreatingPlaylist": "Error creating playlist: {error}",
+  "@errorCreatingPlaylist": {
+      "placeholders": {
+          "error": {
+              "type": "Object"
+          }
+      }
+  },
+  "errorDeletingPlaylist": "Error deleting playlist: {error}",
+  "@errorDeletingPlaylist": {
+      "placeholders": {
+          "error": {
+              "type": "Object"
+          }
+      }
+  },
+  "playlistCreated": "Playlist \"{name}\" created",
+  "@playlistCreated": {
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "@_SEARCH": {},
+  "searchTitle": "Search",
+  "searchPlaceholder": "Artists, Songs, Albums",
+  "noResults": "No Results",
+  "tryDifferentSearch": "Try a different search",
+  "noSuggestions": "No suggestions",
+  "browseCategories": "Browse Categories",
+  "categoryMadeForYou": "Made For You",
+  "categoryNewReleases": "New Releases",
+  "categoryTopRated": "Top Rated",
+  "categoryGenres": "Genres",
+  "categoryFavorites": "Favorites",
+  "categoryRadio": "Radio",
+  "artists": "Artists",
+  "albums": "Albums",
+  "songs": "Songs",
+
+  "@_SETTINGS_GENERAL": {},
+  "settingsTitle": "Settings",
+  "tabPlayback": "Playback",
+  "tabStorage": "Storage",
+  "tabServer": "Server",
+  "tabDisplay": "Display",
+  "tabAbout": "About",
+
+  "@_SETTINGS_PLAYBACK": {},
+  "sectionAutoDj": "AUTO DJ",
+  "autoDjMode": "Auto DJ Mode",
+  "songsToAdd": "Songs to Add: {count}",
+  "@songsToAdd": {
+      "placeholders": {
+          "count": {
+              "type": "int"
+          }
+      }
+  },
+  "sectionReplayGain": "VOLUME NORMALIZATION (REPLAYGAIN)",
+  "replayGainMode": "Mode",
+  "preamp": "Preamp: {value} dB",
+  "@preamp": {
+      "placeholders": {
+          "value": {
+              "type": "String"
+          }
+      }
+  },
+  "preventClipping": "Prevent Clipping",
+  "fallbackGain": "Fallback Gain: {value} dB",
+  "@fallbackGain": {
+      "placeholders": {
+          "value": {
+              "type": "String"
+          }
+      }
+  },
+  "sectionStreamingQuality": "STREAMING QUALITY",
+  "enableTranscoding": "Enable Transcoding",
+  "qualityWifi": "WiFi Quality",
+  "qualityMobile": "Mobile Quality",
+  "format": "Format",
+  "transcodingSubtitle": "Reduce data usage with lower quality",
+  "modeOff": "Off",
+  "modeTrack": "Track",
+  "modeAlbum": "Album",
+
+  "@_SETTINGS_SERVER": {},
+  "sectionServerConnection": "SERVER CONNECTION",
+  "serverType": "Server Type",
+  "serverUrl": "Server URL",
+  "username": "Username",
+  "notConnected": "Not connected",
+  "unknown": "Unknown",
+  "sectionMusicFolders": "MUSIC FOLDERS",
+  "musicFolders": "Music Folders",
+  "noMusicFolders": "No music folders found",
+  "sectionAccount": "ACCOUNT",
+  "logout": "Logout",
+  "logoutConfirmation": "Are you sure you want to logout? This will also clear all cached data.",
+
+  "@_SETTINGS_STORAGE": {},
+  "sectionCacheSettings": "CACHE SETTINGS",
+  "imageCache": "Image Cache",
+  "musicCache": "Music Cache",
+  "bpmCache": "BPM Cache",
+  "saveAlbumCovers": "Save album covers locally",
+  "saveSongMetadata": "Save song metadata locally",
+  "saveBpmAnalysis": "Save BPM analysis locally",
+  "sectionCacheCleanup": "CACHE CLEANUP",
+  "clearAllCache": "Clear All Cache",
+  "allCacheCleared": "All cache cleared",
+  "sectionOfflineDownloads": "OFFLINE DOWNLOADS",
+  "downloadedSongs": "Downloaded Songs",
+  "downloadingLibrary": "Downloading Library... {progress}/{total}",
+  "@downloadingLibrary": {
+      "placeholders": {
+          "progress": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
+  },
+  "downloadAllLibrary": "Download All Library",
+  "downloadLibraryConfirm": "This will download {count} songs to your device. This may take a while and use significant storage space.\n\nContinue?",
+  "@downloadLibraryConfirm": {
+      "placeholders": {
+          "count": {
+              "type": "int"
+          }
+      }
+  },
+  "libraryDownloadStarted": "Library download started",
+  "deleteDownloads": "Delete All Downloads",
+  "downloadsDeleted": "All downloads deleted",
+  "noSongsAvailable": "No songs available. Please load your library first.",
+  "sectionBpmAnalysis": "BPM ANALYSIS",
+  "cachedBpms": "Cached BPMs",
+  "cacheAllBpms": "Cache All BPMs",
+  "clearBpmCache": "Clear BPM Cache",
+  "bpmCacheCleared": "BPM cache cleared",
+  "downloadedStats": "{count} songs • {size}",
+  "@downloadedStats": {
+      "placeholders": {
+          "count": {
+              "type": "int"
+          },
+          "size": {
+              "type": "String"
+          }
+      }
+  },
+
+  "@_SETTINGS_ABOUT": {},
+  "sectionInformation": "INFORMATION",
+  "version": "Version",
+  "platform": "Platform",
+  "sectionDeveloper": "DEVELOPER",
+  "madeBy": "Made by dddevid",
+  "sectionLinks": "LINKS",
+  "githubRepo": "GitHub Repository",
+  "changelog": "Changelog",
+  "reportIssue": "Report Issue",
+  "joinDiscord": "Join Discord Community",
+
+  "@_PLAYER_AND_MENUS": {},
+  "playingFrom": "PLAYING FROM",
+  "live": "LIVE",
+  "streamingLive": "Streaming Live",
+  "stopRadio": "Stop Radio",
+  "removeFromLiked": "Remove from Liked Songs",
+  "addToLiked": "Add to Liked Songs",
+  "playNext": "Play Next",
+  "addToQueue": "Add to Queue",
+  "goToAlbum": "Go to Album",
+  "goToArtist": "Go to Artist",
+  "rateSong": "Rate Song",
+  "rateSongValue": "Rate Song ({rating} {stars})",
+  "@rateSongValue": {
+      "placeholders": {
+          "rating": {
+              "type": "int"
+          },
+          "stars": {
+              "type": "String"
+          }
+      }
+  },
+  "ratingRemoved": "Rating removed",
+  "rated": "Rated {rating} {stars}",
+  "@rated": {
+      "placeholders": {
+          "rating": {
+              "type": "int"
+          },
+          "stars": {
+              "type": "String"
+          }
+      }
+  },
+  "removeRating": "Remove Rating",
+  "download": "Download",
+  "downloaded": "Downloaded",
+  "downloading": "Downloading... {percent}%",
+  "@downloading": {
+      "placeholders": {
+          "percent": {
+              "type": "int"
+          }
+      }
+  },
+  "removeDownload": "Remove Download",
+  "removeDownloadConfirm": "Remove this song from offline storage?",
+  "downloadRemoved": "Download removed",
+  "downloadedTitle": "Downloaded \"{title}\"",
+  "@downloadedTitle": {
+      "placeholders": {
+          "title": {
+              "type": "String"
+          }
+      }
+  },
+  "downloadFailed": "Download failed",
+  "downloadError": "Download error: {error}",
+  "@downloadError": {
+      "placeholders": {
+          "error": {
+              "type": "Object"
+          }
+      }
+  },
+  "addedToPlaylist": "Added \"{title}\" to {playlist}",
+  "@addedToPlaylist": {
+      "placeholders": {
+          "title": {
+              "type": "String"
+          },
+          "playlist": {
+              "type": "String"
+          }
+      }
+  },
+  "errorAddingToPlaylist": "Error adding to playlist: {error}",
+  "@errorAddingToPlaylist": {
+      "placeholders": {
+          "error": {
+              "type": "Object"
+          }
+      }
+  },
+  "noPlaylists": "No playlists available",
+  "createNewPlaylist": "Create New Playlist",
+  "yourPlaylists": "Your Playlists",
+  "artistNotFound": "Artist \"{name}\" not found",
+  "@artistNotFound": {
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+  "errorSearchingArtist": "Error searching for artist: {error}",
+  "@errorSearchingArtist": {
+      "placeholders": {
+          "error": {
+              "type": "Object"
+          }
+      }
+  },
+  "selectArtist": "Select Artist",
+  "removedFromFavorites": "Removed from favorites",
+  "addedToFavorites": "Added to favorites",
+  "star": "star",
+  "stars": "stars",
+  "cancel": "Cancel",
+  "close": "Close",
+
+  "@_ALBUM_ARTIST_SCREENS": {},
+  "albumNotFound": "Album not found",
+  "@albumNotFound": { "description": "Message when album data is not available" },
+
+  "durationHoursMinutes": "{hours} HR {minutes} MIN",
+  "@durationHoursMinutes": {
+    "description": "Album duration in hours and minutes",
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "durationMinutes": "{minutes} MIN",
+  "@durationMinutes": {
+    "description": "Album duration in minutes only",
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+
+  "topSongs": "Top Songs",
+  "@topSongs": { "description": "Top songs section header on artist screen" },
+
+  "connected": "Connected",
+  "@connected": { "description": "Server connection status — connected" },
+
+  "@_PLAYER_SCREENS": {},
+  "noSongPlaying": "No song playing",
+  "@noSongPlaying": { "description": "Placeholder when no song is loaded in the player" },
+
+  "internetRadioUppercase": "INTERNET RADIO",
+  "@internetRadioUppercase": { "description": "Uppercase badge shown in the now-playing radio player" },
+
+  "playingNext": "Playing Next",
+  "@playingNext": { "description": "Title of the queue / playing-next bottom sheet" },
+
+  "createPlaylistTitle": "Create Playlist",
+  "@createPlaylistTitle": { "description": "Title of the create-new-playlist dialog" },
+
+  "playlistNameHint": "Playlist name",
+  "@playlistNameHint": { "description": "Hint text for the playlist name input field" },
+
+  "playlistCreatedWithSong": "Created playlist \"{name}\" with this song",
+  "@playlistCreatedWithSong": {
+    "description": "Snackbar shown after creating a playlist with the current song",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "errorLoadingPlaylists": "Error loading playlists: {error}",
+  "@errorLoadingPlaylists": {
+    "description": "Snackbar shown when playlists fail to load",
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+
+  "@_PLAYLIST_SCREEN": {},
+  "playlistNotFound": "Playlist not found",
+  "@playlistNotFound": { "description": "Message when a playlist cannot be found" },
+
+  "noSongsInPlaylist": "No songs in this playlist",
+  "@noSongsInPlaylist": { "description": "Empty state message for a playlist with no songs" },
+
+  "@_FAVORITES_SCREEN": {},
+  "noFavoriteSongsYet": "No favorite songs yet",
+  "@noFavoriteSongsYet": { "description": "Empty state for the favorite songs list" },
+
+  "noFavoriteAlbumsYet": "No favorite albums yet",
+  "@noFavoriteAlbumsYet": { "description": "Empty state for the favorite albums list" },
+
+  "@_HISTORY_SCREEN": {},
+  "listeningHistory": "Listening History",
+  "@listeningHistory": { "description": "Title of the listening history screen" },
+
+  "noListeningHistory": "No Listening History",
+  "@noListeningHistory": { "description": "Empty state headline on the history screen" },
+
+  "songsWillAppearHere": "Songs you play will appear here",
+  "@songsWillAppearHere": { "description": "Empty state subtitle on the history screen" },
+
+  "@_SORT_OPTIONS": {},
+  "sortByTitleAZ": "Title (A-Z)",
+  "@sortByTitleAZ": { "description": "Sort option: title ascending" },
+
+  "sortByTitleZA": "Title (Z-A)",
+  "@sortByTitleZA": { "description": "Sort option: title descending" },
+
+  "sortByArtistAZ": "Artist (A-Z)",
+  "@sortByArtistAZ": { "description": "Sort option: artist ascending" },
+
+  "sortByArtistZA": "Artist (Z-A)",
+  "@sortByArtistZA": { "description": "Sort option: artist descending" },
+
+  "sortByAlbumAZ": "Album (A-Z)",
+  "@sortByAlbumAZ": { "description": "Sort option: album ascending" },
+
+  "sortByAlbumZA": "Album (Z-A)",
+  "@sortByAlbumZA": { "description": "Sort option: album descending" },
+
+  "recentlyAdded": "Recently Added",
+  "@recentlyAdded": { "description": "Sort option: recently added" },
+
+  "noSongsFound": "No songs found",
+  "@noSongsFound": { "description": "Empty state when no songs match a filter" },
+
+  "noAlbumsFound": "No albums found",
+  "@noAlbumsFound": { "description": "Empty state when no albums match a filter" },
+
+  "@_RADIO_SCREEN": {},
+  "noHomepageUrl": "No homepage URL available",
+  "@noHomepageUrl": { "description": "Snackbar when a radio station has no homepage URL" },
+
+  "playStation": "Play Station",
+  "@playStation": { "description": "Context menu option to play a radio station" },
+
+  "openHomepage": "Open Homepage",
+  "@openHomepage": { "description": "Context menu option to open a radio station's homepage" },
+
+  "copyStreamUrl": "Copy Stream URL",
+  "@copyStreamUrl": { "description": "Context menu option to copy a radio station stream URL" },
+
+  "failedToLoadRadioStations": "Failed to load radio stations",
+  "@failedToLoadRadioStations": { "description": "Error state message on the radio screen" },
+
+  "noRadioStations": "No Radio Stations",
+  "@noRadioStations": { "description": "Empty state headline on the radio screen" },
+
+  "noRadioStationsHint": "Add radio stations in your Navidrome server settings to see them here.",
+  "@noRadioStationsHint": { "description": "Empty state subtitle on the radio screen" },
+
+  "@_LOGIN_SCREEN": {},
+  "connectToServerSubtitle": "Connect to your Subsonic server",
+  "@connectToServerSubtitle": { "description": "Subtitle below the app name on the login screen" },
+
+  "pleaseEnterServerUrl": "Please enter server URL",
+  "@pleaseEnterServerUrl": { "description": "Validation message when server URL is empty" },
+
+  "invalidUrlFormat": "URL must start with http:// or https://",
+  "@invalidUrlFormat": { "description": "Validation message when server URL format is invalid" },
+
+  "pleaseEnterUsername": "Please enter username",
+  "@pleaseEnterUsername": { "description": "Validation message when username is empty" },
+
+  "pleaseEnterPassword": "Please enter password",
+  "@pleaseEnterPassword": { "description": "Validation message when password is empty" },
+
+  "legacyAuthentication": "Legacy Authentication",
+  "@legacyAuthentication": { "description": "Toggle label for legacy Subsonic authentication" },
+
+  "legacyAuthSubtitle": "Use for older Subsonic servers",
+  "@legacyAuthSubtitle": { "description": "Subtitle for the legacy authentication toggle" },
+
+  "allowSelfSignedCerts": "Allow Self-Signed Certificates",
+  "@allowSelfSignedCerts": { "description": "Toggle label to allow self-signed TLS certificates" },
+
+  "allowSelfSignedSubtitle": "For servers with custom TLS/SSL certificates",
+  "@allowSelfSignedSubtitle": { "description": "Subtitle for the self-signed certificate toggle" },
+
+  "advancedOptions": "Advanced Options",
+  "@advancedOptions": { "description": "Expandable section label for advanced login options" },
+
+  "customTlsCertificate": "Custom TLS/SSL Certificate",
+  "@customTlsCertificate": { "description": "Label for the custom certificate upload section" },
+
+  "customCertificateSubtitle": "Upload a custom certificate for servers with non-standard CA",
+  "@customCertificateSubtitle": { "description": "Subtitle for the custom certificate upload section" },
+
+  "selectCertificateFile": "Select Certificate File",
+  "@selectCertificateFile": { "description": "Button label to open the certificate file picker" },
+
+  "connect": "Connect",
+  "@connect": { "description": "Login submit button label" },
+
+  "or": "OR",
+  "@or": { "description": "Divider label between Connect and Use Local Files" },
+
+  "useLocalFiles": "Use Local Files",
+  "@useLocalFiles": { "description": "Button label to start local-files mode" },
+
+  "startingScan": "Starting scan...",
+  "@startingScan": { "description": "Initial status message when a local file scan begins" },
+
+  "storagePermissionRequired": "Storage permission required to scan local files",
+  "@storagePermissionRequired": { "description": "Snackbar when storage permission is denied" },
+
+  "noMusicFilesFound": "No music files found on your device",
+  "@noMusicFilesFound": { "description": "Snackbar when a local scan finds no audio files" },
+
+  "@_COMMON_ACTIONS": {},
+  "remove": "Remove",
+  "@remove": { "description": "Generic remove / delete confirm button" },
+
+  "failedToSetRating": "Failed to set rating: {error}",
+  "@failedToSetRating": {
+    "description": "Snackbar shown when setting a star rating fails",
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+
+  "@_DESKTOP_SIDEBAR": {},
+  "home": "Home",
+  "@home": { "description": "Home navigation item label in the desktop sidebar" },
+
+  "playlistsSection": "PLAYLISTS",
+  "@playlistsSection": { "description": "Uppercase section header for playlists in the desktop sidebar" },
+
+  "collapse": "Collapse",
+  "@collapse": { "description": "Tooltip/label for the sidebar collapse button" },
+
+  "likedSongsSidebar": "Liked Songs",
+  "@likedSongsSidebar": { "description": "Liked Songs item label in the desktop sidebar" },
+
+  "playlistSongsCount": "Playlist • {count} songs",
+  "@playlistSongsCount": {
+    "description": "Subtitle for a playlist item in the desktop sidebar",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "@_LYRICS": {},
+  "failedToLoadLyrics": "Failed to load lyrics",
+  "@failedToLoadLyrics": { "description": "Error state message when lyrics cannot be loaded" },
+
+  "lyricsNotFoundSubtitle": "Lyrics for this song couldn't be found",
+  "@lyricsNotFoundSubtitle": { "description": "Empty/error subtitle in the lyrics view" },
+
+  "backToCurrent": "Back to current",
+  "@backToCurrent": { "description": "Button to scroll the lyrics view back to the current line" },
+
+  "exitFullscreen": "Exit Fullscreen",
+  "@exitFullscreen": { "description": "Tooltip for the exit-fullscreen button in lyrics view" },
+
+  "fullscreen": "Fullscreen",
+  "@fullscreen": { "description": "Tooltip for the enter-fullscreen button in lyrics view" },
+
+  "noLyrics": "No lyrics",
+  "@noLyrics": { "description": "Fallback text when no lyrics controller is available" },
+
+  "internetRadioMiniPlayer": "Internet Radio",
+  "@internetRadioMiniPlayer": { "description": "Subtitle shown in the mini player when streaming internet radio" },
+
+  "liveBadge": "LIVE",
+  "@liveBadge": { "description": "Badge text shown in the mini player for live radio streams" },
+
+  "@_BANNERS": {},
+  "localFilesModeBanner": "Local Files Mode",
+  "@localFilesModeBanner": { "description": "Banner shown at the top of the screen in local-files mode" },
+
+  "offlineModeBanner": "Offline Mode – Playing downloaded music only",
+  "@offlineModeBanner": { "description": "Banner shown at the top of the screen in offline mode" },
+
+  "@_UPDATE_DIALOG": {},
+  "updateAvailable": "Update Available",
+  "@updateAvailable": { "description": "Title of the update available dialog" },
+
+  "updateAvailableSubtitle": "A new version of Musly is available!",
+  "@updateAvailableSubtitle": { "description": "Subtitle in the update dialog" },
+
+  "updateCurrentVersion": "Current: v{version}",
+  "@updateCurrentVersion": {
+    "description": "Current version label in the update dialog",
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+
+  "updateLatestVersion": "Latest: v{version}",
+  "@updateLatestVersion": {
+    "description": "Latest version label in the update dialog",
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+
+  "whatsNew": "What's New",
+  "@whatsNew": { "description": "Section header for the changelog in the update dialog" },
+
+  "downloadUpdate": "Download",
+  "@downloadUpdate": { "description": "Primary button in the update dialog that opens the release page" },
+
+  "remindLater": "Later",
+  "@remindLater": { "description": "Dismiss button in the update dialog" },
+
+  "seeAll": "See All",
+  "@seeAll": { "description": "See All button in horizontal scroll sections" },
+
+  "@_ARTIST_SCREEN": {},
+  "artistDataNotFound": "Artist not found",
+  "@artistDataNotFound": { "description": "Error state on the artist screen when artist data fails to load" },
+
+  "@_CAST_DLNA": {},
+  "casting": "Casting",
+  "@casting": { "description": "Title shown in the Chromecast control dialog when actively casting" },
+
+  "dlna": "DLNA",
+  "@dlna": { "description": "Title shown in the DLNA control dialog when connected" },
+
+  "castDlnaBeta": "Cast / DLNA (Beta)",
+  "@castDlnaBeta": { "description": "Title of the Cast/DLNA device picker dialog" },
+
+  "chromecast": "Chromecast",
+  "@chromecast": { "description": "Section header for Chromecast devices in the device picker" },
+
+  "dlnaUpnp": "DLNA / UPnP",
+  "@dlnaUpnp": { "description": "Section header for DLNA/UPnP devices in the device picker" },
+
+  "disconnect": "Disconnect",
+  "@disconnect": { "description": "Button to disconnect from a Cast or DLNA device" },
+
+  "searchingDevices": "Searching for devices",
+  "@searchingDevices": { "description": "Loading message in the device picker when no devices have been found yet" },
+
+  "castWifiHint": "Make sure your Cast / DLNA device\nis on the same Wi-Fi network",
+  "@castWifiHint": { "description": "Hint shown while searching for cast/DLNA devices" },
+
+  "connectedToDevice": "Connected to {name}",
+  "@connectedToDevice": {
+    "description": "Snackbar shown after successfully connecting to a cast/DLNA device",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "failedToConnectDevice": "Failed to connect to {name}",
+  "@failedToConnectDevice": {
+    "description": "Snackbar shown when connecting to a cast/DLNA device fails",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "@_LIKED_SONGS_SNACKBARS": {},
+  "removedFromLikedSongs": "Removed from Liked Songs",
+  "@removedFromLikedSongs": { "description": "Snackbar shown after un-liking a song in the song tile menu" },
+
+  "addedToLikedSongs": "Added to Liked Songs",
+  "@addedToLikedSongs": { "description": "Snackbar shown after liking a song in the song tile menu" },
+
+  "@_PLAYER_BAR": {},
+  "enableShuffle": "Enable shuffle",
+  "@enableShuffle": { "description": "Tooltip for the shuffle toggle button in the desktop player bar" },
+
+  "enableRepeat": "Enable repeat",
+  "@enableRepeat": { "description": "Tooltip for the repeat toggle button in the desktop player bar" },
+
+  "@_CAST_TOOLTIPS": {},
+  "connecting": "Connecting",
+  "@connecting": { "description": "Tooltip for the cast button when connecting to a device" },
+
+  "closeLyrics": "Close Lyrics",
+  "@closeLyrics": { "description": "Tooltip for the lyrics button when lyrics panel is open" },
+
+  "@_ERROR_MESSAGES": {},
+  "errorStartingDownload": "Error starting download: {error}",
+  "@errorStartingDownload": {
+    "description": "Snackbar shown when the library background download fails to start",
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
   }
 }

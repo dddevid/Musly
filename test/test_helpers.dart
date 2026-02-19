@@ -13,6 +13,8 @@ class FakeCastService extends CastService {
     required String title,
     required String artist,
     required String imageUrl,
+    String? albumName,
+    int? trackNumber,
     Duration? duration,
     bool autoPlay = true,
   }) async {
@@ -53,7 +55,7 @@ Widget createTestApp({
       ChangeNotifierProvider<PlayerProvider>(
         create: (_) =>
             playerProvider ??
-            PlayerProvider(service, storage, FakeCastService()),
+            PlayerProvider(service, storage, FakeCastService(), UpnpService()),
       ),
       ChangeNotifierProvider<LibraryProvider>(
         create: (_) => libraryProvider ?? LibraryProvider(service),

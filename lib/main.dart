@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 
 import 'l10n/app_localizations.dart';
 import 'services/services.dart';
@@ -17,6 +18,11 @@ import 'utils/image_cache.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize media_kit-based backend for Linux audio playback (uses libmpv).
+  // Must be called before any AudioPlayer is created.
+  // windows: false → keep using just_audio_windows on Windows.
+  JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
@@ -45,6 +51,7 @@ void main() async {
   final localMusicService = LocalMusicService();
   final castService = CastService();
   final localeService = LocaleService();
+  final upnpService = UpnpService();
 
   bpmAnalyzer.initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -79,14 +86,16 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(subsonicService, storageService),
         ),
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(subsonicService, storageService),
-        ),
         ChangeNotifierProvider<CastService>.value(value: castService),
         ChangeNotifierProvider<LocaleService>.value(value: localeService),
+        ChangeNotifierProvider<UpnpService>.value(value: upnpService),
         ChangeNotifierProvider(
-          create: (_) =>
-              PlayerProvider(subsonicService, storageService, castService),
+          create: (_) => PlayerProvider(
+            subsonicService,
+            storageService,
+            castService,
+            upnpService,
+          ),
         ),
         ChangeNotifierProvider(create: (_) => LibraryProvider(subsonicService)),
       ],
@@ -101,6 +110,9 @@ class MuslyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeService = Provider.of<LocaleService>(context);
+    debugPrint(
+      'MuslyApp: Rebuilding with locale: ${localeService.currentLocale?.languageCode}',
+    );
 
     return MaterialApp(
       title: 'Musly',

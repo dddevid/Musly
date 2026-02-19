@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/song.dart';
@@ -19,6 +23,10 @@ class LocalMusicService extends ChangeNotifier {
   bool _isScanning = false;
   double _scanProgress = 0.0;
   String _scanStatus = '';
+
+  // Cover art cache: albumId → absolute path to saved .jpg file
+  final Map<String, String> _albumArtCache = {};
+  String? _artCacheDir;
 
   final List<Song> _songs = [];
   final List<Album> _albums = [];
@@ -90,6 +98,12 @@ class LocalMusicService extends ChangeNotifier {
 
     try {
       _prefs = await SharedPreferences.getInstance();
+
+      // Set up cover-art cache directory
+      final appDir = await getApplicationDocumentsDirectory();
+      _artCacheDir = '${appDir.path}/art_cache';
+      await Directory(_artCacheDir!).create(recursive: true);
+
       await _loadCachedLibrary();
       _isInitialized = true;
     } catch (e) {
@@ -166,7 +180,7 @@ class LocalMusicService extends ChangeNotifier {
       for (var i = 0; i < totalFiles; i++) {
         final file = audioFiles[i];
         try {
-          final song = _processAudioFile(file);
+          final song = await _processAudioFile(file);
           _songs.add(song);
         } catch (e) {
           debugPrint('Error processing ${file.path}: $e');
@@ -234,68 +248,130 @@ class LocalMusicService extends ChangeNotifier {
     }
   }
 
-  /// Parse song info from filename
-  /// Attempts to extract artist and title from common naming patterns:
-  /// - "Artist - Title.mp3"
-  /// - "01. Artist - Title.mp3"
-  /// - "Title.mp3"
-  Song _processAudioFile(File file) {
+  /// Read audio metadata and produce a Song object.
+  /// Falls back to filename parsing when the tag library can't read the file.
+  Future<Song> _processAudioFile(File file) async {
     final fileName = path.basenameWithoutExtension(file.path);
     final parentDir = path.basename(path.dirname(file.path));
     final grandParentDir = path.basename(path.dirname(path.dirname(file.path)));
 
+    // --- defaults (filename-based) ---
     String title = fileName;
-    String artist = 'Unknown Artist';
+    String? artist;
     String albumName = parentDir;
     int? trackNumber;
+    int? yearVal;
+    String? genre;
+    int? duration;
+    int? bitRate;
+    String? coverArtPath;
 
-    // Try to parse "Artist - Title" pattern
-    if (fileName.contains(' - ')) {
-      final parts = fileName.split(' - ');
-      if (parts.length >= 2) {
-        artist = parts[0].trim();
-        title = parts.sublist(1).join(' - ').trim();
+    // --- try reading ID3 / Vorbis / ILST / RIFF tags ---
+    try {
+      final metadata = readMetadata(file, getImage: _artCacheDir != null);
+
+      if (metadata.title?.isNotEmpty == true) title = metadata.title!.trim();
+      if (metadata.artist?.isNotEmpty == true) artist = metadata.artist!.trim();
+      if (metadata.album?.isNotEmpty == true)
+        albumName = metadata.album!.trim();
+      trackNumber = metadata.trackNumber;
+      yearVal = metadata.year?.year != 0 ? metadata.year?.year : null;
+      genre = metadata.genres.isNotEmpty ? metadata.genres.first : null;
+      duration = metadata.duration?.inSeconds;
+      bitRate = metadata.bitrate;
+
+      // Cover art – save once per album to avoid repeated file writes
+      if (metadata.pictures.isNotEmpty && _artCacheDir != null) {
+        final albumId = 'local_album_${albumName.hashCode.abs()}';
+        if (_albumArtCache.containsKey(albumId)) {
+          coverArtPath = _albumArtCache[albumId];
+        } else {
+          final pic = metadata.pictures.first;
+          final ext = _mimeToExt(pic.mimetype);
+          final artFile = File('$_artCacheDir/$albumId$ext');
+          try {
+            await artFile.writeAsBytes(pic.bytes as Uint8List);
+            coverArtPath = artFile.path;
+            _albumArtCache[albumId] = coverArtPath!;
+          } catch (e) {
+            debugPrint('Art write failed: $e');
+          }
+        }
       }
+    } catch (_) {
+      // Tag library can't read this file – fall back to filename parsing
     }
 
-    // Try to extract track number from "01. Title" or "01 Title"
-    final trackMatch = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(title);
-    if (trackMatch != null) {
-      trackNumber = int.tryParse(trackMatch.group(1) ?? '');
-      title = trackMatch.group(2)?.trim() ?? title;
-    }
+    // --- filename-based fallback for missing fields ---
+    if (artist == null) {
+      if (fileName.contains(' - ')) {
+        final parts = fileName.split(' - ');
+        if (parts.length >= 2) {
+          final rawArtist = parts[0].trim();
+          // Strip leading track-number from artist candidate
+          final noNum = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(rawArtist);
+          artist = noNum != null ? noNum.group(2)!.trim() : rawArtist;
+          title = parts.sublist(1).join(' - ').trim();
+        }
+      }
 
-    // Clean up common patterns
-    title = title
-        .replaceAll(RegExp(r'\[.*?\]'), '') // Remove [brackets]
-        .replaceAll(RegExp(r'\(.*?\)'), '') // Remove (parentheses)
-        .trim();
-
-    // Use grandparent directory as artist if we don't have one
-    if (artist == 'Unknown Artist' && grandParentDir.isNotEmpty) {
-      // Check if grandparent looks like an artist name
-      if (!grandParentDir.toLowerCase().contains('music') &&
+      // Still no artist? try grandparent directory
+      if (artist == null &&
+          grandParentDir.isNotEmpty &&
+          !grandParentDir.toLowerCase().contains('music') &&
           !grandParentDir.toLowerCase().contains('download')) {
         artist = grandParentDir;
       }
     }
 
-    // Create unique ID based on file path
-    final id = 'local_${file.path.hashCode.abs()}';
+    // Strip leading track-number from title if metadata didn't provide one
+    if (trackNumber == null) {
+      final trackMatch = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(title);
+      if (trackMatch != null) {
+        trackNumber = int.tryParse(trackMatch.group(1) ?? '');
+        title = trackMatch.group(2)!.trim();
+      }
+    }
+
+    // Clean up bracketed noise in title
+    title = title
+        .replaceAll(RegExp(r'\[.*?\]'), '')
+        .replaceAll(RegExp(r'\(.*?\)'), '')
+        .trim();
+    if (title.isEmpty) title = fileName;
+
+    final resolvedArtist = artist ?? 'Unknown Artist';
     final albumId = 'local_album_${albumName.hashCode.abs()}';
-    final artistId = 'local_artist_${artist.hashCode.abs()}';
+    final artistId = 'local_artist_${resolvedArtist.hashCode.abs()}';
 
     return Song(
-      id: id,
+      id: 'local_${file.path.hashCode.abs()}',
       title: title,
-      artist: artist,
+      artist: resolvedArtist,
+      artistId: artistId,
       album: albumName,
       albumId: albumId,
-      artistId: artistId,
       track: trackNumber,
+      year: yearVal,
+      genre: genre,
+      duration: duration,
+      bitRate: bitRate,
+      coverArt: coverArtPath, // absolute local path, or null
       path: file.path,
       isLocal: true,
     );
+  }
+
+  /// Map MIME type to file extension for cover art files.
+  String _mimeToExt(String? mime) {
+    switch (mime) {
+      case 'image/png':
+        return '.png';
+      case 'image/webp':
+        return '.webp';
+      default:
+        return '.jpg';
+    }
   }
 
   void _buildAlbumsAndArtists() {
@@ -376,15 +452,63 @@ class LocalMusicService extends ChangeNotifier {
     return 'file://${song.path}';
   }
 
+  Future<File> _getCacheFile() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/local_music_cache.json');
+  }
+
   Future<void> _cacheLibrary() async {
-    await _prefs?.setInt('local_song_count', _songs.length);
+    try {
+      final file = await _getCacheFile();
+      final data = {
+        'version': 1,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'songs': _songs.map((s) => s.toJson()).toList(),
+      };
+      await file.writeAsString(json.encode(data));
+      await _prefs?.setInt('local_song_count', _songs.length);
+    } catch (e) {
+      debugPrint('Error caching local library: $e');
+    }
   }
 
   Future<void> _loadCachedLibrary() async {
-    final cachedCount = _prefs?.getInt('local_song_count') ?? 0;
-    if (cachedCount > 0) {
-      // Auto-scan in background after delay
-      Future.delayed(const Duration(seconds: 2), () => scanForMusic());
+    try {
+      final file = await _getCacheFile();
+      if (!await file.exists()) {
+        return; // No cache – scan triggered by MainScreen on first launch
+      }
+
+      final content = await file.readAsString();
+      final data = json.decode(content) as Map<String, dynamic>;
+
+      final timestamp = data['timestamp'] as int? ?? 0;
+      final age = DateTime.now().millisecondsSinceEpoch - timestamp;
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+      final cachedSongs = (data['songs'] as List<dynamic>)
+          .map((s) => Song.fromJson(s as Map<String, dynamic>))
+          .toList();
+
+      if (cachedSongs.isEmpty) return;
+
+      _songs.clear();
+      _songs.addAll(cachedSongs);
+      _buildAlbumsAndArtists();
+      notifyListeners();
+      debugPrint('Loaded ${_songs.length} songs from local cache.');
+
+      // If cache is stale, trigger a background rescan
+      if (age > maxAge) {
+        debugPrint('Local music cache is stale, rescanning in background...');
+        Future.delayed(const Duration(seconds: 3), () => scanForMusic());
+      }
+    } catch (e) {
+      debugPrint('Error loading local music cache, will rescan: $e');
+      try {
+        final file = await _getCacheFile();
+        if (await file.exists()) await file.delete();
+      } catch (_) {}
     }
   }
 
@@ -393,7 +517,27 @@ class LocalMusicService extends ChangeNotifier {
     _songs.clear();
     _albums.clear();
     _artists.clear();
+    _albumArtCache.clear();
     await _prefs?.remove('local_song_count');
+    try {
+      final file = await _getCacheFile();
+      if (await file.exists()) await file.delete();
+    } catch (e) {
+      debugPrint('Error deleting local music cache: $e');
+    }
+    // Delete cached cover-art images
+    if (_artCacheDir != null) {
+      try {
+        final dir = Directory(_artCacheDir!);
+        if (await dir.exists()) {
+          await for (final entity in dir.list()) {
+            await entity.delete();
+          }
+        }
+      } catch (e) {
+        debugPrint('Error clearing art cache: $e');
+      }
+    }
     notifyListeners();
   }
 }

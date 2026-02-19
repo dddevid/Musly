@@ -220,6 +220,8 @@ class CastService extends ChangeNotifier {
     required String title,
     required String artist,
     required String imageUrl,
+    String? albumName,
+    int? trackNumber,
     Duration? duration,
     bool autoPlay = true,
   }) async {
@@ -231,34 +233,71 @@ class CastService extends ChangeNotifier {
     try {
       debugPrint('CastService: Loading media: $title by $artist');
 
-      // Use generic metadata for video-style display like Spotify
-      // This shows album art on the Cast device screen instead of just playing audio
-      final metadata = GoogleCastGenericMediaMetadata(
+      // Use MusicTrackMediaMetadata (type 3) so Cast devices show proper
+      // Now Playing card with artist, album, and cover art.
+      final metadata = GoogleCastMusicMediaMetadata(
         title: title,
-        subtitle: artist,
+        artist: artist,
+        albumArtist: artist,
+        albumName: albumName,
+        trackNumber: trackNumber,
         images: [
           GoogleCastImage(url: Uri.parse(imageUrl), width: 1280, height: 720),
         ],
       );
 
+      // Detect MIME type from URL for correct Cast receiver handling.
+      final contentType = _mimeTypeFromUrl(url);
+
       final mediaInfo = GoogleCastMediaInformation(
+        // contentId is a logical identifier; actual stream URL goes in contentUrl.
         contentId: url,
+        contentUrl: Uri.tryParse(url),
         streamType: CastMediaStreamType.BUFFERED,
-        // Use video/mp4 for visual display like Spotify
-        // Cast receiver will show album art as the "video" content
-        contentType: 'video/mp4',
+        contentType: contentType,
         metadata: metadata,
         duration: duration,
       );
 
-      await _remoteMediaClient.loadMedia(mediaInfo, autoPlay: autoPlay);
-      debugPrint('CastService: Media loaded successfully');
+      await _remoteMediaClient.loadMedia(
+        mediaInfo,
+        autoPlay: autoPlay,
+        playPosition: Duration.zero,
+      );
 
+      // Sync initial media state title immediately so the control dialog
+      // shows the song before the first mediaStatus event arrives.
+      _mediaState = _mediaState.copyWith(
+        title: title,
+        artist: artist,
+        imageUrl: imageUrl,
+        duration: duration ?? Duration.zero,
+        isPlaying: autoPlay,
+        position: Duration.zero,
+      );
+      notifyListeners();
+
+      debugPrint('CastService: Media loaded successfully ($contentType)');
       return true;
     } catch (e) {
       debugPrint('CastService: Error loading media: $e');
       return false;
     }
+  }
+
+  /// Infer an appropriate MIME type from the stream URL.
+  static String _mimeTypeFromUrl(String url) {
+    final lower = url.toLowerCase().split('?').first;
+    if (lower.endsWith('.flac')) return 'audio/flac';
+    if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'audio/ogg';
+    if (lower.endsWith('.opus')) return 'audio/ogg; codecs=opus';
+    if (lower.endsWith('.wav')) return 'audio/wav';
+    if (lower.endsWith('.aac')) return 'audio/aac';
+    if (lower.endsWith('.m4a')) return 'audio/mp4';
+    if (lower.endsWith('.mp3')) return 'audio/mpeg';
+    // Subsonic /rest/stream URLs: prefer audio/mpeg as the most universally
+    // supported Cast audio type.
+    return 'audio/mpeg';
   }
 
   // Playback controls

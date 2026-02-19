@@ -8,6 +8,7 @@ import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'artist_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class AlbumScreen extends StatefulWidget {
   final String albumId;
@@ -40,7 +41,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
     );
 
     try {
-      final album = await subsonicService.getAlbum(widget.albumId);
+      Album? album;
+
+      // In local-only mode, look up from cached albums
+      if (libraryProvider.isLocalOnlyMode) {
+        album = libraryProvider.cachedAllAlbums.firstWhere(
+          (a) => a.id == widget.albumId,
+          orElse: () => Album(id: widget.albumId, name: 'Unknown Album'),
+        );
+      } else {
+        album = await subsonicService.getAlbum(widget.albumId);
+      }
+
       final songs = await libraryProvider.getAlbumSongs(widget.albumId);
 
       if (mounted) {
@@ -138,7 +150,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (_album == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Album not found')),
+        body: Center(child: Text(AppLocalizations.of(context)!.albumNotFound)),
       );
     }
 
@@ -219,7 +231,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           }
                         },
                         child: Text(
-                          _album!.artist ?? 'Unknown Artist',
+                          _album!.artist ??
+                              AppLocalizations.of(context)!.unknownArtist,
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: AppTheme.appleMusicRed,
                           ),
@@ -247,7 +260,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           Expanded(
                             child: _PlayButton(
                               icon: CupertinoIcons.play_fill,
-                              label: 'Play',
+                              label: AppLocalizations.of(context)!.play,
                               onTap: () => _playAll(),
                             ),
                           ),
@@ -255,7 +268,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           Expanded(
                             child: _PlayButton(
                               icon: CupertinoIcons.shuffle,
-                              label: 'Shuffle',
+                              label: AppLocalizations.of(context)!.shuffle,
                               onTap: () => _playAll(shuffle: true),
                             ),
                           ),

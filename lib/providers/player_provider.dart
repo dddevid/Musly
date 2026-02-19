@@ -16,6 +16,7 @@ import '../services/auto_dj_service.dart';
 import '../services/discord_rpc_service.dart';
 import '../services/storage_service.dart';
 import '../services/cast_service.dart';
+import '../services/upnp_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -33,6 +34,7 @@ class PlayerProvider extends ChangeNotifier {
   final AutoDjService _autoDjService = AutoDjService();
   late final DiscordRpcService _discordRpcService;
   final CastService _castService;
+  final UpnpService _upnpService;
 
   LibraryProvider? _libraryProvider;
   RecommendationService? _recommendationService;
@@ -59,6 +61,7 @@ class PlayerProvider extends ChangeNotifier {
     this._subsonicService,
     StorageService storageService,
     this._castService,
+    this._upnpService,
   ) {
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
@@ -303,7 +306,12 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _currentSong!.coverArt != null
-        ? _subsonicService.getCoverArtUrl(_currentSong!.coverArt!, size: 300)
+        ? (_currentSong!.isLocal
+              ? Uri.file(_currentSong!.coverArt!).toString()
+              : _subsonicService.getCoverArtUrl(
+                  _currentSong!.coverArt!,
+                  size: 300,
+                ))
         : null;
 
     _androidAutoService.updatePlaybackState(
@@ -336,7 +344,12 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _currentSong!.coverArt != null
-        ? _subsonicService.getCoverArtUrl(_currentSong!.coverArt!, size: 300)
+        ? (_currentSong!.isLocal
+              ? Uri.file(_currentSong!.coverArt!).toString()
+              : _subsonicService.getCoverArtUrl(
+                  _currentSong!.coverArt!,
+                  size: 300,
+                ))
         : null;
 
     _androidSystemService.updateFromSong(
@@ -528,13 +541,11 @@ class PlayerProvider extends ChangeNotifier {
     List<Song>? playlist,
     int? startIndex,
   }) async {
-    // If the song is already the current one, toggle play/pause
     if (_currentSong?.id == song.id && !_isPlayingRadio) {
       await togglePlayPause();
       return;
     }
 
-    // Clear radio state when playing a song
     _isPlayingRadio = false;
     _currentRadioStation = null;
 
@@ -555,33 +566,65 @@ class PlayerProvider extends ChangeNotifier {
       }
 
       _currentSong = song;
-
-      // Reset position to avoid showing stale position from previous song
       _position = Duration.zero;
       notifyListeners();
 
       if (_castService.isConnected) {
-        if (_audioPlayer.playing) {
-          await _audioPlayer.stop();
-        }
+        if (_audioPlayer.playing) await _audioPlayer.stop();
 
-        final playUrl = await _subsonicService.getStreamUrl(song.id);
-        final coverUrl = _subsonicService.getCoverArtUrl(
-          song.coverArt ?? song.id,
-        );
+        final playUrl = song.isLocal == true
+            ? Uri.file(song.path!).toString()
+            : await _subsonicService.getStreamUrl(song.id);
+        final coverUrl = song.isLocal == true && song.coverArt != null
+            ? song.coverArt!
+            : _subsonicService.getCoverArtUrl(song.coverArt ?? song.id);
 
         await _castService.loadMedia(
           url: playUrl,
           title: song.title,
           artist: song.artist ?? 'Unknown Artist',
           imageUrl: coverUrl,
+          albumName: song.album,
+          trackNumber: song.track,
+          duration: song.duration != null
+              ? Duration(seconds: song.duration!)
+              : null,
           autoPlay: true,
         );
         _isPlaying = true;
-      } else {
-        final playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
+      } else if (_upnpService.isConnected) {
+        // Stream to the DLNA renderer.
+        debugPrint(
+          'UPnP: playSong() taking UPnP branch, isConnected=${_upnpService.isConnected}',
+        );
+        if (_audioPlayer.playing) await _audioPlayer.stop();
 
-        // Android 16 Media3 workaround: retry setUrl if first attempt fails
+        final playUrl = song.isLocal == true && song.path != null
+            ? Uri.file(song.path!).toString()
+            : await _subsonicService.getStreamUrl(song.id);
+
+        try {
+          await _upnpService.loadAndPlay(
+            url: playUrl,
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+          );
+        } catch (e) {
+          // SOAP call failed — disconnect so the UI reflects the real state
+          _upnpService.disconnect();
+          debugPrint('UPnP playback failed, disconnected: $e');
+          rethrow;
+        }
+        _isPlaying = true;
+      } else {
+        // Resolve playback URL: local file takes priority
+        final String playUrl;
+        if (song.isLocal == true && song.path != null) {
+          playUrl = Uri.file(song.path!).toString();
+        } else {
+          playUrl = _offlineService.getPlayableUrl(song, _subsonicService);
+        }
+
         try {
           await _audioPlayer.setUrl(playUrl);
         } catch (e) {
@@ -589,7 +632,6 @@ class PlayerProvider extends ChangeNotifier {
             debugPrint(
               'First playback failed (Android 16 Media3 issue), retrying: $e',
             );
-            // Wait a bit and retry
             await Future.delayed(const Duration(milliseconds: 100));
             await _audioPlayer.setUrl(playUrl);
             _hasPlayedOnce = true;
@@ -598,13 +640,14 @@ class PlayerProvider extends ChangeNotifier {
           }
         }
 
-        // Apply ReplayGain volume adjustment
         await _applyReplayGain(song);
-
         await _audioPlayer.play();
       }
 
-      _subsonicService.scrobble(song.id, submission: false);
+      // Only scrobble for server tracks
+      if (song.isLocal != true) {
+        _subsonicService.scrobble(song.id, submission: false);
+      }
 
       if (_recommendationService != null) {
         _recommendationService!.trackSongPlay(
@@ -617,7 +660,6 @@ class PlayerProvider extends ChangeNotifier {
       _updateAndroidAuto();
     } catch (e) {
       debugPrint('Error playing song: $e');
-      // Ensure Android Auto reflects stopped state on error
       _isPlaying = false;
       _position = Duration.zero;
       _updateAndroidAuto();
@@ -721,6 +763,10 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.play();
       _isPlaying = true;
       notifyListeners();
+    } else if (_upnpService.isConnected) {
+      await _upnpService.play();
+      _isPlaying = true;
+      notifyListeners();
     } else {
       await _audioPlayer.play();
     }
@@ -731,6 +777,10 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.pause();
       _isPlaying = false;
       notifyListeners();
+    } else if (_upnpService.isConnected) {
+      await _upnpService.pause();
+      _isPlaying = false;
+      notifyListeners();
     } else {
       await _audioPlayer.pause();
     }
@@ -739,6 +789,8 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> stop() async {
     if (_castService.isConnected) {
       await _castService.stop();
+    } else if (_upnpService.isConnected) {
+      await _upnpService.stop();
     } else {
       await _audioPlayer.stop();
     }
@@ -762,6 +814,8 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
     if (_castService.isConnected) {
       await _castService.seek(position);
+    } else if (_upnpService.isConnected) {
+      await _upnpService.seek(position);
     } else {
       await _audioPlayer.seek(position);
     }

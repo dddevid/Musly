@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import '../l10n/app_localizations.dart';
 import 'settings_playback_tab.dart';
 import 'settings_storage_tab.dart';
 import 'settings_server_tab.dart';
@@ -34,12 +35,13 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _isDark
           ? AppTheme.darkBackground
           : AppTheme.lightBackground,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settingsTitle),
         centerTitle: false,
         backgroundColor: _isDark
             ? AppTheme.darkBackground
@@ -63,18 +65,27 @@ class _SettingsScreenState extends State<SettingsScreen>
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
-          tabs: const [
+          tabs: [
             Tab(
-              icon: Icon(CupertinoIcons.play_circle, size: 20),
-              text: 'Playback',
+              icon: const Icon(CupertinoIcons.play_circle, size: 20),
+              text: l10n.tabPlayback,
             ),
-            Tab(icon: Icon(CupertinoIcons.folder, size: 20), text: 'Storage'),
-            Tab(icon: Icon(CupertinoIcons.cloud, size: 20), text: 'Server'),
             Tab(
-              icon: Icon(CupertinoIcons.paintbrush, size: 20),
-              text: 'Display',
+              icon: const Icon(CupertinoIcons.folder, size: 20),
+              text: l10n.tabStorage,
             ),
-            Tab(icon: Icon(CupertinoIcons.info, size: 20), text: 'About'),
+            Tab(
+              icon: const Icon(CupertinoIcons.cloud, size: 20),
+              text: l10n.tabServer,
+            ),
+            Tab(
+              icon: const Icon(CupertinoIcons.paintbrush, size: 20),
+              text: l10n.tabDisplay,
+            ),
+            Tab(
+              icon: const Icon(CupertinoIcons.info, size: 20),
+              text: l10n.tabAbout,
+            ),
           ],
         ),
       ),

@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
+
+enum _LoginErrorType {
+  ssl,
+  credentials,
+  notFound,
+  timeout,
+  connection,
+  format,
+  generic,
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,9 +35,184 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showAdvancedOptions = false;
   String? _customCertificatePath;
   String? _customCertificateName;
+  bool _isScanning = false;
+  double _scanProgress = 0.0;
+  String _scanStatus = '';
+
+  // Inline error state
+  String? _loginError;
+
+  @override
+  void initState() {
+    super.initState();
+    // Clear the inline error whenever user edits any field
+    _serverController.addListener(_clearError);
+    _usernameController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+  }
+
+  void _clearError() {
+    if (_loginError != null && mounted) {
+      setState(() => _loginError = null);
+    }
+  }
+
+  /// Categorises a login error string for icon/colour selection.
+  _LoginErrorType _categoriseError(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('ssl') ||
+        lower.contains('certificate') ||
+        lower.contains('handshake') ||
+        lower.contains('tls')) {
+      return _LoginErrorType.ssl;
+    }
+    if (lower.contains('invalid username') ||
+        lower.contains('wrong password') ||
+        lower.contains('unauthorized') ||
+        lower.contains('401')) {
+      return _LoginErrorType.credentials;
+    }
+    if (lower.contains('not found') ||
+        lower.contains('404') ||
+        lower.contains('url path')) {
+      return _LoginErrorType.notFound;
+    }
+    if (lower.contains('timed out') || lower.contains('timeout')) {
+      return _LoginErrorType.timeout;
+    }
+    if (lower.contains('cannot connect') ||
+        lower.contains('connection refused') ||
+        lower.contains('network') ||
+        lower.contains('socket')) {
+      return _LoginErrorType.connection;
+    }
+    if (lower.contains('url format') || lower.contains('http')) {
+      return _LoginErrorType.format;
+    }
+    return _LoginErrorType.generic;
+  }
+
+  Widget _buildErrorCard(ThemeData theme) {
+    final error = _loginError;
+    if (error == null) return const SizedBox.shrink();
+
+    final type = _categoriseError(error);
+
+    IconData icon;
+    Color color;
+    String? hint;
+
+    switch (type) {
+      case _LoginErrorType.ssl:
+        icon = CupertinoIcons.lock_slash;
+        color = const Color(0xFFFF9500); // orange
+        if (!_allowSelfSignedCertificates) {
+          hint = 'Try enabling "Allow Self-Signed Certificates" below.';
+        }
+      case _LoginErrorType.credentials:
+        icon = CupertinoIcons.person_badge_minus;
+        color = AppTheme.appleMusicRed;
+        hint = 'Check your username and password and try again.';
+      case _LoginErrorType.notFound:
+        icon = CupertinoIcons.question_circle;
+        color = const Color(0xFFFF9500);
+        hint = 'Verify the server URL path (e.g. /navidrome, /airsonic).';
+      case _LoginErrorType.timeout:
+        icon = CupertinoIcons.timer;
+        color = const Color(0xFFFF9500);
+        hint = 'The server took too long to respond. Check your network.';
+      case _LoginErrorType.connection:
+        icon = CupertinoIcons.wifi_slash;
+        color = const Color(0xFFFF9500);
+        hint = null;
+      case _LoginErrorType.format:
+        icon = CupertinoIcons.link;
+        color = const Color(0xFFFF9500);
+        hint = 'URL must start with http:// or https://';
+      case _LoginErrorType.generic:
+        icon = CupertinoIcons.exclamationmark_triangle;
+        color = AppTheme.appleMusicRed;
+        hint = null;
+    }
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    error,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (hint != null) ...[
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: Text(
+                  hint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: color.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+            ],
+            // Quick action: enable self-signed certs
+            if (type == _LoginErrorType.ssl &&
+                !_allowSelfSignedCertificates) ...[
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _allowSelfSignedCertificates = true;
+                      _loginError = null;
+                    });
+                  },
+                  child: Text(
+                    'Tap to enable self-signed certificates',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationColor: color,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _serverController.removeListener(_clearError);
+    _usernameController.removeListener(_clearError);
+    _passwordController.removeListener(_clearError);
     _serverController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
@@ -51,7 +237,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select certificate: $e'),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToSelectCertificate(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -62,18 +252,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _loginError = null);
+
     final serverUrl = _serverController.text.trim();
 
+    // URL scheme check (redundant with validator, but kept as a safety net)
     if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Server URL must start with http:// or https://'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 4),
-          ),
-        );
-      }
+      setState(
+        () => _loginError = 'Server URL must start with http:// or https://',
+      );
       return;
     }
 
@@ -88,15 +275,76 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error ?? 'Failed to connect'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
+      setState(
+        () => _loginError = authProvider.error ?? 'Failed to connect to server',
       );
     }
     // Support dialog is now shown by AuthWrapper after successful login
+  }
+
+  Future<void> _useLocalFiles() async {
+    final localService = Provider.of<LocalMusicService>(context, listen: false);
+
+    final granted = await localService.requestPermission();
+    if (!granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.storagePermissionRequired,
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isScanning = true;
+      _scanProgress = 0.0;
+      _scanStatus = 'Starting scan...';
+    });
+
+    // Listen to progress updates
+    void updateProgress() {
+      if (mounted) {
+        setState(() {
+          _scanProgress = localService.scanProgress;
+          _scanStatus = localService.scanStatus;
+        });
+      }
+    }
+
+    localService.addListener(updateProgress);
+
+    try {
+      await localService.scanForMusic();
+
+      if (mounted) {
+        if (localService.songs.isNotEmpty) {
+          final authProvider = Provider.of<AuthProvider>(
+            context,
+            listen: false,
+          );
+          await authProvider.setLocalOnlyMode(true);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.noMusicFilesFound),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } finally {
+      localService.removeListener(updateProgress);
+      if (mounted) {
+        setState(() {
+          _isScanning = false;
+        });
+      }
+    }
   }
 
   @override
@@ -104,6 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final isLoading = authProvider.state == AuthState.authenticating;
     final theme = Theme.of(context);
+    final isBusy = isLoading || _isScanning;
 
     return Scaffold(
       body: SafeArea(
@@ -147,10 +396,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Text('Musly', style: theme.textTheme.displayLarge),
+                  Text(
+                    AppLocalizations.of(context)!.appName,
+                    style: theme.textTheme.displayLarge,
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    'Connect to your Subsonic server',
+                    AppLocalizations.of(context)!.connectToServerSubtitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppTheme.lightSecondaryText,
                     ),
@@ -394,7 +646,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 icon: const Icon(
                                   CupertinoIcons.doc_on_clipboard,
                                 ),
-                                label: const Text('Select Certificate File'),
+                                label: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.selectCertificateFile,
+                                ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppTheme.appleMusicRed,
                                   side: BorderSide(
@@ -412,7 +668,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
+
+                  _buildErrorCard(theme),
 
                   SizedBox(
                     width: double.infinity,
@@ -474,57 +732,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 50,
                     child: OutlinedButton.icon(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              final localService =
-                                  Provider.of<LocalMusicService>(
-                                    context,
-                                    listen: false,
-                                  );
-
-                              // Request permission and scan
-                              final granted = await localService
-                                  .requestPermission();
-                              if (granted) {
-                                await localService.scanForMusic();
-
-                                if (localService.songs.isNotEmpty && mounted) {
-                                  // Navigate to main screen in local-only mode
-                                  final authProvider =
-                                      Provider.of<AuthProvider>(
-                                        context,
-                                        listen: false,
-                                      );
-                                  await authProvider.setLocalOnlyMode(true);
-                                } else if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'No music files found on your device',
-                                      ),
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
-                                }
-                              } else if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Storage permission required to scan local files',
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            },
-                      icon: const Icon(CupertinoIcons.folder),
-                      label: const Text(
-                        'Use Local Files',
-                        style: TextStyle(
+                      onPressed: isBusy ? null : _useLocalFiles,
+                      icon: _isScanning
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppTheme.appleMusicRed,
+                                ),
+                              ),
+                            )
+                          : const Icon(CupertinoIcons.folder),
+                      label: Text(
+                        _isScanning ? _scanStatus : 'Use Local Files',
+                        style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.appleMusicRed,
@@ -535,6 +762,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+
+                  // Scan progress bar
+                  if (_isScanning) ...[
+                    const SizedBox(height: 12),
+                    LinearProgressIndicator(
+                      value: _scanProgress > 0 ? _scanProgress : null,
+                      backgroundColor: AppTheme.appleMusicRed.withValues(
+                        alpha: 0.2,
+                      ),
+                      color: AppTheme.appleMusicRed,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class HorizontalScrollSection extends StatelessWidget {
   final String title;
@@ -41,7 +42,10 @@ class HorizontalScrollSection extends StatelessWidget {
               if (onSeeAllTap != null)
                 TextButton(
                   onPressed: onSeeAllTap,
-                  child: Text('See All', style: theme.textTheme.labelLarge),
+                  child: Text(
+                    AppLocalizations.of(context)!.seeAll,
+                    style: theme.textTheme.labelLarge,
+                  ),
                 ),
             ],
           ),

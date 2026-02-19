@@ -250,7 +250,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       textStyle: TextStyle(
         fontSize: 18.0,
         fontWeight: FontWeight.w600,
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         height: 1.3,
       ),
       activeStyle: const TextStyle(
@@ -262,7 +262,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       translationStyle: TextStyle(
         fontSize: 14.0,
         fontWeight: FontWeight.w500,
-        color: Colors.white.withOpacity(0.4),
+        color: Colors.white.withValues(alpha: 0.4),
         height: 1.3,
       ),
       lineGap: 16.0,
@@ -276,8 +276,8 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
       selectionAnchorPosition: 0.4,
       selectionAlignment: MainAxisAlignment.center,
-      selectedColor: Colors.white.withOpacity(0.8),
-      selectedTranslationColor: Colors.white.withOpacity(0.5),
+      selectedColor: Colors.white.withValues(alpha: 0.8),
+      selectedTranslationColor: Colors.white.withValues(alpha: 0.5),
       selectionAutoResumeDuration: const Duration(milliseconds: 500),
       activeAutoResumeDuration: const Duration(seconds: 3),
     );

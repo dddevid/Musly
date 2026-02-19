@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../providers/library_provider.dart';
@@ -310,7 +311,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                     ),
                     _OptionTile(
                       icon: Icons.playlist_add_rounded,
-                      title: 'Add to Playlist',
+                      title: AppLocalizations.of(context)!.addToPlaylist,
                       onTap: () {
                         Navigator.pop(context);
                         _showPlaylistPicker(context, widget.song);
@@ -373,29 +374,35 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
             color: AppTheme.appleMusicRed,
           ),
         ),
-        title: Text('Downloading... ${(_downloadProgress * 100).toInt()}%'),
+        title: Text(
+          AppLocalizations.of(
+            context,
+          )!.downloading((_downloadProgress * 100).toInt()),
+        ),
       );
     }
 
     if (_isDownloaded) {
       return _OptionTile(
         icon: Icons.download_done_rounded,
-        title: 'Downloaded',
+        title: AppLocalizations.of(context)!.downloaded,
         iconColor: Colors.green,
         onTap: () async {
           final confirm = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Remove Download'),
-              content: const Text('Remove this song from offline storage?'),
+              title: Text(AppLocalizations.of(context)!.removeDownload),
+              content: Text(
+                AppLocalizations.of(context)!.removeDownloadConfirm,
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Remove'),
+                  child: Text(AppLocalizations.of(context)!.remove),
                 ),
               ],
             ),
@@ -407,9 +414,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                 _isDownloaded = false;
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Download removed'),
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.downloadRemoved),
+                  duration: const Duration(seconds: 2),
                 ),
               );
             }
@@ -458,15 +465,19 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Downloaded "${widget.song.title}"'),
+              content: Text(
+                AppLocalizations.of(
+                  context,
+                )!.downloadedTitle(widget.song.title),
+              ),
               duration: const Duration(seconds: 2),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Download failed'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.downloadFailed),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -478,7 +489,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Download error: $e'),
+            content: Text(AppLocalizations.of(context)!.downloadError(e)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -504,7 +515,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rate Song'),
+        title: Text(AppLocalizations.of(context)!.rateSong),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -543,7 +554,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                   Navigator.pop(ctx);
                   await _setRating(context, 0);
                 },
-                child: const Text('Remove Rating'),
+                child: Text(AppLocalizations.of(ctx)!.removeRating),
               ),
             ],
           ],
@@ -551,7 +562,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
           ),
         ],
       ),
@@ -583,7 +594,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to set rating: $e'),
+            content: Text(AppLocalizations.of(context)!.failedToSetRating(e)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -605,9 +616,11 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Removed from Liked Songs'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.removedFromLikedSongs,
+              ),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -618,9 +631,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Added to Liked Songs'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.addedToLikedSongs),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -629,7 +642,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(
+              AppLocalizations.of(context)!.error + ': ${e.toString()}',
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -669,7 +684,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
               child: Row(
                 children: [
                   Text(
-                    'Add to Playlist',
+                    AppLocalizations.of(context)!.addToPlaylist,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ],
@@ -677,9 +692,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
             ),
             const SizedBox(height: 16),
             if (libraryProvider.playlists.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No playlists available'),
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(AppLocalizations.of(context)!.noPlaylists),
               )
             else
               ...libraryProvider.playlists.map(
@@ -743,7 +758,11 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                                 const Icon(Icons.error, color: Colors.white),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text('Error adding to playlist: $e'),
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.errorAddingToPlaylist(e),
+                                  ),
                                 ),
                               ],
                             ),

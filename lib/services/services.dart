@@ -14,3 +14,5 @@ export 'dj_mixer_service.dart';
 export 'player_ui_settings_service.dart';
 export 'cast_service.dart';
 export 'locale_service.dart';
+export 'update_service.dart';
+export 'upnp_service.dart';

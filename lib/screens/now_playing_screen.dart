@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:volume_controller/volume_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../models/song.dart';
 import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
@@ -19,6 +21,7 @@ import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import '../widgets/cast_button.dart';
+import '../widgets/album_artwork.dart' show isLocalFilePath;
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -119,7 +122,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               duration: animDuration,
               curve: animCurve,
               transform: Matrix4.identity()
-                ..translate(0.0, -_morphProgress * 10)
+                ..setTranslationRaw(0.0, -_morphProgress * 10, 0.0)
                 ..scale(1.0 + _morphProgress * 0.03),
               transformAlignment: Alignment.center,
               child: _AlbumArtworkSection(
@@ -204,11 +207,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         child: AnimatedContainer(
                           duration: animDuration,
                           curve: animCurve,
-                          transform: Matrix4.translationValues(
-                            0,
-                            _morphProgress * 15,
-                            0,
-                          ),
+                          transform: Matrix4.identity()
+                            ..setTranslationRaw(0, _morphProgress * 15, 0),
                           child: _PlayerControls(
                             formatDuration: _formatDuration,
                           ),
@@ -241,19 +241,28 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         }
 
         if (song == null) {
-          return const Scaffold(body: Center(child: Text('No song playing')));
+          return Scaffold(
+            body: Center(
+              child: Text(AppLocalizations.of(context)!.noSongPlaying),
+            ),
+          );
         }
 
         if (_cachedCoverArtId != song.coverArt) {
           _cachedCoverArtId = song.coverArt;
-          final subsonicService = Provider.of<SubsonicService>(
-            context,
-            listen: false,
-          );
-          _cachedImageUrl = subsonicService.getCoverArtUrl(
-            song.coverArt,
-            size: 600,
-          );
+          if (isLocalFilePath(song.coverArt)) {
+            // Local file – coverArt IS the absolute path to the artwork image
+            _cachedImageUrl = song.coverArt;
+          } else {
+            final subsonicService = Provider.of<SubsonicService>(
+              context,
+              listen: false,
+            );
+            _cachedImageUrl = subsonicService.getCoverArtUrl(
+              song.coverArt,
+              size: 600,
+            );
+          }
         }
 
         final animDuration = _isDragging
@@ -398,12 +407,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                           child: AnimatedContainer(
                                             duration: animDuration,
                                             curve: animCurve,
-                                            transform:
-                                                Matrix4.translationValues(
-                                                  0,
-                                                  _morphProgress * 30,
-                                                  0,
-                                                ),
+                                            transform: Matrix4.identity()
+                                              ..translate(
+                                                0.0,
+                                                _morphProgress * 30,
+                                                0.0,
+                                              ),
                                             child: _PlayerControls(
                                               formatDuration: _formatDuration,
                                             ),
@@ -569,7 +578,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 BoxShadow(
                                   color: const Color(
                                     0xFFFF2D55,
-                                  ).withOpacity(0.4),
+                                  ).withValues(alpha: 0.4),
                                   blurRadius: 40,
                                   spreadRadius: 10,
                                 ),
@@ -651,7 +660,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.3,
+                                        ),
                                         blurRadius: 20,
                                         spreadRadius: 5,
                                       ),
@@ -731,20 +742,64 @@ class _DynamicBackground extends StatelessWidget {
                   child: child,
                 );
               },
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                memCacheWidth: 400,
-                memCacheHeight: 400,
-                useOldImageOnUrlChange: true,
-                fadeInDuration: const Duration(milliseconds: 300),
-                fadeOutDuration: Duration.zero,
-                placeholder: (_, __) => Container(color: Colors.black),
-                errorWidget: (_, __, ___) => Container(color: Colors.black),
-              ),
+              child: isLocalFilePath(imageUrl)
+                  ? Image.file(
+                      File(imageUrl),
+                      key: ValueKey(imageUrl),
+                      fit: BoxFit.cover,
+                      cacheWidth: 400,
+                      cacheHeight: 400,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.black),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 400,
+                      memCacheHeight: 400,
+                      useOldImageOnUrlChange: true,
+                      fadeInDuration: const Duration(milliseconds: 300),
+                      fadeOutDuration: Duration.zero,
+                      placeholder: (_, __) => Container(color: Colors.black),
+                      errorWidget: (_, __, ___) =>
+                          Container(color: Colors.black),
+                    ),
             )
           else
-            Container(color: Colors.black),
+            AnimatedBuilder(
+              animation: animation,
+              builder: (context, _) {
+                // Nice gradient placeholder when there is no album art
+                final t = animation.value;
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.lerp(
+                          const Color(0xFF1A1A2E),
+                          const Color(0xFF0F3460),
+                          t,
+                        )!,
+                        Color.lerp(
+                          const Color(0xFF16213E),
+                          const Color(0xFF1A1A2E),
+                          t,
+                        )!,
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.music_note_rounded,
+                      size: 96,
+                      color: Colors.white.withValues(alpha: 0.08 + t * 0.04),
+                    ),
+                  ),
+                );
+              },
+            ),
 
           AnimatedBuilder(
             animation: animation,
@@ -824,7 +879,7 @@ class _PlayerHeader extends StatelessWidget {
                   Text(
                     'PLAYING FROM',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5,
@@ -839,7 +894,7 @@ class _PlayerHeader extends StatelessWidget {
                       decoration: albumId != null
                           ? TextDecoration.underline
                           : null,
-                      decorationColor: Colors.white.withOpacity(0.5),
+                      decorationColor: Colors.white.withValues(alpha: 0.5),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -902,14 +957,14 @@ class _AlbumArtworkSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: SizedBox(
         width: size,
-        // height removed to allow aspect ratio flexibility
+        height: size,
         child: RepaintBoundary(
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 40,
                   offset: const Offset(0, 20),
                 ),
@@ -918,19 +973,27 @@ class _AlbumArtworkSection extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: imageUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      key: ValueKey(imageUrl), // Optimize rebuilds
-                      imageUrl: imageUrl,
-                      fit: BoxFit.contain, // Show full image (Issue #1)
-                      memCacheWidth: 600, // Maintain width quality
-                      // memCacheHeight removed to avoid distortion
-                      useOldImageOnUrlChange: true,
-                      fadeInDuration:
-                          Duration.zero, // Prevent flashing (Issue #4)
-                      fadeOutDuration: Duration.zero,
-                      placeholder: (_, __) => _buildPlaceholder(),
-                      errorWidget: (_, __, ___) => _buildPlaceholder(),
-                    )
+                  ? isLocalFilePath(imageUrl)
+                        ? Image.file(
+                            File(imageUrl),
+                            key: ValueKey(imageUrl),
+                            fit: BoxFit.contain,
+                            cacheWidth: 600,
+                            errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                          )
+                        : CachedNetworkImage(
+                            key: ValueKey(imageUrl), // Optimize rebuilds
+                            imageUrl: imageUrl,
+                            fit: BoxFit.contain, // Show full image (Issue #1)
+                            memCacheWidth: 600, // Maintain width quality
+                            // memCacheHeight removed to avoid distortion
+                            useOldImageOnUrlChange: true,
+                            fadeInDuration:
+                                Duration.zero, // Prevent flashing (Issue #4)
+                            fadeOutDuration: Duration.zero,
+                            placeholder: (_, __) => _buildPlaceholder(),
+                            errorWidget: (_, __, ___) => _buildPlaceholder(),
+                          )
                   : _buildPlaceholder(),
             ),
           ),
@@ -941,14 +1004,22 @@ class _AlbumArtworkSection extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Shimmer.fromColors(
-      baseColor: AppTheme.darkCard,
-      highlightColor: Colors.grey.shade700,
+      baseColor: const Color(0xFF2A2A2A),
+      highlightColor: const Color(0xFF3A3A3A),
       child: Container(
-        color: AppTheme.darkCard,
-        child: const Center(
+        width: size,
+        height: size,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
+          ),
+        ),
+        child: Center(
           child: Icon(
             Icons.music_note_rounded,
-            size: 80,
+            size: (size * 0.3).clamp(40.0, 100.0),
             color: Colors.white24,
           ),
         ),
@@ -1016,7 +1087,7 @@ class _PlayerControlsState extends State<_PlayerControls> {
                           rating,
                         );
                       },
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       size: 24,
                     );
                   },
@@ -1172,7 +1243,9 @@ class _SongInfoState extends State<_SongInfo> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Artist "$artistName" not found'),
+              content: Text(
+                AppLocalizations.of(context)!.artistNotFound(artistName),
+              ),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -1182,7 +1255,9 @@ class _SongInfoState extends State<_SongInfo> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error searching for artist: $e'),
+            content: Text(
+              AppLocalizations.of(context)!.errorSearchingArtist(e),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1266,7 +1341,11 @@ class _SongInfoState extends State<_SongInfo> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Artist "$artistName" not found'),
+                              content: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.artistNotFound(artistName),
+                              ),
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -1276,7 +1355,11 @@ class _SongInfoState extends State<_SongInfo> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error searching for artist: $e'),
+                            content: Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.errorSearchingArtist(e),
+                            ),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -1338,12 +1421,12 @@ class _SongInfoState extends State<_SongInfo> {
                     ' / ',
                   ),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 18,
                     decoration: isArtistClickable
                         ? TextDecoration.underline
                         : null,
-                    decorationColor: Colors.white.withOpacity(0.4),
+                    decorationColor: Colors.white.withValues(alpha: 0.4),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1384,9 +1467,9 @@ class _SongInfoState extends State<_SongInfo> {
         setState(() => _isStarred = false);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Removed from favorites'),
-              duration: Duration(seconds: 1),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.removedFromFavorites),
+              duration: const Duration(seconds: 1),
             ),
           );
         }
@@ -1395,9 +1478,9 @@ class _SongInfoState extends State<_SongInfo> {
         setState(() => _isStarred = true);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Added to favorites'),
-              duration: Duration(seconds: 1),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.addedToFavorites),
+              duration: const Duration(seconds: 1),
             ),
           );
         }
@@ -1575,7 +1658,7 @@ class _SongInfoState extends State<_SongInfo> {
                           ? Text(
                               '${playlist.songCount} songs',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                               ),
                             )
                           : null,
@@ -1600,7 +1683,9 @@ class _SongInfoState extends State<_SongInfo> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading playlists: $e'),
+            content: Text(
+              AppLocalizations.of(context)!.errorLoadingPlaylists(e),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1617,19 +1702,21 @@ class _SongInfoState extends State<_SongInfo> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.darkSurface,
-        title: const Text(
-          'Create Playlist',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          AppLocalizations.of(context)!.createPlaylistTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         content: TextField(
           controller: nameController,
           autofocus: true,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            hintText: 'Playlist name',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            hintText: AppLocalizations.of(context)!.playlistNameHint,
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppTheme.appleMusicRed),
@@ -1640,8 +1727,8 @@ class _SongInfoState extends State<_SongInfo> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              AppLocalizations.of(context)!.cancel,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
             ),
           ),
           TextButton(
@@ -1650,9 +1737,9 @@ class _SongInfoState extends State<_SongInfo> {
                 Navigator.pop(context, nameController.text.trim());
               }
             },
-            child: const Text(
-              'Create',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.create,
+              style: const TextStyle(
                 color: AppTheme.appleMusicRed,
                 fontWeight: FontWeight.bold,
               ),
@@ -1689,7 +1776,11 @@ class _SongInfoState extends State<_SongInfo> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Created playlist "$playlistName" with this song'),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.playlistCreatedWithSong(playlistName),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1727,7 +1818,11 @@ class _SongInfoState extends State<_SongInfo> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added to $playlistName'),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.addedToPlaylist(widget.song!.title, playlistName),
+            ),
             duration: const Duration(seconds: 1),
           ),
         );
@@ -1850,7 +1945,7 @@ class _ProgressBarState extends State<_ProgressBar> {
                         Container(
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -1879,7 +1974,7 @@ class _ProgressBarState extends State<_ProgressBar> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withValues(alpha: 0.3),
                                   blurRadius: 4,
                                 ),
                               ],
@@ -1902,14 +1997,14 @@ class _ProgressBarState extends State<_ProgressBar> {
               Text(
                 widget.formatDuration(displayPosition),
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 13,
                 ),
               ),
               Text(
                 '-${widget.formatDuration(widget.duration - displayPosition)}',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 13,
                 ),
               ),
@@ -1947,7 +2042,7 @@ class _PlaybackControls extends StatelessWidget {
                 CupertinoIcons.shuffle,
                 color: shuffleEnabled
                     ? AppTheme.appleMusicRed
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.white.withValues(alpha: 0.7),
                 size: 22,
               ),
             ),
@@ -1981,7 +2076,9 @@ class _PlaybackControls extends StatelessWidget {
               onPressed: hasNext ? provider.skipNext : null,
               icon: Icon(
                 CupertinoIcons.forward_fill,
-                color: hasNext ? Colors.white : Colors.white.withOpacity(0.3),
+                color: hasNext
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.3),
                 size: 36,
               ),
             ),
@@ -1993,7 +2090,7 @@ class _PlaybackControls extends StatelessWidget {
                     : CupertinoIcons.repeat,
                 color: repeatMode != RepeatMode.off
                     ? AppTheme.appleMusicRed
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.white.withValues(alpha: 0.7),
                 size: 22,
               ),
             ),
@@ -2068,7 +2165,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
             displayVolume <= 0.01
                 ? CupertinoIcons.speaker_slash_fill
                 : CupertinoIcons.speaker_1_fill,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             size: 20,
           ),
         ),
@@ -2107,7 +2204,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
                           curve: Curves.easeOut,
                           height: _isDragging ? 6 : 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(
                               _isDragging ? 3 : 2,
                             ),
@@ -2121,7 +2218,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
                             curve: Curves.easeOut,
                             height: _isDragging ? 6 : 4,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(
                                 _isDragging ? 3 : 2,
                               ),
@@ -2148,14 +2245,18 @@ class _VolumeSliderState extends State<_VolumeSlider> {
                               boxShadow: _isDragging
                                   ? [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.4),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.4,
+                                        ),
                                         blurRadius: 8,
                                         spreadRadius: 1,
                                       ),
                                     ]
                                   : [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         blurRadius: 3,
                                       ),
                                     ],
@@ -2178,7 +2279,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
           },
           child: Icon(
             CupertinoIcons.speaker_3_fill,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             size: 20,
           ),
         ),

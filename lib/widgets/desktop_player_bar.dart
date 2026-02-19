@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
@@ -168,8 +169,10 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             ).toggleFavorite();
                           },
                           tooltip: isStarred
-                              ? 'Remove from favorites'
-                              : 'Add to favorites',
+                              ? AppLocalizations.of(
+                                  context,
+                                )!.removeFromFavorites
+                              : AppLocalizations.of(context)!.addToFavorites,
                         );
                       },
                     ),
@@ -203,7 +206,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             : (isDark ? Colors.grey[400] : Colors.grey[600]),
                       ),
                       onPressed: () => _toggleLyrics(context, currentSong),
-                      tooltip: _lyricsOpen ? 'Close Lyrics' : 'Lyrics',
+                      tooltip: _lyricsOpen
+                          ? AppLocalizations.of(context)!.closeLyrics
+                          : AppLocalizations.of(context)!.lyrics,
                     ),
                     IconButton(
                       icon: const Icon(Icons.queue_music_rounded, size: 20),
@@ -258,7 +263,7 @@ class _PlayerControls extends StatelessWidget {
                     : (isDark ? Colors.grey[400] : Colors.grey[600]),
               ),
               onPressed: provider.toggleShuffle,
-              tooltip: 'Enable shuffle',
+              tooltip: AppLocalizations.of(context)!.enableShuffle,
             ),
             const SizedBox(width: 8),
             IconButton(
@@ -274,7 +279,7 @@ class _PlayerControls extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -309,7 +314,7 @@ class _PlayerControls extends StatelessWidget {
                     : (isDark ? Colors.grey[400] : Colors.grey[600]),
               ),
               onPressed: provider.toggleRepeat,
-              tooltip: 'Enable repeat',
+              tooltip: AppLocalizations.of(context)!.enableRepeat,
             ),
           ],
         );
@@ -367,7 +372,7 @@ class _ProgressBar extends StatelessWidget {
                           : Colors.grey[300],
                       thumbColor: isDark ? Colors.white : Colors.black,
                       overlayColor: (isDark ? Colors.white : Colors.black)
-                          .withOpacity(0.12),
+                          .withValues(alpha: 0.12),
                     ),
                     child: Slider(
                       value: position.inMilliseconds.toDouble().clamp(
@@ -440,7 +445,7 @@ class _VolumeControl extends StatelessWidget {
                       : Colors.grey[300],
                   thumbColor: isDark ? Colors.white : Colors.black,
                   overlayColor: (isDark ? Colors.white : Colors.black)
-                      .withOpacity(0.12),
+                      .withValues(alpha: 0.12),
                 ),
                 child: Slider(
                   value: volume,

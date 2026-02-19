@@ -34,6 +34,14 @@ class AuthProvider extends ChangeNotifier {
     final config = await _storageService.getServerConfig();
     if (config != null && config.isValid) {
       _config = config;
+
+      // Local-only mode: skip server ping entirely
+      if (config.serverType == 'local') {
+        _state = AuthState.offlineMode;
+        notifyListeners();
+        return;
+      }
+
       _subsonicService.configure(config);
       await _verifyConnection();
     } else {
@@ -157,7 +165,7 @@ class AuthProvider extends ChangeNotifier {
         serverType: 'local',
       );
       await _storageService.saveServerConfig(_config!);
-      _state = AuthState.authenticated;
+      _state = AuthState.offlineMode;
     } else {
       _config = null;
       _state = AuthState.unauthenticated;

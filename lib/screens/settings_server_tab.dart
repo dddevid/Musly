@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
@@ -161,7 +162,10 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         ),
         child: const Icon(CupertinoIcons.folder, color: Colors.white, size: 18),
       ),
-      title: const Text('Music Folders', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.musicFolders,
+        style: const TextStyle(fontSize: 16),
+      ),
       trailing: Icon(
         CupertinoIcons.chevron_right,
         size: 16,
@@ -185,9 +189,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Music Folders'),
+        title: Text(AppLocalizations.of(context)!.musicFolders),
         content: folders.isEmpty
-            ? const Text('No music folders found')
+            ? Text(AppLocalizations.of(context)!.noMusicFolders)
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: folders.map((folder) {
@@ -200,7 +204,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context)!.close),
           ),
         ],
       ),
@@ -225,31 +229,29 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
           size: 18,
         ),
       ),
-      title: const Text(
-        'Logout',
-        style: TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
+      title: Text(
+        AppLocalizations.of(context)!.logout,
+        style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       onTap: () {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Logout'),
-            content: const Text(
-              'Are you sure you want to logout? This will also clear all cached data.',
-            ),
+            title: Text(AppLocalizations.of(context)!.logout),
+            content: Text(AppLocalizations.of(context)!.logoutConfirmation),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                   Provider.of<AuthProvider>(context, listen: false).logout();
                 },
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(color: Color(0xFFFF3B30)),
+                child: Text(
+                  AppLocalizations.of(context)!.logout,
+                  style: const TextStyle(color: Color(0xFFFF3B30)),
                 ),
               ),
             ],

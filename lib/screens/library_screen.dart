@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,8 @@ import 'all_songs_screen.dart';
 import 'library_search_delegate.dart';
 import 'artist_screen.dart';
 import 'radio_screen.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/album_artwork.dart' show isLocalFilePath;
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -42,7 +45,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             expandedHeight: 60,
             backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
             title: Text(
-              'Your Library',
+              AppLocalizations.of(context)!.yourLibrary,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -89,41 +92,55 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ),
 
           SliverToBoxAdapter(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: _filters.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = selected ? filter : 'All';
-                        });
-                      },
-                      backgroundColor: isDark
-                          ? const Color(0xFF282828)
-                          : Colors.grey[200],
-                      selectedColor: isDark ? Colors.white : Colors.black,
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? (isDark ? Colors.black : Colors.white)
-                            : (isDark ? Colors.white : Colors.black),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      side: BorderSide.none,
-                      showCheckmark: false,
-                    ),
-                  );
-                }).toList(),
-              ),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                final filterLabels = {
+                  'All': l10n.filterAll,
+                  'Playlists': l10n.filterPlaylists,
+                  'Albums': l10n.filterAlbums,
+                  'Artists': l10n.filterArtists,
+                };
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: _filters.map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(filterLabels[filter]!),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedFilter = selected ? filter : 'All';
+                            });
+                          },
+                          backgroundColor: isDark
+                              ? const Color(0xFF282828)
+                              : Colors.grey[200],
+                          selectedColor: isDark ? Colors.white : Colors.black,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? (isDark ? Colors.black : Colors.white)
+                                : (isDark ? Colors.white : Colors.black),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          side: BorderSide.none,
+                          showCheckmark: false,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -134,32 +151,32 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   _SpotifyLibraryTile(
                     icon: CupertinoIcons.heart_fill,
                     iconColor: const Color(0xFF8B5CF6),
-                    title: 'Liked Songs',
-                    subtitle: 'Playlist',
+                    title: AppLocalizations.of(context)!.likedSongs,
+                    subtitle: AppLocalizations.of(context)!.playlist,
                     isGradient: true,
                     onTap: () => _navigate(context, const FavoritesScreen()),
                   ),
                   _SpotifyLibraryTile(
                     icon: CupertinoIcons.music_albums,
                     iconColor: const Color(0xFFEC4899),
-                    title: 'All Albums',
-                    subtitle: 'Albums',
+                    title: AppLocalizations.of(context)!.allAlbums,
+                    subtitle: AppLocalizations.of(context)!.filterAlbums,
                     isGradient: false,
                     onTap: () => _navigate(context, const AllAlbumsScreen()),
                   ),
                   _SpotifyLibraryTile(
                     icon: CupertinoIcons.music_note_list,
                     iconColor: const Color(0xFF10B981),
-                    title: 'All Songs',
-                    subtitle: 'Songs',
+                    title: AppLocalizations.of(context)!.allSongs,
+                    subtitle: AppLocalizations.of(context)!.songs,
                     isGradient: false,
                     onTap: () => _navigate(context, const AllSongsScreen()),
                   ),
                   _SpotifyLibraryTile(
                     icon: CupertinoIcons.radiowaves_right,
                     iconColor: const Color(0xFF3B82F6),
-                    title: 'Radio Stations',
-                    subtitle: 'Internet Radio',
+                    title: AppLocalizations.of(context)!.radioStations,
+                    subtitle: AppLocalizations.of(context)!.internetRadio,
                     isGradient: false,
                     onTap: () => _navigate(context, const RadioScreen()),
                   ),
@@ -170,7 +187,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
           Consumer<LibraryProvider>(
             builder: (context, libraryProvider, _) {
-              final items = _getFilteredItems(libraryProvider);
+              final items = _getFilteredItems(context, libraryProvider);
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
@@ -186,7 +203,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  List<_LibraryItem> _getFilteredItems(LibraryProvider provider) {
+  List<_LibraryItem> _getFilteredItems(
+    BuildContext context,
+    LibraryProvider provider,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     List<_LibraryItem> items = [];
 
     if (_selectedFilter == 'All' || _selectedFilter == 'Playlists') {
@@ -196,7 +217,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             type: 'Playlist',
             id: p.id,
             name: p.name,
-            subtitle: '${p.songCount ?? 0} songs',
+            subtitle: l10n.songsCount(p.songCount ?? 0),
             coverArt: p.coverArt,
           ),
         ),
@@ -204,18 +225,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
 
     if (_selectedFilter == 'All' || _selectedFilter == 'Albums') {
+      // In local mode use all cached albums; otherwise recent albums (max 20)
+      final albums = provider.isLocalOnlyMode
+          ? provider.cachedAllAlbums
+          : provider.recentAlbums.take(20).toList();
       items.addAll(
-        provider.recentAlbums
-            .take(20)
-            .map(
-              (a) => _LibraryItem(
-                type: 'Album',
-                id: a.id,
-                name: a.name,
-                subtitle: a.artist ?? '',
-                coverArt: a.coverArt,
-              ),
-            ),
+        albums.map(
+          (a) => _LibraryItem(
+            type: 'Album',
+            id: a.id,
+            name: a.name,
+            subtitle: a.artist ?? '',
+            coverArt: a.coverArt,
+          ),
+        ),
       );
     }
 
@@ -226,7 +249,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             type: 'Artist',
             id: a.id,
             name: a.name,
-            subtitle: '${a.albumCount ?? 0} albums',
+            subtitle: l10n.albumsCount(a.albumCount ?? 0),
             coverArt: a.coverArt,
           ),
         ),
@@ -243,7 +266,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final coverArtUrl = item.coverArt != null
-        ? subsonicService.getCoverArtUrl(item.coverArt!, size: 120)
+        ? (isLocalFilePath(item.coverArt)
+              ? item.coverArt!
+              : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
         : null;
 
     return ListTile(
@@ -254,13 +279,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
           width: 56,
           height: 56,
           child: coverArtUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: coverArtUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(color: Colors.grey[800]),
-                  errorWidget: (_, __, ___) =>
-                      _buildPlaceholder(item.type, isDark),
-                )
+              ? (isLocalFilePath(coverArtUrl)
+                    ? Image.file(
+                        File(coverArtUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _buildPlaceholder(item.type, isDark),
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: coverArtUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) =>
+                            Container(color: Colors.grey[800]),
+                        errorWidget: (_, __, ___) =>
+                            _buildPlaceholder(item.type, isDark),
+                      ))
               : _buildPlaceholder(item.type, isDark),
         ),
       ),
@@ -336,14 +369,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Elimina Playlist'),
+        title: Text(AppLocalizations.of(context)!.deletePlaylist),
         content: Text(
-          'Sei sicuro di voler eliminare la playlist "${item.name}"?',
+          AppLocalizations.of(context)!.deletePlaylistConfirmation(item.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -357,7 +390,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Playlist "${item.name}" eliminata'),
+                      content: Text(
+                        AppLocalizations.of(
+                          context,
+                        )!.playlistDeleted(item.name),
+                      ),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -366,7 +403,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Errore: $e'),
+                      content: Text(
+                        AppLocalizations.of(context)!.errorDeletingPlaylist(e),
+                      ),
                       behavior: SnackBarBehavior.floating,
                       backgroundColor: Colors.red,
                     ),
@@ -375,7 +414,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Elimina'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -389,14 +428,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New Playlist'),
+        title: Text(AppLocalizations.of(context)!.newPlaylist),
         content: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: TextField(
             controller: controller,
             autofocus: true,
             decoration: InputDecoration(
-              hintText: 'Playlist name',
+              hintText: AppLocalizations.of(context)!.playlistName,
               filled: true,
               fillColor: isDark
                   ? const Color(0xFF2C2C2E)
@@ -412,7 +451,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -427,7 +466,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Playlist "${controller.text}" created'),
+                        content: Text(
+                          AppLocalizations.of(
+                            context,
+                          )!.playlistCreated(controller.text),
+                        ),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -437,7 +480,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Error: $e'),
+                        content: Text(
+                          AppLocalizations.of(
+                            context,
+                          )!.errorCreatingPlaylist(e),
+                        ),
                         behavior: SnackBarBehavior.floating,
                         backgroundColor: Colors.red,
                       ),
@@ -446,7 +493,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 }
               }
             },
-            child: const Text('Create'),
+            child: Text(AppLocalizations.of(context)!.create),
           ),
         ],
       ),
@@ -529,7 +576,7 @@ class _SpotifyLibraryTile extends StatelessWidget {
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isGradient ? null : iconColor.withOpacity(0.15),
+          color: isGradient ? null : iconColor.withValues(alpha: 0.15),
         ),
         child: Icon(
           icon,
@@ -584,7 +631,10 @@ class _SettingsSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Settings', style: theme.textTheme.headlineMedium),
+            Text(
+              AppLocalizations.of(context)!.settingsTitle,
+              style: theme.textTheme.headlineMedium,
+            ),
             const SizedBox(height: 24),
             if (authProvider.config != null) ...[
               Padding(
@@ -610,7 +660,7 @@ class _SettingsSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Connected',
+                              AppLocalizations.of(context)!.connected,
                               style: theme.textTheme.titleMedium,
                             ),
                             Text(
@@ -633,7 +683,7 @@ class _SettingsSheet extends StatelessWidget {
                 CupertinoIcons.gear_alt,
                 color: isDark ? Colors.white : Colors.black87,
               ),
-              title: const Text('Settings'),
+              title: Text(AppLocalizations.of(context)!.settingsTitle),
               trailing: Icon(
                 CupertinoIcons.chevron_forward,
                 size: 18,
@@ -649,7 +699,7 @@ class _SettingsSheet extends StatelessWidget {
                 CupertinoIcons.arrow_right_square,
                 color: Colors.red,
               ),
-              title: const Text('Disconnect'),
+              title: Text(AppLocalizations.of(context)!.logout),
               onTap: () async {
                 Navigator.pop(context);
                 await authProvider.logout();

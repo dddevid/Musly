@@ -319,7 +319,7 @@ class _RadioStationTile extends StatelessWidget {
                 colors: isPlaying
                     ? [
                         AppTheme.appleMusicRed,
-                        AppTheme.appleMusicRed.withOpacity(0.7),
+                        AppTheme.appleMusicRed.withValues(alpha: 0.7),
                       ]
                     : [const Color(0xFF5856D6), const Color(0xFF007AFF)],
               ),
@@ -361,7 +361,7 @@ class _RadioStationTile extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.appleMusicRed.withOpacity(0.1),
+                    color: AppTheme.appleMusicRed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(

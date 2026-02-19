@@ -14,6 +14,7 @@ import '../models/lyrics.dart';
 import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../services/subsonic_service.dart';
+import 'album_artwork.dart' show isLocalFilePath;
 
 class SyncedLyricsView extends StatefulWidget {
   final Song song;
@@ -374,9 +375,14 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       context,
       listen: false,
     );
-    final imageUrl = (_song.id == widget.song.id && widget.imageUrl != null)
-        ? widget.imageUrl!
-        : subsonicService.getCoverArtUrl(_song.coverArt, size: 600);
+    final String imageUrl;
+    if (_song.id == widget.song.id && widget.imageUrl != null) {
+      imageUrl = widget.imageUrl!;
+    } else if (isLocalFilePath(_song.coverArt)) {
+      imageUrl = _song.coverArt ?? '';
+    } else {
+      imageUrl = subsonicService.getCoverArtUrl(_song.coverArt, size: 600);
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -418,7 +424,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                     icon: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -440,7 +446,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                     icon: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -486,7 +492,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 40,
                             offset: const Offset(0, 20),
                           ),
@@ -528,7 +534,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                   Text(
                     _song.artist!,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -588,13 +594,13 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
               Icon(
                 Icons.music_note_rounded,
                 size: 80,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               const SizedBox(height: 24),
               Text(
                 'No lyrics available',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -604,7 +610,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
               Text(
                 'Lyrics for this song couldn\'t be found',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -640,10 +646,10 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -694,17 +700,26 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       },
       child: Container(
         color: Colors.black,
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          fit: BoxFit.cover,
-          memCacheWidth: 300, // Reduced cache size
-          memCacheHeight: 300,
-          fadeInDuration: Duration.zero,
-          fadeOutDuration: Duration.zero,
-          useOldImageOnUrlChange: true,
-          placeholder: (_, __) => Container(color: Colors.black),
-          errorWidget: (_, __, ___) => Container(color: Colors.black),
-        ),
+        child: isLocalFilePath(imageUrl)
+            ? Image.file(
+                File(imageUrl),
+                key: ValueKey(imageUrl),
+                fit: BoxFit.cover,
+                cacheWidth: 300,
+                cacheHeight: 300,
+                errorBuilder: (_, __, ___) => Container(color: Colors.black),
+              )
+            : CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: 300, // Reduced cache size
+                memCacheHeight: 300,
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+                useOldImageOnUrlChange: true,
+                placeholder: (_, __) => Container(color: Colors.black),
+                errorWidget: (_, __, ___) => Container(color: Colors.black),
+              ),
       ),
     );
   }
@@ -719,7 +734,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -749,7 +764,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                   Text(
                     _song.artist!,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14,
                     ),
                     maxLines: 1,
@@ -780,9 +795,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                     overlayRadius: 14,
                   ),
                   activeTrackColor: Colors.white,
-                  inactiveTrackColor: Colors.white.withOpacity(0.3),
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                   thumbColor: Colors.white,
-                  overlayColor: Colors.white.withOpacity(0.2),
+                  overlayColor: Colors.white.withValues(alpha: 0.2),
                 ),
                 child: Slider(
                   value: player.progress.clamp(0.0, 1.0),
@@ -806,7 +821,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                       Icons.skip_previous_rounded,
                       color: player.hasPrevious
                           ? Colors.white
-                          : Colors.white.withOpacity(0.3),
+                          : Colors.white.withValues(alpha: 0.3),
                       size: 36,
                     ),
                   ),
@@ -833,7 +848,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                       Icons.skip_next_rounded,
                       color: player.hasNext
                           ? Colors.white
-                          : Colors.white.withOpacity(0.3),
+                          : Colors.white.withValues(alpha: 0.3),
                       size: 36,
                     ),
                   ),
@@ -861,8 +876,8 @@ class LyricsButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
-              ? Colors.white.withOpacity(0.2)
-              : Colors.white.withOpacity(0.1),
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -871,7 +886,9 @@ class LyricsButton extends StatelessWidget {
             Icon(
               Icons.lyrics_rounded,
               size: 18,
-              color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
+              color: isActive
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.7),
             ),
             const SizedBox(width: 4),
             Text(
@@ -879,7 +896,9 @@ class LyricsButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
+                color: isActive
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],

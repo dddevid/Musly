@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../services/subsonic_service.dart';
 import '../models/album.dart';
 import '../theme/app_theme.dart';
@@ -61,7 +62,10 @@ class _TopRatedScreenState extends State<TopRatedScreen> {
             pinned: true,
             expandedHeight: 140,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text('Top Rated', style: theme.appBarTheme.titleTextStyle),
+              title: Text(
+                AppLocalizations.of(context)!.topRated,
+                style: theme.appBarTheme.titleTextStyle,
+              ),
               titlePadding: const EdgeInsets.only(left: 52, bottom: 16),
             ),
           ),

@@ -649,7 +649,7 @@ abstract class AppLocalizations {
   /// No search results message
   ///
   /// In en, this message translates to:
-  /// **'No results'**
+  /// **'No Results'**
   String get noResults;
 
   /// Search field hint text
@@ -753,6 +753,1446 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Display'**
   String get display;
+
+  /// Player Interface settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Player Interface'**
+  String get playerInterface;
+
+  /// Smart Recommendations settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Recommendations'**
+  String get smartRecommendations;
+
+  /// Show Volume Slider toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Show Volume Slider'**
+  String get showVolumeSlider;
+
+  /// Show Volume Slider toggle subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Display volume control in Now Playing screen'**
+  String get showVolumeSliderSubtitle;
+
+  /// Show Star Ratings toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Show Star Ratings'**
+  String get showStarRatings;
+
+  /// Show Star Ratings toggle subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Rate songs and view ratings'**
+  String get showStarRatingsSubtitle;
+
+  /// Enable Recommendations toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Recommendations'**
+  String get enableRecommendations;
+
+  /// Enable Recommendations toggle subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Get personalized music suggestions'**
+  String get enableRecommendationsSubtitle;
+
+  /// Listening Data section label
+  ///
+  /// In en, this message translates to:
+  /// **'Listening Data'**
+  String get listeningData;
+
+  /// Total plays count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} total plays'**
+  String totalPlays(int count);
+
+  /// Clear Listening History button label
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Listening History'**
+  String get clearListeningHistory;
+
+  /// Confirmation dialog for clearing history
+  ///
+  /// In en, this message translates to:
+  /// **'This will reset all your listening data and recommendations. Are you sure?'**
+  String get confirmClearHistory;
+
+  /// SnackBar message when history is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Listening history cleared'**
+  String get historyCleared;
+
+  /// Discord RPC toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Discord Status'**
+  String get discordStatus;
+
+  /// Discord RPC toggle subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Show playing song on Discord profile'**
+  String get discordStatusSubtitle;
+
+  /// Language selection dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// System default language option
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemDefault;
+
+  /// Community translations credit label
+  ///
+  /// In en, this message translates to:
+  /// **'Translations by Community'**
+  String get communityTranslations;
+
+  /// Community translations credit subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Help translate Musly on Crowdin'**
+  String get communityTranslationsSubtitle;
+
+  /// No description provided for @yourLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Library'**
+  String get yourLibrary;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get filterPlaylists;
+
+  /// No description provided for @filterAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get filterAlbums;
+
+  /// No description provided for @filterArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get filterArtists;
+
+  /// No description provided for @likedSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked Songs'**
+  String get likedSongs;
+
+  /// No description provided for @radioStations.
+  ///
+  /// In en, this message translates to:
+  /// **'Radio Stations'**
+  String get radioStations;
+
+  /// No description provided for @playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist'**
+  String get playlist;
+
+  /// No description provided for @internetRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'Internet Radio'**
+  String get internetRadio;
+
+  /// No description provided for @newPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'New Playlist'**
+  String get newPlaylist;
+
+  /// No description provided for @playlistName.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist Name'**
+  String get playlistName;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @deletePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Playlist'**
+  String get deletePlaylist;
+
+  /// No description provided for @deletePlaylistConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the playlist \"{name}\"?'**
+  String deletePlaylistConfirmation(String name);
+
+  /// No description provided for @playlistDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist \"{name}\" deleted'**
+  String playlistDeleted(String name);
+
+  /// No description provided for @errorCreatingPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating playlist: {error}'**
+  String errorCreatingPlaylist(Object error);
+
+  /// No description provided for @errorDeletingPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Error deleting playlist: {error}'**
+  String errorDeletingPlaylist(Object error);
+
+  /// No description provided for @playlistCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist \"{name}\" created'**
+  String playlistCreated(String name);
+
+  /// No description provided for @searchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchTitle;
+
+  /// No description provided for @searchPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists, Songs, Albums'**
+  String get searchPlaceholder;
+
+  /// No description provided for @tryDifferentSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different search'**
+  String get tryDifferentSearch;
+
+  /// No description provided for @noSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'No suggestions'**
+  String get noSuggestions;
+
+  /// No description provided for @browseCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Categories'**
+  String get browseCategories;
+
+  /// No description provided for @categoryMadeForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Made For You'**
+  String get categoryMadeForYou;
+
+  /// No description provided for @categoryNewReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'New Releases'**
+  String get categoryNewReleases;
+
+  /// No description provided for @categoryTopRated.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated'**
+  String get categoryTopRated;
+
+  /// No description provided for @categoryGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get categoryGenres;
+
+  /// No description provided for @categoryFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get categoryFavorites;
+
+  /// No description provided for @categoryRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'Radio'**
+  String get categoryRadio;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @tabPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get tabPlayback;
+
+  /// No description provided for @tabStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get tabStorage;
+
+  /// No description provided for @tabServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get tabServer;
+
+  /// No description provided for @tabDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get tabDisplay;
+
+  /// No description provided for @tabAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get tabAbout;
+
+  /// No description provided for @sectionAutoDj.
+  ///
+  /// In en, this message translates to:
+  /// **'AUTO DJ'**
+  String get sectionAutoDj;
+
+  /// No description provided for @autoDjMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto DJ Mode'**
+  String get autoDjMode;
+
+  /// No description provided for @songsToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs to Add: {count}'**
+  String songsToAdd(int count);
+
+  /// No description provided for @sectionReplayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'VOLUME NORMALIZATION (REPLAYGAIN)'**
+  String get sectionReplayGain;
+
+  /// No description provided for @replayGainMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get replayGainMode;
+
+  /// No description provided for @preamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Preamp: {value} dB'**
+  String preamp(String value);
+
+  /// No description provided for @preventClipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Prevent Clipping'**
+  String get preventClipping;
+
+  /// No description provided for @fallbackGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Fallback Gain: {value} dB'**
+  String fallbackGain(String value);
+
+  /// No description provided for @sectionStreamingQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAMING QUALITY'**
+  String get sectionStreamingQuality;
+
+  /// No description provided for @enableTranscoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Transcoding'**
+  String get enableTranscoding;
+
+  /// No description provided for @qualityWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'WiFi Quality'**
+  String get qualityWifi;
+
+  /// No description provided for @qualityMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Quality'**
+  String get qualityMobile;
+
+  /// No description provided for @format.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get format;
+
+  /// No description provided for @transcodingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce data usage with lower quality'**
+  String get transcodingSubtitle;
+
+  /// No description provided for @modeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get modeOff;
+
+  /// No description provided for @modeTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get modeTrack;
+
+  /// No description provided for @modeAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get modeAlbum;
+
+  /// No description provided for @sectionServerConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'SERVER CONNECTION'**
+  String get sectionServerConnection;
+
+  /// No description provided for @serverType.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Type'**
+  String get serverType;
+
+  /// No description provided for @notConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected'**
+  String get notConnected;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @sectionMusicFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'MUSIC FOLDERS'**
+  String get sectionMusicFolders;
+
+  /// No description provided for @musicFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Folders'**
+  String get musicFolders;
+
+  /// No description provided for @noMusicFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No music folders found'**
+  String get noMusicFolders;
+
+  /// No description provided for @sectionAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get sectionAccount;
+
+  /// No description provided for @logoutConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout? This will also clear all cached data.'**
+  String get logoutConfirmation;
+
+  /// No description provided for @sectionCacheSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'CACHE SETTINGS'**
+  String get sectionCacheSettings;
+
+  /// No description provided for @imageCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Image Cache'**
+  String get imageCache;
+
+  /// No description provided for @musicCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Cache'**
+  String get musicCache;
+
+  /// No description provided for @bpmCache.
+  ///
+  /// In en, this message translates to:
+  /// **'BPM Cache'**
+  String get bpmCache;
+
+  /// No description provided for @saveAlbumCovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Save album covers locally'**
+  String get saveAlbumCovers;
+
+  /// No description provided for @saveSongMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Save song metadata locally'**
+  String get saveSongMetadata;
+
+  /// No description provided for @saveBpmAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Save BPM analysis locally'**
+  String get saveBpmAnalysis;
+
+  /// No description provided for @sectionCacheCleanup.
+  ///
+  /// In en, this message translates to:
+  /// **'CACHE CLEANUP'**
+  String get sectionCacheCleanup;
+
+  /// No description provided for @clearAllCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Cache'**
+  String get clearAllCache;
+
+  /// No description provided for @allCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'All cache cleared'**
+  String get allCacheCleared;
+
+  /// No description provided for @sectionOfflineDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE DOWNLOADS'**
+  String get sectionOfflineDownloads;
+
+  /// No description provided for @downloadedSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded Songs'**
+  String get downloadedSongs;
+
+  /// No description provided for @downloadingLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading Library... {progress}/{total}'**
+  String downloadingLibrary(int progress, int total);
+
+  /// No description provided for @downloadAllLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Download All Library'**
+  String get downloadAllLibrary;
+
+  /// No description provided for @downloadLibraryConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will download {count} songs to your device. This may take a while and use significant storage space.\n\nContinue?'**
+  String downloadLibraryConfirm(int count);
+
+  /// No description provided for @libraryDownloadStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Library download started'**
+  String get libraryDownloadStarted;
+
+  /// No description provided for @deleteDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete All Downloads'**
+  String get deleteDownloads;
+
+  /// No description provided for @downloadsDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'All downloads deleted'**
+  String get downloadsDeleted;
+
+  /// No description provided for @noSongsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs available. Please load your library first.'**
+  String get noSongsAvailable;
+
+  /// No description provided for @sectionBpmAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'BPM ANALYSIS'**
+  String get sectionBpmAnalysis;
+
+  /// No description provided for @cachedBpms.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached BPMs'**
+  String get cachedBpms;
+
+  /// No description provided for @cacheAllBpms.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache All BPMs'**
+  String get cacheAllBpms;
+
+  /// No description provided for @clearBpmCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear BPM Cache'**
+  String get clearBpmCache;
+
+  /// No description provided for @bpmCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'BPM cache cleared'**
+  String get bpmCacheCleared;
+
+  /// No description provided for @downloadedStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs • {size}'**
+  String downloadedStats(int count, String size);
+
+  /// No description provided for @sectionInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'INFORMATION'**
+  String get sectionInformation;
+
+  /// No description provided for @sectionDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'DEVELOPER'**
+  String get sectionDeveloper;
+
+  /// No description provided for @sectionLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'LINKS'**
+  String get sectionLinks;
+
+  /// No description provided for @githubRepo.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get githubRepo;
+
+  /// No description provided for @playingFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYING FROM'**
+  String get playingFrom;
+
+  /// No description provided for @live.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get live;
+
+  /// No description provided for @streamingLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming Live'**
+  String get streamingLive;
+
+  /// No description provided for @stopRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop Radio'**
+  String get stopRadio;
+
+  /// No description provided for @removeFromLiked.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Liked Songs'**
+  String get removeFromLiked;
+
+  /// No description provided for @addToLiked.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Liked Songs'**
+  String get addToLiked;
+
+  /// No description provided for @playNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Next'**
+  String get playNext;
+
+  /// No description provided for @addToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Queue'**
+  String get addToQueue;
+
+  /// No description provided for @goToAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Album'**
+  String get goToAlbum;
+
+  /// No description provided for @goToArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Artist'**
+  String get goToArtist;
+
+  /// No description provided for @rateSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Song'**
+  String get rateSong;
+
+  /// No description provided for @rateSongValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Song ({rating} {stars})'**
+  String rateSongValue(int rating, String stars);
+
+  /// No description provided for @ratingRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating removed'**
+  String get ratingRemoved;
+
+  /// No description provided for @rated.
+  ///
+  /// In en, this message translates to:
+  /// **'Rated {rating} {stars}'**
+  String rated(int rating, String stars);
+
+  /// No description provided for @removeRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Rating'**
+  String get removeRating;
+
+  /// No description provided for @downloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded'**
+  String get downloaded;
+
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading... {percent}%'**
+  String downloading(int percent);
+
+  /// No description provided for @removeDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Download'**
+  String get removeDownload;
+
+  /// No description provided for @removeDownloadConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this song from offline storage?'**
+  String get removeDownloadConfirm;
+
+  /// No description provided for @downloadRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Download removed'**
+  String get downloadRemoved;
+
+  /// No description provided for @downloadedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded \"{title}\"'**
+  String downloadedTitle(String title);
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Download error: {error}'**
+  String downloadError(Object error);
+
+  /// No description provided for @addedToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{title}\" to {playlist}'**
+  String addedToPlaylist(String title, String playlist);
+
+  /// No description provided for @errorAddingToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Error adding to playlist: {error}'**
+  String errorAddingToPlaylist(Object error);
+
+  /// No description provided for @noPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'No playlists available'**
+  String get noPlaylists;
+
+  /// No description provided for @createNewPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Playlist'**
+  String get createNewPlaylist;
+
+  /// No description provided for @artistNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist \"{name}\" not found'**
+  String artistNotFound(String name);
+
+  /// No description provided for @errorSearchingArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Error searching for artist: {error}'**
+  String errorSearchingArtist(Object error);
+
+  /// No description provided for @selectArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Artist'**
+  String get selectArtist;
+
+  /// No description provided for @removedFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from favorites'**
+  String get removedFromFavorites;
+
+  /// No description provided for @addedToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to favorites'**
+  String get addedToFavorites;
+
+  /// No description provided for @star.
+  ///
+  /// In en, this message translates to:
+  /// **'star'**
+  String get star;
+
+  /// No description provided for @stars.
+  ///
+  /// In en, this message translates to:
+  /// **'stars'**
+  String get stars;
+
+  /// Message when album data is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Album not found'**
+  String get albumNotFound;
+
+  /// Album duration in hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} HR {minutes} MIN'**
+  String durationHoursMinutes(int hours, int minutes);
+
+  /// Album duration in minutes only
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} MIN'**
+  String durationMinutes(int minutes);
+
+  /// Top songs section header on artist screen
+  ///
+  /// In en, this message translates to:
+  /// **'Top Songs'**
+  String get topSongs;
+
+  /// Server connection status — connected
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// Placeholder when no song is loaded in the player
+  ///
+  /// In en, this message translates to:
+  /// **'No song playing'**
+  String get noSongPlaying;
+
+  /// Uppercase badge shown in the now-playing radio player
+  ///
+  /// In en, this message translates to:
+  /// **'INTERNET RADIO'**
+  String get internetRadioUppercase;
+
+  /// Title of the queue / playing-next bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Playing Next'**
+  String get playingNext;
+
+  /// Title of the create-new-playlist dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Create Playlist'**
+  String get createPlaylistTitle;
+
+  /// Hint text for the playlist name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist name'**
+  String get playlistNameHint;
+
+  /// Snackbar shown after creating a playlist with the current song
+  ///
+  /// In en, this message translates to:
+  /// **'Created playlist \"{name}\" with this song'**
+  String playlistCreatedWithSong(String name);
+
+  /// Snackbar shown when playlists fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading playlists: {error}'**
+  String errorLoadingPlaylists(Object error);
+
+  /// Message when a playlist cannot be found
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist not found'**
+  String get playlistNotFound;
+
+  /// Empty state message for a playlist with no songs
+  ///
+  /// In en, this message translates to:
+  /// **'No songs in this playlist'**
+  String get noSongsInPlaylist;
+
+  /// Empty state for the favorite songs list
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite songs yet'**
+  String get noFavoriteSongsYet;
+
+  /// Empty state for the favorite albums list
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite albums yet'**
+  String get noFavoriteAlbumsYet;
+
+  /// Title of the listening history screen
+  ///
+  /// In en, this message translates to:
+  /// **'Listening History'**
+  String get listeningHistory;
+
+  /// Empty state headline on the history screen
+  ///
+  /// In en, this message translates to:
+  /// **'No Listening History'**
+  String get noListeningHistory;
+
+  /// Empty state subtitle on the history screen
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you play will appear here'**
+  String get songsWillAppearHere;
+
+  /// Sort option: title ascending
+  ///
+  /// In en, this message translates to:
+  /// **'Title (A-Z)'**
+  String get sortByTitleAZ;
+
+  /// Sort option: title descending
+  ///
+  /// In en, this message translates to:
+  /// **'Title (Z-A)'**
+  String get sortByTitleZA;
+
+  /// Sort option: artist ascending
+  ///
+  /// In en, this message translates to:
+  /// **'Artist (A-Z)'**
+  String get sortByArtistAZ;
+
+  /// Sort option: artist descending
+  ///
+  /// In en, this message translates to:
+  /// **'Artist (Z-A)'**
+  String get sortByArtistZA;
+
+  /// Sort option: album ascending
+  ///
+  /// In en, this message translates to:
+  /// **'Album (A-Z)'**
+  String get sortByAlbumAZ;
+
+  /// Sort option: album descending
+  ///
+  /// In en, this message translates to:
+  /// **'Album (Z-A)'**
+  String get sortByAlbumZA;
+
+  /// Sort option: recently added
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Added'**
+  String get recentlyAdded;
+
+  /// Empty state when no songs match a filter
+  ///
+  /// In en, this message translates to:
+  /// **'No songs found'**
+  String get noSongsFound;
+
+  /// Empty state when no albums match a filter
+  ///
+  /// In en, this message translates to:
+  /// **'No albums found'**
+  String get noAlbumsFound;
+
+  /// Snackbar when a radio station has no homepage URL
+  ///
+  /// In en, this message translates to:
+  /// **'No homepage URL available'**
+  String get noHomepageUrl;
+
+  /// Context menu option to play a radio station
+  ///
+  /// In en, this message translates to:
+  /// **'Play Station'**
+  String get playStation;
+
+  /// Context menu option to open a radio station's homepage
+  ///
+  /// In en, this message translates to:
+  /// **'Open Homepage'**
+  String get openHomepage;
+
+  /// Context menu option to copy a radio station stream URL
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Stream URL'**
+  String get copyStreamUrl;
+
+  /// Error state message on the radio screen
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load radio stations'**
+  String get failedToLoadRadioStations;
+
+  /// Empty state headline on the radio screen
+  ///
+  /// In en, this message translates to:
+  /// **'No Radio Stations'**
+  String get noRadioStations;
+
+  /// Empty state subtitle on the radio screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add radio stations in your Navidrome server settings to see them here.'**
+  String get noRadioStationsHint;
+
+  /// Subtitle below the app name on the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to your Subsonic server'**
+  String get connectToServerSubtitle;
+
+  /// Validation message when server URL is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter server URL'**
+  String get pleaseEnterServerUrl;
+
+  /// Validation message when server URL format is invalid
+  ///
+  /// In en, this message translates to:
+  /// **'URL must start with http:// or https://'**
+  String get invalidUrlFormat;
+
+  /// Validation message when username is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter username'**
+  String get pleaseEnterUsername;
+
+  /// Validation message when password is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter password'**
+  String get pleaseEnterPassword;
+
+  /// Toggle label for legacy Subsonic authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy Authentication'**
+  String get legacyAuthentication;
+
+  /// Subtitle for the legacy authentication toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Use for older Subsonic servers'**
+  String get legacyAuthSubtitle;
+
+  /// Toggle label to allow self-signed TLS certificates
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Self-Signed Certificates'**
+  String get allowSelfSignedCerts;
+
+  /// Subtitle for the self-signed certificate toggle
+  ///
+  /// In en, this message translates to:
+  /// **'For servers with custom TLS/SSL certificates'**
+  String get allowSelfSignedSubtitle;
+
+  /// Expandable section label for advanced login options
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Options'**
+  String get advancedOptions;
+
+  /// Label for the custom certificate upload section
+  ///
+  /// In en, this message translates to:
+  /// **'Custom TLS/SSL Certificate'**
+  String get customTlsCertificate;
+
+  /// Subtitle for the custom certificate upload section
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a custom certificate for servers with non-standard CA'**
+  String get customCertificateSubtitle;
+
+  /// Button label to open the certificate file picker
+  ///
+  /// In en, this message translates to:
+  /// **'Select Certificate File'**
+  String get selectCertificateFile;
+
+  /// Login submit button label
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// Divider label between Connect and Use Local Files
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// Button label to start local-files mode
+  ///
+  /// In en, this message translates to:
+  /// **'Use Local Files'**
+  String get useLocalFiles;
+
+  /// Initial status message when a local file scan begins
+  ///
+  /// In en, this message translates to:
+  /// **'Starting scan...'**
+  String get startingScan;
+
+  /// Snackbar when storage permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Storage permission required to scan local files'**
+  String get storagePermissionRequired;
+
+  /// Snackbar when a local scan finds no audio files
+  ///
+  /// In en, this message translates to:
+  /// **'No music files found on your device'**
+  String get noMusicFilesFound;
+
+  /// Generic remove / delete confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Snackbar shown when setting a star rating fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to set rating: {error}'**
+  String failedToSetRating(Object error);
+
+  /// Home navigation item label in the desktop sidebar
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// Uppercase section header for playlists in the desktop sidebar
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYLISTS'**
+  String get playlistsSection;
+
+  /// Tooltip/label for the sidebar collapse button
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get collapse;
+
+  /// Liked Songs item label in the desktop sidebar
+  ///
+  /// In en, this message translates to:
+  /// **'Liked Songs'**
+  String get likedSongsSidebar;
+
+  /// Subtitle for a playlist item in the desktop sidebar
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist • {count} songs'**
+  String playlistSongsCount(int count);
+
+  /// Error state message when lyrics cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load lyrics'**
+  String get failedToLoadLyrics;
+
+  /// Empty/error subtitle in the lyrics view
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics for this song couldn\'t be found'**
+  String get lyricsNotFoundSubtitle;
+
+  /// Button to scroll the lyrics view back to the current line
+  ///
+  /// In en, this message translates to:
+  /// **'Back to current'**
+  String get backToCurrent;
+
+  /// Tooltip for the exit-fullscreen button in lyrics view
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Fullscreen'**
+  String get exitFullscreen;
+
+  /// Tooltip for the enter-fullscreen button in lyrics view
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get fullscreen;
+
+  /// Fallback text when no lyrics controller is available
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics'**
+  String get noLyrics;
+
+  /// Subtitle shown in the mini player when streaming internet radio
+  ///
+  /// In en, this message translates to:
+  /// **'Internet Radio'**
+  String get internetRadioMiniPlayer;
+
+  /// Badge text shown in the mini player for live radio streams
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get liveBadge;
+
+  /// Banner shown at the top of the screen in local-files mode
+  ///
+  /// In en, this message translates to:
+  /// **'Local Files Mode'**
+  String get localFilesModeBanner;
+
+  /// Banner shown at the top of the screen in offline mode
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Mode – Playing downloaded music only'**
+  String get offlineModeBanner;
+
+  /// Title of the update available dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Update Available'**
+  String get updateAvailable;
+
+  /// Subtitle in the update dialog
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Musly is available!'**
+  String get updateAvailableSubtitle;
+
+  /// Current version label in the update dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Current: v{version}'**
+  String updateCurrentVersion(String version);
+
+  /// Latest version label in the update dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Latest: v{version}'**
+  String updateLatestVersion(String version);
+
+  /// Section header for the changelog in the update dialog
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get whatsNew;
+
+  /// Primary button in the update dialog that opens the release page
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadUpdate;
+
+  /// Dismiss button in the update dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get remindLater;
+
+  /// See All button in horizontal scroll sections
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get seeAll;
+
+  /// Error state on the artist screen when artist data fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Artist not found'**
+  String get artistDataNotFound;
+
+  /// Title shown in the Chromecast control dialog when actively casting
+  ///
+  /// In en, this message translates to:
+  /// **'Casting'**
+  String get casting;
+
+  /// Title shown in the DLNA control dialog when connected
+  ///
+  /// In en, this message translates to:
+  /// **'DLNA'**
+  String get dlna;
+
+  /// Title of the Cast/DLNA device picker dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cast / DLNA (Beta)'**
+  String get castDlnaBeta;
+
+  /// Section header for Chromecast devices in the device picker
+  ///
+  /// In en, this message translates to:
+  /// **'Chromecast'**
+  String get chromecast;
+
+  /// Section header for DLNA/UPnP devices in the device picker
+  ///
+  /// In en, this message translates to:
+  /// **'DLNA / UPnP'**
+  String get dlnaUpnp;
+
+  /// Button to disconnect from a Cast or DLNA device
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// Loading message in the device picker when no devices have been found yet
+  ///
+  /// In en, this message translates to:
+  /// **'Searching for devices'**
+  String get searchingDevices;
+
+  /// Hint shown while searching for cast/DLNA devices
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure your Cast / DLNA device\nis on the same Wi-Fi network'**
+  String get castWifiHint;
+
+  /// Snackbar shown after successfully connecting to a cast/DLNA device
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {name}'**
+  String connectedToDevice(String name);
+
+  /// Snackbar shown when connecting to a cast/DLNA device fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to connect to {name}'**
+  String failedToConnectDevice(String name);
+
+  /// Snackbar shown after un-liking a song in the song tile menu
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from Liked Songs'**
+  String get removedFromLikedSongs;
+
+  /// Snackbar shown after liking a song in the song tile menu
+  ///
+  /// In en, this message translates to:
+  /// **'Added to Liked Songs'**
+  String get addedToLikedSongs;
+
+  /// Tooltip for the shuffle toggle button in the desktop player bar
+  ///
+  /// In en, this message translates to:
+  /// **'Enable shuffle'**
+  String get enableShuffle;
+
+  /// Tooltip for the repeat toggle button in the desktop player bar
+  ///
+  /// In en, this message translates to:
+  /// **'Enable repeat'**
+  String get enableRepeat;
+
+  /// Tooltip for the cast button when connecting to a device
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get connecting;
+
+  /// Tooltip for the lyrics button when lyrics panel is open
+  ///
+  /// In en, this message translates to:
+  /// **'Close Lyrics'**
+  String get closeLyrics;
+
+  /// Snackbar shown when the library background download fails to start
+  ///
+  /// In en, this message translates to:
+  /// **'Error starting download: {error}'**
+  String errorStartingDownload(Object error);
 }
 
 class _AppLocalizationsDelegate

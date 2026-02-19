@@ -9,6 +9,7 @@ import '../services/player_ui_settings_service.dart';
 import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsDisplayTab extends StatefulWidget {
   const SettingsDisplayTab({super.key});
@@ -50,7 +51,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         _buildSection(
-          title: 'LANGUAGE',
+          title: AppLocalizations.of(context)!.language.toUpperCase(),
           children: [
             _buildLanguageSelector(),
             _buildDivider(),
@@ -59,7 +60,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'PLAYER INTERFACE',
+          title: AppLocalizations.of(context)!.playerInterface.toUpperCase(),
           children: [
             _buildVolumeSliderToggle(),
             _buildDivider(),
@@ -69,7 +70,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'SMART RECOMMENDATIONS',
+          title: AppLocalizations.of(
+            context,
+          )!.smartRecommendations.toUpperCase(),
           children: [
             _buildRecommendationsToggle(),
             _buildDivider(),
@@ -147,9 +150,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           size: 18,
         ),
       ),
-      title: const Text('Show Volume Slider', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.showVolumeSlider,
+        style: const TextStyle(fontSize: 16),
+      ),
       subtitle: Text(
-        'Display volume control in Now Playing screen',
+        AppLocalizations.of(context)!.showVolumeSliderSubtitle,
         style: TextStyle(
           fontSize: 13,
           color: _isDark
@@ -186,9 +192,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           size: 18,
         ),
       ),
-      title: const Text('Show Star Ratings', style: TextStyle(fontSize: 16)),
+      title: Text(
+        AppLocalizations.of(context)!.showStarRatings,
+        style: const TextStyle(fontSize: 16),
+      ),
       subtitle: Text(
-        'Rate songs and view ratings',
+        AppLocalizations.of(context)!.showStarRatingsSubtitle,
         style: TextStyle(
           fontSize: 13,
           color: _isDark
@@ -230,12 +239,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               size: 18,
             ),
           ),
-          title: const Text(
-            'Enable Recommendations',
-            style: TextStyle(fontSize: 16),
+          title: Text(
+            AppLocalizations.of(context)!.enableRecommendations,
+            style: const TextStyle(fontSize: 16),
           ),
           subtitle: Text(
-            'Get personalized music suggestions',
+            AppLocalizations.of(context)!.enableRecommendationsSubtitle,
             style: TextStyle(
               fontSize: 13,
               color: _isDark
@@ -264,9 +273,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             horizontal: 16,
             vertical: 4,
           ),
-          title: const Text('Listening Data', style: TextStyle(fontSize: 16)),
+          title: Text(
+            AppLocalizations.of(context)!.listeningData,
+            style: const TextStyle(fontSize: 16),
+          ),
           subtitle: Text(
-            '$totalPlays total plays',
+            AppLocalizations.of(context)!.totalPlays(totalPlays),
             style: TextStyle(
               fontSize: 13,
               color: _isDark
@@ -275,7 +287,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ),
           ),
           trailing: Text(
-            '$uniqueSongs songs',
+            AppLocalizations.of(context)!.songsCount(uniqueSongs),
             style: TextStyle(
               fontSize: 14,
               color: _isDark
@@ -291,22 +303,20 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildClearRecommendationsButton() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: const Text(
-        'Clear Listening History',
-        style: TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
+      title: Text(
+        AppLocalizations.of(context)!.clearListeningHistory,
+        style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       onTap: () {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Clear History'),
-            content: const Text(
-              'This will reset all your listening data and recommendations. Are you sure?',
-            ),
+            title: Text(AppLocalizations.of(context)!.clearListeningHistory),
+            content: Text(AppLocalizations.of(context)!.confirmClearHistory),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               TextButton(
                 onPressed: () {
@@ -316,12 +326,16 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                     listen: false,
                   ).clearData();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Listening history cleared')),
+                    SnackBar(
+                      content: Text(
+                        AppLocalizations.of(context)!.historyCleared,
+                      ),
+                    ),
                   );
                 },
-                child: const Text(
-                  'Clear',
-                  style: TextStyle(color: Color(0xFFFF3B30)),
+                child: Text(
+                  AppLocalizations.of(context)!.delete,
+                  style: const TextStyle(color: Color(0xFFFF3B30)),
                 ),
               ),
             ],
@@ -352,9 +366,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               size: 18,
             ),
           ),
-          title: const Text('Discord Status', style: TextStyle(fontSize: 16)),
+          title: Text(
+            AppLocalizations.of(context)!.discordStatus,
+            style: const TextStyle(fontSize: 16),
+          ),
           subtitle: Text(
-            'Show playing song on Discord profile',
+            AppLocalizations.of(context)!.discordStatusSubtitle,
             style: TextStyle(
               fontSize: 13,
               color: _isDark
@@ -404,7 +421,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               size: 18,
             ),
           ),
-          title: const Text('Language', style: TextStyle(fontSize: 16)),
+          title: Text(
+            AppLocalizations.of(context)!.language,
+            style: const TextStyle(fontSize: 16),
+          ),
           subtitle: Text(
             currentLanguageName,
             style: TextStyle(
@@ -428,7 +448,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFF5AC8FA).withOpacity(0.2),
+          color: const Color(0xFF5AC8FA).withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Icon(
@@ -437,12 +457,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           size: 18,
         ),
       ),
-      title: const Text(
-        'Translations by Community',
-        style: TextStyle(fontSize: 16),
+      title: Text(
+        AppLocalizations.of(context)!.communityTranslations,
+        style: const TextStyle(fontSize: 16),
       ),
       subtitle: Text(
-        'Help translate Musly on Crowdin',
+        AppLocalizations.of(context)!.communityTranslationsSubtitle,
         style: TextStyle(
           fontSize: 13,
           color: _isDark
@@ -492,9 +512,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 children: [
                   const Icon(CupertinoIcons.globe, size: 24),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Select Language',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.selectLanguage,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
@@ -508,7 +531,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             // System default option
             ListTile(
               leading: const Icon(CupertinoIcons.device_phone_portrait),
-              title: const Text('System Default'),
+              title: Text(AppLocalizations.of(context)!.systemDefault),
               trailing: localeService.currentLocale == null
                   ? const Icon(Icons.check, color: AppTheme.appleMusicRed)
                   : null,

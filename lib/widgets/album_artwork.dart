@@ -1,8 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
-import '../theme/app_theme.dart';
+
+/// Returns true if [s] looks like an absolute file system path rather than a
+/// Subsonic cover-art ID or network URL.
+bool isLocalFilePath(String? s) {
+  if (s == null || s.isEmpty) return false;
+  if (s.startsWith('/')) return true; // Unix / Android / macOS
+  if (s.length > 2 && s[1] == ':') return true; // Windows  C:\…
+  return false;
+}
 
 class _ImageUrlCache {
   static final Map<String, String> _cache = {};
@@ -40,14 +49,6 @@ class AlbumArtwork extends StatelessWidget {
     // Reduced max cache size from 600 to 400.
     final cacheSize = (validSize * 1.5).toInt().clamp(100, 400);
 
-    final imageUrl = coverArt != null && coverArt!.isNotEmpty
-        ? _ImageUrlCache.getUrl(
-            Provider.of<SubsonicService>(context, listen: false),
-            coverArt,
-            cacheSize,
-          )
-        : '';
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Removed RepaintBoundary which creates a new layer for every image.
@@ -62,48 +63,85 @@ class AlbumArtwork extends StatelessWidget {
         boxShadow: shadow != null
             ? [shadow!]
             : validSize > 60
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
-                      blurRadius: validSize / 10,
-                      offset: Offset(0, validSize / 30),
-                    ),
-                  ]
-                : null,
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
+                  blurRadius: validSize / 10,
+                  offset: Offset(0, validSize / 30),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: imageUrl.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: imageUrl,
-                cacheKey: '${coverArt}_$cacheSize',
-                key: ValueKey('${coverArt}_$cacheSize'),
-                fit: BoxFit.cover,
-                // Ensure memory cache is limited to the requested size
-                memCacheWidth: cacheSize,
-                memCacheHeight: cacheSize,
-                maxWidthDiskCache: cacheSize,
-                maxHeightDiskCache: cacheSize,
-                fadeInDuration: const Duration(milliseconds: 100),
-                fadeOutDuration: Duration.zero,
-                useOldImageOnUrlChange: true,
-                placeholder: (_, __) => _buildPlaceholder(isDark),
-                errorWidget: (_, __, ___) => _buildPlaceholder(isDark),
-              )
-            : _buildPlaceholder(isDark),
+        child: _buildImage(isDark, cacheSize),
       ),
+    );
+  }
+
+  Widget _buildImage(bool isDark, int cacheSize) {
+    if (coverArt == null || coverArt!.isEmpty) return _buildPlaceholder(isDark);
+
+    // Local file (absolute path saved by LocalMusicService)
+    if (isLocalFilePath(coverArt)) {
+      final artFile = File(coverArt!);
+      return Image.file(
+        artFile,
+        key: ValueKey(coverArt),
+        fit: BoxFit.cover,
+        cacheWidth: cacheSize,
+        cacheHeight: cacheSize,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+      );
+    }
+
+    // Network image via Subsonic cover-art ID
+    // NOTE: _ImageUrlCache requires a BuildContext so this is called lazily.
+    // We build an empty-URL guard here to avoid boilerplate at every call site.
+    return Builder(
+      builder: (context) {
+        final imageUrl = _ImageUrlCache.getUrl(
+          Provider.of<SubsonicService>(context, listen: false),
+          coverArt,
+          cacheSize,
+        );
+        if (imageUrl.isEmpty) return _buildPlaceholder(isDark);
+        return CachedNetworkImage(
+          imageUrl: imageUrl,
+          cacheKey: '${coverArt}_$cacheSize',
+          key: ValueKey('${coverArt}_$cacheSize'),
+          fit: BoxFit.cover,
+          memCacheWidth: cacheSize,
+          memCacheHeight: cacheSize,
+          maxWidthDiskCache: cacheSize,
+          maxHeightDiskCache: cacheSize,
+          fadeInDuration: const Duration(milliseconds: 100),
+          fadeOutDuration: Duration.zero,
+          useOldImageOnUrlChange: true,
+          placeholder: (_, __) => _buildPlaceholder(isDark),
+          errorWidget: (_, __, ___) => _buildPlaceholder(isDark),
+        );
+      },
     );
   }
 
   Widget _buildPlaceholder(bool isDark) {
     return Container(
-      color: isDark ? AppTheme.darkCard : AppTheme.lightDivider,
-      child: Icon(
-        Icons.music_note_rounded,
-        size: size / 3,
-        color: isDark
-            ? AppTheme.darkSecondaryText
-            : AppTheme.lightSecondaryText,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF2A2A2A), const Color(0xFF1A1A1A)]
+              : [Colors.grey.shade300, Colors.grey.shade200],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.music_note_rounded,
+          size: (size / 3).clamp(16.0, 60.0),
+          color: isDark ? Colors.white24 : Colors.black12,
+        ),
       ),
     );
   }
