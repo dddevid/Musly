@@ -570,14 +570,15 @@ class SubsonicService {
     }
   }
 
-  Future<List<String>> getGenres() async {
+  Future<List<Genre>> getGenres() async {
     final response = await _request('getGenres');
     final genresData = response['genres']?['genre'];
     if (genresData is List) {
       return genresData
-          .map((g) => g['value']?.toString() ?? '')
-          .where((g) => g.isNotEmpty)
-          .toList();
+          .map((g) => Genre.fromJson(g as Map<String, dynamic>))
+          .where((g) => g.value.isNotEmpty)
+          .toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
     }
     return [];
   }
@@ -600,6 +601,85 @@ class SubsonicService {
     }
     return [];
   }
+
+  Future<List<Album>> getAlbumsByGenre(
+    String genre, {
+    int size = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final response = await _request('getAlbumList2', {
+        'type': 'byGenre',
+        'genre': genre,
+        'size': size.toString(),
+        'offset': offset.toString(),
+      });
+      final albumsData = response['albumList2']?['album'];
+      if (albumsData is List) {
+        return albumsData
+            .map((a) => Album.fromJson(a as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ─── Jukebox API ──────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> jukeboxControl(
+    String action, {
+    int? index,
+    int? offset,
+    List<String>? ids,
+    double? gain,
+  }) async {
+    final params = <String, String>{'action': action};
+    if (index != null) params['index'] = index.toString();
+    if (offset != null) params['offset'] = offset.toString();
+    if (gain != null) params['gain'] = gain.toStringAsFixed(2);
+
+    String url = _buildUrl('jukeboxControl', params);
+    if (ids != null) {
+      for (final id in ids) {
+        url += '&id=${Uri.encodeComponent(id)}';
+      }
+    }
+
+    try {
+      final response = await _dio.get(url);
+      final data = response.data;
+      final sr = data is String
+          ? json.decode(data)['subsonic-response']
+          : data['subsonic-response'];
+      if (sr == null || sr['status'] != 'ok') {
+        throw Exception(sr?['error']?['message'] ?? 'Jukebox error');
+      }
+      return sr['jukeboxStatus'] as Map<String, dynamic>? ??
+          sr['jukeboxPlaylist'] as Map<String, dynamic>? ??
+          {};
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
+  Future<Map<String, dynamic>> jukeboxGet() => jukeboxControl('get');
+  Future<Map<String, dynamic>> jukeboxStatus() => jukeboxControl('status');
+  Future<Map<String, dynamic>> jukeboxStart() => jukeboxControl('start');
+  Future<Map<String, dynamic>> jukeboxStop() => jukeboxControl('stop');
+  Future<Map<String, dynamic>> jukeboxSkip(int index, {int offset = 0}) =>
+      jukeboxControl('skip', index: index, offset: offset);
+  Future<Map<String, dynamic>> jukeboxAdd(List<String> ids) =>
+      jukeboxControl('add', ids: ids);
+  Future<Map<String, dynamic>> jukeboxClear() => jukeboxControl('clear');
+  Future<Map<String, dynamic>> jukeboxSet(List<String> ids) =>
+      jukeboxControl('set', ids: ids);
+  Future<Map<String, dynamic>> jukeboxShuffle() => jukeboxControl('shuffle');
+  Future<Map<String, dynamic>> jukeboxRemove(int index) =>
+      jukeboxControl('remove', index: index);
+  Future<Map<String, dynamic>> jukeboxSetGain(double gain) =>
+      jukeboxControl('setGain', gain: gain);
 
   /// Get all internet radio stations from the server.
   Future<List<RadioStation>> getInternetRadioStations() async {

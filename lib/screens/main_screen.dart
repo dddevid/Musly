@@ -17,6 +17,7 @@ import 'home_screen.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
 import 'now_playing_screen.dart';
+import 'fantasy_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final bool isOfflineMode;
@@ -29,6 +30,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  int _searchTapCount = 0;
+  DateTime _lastSearchTap = DateTime.fromMillisecondsSinceEpoch(0);
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -531,6 +534,26 @@ class _MainScreenState extends State<MainScreen> {
             final navigatorState =
                 NavigationHelper.mobileNavigatorKey.currentState;
             navigatorState?.popUntil((route) => route.isFirst);
+
+            // Easter egg: 11 taps on the search tab within 3 s each
+            if (index == 2) {
+              final now = DateTime.now();
+              if (now.difference(_lastSearchTap).inSeconds > 3) {
+                _searchTapCount = 0;
+              }
+              _searchTapCount++;
+              _lastSearchTap = now;
+              if (_searchTapCount >= 11) {
+                _searchTapCount = 0;
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const FantasyScreen()),
+                );
+                return;
+              }
+            } else {
+              _searchTapCount = 0;
+            }
+
             setState(() => _currentIndex = index);
           },
           items: [

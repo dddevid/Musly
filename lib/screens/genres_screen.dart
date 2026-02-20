@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/subsonic_service.dart';
+import '../l10n/app_localizations.dart';
+import '../models/genre.dart';
+import '../providers/library_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'genre_screen.dart';
@@ -13,7 +15,7 @@ class GenresScreen extends StatefulWidget {
 }
 
 class _GenresScreenState extends State<GenresScreen> {
-  List<String>? _genres;
+  List<Genre>? _genres;
   bool _isLoading = true;
   String? _error;
 
@@ -25,14 +27,14 @@ class _GenresScreenState extends State<GenresScreen> {
 
   Future<void> _loadGenres() async {
     try {
-      final subsonicService = Provider.of<SubsonicService>(
+      final libraryProvider = Provider.of<LibraryProvider>(
         context,
         listen: false,
       );
-      final genres = await subsonicService.getGenres();
+      await libraryProvider.loadGenres();
       if (mounted) {
         setState(() {
-          _genres = genres;
+          _genres = libraryProvider.richGenres;
           _isLoading = false;
         });
       }
@@ -49,6 +51,7 @@ class _GenresScreenState extends State<GenresScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
@@ -57,7 +60,7 @@ class _GenresScreenState extends State<GenresScreen> {
             pinned: true,
             expandedHeight: 140,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text('Genres', style: theme.appBarTheme.titleTextStyle),
+              title: Text(l10n.genres, style: theme.appBarTheme.titleTextStyle),
               titlePadding: const EdgeInsets.only(left: 52, bottom: 16),
             ),
           ),
@@ -95,8 +98,19 @@ class _GenresScreenState extends State<GenresScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Error loading genres',
+                      l10n.errorLoadingGenres,
                       style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _isLoading = true;
+                          _error = null;
+                        });
+                        _loadGenres();
+                      },
+                      child: Text(l10n.retry),
                     ),
                   ],
                 ),
@@ -115,7 +129,7 @@ class _GenresScreenState extends State<GenresScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No genres found',
+                      l10n.noGenresFound,
                       style: theme.textTheme.headlineSmall,
                     ),
                   ],
@@ -143,11 +157,11 @@ class _GenresScreenState extends State<GenresScreen> {
 }
 
 class _GenreChip extends StatelessWidget {
-  final String genre;
+  final Genre genre;
 
   const _GenreChip({required this.genre});
 
-  Color _getGenreColor(String genre) {
+  Color _getGenreColor(String value) {
     final colors = [
       Colors.red,
       Colors.pink,
@@ -165,35 +179,54 @@ class _GenreChip extends StatelessWidget {
       Colors.orange,
       Colors.deepOrange,
     ];
-    final index = genre.hashCode.abs() % colors.length;
+    final index = value.hashCode.abs() % colors.length;
     return colors[index];
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = _getGenreColor(genre);
+    final color = _getGenreColor(genre.value);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          NavigationHelper.push(context, GenreScreen(genre: genre));
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: isDark ? 0.2 : 0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
-          ),
-          child: Text(
-            genre,
-            style: TextStyle(
-              color: isDark ? color.withValues(alpha: 0.9) : color,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+    return Tooltip(
+      message: l10n.genreTooltip(genre.songCount, genre.albumCount),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            NavigationHelper.push(context, GenreScreen(genre: genre.value));
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: isDark ? 0.2 : 0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  genre.value,
+                  style: TextStyle(
+                    color: isDark ? color.withValues(alpha: 0.9) : color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                if (genre.songCount > 0)
+                  Text(
+                    l10n.songsCount(genre.songCount),
+                    style: TextStyle(
+                      color: (isDark ? color.withValues(alpha: 0.9) : color)
+                          .withValues(alpha: 0.7),
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

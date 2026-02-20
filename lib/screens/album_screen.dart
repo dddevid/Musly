@@ -200,6 +200,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           coverArt: _album!.coverArt,
                           size: 280,
                           borderRadius: 10,
+                          preserveAspectRatio: true,
                         ),
                       ),
                     ],

@@ -52,6 +52,7 @@ void main() async {
   final castService = CastService();
   final localeService = LocaleService();
   final upnpService = UpnpService();
+  final jukeboxService = JukeboxService();
 
   bpmAnalyzer.initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -67,6 +68,9 @@ void main() async {
   });
   localeService.loadSavedLocale().catchError((e) {
     debugPrint('Failed to load saved locale: $e');
+  });
+  jukeboxService.initialize().catchError((e) {
+    debugPrint('Failed to initialize jukebox service: $e');
   });
 
   runApp(
@@ -89,6 +93,7 @@ void main() async {
         ChangeNotifierProvider<CastService>.value(value: castService),
         ChangeNotifierProvider<LocaleService>.value(value: localeService),
         ChangeNotifierProvider<UpnpService>.value(value: upnpService),
+        ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
         ChangeNotifierProvider(
           create: (_) => PlayerProvider(
             subsonicService,

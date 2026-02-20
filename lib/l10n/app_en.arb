@@ -639,8 +639,6 @@
   "filterAlbums": "Albums",
   "filterArtists": "Artists",
   "likedSongs": "Liked Songs",
-  "allAlbums": "All Albums",
-  "allSongs": "All Songs",
   "radioStations": "Radio Stations",
   "playlist": "Playlist",
   "internetRadio": "Internet Radio",
@@ -692,7 +690,6 @@
   "@_SEARCH": {},
   "searchTitle": "Search",
   "searchPlaceholder": "Artists, Songs, Albums",
-  "noResults": "No Results",
   "tryDifferentSearch": "Try a different search",
   "noSuggestions": "No suggestions",
   "browseCategories": "Browse Categories",
@@ -702,9 +699,6 @@
   "categoryGenres": "Genres",
   "categoryFavorites": "Favorites",
   "categoryRadio": "Radio",
-  "artists": "Artists",
-  "albums": "Albums",
-  "songs": "Songs",
 
   "@_SETTINGS_GENERAL": {},
   "settingsTitle": "Settings",
@@ -757,15 +751,12 @@
   "@_SETTINGS_SERVER": {},
   "sectionServerConnection": "SERVER CONNECTION",
   "serverType": "Server Type",
-  "serverUrl": "Server URL",
-  "username": "Username",
   "notConnected": "Not connected",
   "unknown": "Unknown",
   "sectionMusicFolders": "MUSIC FOLDERS",
   "musicFolders": "Music Folders",
   "noMusicFolders": "No music folders found",
   "sectionAccount": "ACCOUNT",
-  "logout": "Logout",
   "logoutConfirmation": "Are you sure you want to logout? This will also clear all cached data.",
 
   "@_SETTINGS_STORAGE": {},
@@ -824,15 +815,9 @@
 
   "@_SETTINGS_ABOUT": {},
   "sectionInformation": "INFORMATION",
-  "version": "Version",
-  "platform": "Platform",
   "sectionDeveloper": "DEVELOPER",
-  "madeBy": "Made by dddevid",
   "sectionLinks": "LINKS",
   "githubRepo": "GitHub Repository",
-  "changelog": "Changelog",
-  "reportIssue": "Report Issue",
-  "joinDiscord": "Join Discord Community",
 
   "@_PLAYER_AND_MENUS": {},
   "playingFrom": "PLAYING FROM",
@@ -870,7 +855,6 @@
       }
   },
   "removeRating": "Remove Rating",
-  "download": "Download",
   "downloaded": "Downloaded",
   "downloading": "Downloading... {percent}%",
   "@downloading": {
@@ -921,7 +905,6 @@
   },
   "noPlaylists": "No playlists available",
   "createNewPlaylist": "Create New Playlist",
-  "yourPlaylists": "Your Playlists",
   "artistNotFound": "Artist \"{name}\" not found",
   "@artistNotFound": {
       "placeholders": {
@@ -943,8 +926,6 @@
   "addedToFavorites": "Added to favorites",
   "star": "star",
   "stars": "stars",
-  "cancel": "Cancel",
-  "close": "Close",
 
   "@_ALBUM_ARTIST_SCREENS": {},
   "albumNotFound": "Album not found",
@@ -1330,5 +1311,74 @@
     "placeholders": {
       "error": { "type": "Object" }
     }
-  }
+  },
+
+  "@_GENRE_SCREEN": {},
+  "errorLoadingGenres": "Error loading genres",
+  "@errorLoadingGenres": { "description": "Error message when the genre list fails to load" },
+
+  "noGenresFound": "No genres found",
+  "@noGenresFound": { "description": "Empty state when no genres are returned from the server" },
+
+  "noAlbumsInGenre": "No albums in this genre",
+  "@noAlbumsInGenre": { "description": "Empty state on the Albums tab of the genre screen" },
+
+  "genreTooltip": "{songCount} songs • {albumCount} albums",
+  "@genreTooltip": {
+    "description": "Tooltip shown when hovering a genre chip, showing song and album counts",
+    "placeholders": {
+      "songCount": { "type": "int" },
+      "albumCount": { "type": "int" }
+    }
+  },
+
+  "@_JUKEBOX": {},
+  "sectionJukebox": "JUKEBOX MODE",
+  "@sectionJukebox": { "description": "Section header for the jukebox settings in the Server tab" },
+
+  "jukeboxMode": "Jukebox Mode",
+  "@jukeboxMode": { "description": "Toggle label for enabling jukebox mode" },
+
+  "jukeboxModeSubtitle": "Play audio through the server instead of this device",
+  "@jukeboxModeSubtitle": { "description": "Subtitle for the jukebox mode toggle" },
+
+  "openJukeboxController": "Open Jukebox Controller",
+  "@openJukeboxController": { "description": "List tile label to navigate to the jukebox controller screen" },
+
+  "jukeboxClearQueue": "Clear Queue",
+  "@jukeboxClearQueue": { "description": "Action label to clear the jukebox playback queue" },
+
+  "jukeboxShuffleQueue": "Shuffle Queue",
+  "@jukeboxShuffleQueue": { "description": "Action label to shuffle the jukebox playback queue" },
+
+  "jukeboxQueueEmpty": "No songs in queue",
+  "@jukeboxQueueEmpty": { "description": "Empty state when the jukebox queue has no songs" },
+
+  "jukeboxNowPlaying": "Now Playing",
+  "@jukeboxNowPlaying": { "description": "Section header for the now-playing area in the jukebox controller" },
+
+  "jukeboxQueue": "Queue",
+  "@jukeboxQueue": { "description": "Section header for the queue list in the jukebox controller" },
+
+  "jukeboxVolume": "Volume",
+  "@jukeboxVolume": { "description": "Label for the volume slider in the jukebox controller" },
+
+  "playOnJukebox": "Play on Jukebox",
+  "@playOnJukebox": { "description": "Option to replace the jukebox queue with this song and start playback" },
+
+  "addToJukeboxQueue": "Add to Jukebox Queue",
+  "@addToJukeboxQueue": { "description": "Option to append a song to the jukebox queue" },
+
+  "jukeboxNotSupported": "Jukebox mode is not supported by this server. Enable it in your server configuration (e.g. EnableJukebox = true in Navidrome).",
+  "@jukeboxNotSupported": { "description": "Error shown when the server returns 501 for jukebox API calls" },
+
+  "@_MUSIC_FOLDERS": {},
+  "musicFoldersDialogTitle": "Select Music Folders",
+  "@musicFoldersDialogTitle": { "description": "Title of the music folders selection dialog" },
+
+  "musicFoldersHint": "Leave all enabled to use all folders (default).",
+  "@musicFoldersHint": { "description": "Hint text in the music folders selection dialog" },
+
+  "musicFoldersSaved": "Music folder selection saved",
+  "@musicFoldersSaved": { "description": "Snackbar shown after saving music folder selection" }
 }

@@ -16,3 +16,4 @@ export 'cast_service.dart';
 export 'locale_service.dart';
 export 'update_service.dart';
 export 'upnp_service.dart';
+export 'jukebox_service.dart';

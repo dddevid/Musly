@@ -649,7 +649,7 @@ abstract class AppLocalizations {
   /// No search results message
   ///
   /// In en, this message translates to:
-  /// **'No Results'**
+  /// **'No results'**
   String get noResults;
 
   /// Search field hint text
@@ -2223,6 +2223,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error starting download: {error}'**
   String errorStartingDownload(Object error);
+
+  /// Error message when the genre list fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading genres'**
+  String get errorLoadingGenres;
+
+  /// Empty state when no genres are returned from the server
+  ///
+  /// In en, this message translates to:
+  /// **'No genres found'**
+  String get noGenresFound;
+
+  /// Empty state on the Albums tab of the genre screen
+  ///
+  /// In en, this message translates to:
+  /// **'No albums in this genre'**
+  String get noAlbumsInGenre;
+
+  /// Tooltip shown when hovering a genre chip, showing song and album counts
+  ///
+  /// In en, this message translates to:
+  /// **'{songCount} songs • {albumCount} albums'**
+  String genreTooltip(int songCount, int albumCount);
+
+  /// Section header for the jukebox settings in the Server tab
+  ///
+  /// In en, this message translates to:
+  /// **'JUKEBOX MODE'**
+  String get sectionJukebox;
+
+  /// Toggle label for enabling jukebox mode
+  ///
+  /// In en, this message translates to:
+  /// **'Jukebox Mode'**
+  String get jukeboxMode;
+
+  /// Subtitle for the jukebox mode toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Play audio through the server instead of this device'**
+  String get jukeboxModeSubtitle;
+
+  /// List tile label to navigate to the jukebox controller screen
+  ///
+  /// In en, this message translates to:
+  /// **'Open Jukebox Controller'**
+  String get openJukeboxController;
+
+  /// Action label to clear the jukebox playback queue
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Queue'**
+  String get jukeboxClearQueue;
+
+  /// Action label to shuffle the jukebox playback queue
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle Queue'**
+  String get jukeboxShuffleQueue;
+
+  /// Empty state when the jukebox queue has no songs
+  ///
+  /// In en, this message translates to:
+  /// **'No songs in queue'**
+  String get jukeboxQueueEmpty;
+
+  /// Section header for the now-playing area in the jukebox controller
+  ///
+  /// In en, this message translates to:
+  /// **'Now Playing'**
+  String get jukeboxNowPlaying;
+
+  /// Section header for the queue list in the jukebox controller
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get jukeboxQueue;
+
+  /// Label for the volume slider in the jukebox controller
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get jukeboxVolume;
+
+  /// Option to replace the jukebox queue with this song and start playback
+  ///
+  /// In en, this message translates to:
+  /// **'Play on Jukebox'**
+  String get playOnJukebox;
+
+  /// Option to append a song to the jukebox queue
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Jukebox Queue'**
+  String get addToJukeboxQueue;
+
+  /// Error shown when the server returns 501 for jukebox API calls
+  ///
+  /// In en, this message translates to:
+  /// **'Jukebox mode is not supported by this server. Enable it in your server configuration (e.g. EnableJukebox = true in Navidrome).'**
+  String get jukeboxNotSupported;
+
+  /// Title of the music folders selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select Music Folders'**
+  String get musicFoldersDialogTitle;
+
+  /// Hint text in the music folders selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Leave all enabled to use all folders (default).'**
+  String get musicFoldersHint;
+
+  /// Snackbar shown after saving music folder selection
+  ///
+  /// In en, this message translates to:
+  /// **'Music folder selection saved'**
+  String get musicFoldersSaved;
 }
 
 class _AppLocalizationsDelegate

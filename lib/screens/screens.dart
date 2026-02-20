@@ -13,3 +13,4 @@ export 'playlists_screen.dart';
 export 'favorites_screen.dart';
 export 'playlist_screen.dart';
 export 'settings_screen.dart';
+export 'fantasy_screen.dart';

@@ -32,12 +32,17 @@ class AlbumArtwork extends StatelessWidget {
   final double borderRadius;
   final BoxShadow? shadow;
 
+  /// When true the image is shown at its natural aspect ratio (no cropping).
+  /// The [size] parameter is then used as the maximum width.
+  final bool preserveAspectRatio;
+
   const AlbumArtwork({
     super.key,
     this.coverArt,
     this.size = 150,
     this.borderRadius = 8,
     this.shadow,
+    this.preserveAspectRatio = false,
   });
 
   @override
@@ -50,6 +55,31 @@ class AlbumArtwork extends StatelessWidget {
     final cacheSize = (validSize * 1.5).toInt().clamp(100, 400);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (preserveAspectRatio) {
+      // Show image at its natural aspect ratio, constrained to [size] width.
+      return Container(
+        constraints: BoxConstraints(maxWidth: validSize),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: shadow != null
+              ? [shadow!]
+              : validSize > 60
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
+                    blurRadius: validSize / 10,
+                    offset: Offset(0, validSize / 30),
+                  ),
+                ]
+              : null,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: _buildImageNatural(isDark, cacheSize),
+        ),
+      );
+    }
 
     // Removed RepaintBoundary which creates a new layer for every image.
     // This significantly reduces GPU memory usage in long lists (e.g. SongTile).
@@ -76,6 +106,42 @@ class AlbumArtwork extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         child: _buildImage(isDark, cacheSize),
       ),
+    );
+  }
+
+  Widget _buildImageNatural(bool isDark, int cacheSize) {
+    if (coverArt == null || coverArt!.isEmpty) return _buildPlaceholder(isDark);
+
+    if (isLocalFilePath(coverArt)) {
+      final artFile = File(coverArt!);
+      return Image.file(
+        artFile,
+        key: ValueKey(coverArt),
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+      );
+    }
+
+    return Builder(
+      builder: (context) {
+        final imageUrl = _ImageUrlCache.getUrl(
+          Provider.of<SubsonicService>(context, listen: false),
+          coverArt,
+          cacheSize,
+        );
+        if (imageUrl.isEmpty) return _buildPlaceholder(isDark);
+        return CachedNetworkImage(
+          imageUrl: imageUrl,
+          cacheKey: '${coverArt}_natural_$cacheSize',
+          key: ValueKey('${coverArt}_natural_$cacheSize'),
+          fit: BoxFit.contain,
+          fadeInDuration: const Duration(milliseconds: 100),
+          fadeOutDuration: Duration.zero,
+          useOldImageOnUrlChange: true,
+          placeholder: (_, __) => _buildPlaceholder(isDark),
+          errorWidget: (_, __, ___) => _buildPlaceholder(isDark),
+        );
+      },
     );
   }
 

@@ -22,6 +22,7 @@ class LibraryProvider extends ChangeNotifier {
   List<Playlist> _playlists = [];
   List<Song> _randomSongs = [];
   List<String> _genres = [];
+  List<Genre> _richGenres = [];
   SearchResult? _starred;
 
   List<Album> _cachedAllAlbums = [];
@@ -87,6 +88,7 @@ class LibraryProvider extends ChangeNotifier {
   List<Playlist> get playlists => _playlists;
   List<Song> get randomSongs => _randomSongs;
   List<String> get genres => _genres;
+  List<Genre> get richGenres => _richGenres;
   SearchResult? get starred => _starred;
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
@@ -180,6 +182,16 @@ class LibraryProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
+      // Always restore playlists from cache so offline mode can access them
+      final playlistsJson = prefs.getString(_playlistsCacheKey);
+      if (playlistsJson != null) {
+        final List<dynamic> playlistsList = json.decode(playlistsJson);
+        _cachedPlaylists = playlistsList
+            .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
+            .toList();
+        _playlists = _cachedPlaylists;
+      }
+
       if (loadFullLibrary) {
         final albumsJson = prefs.getString(_allAlbumsCacheKey);
         if (albumsJson != null) {
@@ -195,15 +207,6 @@ class LibraryProvider extends ChangeNotifier {
           _cachedAllSongs = songsList
               .map((s) => Song.fromJson(s as Map<String, dynamic>))
               .toList();
-        }
-
-        final playlistsJson = prefs.getString(_playlistsCacheKey);
-        if (playlistsJson != null) {
-          final List<dynamic> playlistsList = json.decode(playlistsJson);
-          _cachedPlaylists = playlistsList
-              .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
-              .toList();
-          _playlists = _cachedPlaylists;
         }
       }
 
@@ -433,7 +436,8 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> loadGenres() async {
     try {
-      _genres = await _subsonicService.getGenres();
+      _richGenres = await _subsonicService.getGenres();
+      _genres = _richGenres.map((g) => g.value).toList();
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading genres: $e');
@@ -585,6 +589,15 @@ class LibraryProvider extends ChangeNotifier {
       return await _subsonicService.getSongsByGenre(genre);
     } catch (e) {
       debugPrint('Error loading songs by genre: $e');
+      return [];
+    }
+  }
+
+  Future<List<Album>> getAlbumsByGenre(String genre) async {
+    try {
+      return await _subsonicService.getAlbumsByGenre(genre);
+    } catch (e) {
+      debugPrint('Error loading albums by genre: $e');
       return [];
     }
   }

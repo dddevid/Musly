@@ -61,10 +61,10 @@ export default function DownloadSection() {
                 <FadeIn delay={0.1}>
                     <div className="download-version">
                         <div className="download-version-badge">
-                            <span className="download-version-number">v1.0.5</span>
+                            <span className="download-version-number">v1.0.6</span>
                             <span className="download-version-label">Latest Release</span>
                         </div>
-                        <p className="download-version-date">Released February 7, 2026</p>
+                        <p className="download-version-date">Released February 20, 2026</p>
                     </div>
                 </FadeIn>
 

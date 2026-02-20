@@ -180,6 +180,16 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLocalOnlyMode => _config?.serverType == 'local';
 
+  /// Update which music folders are active. Pass an empty list to use all folders.
+  Future<void> updateSelectedMusicFolderIds(List<String> ids) async {
+    if (_config == null) return;
+    final updated = _config!.copyWith(selectedMusicFolderIds: ids);
+    _config = updated;
+    _subsonicService.configure(updated);
+    await _storageService.saveServerConfig(updated);
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     final offlineService = OfflineService();
     if (offlineService.isBackgroundDownloadActive) {

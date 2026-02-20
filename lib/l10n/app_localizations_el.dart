@@ -264,7 +264,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get noResults => 'No Results';
+  String get noResults => 'No results';
 
   @override
   String get searchHint => 'Search for songs, albums, artists...';
@@ -1150,4 +1150,69 @@ class AppLocalizationsEl extends AppLocalizations {
   String errorStartingDownload(Object error) {
     return 'Error starting download: $error';
   }
+
+  @override
+  String get errorLoadingGenres => 'Error loading genres';
+
+  @override
+  String get noGenresFound => 'No genres found';
+
+  @override
+  String get noAlbumsInGenre => 'No albums in this genre';
+
+  @override
+  String genreTooltip(int songCount, int albumCount) {
+    return '$songCount songs • $albumCount albums';
+  }
+
+  @override
+  String get sectionJukebox => 'JUKEBOX MODE';
+
+  @override
+  String get jukeboxMode => 'Jukebox Mode';
+
+  @override
+  String get jukeboxModeSubtitle =>
+      'Play audio through the server instead of this device';
+
+  @override
+  String get openJukeboxController => 'Open Jukebox Controller';
+
+  @override
+  String get jukeboxClearQueue => 'Clear Queue';
+
+  @override
+  String get jukeboxShuffleQueue => 'Shuffle Queue';
+
+  @override
+  String get jukeboxQueueEmpty => 'No songs in queue';
+
+  @override
+  String get jukeboxNowPlaying => 'Now Playing';
+
+  @override
+  String get jukeboxQueue => 'Queue';
+
+  @override
+  String get jukeboxVolume => 'Volume';
+
+  @override
+  String get playOnJukebox => 'Play on Jukebox';
+
+  @override
+  String get addToJukeboxQueue => 'Add to Jukebox Queue';
+
+  @override
+  String get jukeboxNotSupported =>
+      'Jukebox mode is not supported by this server. Enable it in your server configuration (e.g. EnableJukebox = true in Navidrome).';
+
+  @override
+  String get musicFoldersDialogTitle => 'Select Music Folders';
+
+  @override
+  String get musicFoldersHint =>
+      'Leave all enabled to use all folders (default).';
+
+  @override
+  String get musicFoldersSaved => 'Music folder selection saved';
 }

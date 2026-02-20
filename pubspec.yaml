@@ -11,7 +11,7 @@ publish_to: 'none'
 # Read more about Android versioning at https://developer.android.com/studio/publish/versioning
 # In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
 # In Windows, build-name is used as the major, minor, and patch parts
-version: 1.0.5+1
+version: 1.0.6+1
 
 environment:
   sdk: ^3.10.0
@@ -100,6 +100,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/logobig.png
+    - assets/fanta-sy.png
   #   - images/a_dot_burr.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

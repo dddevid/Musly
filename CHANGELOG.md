@@ -5,6 +5,29 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-02-20
+
+### Added
+- **Jukebox Mode** ([#41](https://github.com/dddevid/Musly/issues/41)): Server-side audio playback via the Subsonic jukebox API
+  - New `JukeboxService` wrapping all jukebox API calls (`get`, `start`, `stop`, `skip`, `set`, `add`, `clear`, `shuffle`, `remove`, `setGain`)
+  - Dedicated `JukeboxScreen` remote-control UI with now-playing artwork, playback controls, volume slider, and queue list
+  - Toggle in Settings → Server to enable/disable jukebox mode
+  - "Play on Jukebox" and "Add to Jukebox Queue" options in the song long-press context menu (shown only when jukebox is enabled)
+  - Auto-refresh on screen open + 5-second polling to stay in sync with current server state
+  - Friendly error screen when the server returns 501 (jukebox not enabled), with setup instructions
+- **Genre Support**: Enhanced genre browsing
+  - Genres screen now shows song count per genre and a tooltip
+  - Genre screen rebuilt with two tabs: Songs and Albums
+- **Easter Egg**: Fanta-bounce screensaver triggered by tapping the search button 11 times in quick succession
+
+### Fixed
+- **[#29](https://github.com/dddevid/Musly/issues/29) Offline Playlists**: Playlists are now correctly restored from local cache when the server is unreachable
+- **[#37](https://github.com/dddevid/Musly/issues/37) Music Folder Selection**: Fixed the music folder selection dialog in Server settings
+- **[#44](https://github.com/dddevid/Musly/issues/44) Album Art Aspect Ratio**: Album artwork now preserves its original aspect ratio (`BoxFit.contain`) instead of stretching
+
+### Improved
+- **Localizations**: Removed duplicate keys from `app_en.arb`; cleaned non-English ARB files of orphaned section markers and English fallback strings
+
 ## [1.0.5] - 2026-02-19
 
 ### Added
