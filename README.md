@@ -43,7 +43,7 @@ Musly is a cross-platform application that supports:
 ## Download Musly - Best Navidrome Client
 
 You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v1.0.5 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.5)**
+👉 **[Download Musly v1.0.6 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.6)**
 
 > [!NOTE]  
 > Prebuilt binaries are available: an APK for **Android** (best Navidrome Android client), and a prebuilt exe build for **Windows** (best Navidrome Windows client). For **iOS** (Navidrome iOS client) and other desktop platforms, you still need to build the app from source.
