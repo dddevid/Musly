@@ -432,19 +432,30 @@
   "@_LIBRARY": {},
   "@_SEARCH": {},
   "@_SETTINGS_GENERAL": {},
+  "tabPlayback": "Lecture",
   "@_SETTINGS_PLAYBACK": {},
+  "preventClipping": "Empêcher le découpage audio",
   "@_SETTINGS_SERVER": {},
   "@_SETTINGS_STORAGE": {},
   "@_SETTINGS_ABOUT": {},
   "@_PLAYER_AND_MENUS": {},
+  "addToLiked": "Ajouter aux pistes \"J'aime\"",
   "@_ALBUM_ARTIST_SCREENS": {},
   "@_PLAYER_SCREENS": {},
+  "createPlaylistTitle": "Créer une liste de lecture",
+  "@createPlaylistTitle": {
+    "description": "Title of the create-new-playlist dialog"
+  },
   "@_PLAYLIST_SCREEN": {},
   "@_FAVORITES_SCREEN": {},
   "@_HISTORY_SCREEN": {},
   "@_SORT_OPTIONS": {},
   "@_RADIO_SCREEN": {},
   "@_LOGIN_SCREEN": {},
+  "pleaseEnterPassword": "Veuillez saisir votre mot de passe",
+  "@pleaseEnterPassword": {
+    "description": "Validation message when password is empty"
+  },
   "@_COMMON_ACTIONS": {},
   "@_DESKTOP_SIDEBAR": {},
   "@_LYRICS": {},
@@ -458,5 +469,17 @@
   "@_ERROR_MESSAGES": {},
   "@_GENRE_SCREEN": {},
   "@_JUKEBOX": {},
-  "@_MUSIC_FOLDERS": {}
+  "sectionJukebox": "MODE JUKEBOX",
+  "@sectionJukebox": {
+    "description": "Section header for the jukebox settings in the Server tab"
+  },
+  "jukeboxNotSupported": "Le mode Jukebox n'est pas pris en charge par ce serveur. Activez-le dans la configuration de votre serveur (par exemple EnableJukebox = true dans Navidrome).",
+  "@jukeboxNotSupported": {
+    "description": "Error shown when the server returns 501 for jukebox API calls"
+  },
+  "@_MUSIC_FOLDERS": {},
+  "musicFoldersDialogTitle": "Sélectionner les dossiers de musique",
+  "@musicFoldersDialogTitle": {
+    "description": "Title of the music folders selection dialog"
+  }
 }
