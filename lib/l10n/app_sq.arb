@@ -1,6 +1,74 @@
 {
   "@@locale": "sq",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Mirëmëngjes",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Mirëdita",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Mirëmbrëma",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Për ty",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Zgjedhje të shpejta",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Mix i zbulimit",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Dëgjuar së fundmi",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Listat e tua për dëgjim",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Krijuar për ty",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Më të vlerësuarit",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Nuk ka përmbajtje në dispozicion",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Provoni të rifreskoni faqen ose kontrolloni lidhjen me serverin",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Rifresko",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Gabim gjatë ngarkimit të këngëve",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Nuk ka këngë në këtë zhanër",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Gabim gjatë ngarkimit të albumeve",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
   "@_LIBRARY": {},
   "@_SEARCH": {},
   "@_SETTINGS_GENERAL": {},
