@@ -189,7 +189,7 @@ jobs:
             - `musly-linux-x64.tar.gz` (extract and run musly)
 
             ### 📝 Changelog
-            See [CHANGELOG.md](https://github.com/dddevid/Musly/blob/main/CHANGELOG.md)
+            See [CHANGELOG.md](https://github.com/dddevid/Musly/blob/master/CHANGELOG.md)
 
             ### 🌍 Translations
             Contribute translations at [Crowdin](https://crowdin.com/project/musly)

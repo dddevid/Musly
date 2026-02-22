@@ -10,7 +10,7 @@ export default function Footer() {
             { name: 'Features', href: '#features' },
             { name: 'Screenshots', href: '#screenshots' },
             { name: 'Download', href: '#download' },
-            { name: 'Changelog', href: 'https://github.com/dddevid/Musly/blob/main/CHANGELOG.md', external: true }
+            { name: 'Changelog', href: 'https://github.com/dddevid/Musly/blob/master/CHANGELOG.md', external: true }
         ],
         resources: [
             { name: 'Documentation', href: 'https://github.com/dddevid/Musly/blob/main/DOCUMENTATION.md', external: true },
