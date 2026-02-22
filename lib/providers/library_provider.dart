@@ -70,6 +70,20 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void setLocalOnlyMode(bool enabled) {
+    if (!enabled && _localOnlyMode) {
+      // Switching from local-only to server mode: disconnect the listener
+      // and wipe out any locally-loaded content so the server content is
+      // fetched fresh instead of the local files being shown.
+      _localMusicService?.removeListener(_onLocalMusicServiceChanged);
+      _localMusicService = null;
+      _cachedAllSongs = [];
+      _cachedAllAlbums = [];
+      _artists = [];
+      _randomSongs = [];
+      _recentAlbums = [];
+      _playlists = [];
+      _cachedPlaylists = [];
+    }
     _localOnlyMode = enabled;
     _isInitialized = false;
     notifyListeners();

@@ -84,6 +84,10 @@ class _MainScreenState extends State<MainScreen> {
         // If scanning is in progress, the listener on LocalMusicService
         // (_onLocalMusicServiceChanged) will fire when done and populate the library.
       } else {
+        // Ensure local-only mode is disabled when connecting to a server,
+        // so that any previously-loaded local songs are cleared before the
+        // server library is fetched.
+        libraryProvider.setLocalOnlyMode(false);
         libraryProvider.initialize();
       }
 
