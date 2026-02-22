@@ -59,7 +59,7 @@ class SubsonicService {
     if (hasCustomServerCert || allowSelfSigned || hasClientCert) {
       (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         try {
-          final context = SecurityContext();
+          final context = SecurityContext(withTrustedRoots: true);
 
           // Server CA certificate (for verifying the server identity)
           if (hasCustomServerCert) {
@@ -820,3 +820,4 @@ class SearchResult {
 
   bool get isEmpty => artists.isEmpty && albums.isEmpty && songs.isEmpty;
 }
+
