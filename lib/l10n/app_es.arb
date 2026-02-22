@@ -1,6 +1,58 @@
 {
   "@@locale": "es",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Buenos días",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Buenas tardes",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Buenas noches",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Para ti",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Selecciones rápidas",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Descubre Mix",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Reproducido recientemente",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Tus listas de reproducción",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Hecho para ti",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Mejor valorado",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "No hay contenido disponible",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Intenta recargar o verifica la conexión del servidor",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
   "@_LIBRARY": {},
   "@_SEARCH": {},
   "@_SETTINGS_GENERAL": {},
