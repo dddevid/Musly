@@ -24,7 +24,7 @@ class SettingsAboutTab extends StatelessWidget {
               icon: CupertinoIcons.info,
               iconColor: AppTheme.appleMusicRed,
               title: 'Version',
-              subtitle: '1.0.6',
+              subtitle: '1.0.7',
             ),
             _buildDivider(context),
             _buildInfoTile(
@@ -58,7 +58,7 @@ class SettingsAboutTab extends StatelessWidget {
               context,
               icon: CupertinoIcons.doc_text,
               title: 'Changelog',
-              url: 'https://github.com/dddevid/Musly/releases/tag/v1.0.6',
+              url: 'https://github.com/dddevid/Musly/releases/tag/v1.0.7',
             ),
             _buildDivider(context),
             _buildLinkTile(

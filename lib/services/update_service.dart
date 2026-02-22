@@ -14,7 +14,7 @@ class ReleaseAsset {
 }
 
 class ReleaseInfo {
-  /// Version string without the leading "v" (e.g. "1.0.6")
+  /// Version string without the leading "v" (e.g. "1.0.7")
   final String version;
   final String tagName;
   final String htmlUrl;
@@ -49,7 +49,7 @@ class ReleaseInfo {
 
 class UpdateService {
   /// Must match the `version` field in pubspec.yaml (without +build).
-  static const String currentVersion = '1.0.6';
+  static const String currentVersion = '1.0.7';
 
   static const String _apiUrl =
       'https://api.github.com/repos/dddevid/Musly/releases/latest';

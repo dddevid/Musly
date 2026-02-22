@@ -6,6 +6,7 @@ import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../providers/library_provider.dart';
 import '../services/jukebox_service.dart';
+import '../services/player_ui_settings_service.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
@@ -105,28 +106,33 @@ class SongTile extends StatelessWidget {
     }
 
     if (showArtwork) {
-      return Stack(
-        children: [
-          AlbumArtwork(coverArt: song.coverArt, size: 50, borderRadius: 6),
-          if (isCurrentSong)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Selector<PlayerProvider, bool>(
-                    selector: (_, p) => p.isPlaying,
-                    builder: (_, isPlaying, __) => AnimatedEqualizer(
-                      color: Colors.white,
-                      isPlaying: isPlaying,
+      return ValueListenableBuilder<double>(
+        valueListenable: PlayerUiSettingsService().albumArtCornerRadiusNotifier,
+        builder: (context, radius, _) {
+          return Stack(
+            children: [
+              AlbumArtwork(coverArt: song.coverArt, size: 50),
+              if (isCurrentSong)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(radius),
+                    ),
+                    child: Center(
+                      child: Selector<PlayerProvider, bool>(
+                        selector: (_, p) => p.isPlaying,
+                        builder: (_, isPlaying, __) => AnimatedEqualizer(
+                          color: Colors.white,
+                          isPlaying: isPlaying,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          );
+        },
       );
     }
 
@@ -243,11 +249,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  AlbumArtwork(
-                    coverArt: widget.song.coverArt,
-                    size: 60,
-                    borderRadius: 8,
-                  ),
+                  AlbumArtwork(coverArt: widget.song.coverArt, size: 60),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

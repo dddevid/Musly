@@ -1996,6 +1996,18 @@ abstract class AppLocalizations {
   /// **'Collapse'**
   String get collapse;
 
+  /// Tooltip/label for the sidebar expand button
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get expand;
+
+  /// Tooltip/label for the create-playlist button in the sidebar library header
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist'**
+  String get createPlaylist;
+
   /// Liked Songs item label in the desktop sidebar
   ///
   /// In en, this message translates to:
@@ -2343,6 +2355,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Music folder selection saved'**
   String get musicFoldersSaved;
+
+  /// Display settings section header for artwork customisation
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork Style'**
+  String get artworkStyleSection;
+
+  /// Label for the album art corner radius slider
+  ///
+  /// In en, this message translates to:
+  /// **'Corner Radius'**
+  String get artworkCornerRadius;
+
+  /// Subtitle for the album art corner radius slider
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust how round the corners of album covers appear'**
+  String get artworkCornerRadiusSubtitle;
+
+  /// Label shown when corner radius is set to 0 (no rounded corners)
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get artworkCornerRadiusNone;
+
+  /// Label for the artwork shape selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shape'**
+  String get artworkShape;
+
+  /// Rounded rectangle artwork shape option
+  ///
+  /// In en, this message translates to:
+  /// **'Rounded'**
+  String get artworkShapeRounded;
+
+  /// Circle artwork shape option
+  ///
+  /// In en, this message translates to:
+  /// **'Circle'**
+  String get artworkShapeCircle;
+
+  /// Square (no rounding) artwork shape option
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get artworkShapeSquare;
+
+  /// Label for the artwork shadow intensity selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow'**
+  String get artworkShadow;
+
+  /// No shadow option for artwork
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get artworkShadowNone;
+
+  /// Soft shadow option for artwork
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get artworkShadowSoft;
+
+  /// Medium shadow option for artwork
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get artworkShadowMedium;
+
+  /// Strong shadow option for artwork
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get artworkShadowStrong;
+
+  /// Label for the artwork shadow color selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow Color'**
+  String get artworkShadowColor;
+
+  /// Black shadow color option
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get artworkShadowColorBlack;
+
+  /// Accent color shadow (matches app accent color)
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get artworkShadowColorAccent;
+
+  /// Label shown above the live artwork style preview
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get artworkPreview;
+
+  /// Formatted corner radius value label
+  ///
+  /// In en, this message translates to:
+  /// **'{value}px'**
+  String artworkCornerRadiusLabel(int value);
+
+  /// Placeholder label shown in the player when a song has no cover art
+  ///
+  /// In en, this message translates to:
+  /// **'No artwork'**
+  String get noArtwork;
 }
 
 class _AppLocalizationsDelegate

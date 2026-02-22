@@ -1023,6 +1023,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get collapse => 'Collapse';
 
   @override
+  String get expand => 'Expand';
+
+  @override
+  String get createPlaylist => 'Create playlist';
+
+  @override
   String get likedSongsSidebar => 'Liked Songs';
 
   @override
@@ -1215,4 +1221,64 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get musicFoldersSaved => 'Music folder selection saved';
+
+  @override
+  String get artworkStyleSection => 'Artwork Style';
+
+  @override
+  String get artworkCornerRadius => 'Corner Radius';
+
+  @override
+  String get artworkCornerRadiusSubtitle =>
+      'Adjust how round the corners of album covers appear';
+
+  @override
+  String get artworkCornerRadiusNone => 'None';
+
+  @override
+  String get artworkShape => 'Shape';
+
+  @override
+  String get artworkShapeRounded => 'Rounded';
+
+  @override
+  String get artworkShapeCircle => 'Circle';
+
+  @override
+  String get artworkShapeSquare => 'Square';
+
+  @override
+  String get artworkShadow => 'Shadow';
+
+  @override
+  String get artworkShadowNone => 'None';
+
+  @override
+  String get artworkShadowSoft => 'Soft';
+
+  @override
+  String get artworkShadowMedium => 'Medium';
+
+  @override
+  String get artworkShadowStrong => 'Strong';
+
+  @override
+  String get artworkShadowColor => 'Shadow Color';
+
+  @override
+  String get artworkShadowColorBlack => 'Black';
+
+  @override
+  String get artworkShadowColorAccent => 'Accent';
+
+  @override
+  String get artworkPreview => 'Preview';
+
+  @override
+  String artworkCornerRadiusLabel(int value) {
+    return '${value}px';
+  }
+
+  @override
+  String get noArtwork => 'No artwork';
 }

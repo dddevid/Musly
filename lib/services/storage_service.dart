@@ -9,6 +9,7 @@ class StorageService {
   static const String _queueIndexKey = 'queue_index';
   static const String _shuffleModeKey = 'shuffle_mode';
   static const String _repeatModeKey = 'repeat_mode';
+  static const String _volumeKey = 'volume';
 
   Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
@@ -84,6 +85,16 @@ class StorageService {
   Future<int> getRepeatMode() async {
     final prefs = await _prefs;
     return prefs.getInt(_repeatModeKey) ?? 0;
+  }
+
+  Future<void> saveVolume(double volume) async {
+    final prefs = await _prefs;
+    await prefs.setDouble(_volumeKey, volume);
+  }
+
+  Future<double> getVolume() async {
+    final prefs = await _prefs;
+    return prefs.getDouble(_volumeKey) ?? 1.0;
   }
 
   Future<void> saveDiscordRpcEnabled(bool enabled) async {

@@ -265,60 +265,87 @@ class _LibraryScreenState extends State<LibraryScreen> {
       listen: false,
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final coverArtUrl = item.coverArt != null
         ? (isLocalFilePath(item.coverArt)
               ? item.coverArt!
               : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
         : null;
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(item.type == 'Artist' ? 28 : 4),
-        child: SizedBox(
-          width: 56,
-          height: 56,
-          child: coverArtUrl != null
-              ? (isLocalFilePath(coverArtUrl)
-                    ? Image.file(
-                        File(coverArtUrl),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _buildPlaceholder(item.type, isDark),
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: coverArtUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: Colors.grey[800]),
-                        errorWidget: (_, __, ___) =>
-                            _buildPlaceholder(item.type, isDark),
-                      ))
-              : _buildPlaceholder(item.type, isDark),
-        ),
+    final String typeLabel = switch (item.type) {
+      'Playlist' => l10n.filterPlaylists,
+      'Album' => l10n.filterAlbums,
+      'Artist' => l10n.filterArtists,
+      _ => item.type,
+    };
+
+    final Widget artwork = ClipRRect(
+      borderRadius: BorderRadius.circular(item.type == 'Artist' ? 28 : 4),
+      child: SizedBox(
+        width: 56,
+        height: 56,
+        child: coverArtUrl != null
+            ? (isLocalFilePath(coverArtUrl)
+                  ? Image.file(
+                      File(coverArtUrl),
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) =>
+                          _buildPlaceholder(item.type, isDark),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: coverArtUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (ctx, url) =>
+                          Container(color: Colors.grey[800]),
+                      errorWidget: (ctx, url, err) =>
+                          _buildPlaceholder(item.type, isDark),
+                    ))
+            : _buildPlaceholder(item.type, isDark),
       ),
-      title: Text(
-        item.name,
-        style: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        '${item.type} • ${item.subtitle}',
-        style: TextStyle(
-          color: isDark ? Colors.white60 : Colors.black54,
-          fontSize: 13,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+    );
+
+    return InkWell(
       onTap: () => _openItem(context, item),
       onLongPress: item.type == 'Playlist'
           ? () => _showDeletePlaylistDialog(context, item)
           : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            artwork,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    item.name,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$typeLabel • ${item.subtitle}',
+                    style: TextStyle(
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -562,43 +589,60 @@ class _SpotifyLibraryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          gradient: isGradient
-              ? LinearGradient(
-                  colors: [iconColor.withOpacity(0.8), iconColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isGradient ? null : iconColor.withValues(alpha: 0.15),
-        ),
-        child: Icon(
-          icon,
-          color: isGradient ? Colors.white : iconColor,
-          size: 28,
-        ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: isDark ? Colors.white60 : Colors.black54,
-          fontSize: 13,
-        ),
-      ),
+    return InkWell(
       onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                gradient: isGradient
+                    ? LinearGradient(
+                        colors: [iconColor.withValues(alpha: 0.8), iconColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isGradient ? null : iconColor.withValues(alpha: 0.15),
+              ),
+              child: Icon(
+                icon,
+                color: isGradient ? Colors.white : iconColor,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

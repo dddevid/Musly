@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide RepeatMode;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/song.dart';
@@ -37,31 +37,25 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
   }
 
   void _toggleLyrics(BuildContext context, Song song) {
+    final rootNav = Navigator.of(context, rootNavigator: true);
     if (_lyricsOpen) {
-      // Close lyrics
-      if (widget.navigatorKey?.currentState != null) {
-        widget.navigatorKey!.currentState!.pop();
-      } else {
-        Navigator.of(context).pop();
-      }
+      rootNav.pop();
       setState(() => _lyricsOpen = false);
     } else {
-      // Open lyrics
-      final nav = widget.navigatorKey?.currentState ?? Navigator.of(context);
-      nav
+      rootNav
           .push(
             MaterialPageRoute(
+              fullscreenDialog: true,
               builder: (ctx) => SyncedLyricsView(
                 song: song,
                 onClose: () {
-                  Navigator.pop(ctx);
+                  Navigator.of(ctx, rootNavigator: true).pop();
                   setState(() => _lyricsOpen = false);
                 },
               ),
             ),
           )
           .then((_) {
-            // In case user closes via back gesture or other means
             if (mounted) setState(() => _lyricsOpen = false);
           });
       setState(() => _lyricsOpen = true);
@@ -82,12 +76,12 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
           height: 90,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF181818) : Colors.white,
+            color: isDark ? const Color(0xFF181818) : const Color(0xFFF8F8F8),
             border: Border(
               top: BorderSide(
                 color: isDark
-                    ? const Color(0xFF282828)
-                    : const Color(0xFFE5E5E5),
+                    ? const Color(0xFF2A2A2A)
+                    : const Color(0xFFDDDDDD),
                 width: 1,
               ),
             ),
@@ -159,8 +153,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             color: isStarred
                                 ? AppTheme.appleMusicRed
                                 : (isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600]),
+                                      ? const Color(0xFFB3B3B3)
+                                      : const Color(0xFF6B6B6B)),
                           ),
                           onPressed: () {
                             Provider.of<PlayerProvider>(
@@ -203,7 +197,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         size: 20,
                         color: _lyricsOpen
                             ? AppTheme.appleMusicRed
-                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                            : (isDark
+                                  ? const Color(0xFFB3B3B3)
+                                  : const Color(0xFF6B6B6B)),
                       ),
                       onPressed: () => _toggleLyrics(context, currentSong),
                       tooltip: _lyricsOpen
@@ -213,7 +209,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     IconButton(
                       icon: const Icon(Icons.queue_music_rounded, size: 20),
                       onPressed: () {},
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: isDark
+                          ? const Color(0xFFB3B3B3)
+                          : const Color(0xFF6B6B6B),
                     ),
                     const SizedBox(width: 8),
                     const _VolumeControl(),
@@ -260,7 +258,9 @@ class _PlayerControls extends StatelessWidget {
                 size: 20,
                 color: shuffleEnabled
                     ? AppTheme.appleMusicRed
-                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                    : (isDark
+                          ? const Color(0xFFB3B3B3)
+                          : const Color(0xFF6B6B6B)),
               ),
               onPressed: provider.toggleShuffle,
               tooltip: AppLocalizations.of(context)!.enableShuffle,
@@ -311,7 +311,9 @@ class _PlayerControls extends StatelessWidget {
                 size: 20,
                 color: repeatMode != RepeatMode.off
                     ? AppTheme.appleMusicRed
-                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                    : (isDark
+                          ? const Color(0xFFB3B3B3)
+                          : const Color(0xFF6B6B6B)),
               ),
               onPressed: provider.toggleRepeat,
               tooltip: AppLocalizations.of(context)!.enableRepeat,
@@ -366,13 +368,14 @@ class _ProgressBar extends StatelessWidget {
                       overlayShape: const RoundSliderOverlayShape(
                         overlayRadius: 12,
                       ),
-                      activeTrackColor: isDark ? Colors.white : Colors.black,
+                      activeTrackColor: AppTheme.appleMusicRed,
                       inactiveTrackColor: isDark
-                          ? Colors.grey[800]
+                          ? const Color(0xFF535353)
                           : Colors.grey[300],
-                      thumbColor: isDark ? Colors.white : Colors.black,
-                      overlayColor: (isDark ? Colors.white : Colors.black)
-                          .withValues(alpha: 0.12),
+                      thumbColor: Colors.white,
+                      overlayColor: AppTheme.appleMusicRed.withValues(
+                        alpha: 0.15,
+                      ),
                     ),
                     child: Slider(
                       value: position.inMilliseconds.toDouble().clamp(
@@ -439,13 +442,12 @@ class _VolumeControl extends StatelessWidget {
                   overlayShape: const RoundSliderOverlayShape(
                     overlayRadius: 12,
                   ),
-                  activeTrackColor: isDark ? Colors.white : Colors.black,
+                  activeTrackColor: AppTheme.appleMusicRed,
                   inactiveTrackColor: isDark
-                      ? Colors.grey[800]
+                      ? const Color(0xFF535353)
                       : Colors.grey[300],
-                  thumbColor: isDark ? Colors.white : Colors.black,
-                  overlayColor: (isDark ? Colors.white : Colors.black)
-                      .withValues(alpha: 0.12),
+                  thumbColor: Colors.white,
+                  overlayColor: AppTheme.appleMusicRed.withValues(alpha: 0.15),
                 ),
                 child: Slider(
                   value: volume,

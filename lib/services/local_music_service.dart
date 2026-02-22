@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
@@ -290,9 +289,9 @@ class LocalMusicService extends ChangeNotifier {
           final ext = _mimeToExt(pic.mimetype);
           final artFile = File('$_artCacheDir/$albumId$ext');
           try {
-            await artFile.writeAsBytes(pic.bytes as Uint8List);
+            await artFile.writeAsBytes(pic.bytes);
             coverArtPath = artFile.path;
-            _albumArtCache[albumId] = coverArtPath!;
+            _albumArtCache[albumId] = coverArtPath;
           } catch (e) {
             debugPrint('Art write failed: $e');
           }

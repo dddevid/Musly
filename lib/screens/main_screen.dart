@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../services/local_music_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/update_service.dart';
+import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import '../l10n/app_localizations.dart';
@@ -119,15 +120,13 @@ class _MainScreenState extends State<MainScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6C5CE7), Color(0xFF00B4D8)],
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.appleMusicRed, AppTheme.appleMusicPink],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +259,7 @@ class _MainScreenState extends State<MainScreen> {
                         label: Text(l10n.downloadUpdate),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: const Color(0xFF6C5CE7),
+                          backgroundColor: AppTheme.appleMusicRed,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -332,7 +331,6 @@ class _MainScreenState extends State<MainScreen> {
                     },
                     navigatorKey: NavigationHelper.desktopNavigatorKey,
                   ),
-                  const VerticalDivider(width: 1, thickness: 1),
                   Expanded(
                     child: Navigator(
                       key: NavigationHelper.desktopNavigatorKey,
@@ -374,8 +372,6 @@ class _MainScreenState extends State<MainScreen> {
     return Selector<PlayerProvider, bool>(
       selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
       builder: (context, hasCurrentSong, _) {
-        final bottomBarHeight = hasCurrentSong ? 64.0 + 83.0 : 83.0;
-
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) {

@@ -68,6 +68,14 @@ class AuthProvider extends ChangeNotifier {
         }
       }
       _state = AuthState.authenticated;
+      // Flush any scrobbles that were queued while offline
+      final offlineService = OfflineService();
+      await offlineService.initialize();
+      offlineService
+          .flushPendingScrobbles(_subsonicService)
+          .catchError(
+            (e) => debugPrint('Error flushing pending scrobbles: $e'),
+          );
     } else {
       // Check if we have offline content
       final offlineService = OfflineService();
@@ -123,6 +131,14 @@ class AuthProvider extends ChangeNotifier {
         await _storageService.saveServerConfig(updatedConfig);
         _state = AuthState.authenticated;
         notifyListeners();
+        // Flush any scrobbles that were queued while offline
+        final offlineService = OfflineService();
+        await offlineService.initialize();
+        offlineService
+            .flushPendingScrobbles(_subsonicService)
+            .catchError(
+              (e) => debugPrint('Error flushing pending scrobbles: $e'),
+            );
         return true;
       } else {
         _error = pingResult.error ?? 'Failed to connect to server';

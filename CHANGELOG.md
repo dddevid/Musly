@@ -5,6 +5,33 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-02-22
+
+### Added
+- **Spotify-style Desktop UX**: Complete redesign of the PC layout
+  - New collapsible sidebar (`DesktopNavigationSidebar`) with 260 px expanded / 72 px collapsed states
+  - Sidebar sections: Home, Search, Your Library (scrollable playlist list with Liked Songs shortcut), Settings, Collapse/Expand toggle
+  - Settings navigation item restored directly in the sidebar
+  - All sidebar strings localised via ARB (`expand`, `createPlaylist`)
+- **Artwork Style Editor**: Full custom editor in Settings → Display → Artwork Style
+  - **Shape**: Rounded rectangle, Circle, or Square
+  - **Corner Radius**: slider (0–24 px), only visible when shape is *Rounded*
+  - **Shadow intensity**: None, Soft, Medium, Strong
+  - **Shadow color**: Black or Accent (Musly red)
+  - Live 108 px animated preview updates in real-time
+  - All options persisted to `SharedPreferences` and restored on next launch (awaited before `runApp`)
+- **No-artwork placeholder in mobile player**: Songs without cover art now show a clean dark gradient tile with a music note icon and localised "No artwork" label instead of an infinite shimmer loader. Shimmer is still used while the image is actually fetching.
+
+### Changed
+- **Desktop player bar accent colors**: All active-state indicators (shuffle, repeat, progress slider, volume slider, favorite heart, lyrics button) now use Musly red
+- **Update dialog colors**: Header gradient and download button changed from purple/blue (`#6C5CE7 → #00B4D8`) to Musly red/pink (`appleMusicRed → appleMusicPink`)
+- **Desktop lyrics**: Lyrics view now uses `rootNavigator: true` so it covers the full window (sidebar + content + player bar); close button pops from the root navigator correctly
+- **React marketing website**: Version number and release date in Hero and Download sections are now fetched live from the GitHub public API (`/repos/dddevid/Musly/releases/latest`) with a 10-minute session cache — no auth token required
+
+### Fixed
+- **Library list alignment**: Album/artist tiles in the Library screen now use an explicit `InkWell → Padding → Row` layout so artwork and text align with section headers on all platforms
+- **Artwork settings not persisting**: `PlayerUiSettingsService.initialize()` is now `await`-ed before `runApp`, guaranteeing saved values are loaded into notifiers before any widget builds
+
 ## [1.0.6] - 2026-02-20
 
 ### Added
@@ -18,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Genre Support**: Enhanced genre browsing
   - Genres screen now shows song count per genre and a tooltip
   - Genre screen rebuilt with two tabs: Songs and Albums
-- **Easter Egg**: Fanta-bounce screensaver triggered by tapping the search button 11 times in quick succession
 
 ### Fixed
 - **[#29](https://github.com/dddevid/Musly/issues/29) Offline Playlists**: Playlists are now correctly restored from local cache when the server is unreachable

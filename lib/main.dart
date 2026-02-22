@@ -72,6 +72,14 @@ void main() async {
   jukeboxService.initialize().catchError((e) {
     debugPrint('Failed to initialize jukebox service: $e');
   });
+  // Awaited so notifiers are populated before the first widget build,
+  // guaranteeing the saved artwork style (shape, shadow, radius) is applied
+  // immediately on launch rather than after a frame with default values.
+  try {
+    await PlayerUiSettingsService().initialize();
+  } catch (e) {
+    debugPrint('Failed to initialize player UI settings: $e');
+  }
 
   runApp(
     MultiProvider(

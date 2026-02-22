@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_chrome_cast/lib.dart';
+import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 
 enum CastState { notConnected, connecting, connected, disconnecting }
 
@@ -83,9 +84,18 @@ class CastService extends ChangeNotifier {
     });
 
     try {
-      await GoogleCastContext.instance.setSharedInstanceWithOptions(
-        GoogleCastOptions(appId: 'CC1AD845'),
-      );
+      const appId = 'CC1AD845';
+      GoogleCastOptions? options;
+      if (Platform.isIOS) {
+        options = IOSGoogleCastOptions(
+          GoogleCastDiscoveryCriteriaInitialize.initWithApplicationID(appId),
+        );
+      } else if (Platform.isAndroid) {
+        options = GoogleCastOptionsAndroid(appId: appId);
+      }
+      if (options != null) {
+        await GoogleCastContext.instance.setSharedInstanceWithOptions(options);
+      }
       debugPrint('CastService: Context initialized successfully');
 
       // Check initial state
@@ -253,7 +263,7 @@ class CastService extends ChangeNotifier {
         // contentId is a logical identifier; actual stream URL goes in contentUrl.
         contentId: url,
         contentUrl: Uri.tryParse(url),
-        streamType: CastMediaStreamType.BUFFERED,
+        streamType: CastMediaStreamType.buffered,
         contentType: contentType,
         metadata: metadata,
         duration: duration,
