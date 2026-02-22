@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Download, Apple, Monitor, Smartphone, ExternalLink, Github } from 'lucide-react'
 import FadeIn from './effects/FadeIn'
 import GradientText from './effects/GradientText'
+import { useGithubRelease } from '../hooks/useGithubRelease'
 import './Download.css'
 
 const platforms = [
@@ -43,6 +44,8 @@ const platforms = [
 ]
 
 export default function DownloadSection() {
+    const { version, date, loading: vLoading } = useGithubRelease()
+
     return (
         <section id="download" className="download section">
             <div className="container">
@@ -61,10 +64,12 @@ export default function DownloadSection() {
                 <FadeIn delay={0.1}>
                     <div className="download-version">
                         <div className="download-version-badge">
-                            <span className="download-version-number">v1.0.6</span>
+                            <span className="download-version-number">
+                                {vLoading ? '\u2026' : (version ?? 'v1.0.7')}
+                            </span>
                             <span className="download-version-label">Latest Release</span>
                         </div>
-                        <p className="download-version-date">Released February 20, 2026</p>
+                        {date && <p className="download-version-date">Released {date}</p>}
                     </div>
                 </FadeIn>
 

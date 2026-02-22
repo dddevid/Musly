@@ -12,40 +12,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appName => 'Musly';
 
   @override
-  String get goodMorning => 'Good morning';
+  String get goodMorning => 'Buenos días';
 
   @override
-  String get goodAfternoon => 'Good afternoon';
+  String get goodAfternoon => 'Buenas tardes';
 
   @override
-  String get goodEvening => 'Good evening';
+  String get goodEvening => 'Buenas noches';
 
   @override
-  String get forYou => 'For You';
+  String get forYou => 'Para ti';
 
   @override
-  String get quickPicks => 'Quick Picks';
+  String get quickPicks => 'Selecciones rápidas';
 
   @override
-  String get discoverMix => 'Discover Mix';
+  String get discoverMix => 'Descubre Mix';
 
   @override
-  String get recentlyPlayed => 'Recently Played';
+  String get recentlyPlayed => 'Reproducido recientemente';
 
   @override
-  String get yourPlaylists => 'Your Playlists';
+  String get yourPlaylists => 'Tus listas de reproducción';
 
   @override
-  String get madeForYou => 'Made For You';
+  String get madeForYou => 'Hecho para ti';
 
   @override
-  String get topRated => 'Top Rated';
+  String get topRated => 'Mejor valorado';
 
   @override
-  String get noContentAvailable => 'No content available';
+  String get noContentAvailable => 'No hay contenido disponible';
 
   @override
-  String get tryRefreshing => 'Try refreshing or check your server connection';
+  String get tryRefreshing =>
+      'Intenta recargar o verifica la conexión del servidor';
 
   @override
   String get refresh => 'Refresh';
@@ -1023,6 +1024,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get collapse => 'Collapse';
 
   @override
+  String get expand => 'Expand';
+
+  @override
+  String get createPlaylist => 'Create playlist';
+
+  @override
   String get likedSongsSidebar => 'Liked Songs';
 
   @override
@@ -1215,4 +1222,64 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get musicFoldersSaved => 'Music folder selection saved';
+
+  @override
+  String get artworkStyleSection => 'Artwork Style';
+
+  @override
+  String get artworkCornerRadius => 'Corner Radius';
+
+  @override
+  String get artworkCornerRadiusSubtitle =>
+      'Adjust how round the corners of album covers appear';
+
+  @override
+  String get artworkCornerRadiusNone => 'None';
+
+  @override
+  String get artworkShape => 'Shape';
+
+  @override
+  String get artworkShapeRounded => 'Rounded';
+
+  @override
+  String get artworkShapeCircle => 'Circle';
+
+  @override
+  String get artworkShapeSquare => 'Square';
+
+  @override
+  String get artworkShadow => 'Shadow';
+
+  @override
+  String get artworkShadowNone => 'None';
+
+  @override
+  String get artworkShadowSoft => 'Soft';
+
+  @override
+  String get artworkShadowMedium => 'Medium';
+
+  @override
+  String get artworkShadowStrong => 'Strong';
+
+  @override
+  String get artworkShadowColor => 'Shadow Color';
+
+  @override
+  String get artworkShadowColorBlack => 'Black';
+
+  @override
+  String get artworkShadowColorAccent => 'Accent';
+
+  @override
+  String get artworkPreview => 'Preview';
+
+  @override
+  String artworkCornerRadiusLabel(int value) {
+    return '${value}px';
+  }
+
+  @override
+  String get noArtwork => 'No artwork';
 }

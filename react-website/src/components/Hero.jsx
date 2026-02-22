@@ -2,9 +2,11 @@ import { motion } from 'framer-motion'
 import { Download, Play, Star, Smartphone, Monitor } from 'lucide-react'
 import FadeIn from './effects/FadeIn'
 import GradientText from './effects/GradientText'
+import { useGithubRelease } from '../hooks/useGithubRelease'
 import './Hero.css'
 
 export default function Hero() {
+    const { version, loading: vLoading } = useGithubRelease()
     return (
         <section className="hero section">
             <div className="container hero-container">
@@ -76,7 +78,9 @@ export default function Hero() {
                     <FadeIn delay={0.6}>
                         <div className="hero-stats">
                             <div className="hero-stat">
-                                <span className="hero-stat-value">v1.0.6</span>
+                                <span className="hero-stat-value">
+                                    {vLoading ? '\u2026' : (version ?? 'v1.0.7')}
+                                </span>
                                 <span className="hero-stat-label">Latest Version</span>
                             </div>
                             <div className="hero-stat-divider" />

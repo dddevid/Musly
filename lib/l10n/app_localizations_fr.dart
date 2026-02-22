@@ -501,7 +501,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get tabPlayback => 'Playback';
+  String get tabPlayback => 'Lecture';
 
   @override
   String get tabStorage => 'Storage';
@@ -538,7 +538,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get preventClipping => 'Prevent Clipping';
+  String get preventClipping => 'Empêcher le découpage audio';
 
   @override
   String fallbackGain(String value) {
@@ -710,7 +710,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get removeFromLiked => 'Remove from Liked Songs';
 
   @override
-  String get addToLiked => 'Add to Liked Songs';
+  String get addToLiked => 'Ajouter aux pistes \"J\'aime\"';
 
   @override
   String get playNext => 'Play Next';
@@ -843,7 +843,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get playingNext => 'Playing Next';
 
   @override
-  String get createPlaylistTitle => 'Create Playlist';
+  String get createPlaylistTitle => 'Créer une liste de lecture';
 
   @override
   String get playlistNameHint => 'Playlist name';
@@ -941,7 +941,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pleaseEnterUsername => 'Please enter username';
 
   @override
-  String get pleaseEnterPassword => 'Please enter password';
+  String get pleaseEnterPassword => 'Veuillez saisir votre mot de passe';
 
   @override
   String get legacyAuthentication => 'Legacy Authentication';
@@ -1022,6 +1022,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get collapse => 'Collapse';
+
+  @override
+  String get expand => 'Expand';
+
+  @override
+  String get createPlaylist => 'Create playlist';
 
   @override
   String get likedSongsSidebar => 'Liked Songs';
@@ -1167,7 +1173,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get sectionJukebox => 'JUKEBOX MODE';
+  String get sectionJukebox => 'MODE JUKEBOX';
 
   @override
   String get jukeboxMode => 'Jukebox Mode';
@@ -1205,10 +1211,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get jukeboxNotSupported =>
-      'Jukebox mode is not supported by this server. Enable it in your server configuration (e.g. EnableJukebox = true in Navidrome).';
+      'Le mode Jukebox n\'est pas pris en charge par ce serveur. Activez-le dans la configuration de votre serveur (par exemple EnableJukebox = true dans Navidrome).';
 
   @override
-  String get musicFoldersDialogTitle => 'Select Music Folders';
+  String get musicFoldersDialogTitle => 'Sélectionner les dossiers de musique';
 
   @override
   String get musicFoldersHint =>
@@ -1216,4 +1222,64 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get musicFoldersSaved => 'Music folder selection saved';
+
+  @override
+  String get artworkStyleSection => 'Artwork Style';
+
+  @override
+  String get artworkCornerRadius => 'Corner Radius';
+
+  @override
+  String get artworkCornerRadiusSubtitle =>
+      'Adjust how round the corners of album covers appear';
+
+  @override
+  String get artworkCornerRadiusNone => 'None';
+
+  @override
+  String get artworkShape => 'Shape';
+
+  @override
+  String get artworkShapeRounded => 'Rounded';
+
+  @override
+  String get artworkShapeCircle => 'Circle';
+
+  @override
+  String get artworkShapeSquare => 'Square';
+
+  @override
+  String get artworkShadow => 'Shadow';
+
+  @override
+  String get artworkShadowNone => 'None';
+
+  @override
+  String get artworkShadowSoft => 'Soft';
+
+  @override
+  String get artworkShadowMedium => 'Medium';
+
+  @override
+  String get artworkShadowStrong => 'Strong';
+
+  @override
+  String get artworkShadowColor => 'Shadow Color';
+
+  @override
+  String get artworkShadowColorBlack => 'Black';
+
+  @override
+  String get artworkShadowColorAccent => 'Accent';
+
+  @override
+  String get artworkPreview => 'Preview';
+
+  @override
+  String artworkCornerRadiusLabel(int value) {
+    return '${value}px';
+  }
+
+  @override
+  String get noArtwork => 'No artwork';
 }

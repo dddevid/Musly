@@ -37,6 +37,7 @@ class LibraryProvider extends ChangeNotifier {
   static const String _allAlbumsCacheKey = 'cached_all_albums';
   static const String _allSongsCacheKey = 'cached_all_songs';
   static const String _playlistsCacheKey = 'cached_playlists';
+  static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
 
   LibraryProvider(this._subsonicService);
@@ -118,7 +119,23 @@ class LibraryProvider extends ChangeNotifier {
         return;
       }
 
-      await _loadCachedData(loadFullLibrary: false);
+      await _loadCachedData(loadFullLibrary: true);
+
+      // Populate derived lists from cache so Android Auto and the UI have
+      // something to show even if the server is unreachable (offline mode).
+      if (_recentAlbums.isEmpty && _cachedAllAlbums.isNotEmpty) {
+        _recentAlbums = _cachedAllAlbums.take(20).toList();
+      }
+      if (_randomSongs.isEmpty && _cachedAllSongs.isNotEmpty) {
+        _randomSongs = _cachedAllSongs.take(50).toList();
+      }
+      if (_playlists.isEmpty && _cachedPlaylists.isNotEmpty) {
+        _playlists = _cachedPlaylists;
+      }
+
+      // Push whatever we already have cached so Android Auto shows content
+      // immediately, even before server calls complete (or if they fail).
+      _pushLibraryToAndroidAuto();
 
       try {
         await Future.wait([
@@ -136,7 +153,8 @@ class LibraryProvider extends ChangeNotifier {
           },
         );
       } catch (serverError) {
-        // Server not configured or error - that's ok for local mode
+        // Server not configured or error - that's ok for local mode.
+        // Android Auto already has cached data from the push above.
         debugPrint('Server initialization skipped: $serverError');
       }
 
@@ -190,6 +208,15 @@ class LibraryProvider extends ChangeNotifier {
             .map((p) => Playlist.fromJson(p as Map<String, dynamic>))
             .toList();
         _playlists = _cachedPlaylists;
+      }
+
+      // Always restore artists from cache
+      final artistsJson = prefs.getString(_artistsCacheKey);
+      if (artistsJson != null) {
+        final List<dynamic> artistsList = json.decode(artistsJson);
+        _artists = artistsList
+            .map((a) => Artist.fromJson(a as Map<String, dynamic>))
+            .toList();
       }
 
       if (loadFullLibrary) {
@@ -288,6 +315,13 @@ class LibraryProvider extends ChangeNotifier {
       );
       await prefs.setString(_playlistsCacheKey, playlistsJson);
 
+      if (_artists.isNotEmpty) {
+        final artistsJson = json.encode(
+          _artists.map((a) => a.toJson()).toList(),
+        );
+        await prefs.setString(_artistsCacheKey, artistsJson);
+      }
+
       await prefs.setInt(
         _lastUpdateKey,
         _lastCacheUpdate?.millisecondsSinceEpoch ??
@@ -295,6 +329,23 @@ class LibraryProvider extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('Error saving cached data: $e');
+    }
+  }
+
+  /// Push whatever library data is currently in memory to Android Auto.
+  /// Called both from cached data (offline) and after server loads succeed.
+  void _pushLibraryToAndroidAuto() {
+    if (_artists.isNotEmpty) {
+      _androidAutoService.updateArtists(_artists);
+    }
+    if (_recentAlbums.isNotEmpty) {
+      _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
+    }
+    if (_playlists.isNotEmpty) {
+      _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
+    }
+    if (_randomSongs.isNotEmpty) {
+      _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     }
   }
 
@@ -327,8 +378,13 @@ class LibraryProvider extends ChangeNotifier {
       _artists = await _subsonicService.getArtists();
       notifyListeners();
       _androidAutoService.updateArtists(_artists);
+      _saveCachedData();
     } catch (e) {
       debugPrint('Error loading artists: $e');
+      // Push cached artists to Android Auto if server is unreachable
+      if (_artists.isNotEmpty) {
+        _androidAutoService.updateArtists(_artists);
+      }
     }
   }
 
@@ -421,6 +477,10 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
         notifyListeners();
       }
+      // Push cached playlists to Android Auto even if server failed
+      if (_playlists.isNotEmpty) {
+        _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
+      }
     }
   }
 
@@ -431,6 +491,10 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     } catch (e) {
       debugPrint('Error loading random songs: $e');
+      // Push cached songs to Android Auto if server is unreachable
+      if (_randomSongs.isNotEmpty) {
+        _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
+      }
     }
   }
 

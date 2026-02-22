@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 class AppTheme {
-
   static const Color appleMusicRed = Color(0xFFFA243C);
   static const Color appleMusicPink = Color(0xFFFC5C65);
+
+  // Spotify-like accent used on the desktop layout
+  static const Color spotifyGreen = Color(0xFF1DB954);
+  static const Color spotifyGreenDim = Color(0xFF158A3E);
 
   static const Color lightBackground = Color(0xFFF2F2F7);
   static const Color lightSurface = Colors.white;

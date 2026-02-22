@@ -1,6 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_chrome_cast/lib.dart';
+import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/cast_service.dart';

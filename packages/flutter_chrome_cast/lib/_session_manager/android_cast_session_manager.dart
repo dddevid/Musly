@@ -64,14 +64,12 @@ class GoogleCastSessionManagerAndroidMethodChannel
 
   @override
   Future<bool> startSessionWithOpenURLOptions() {
-    // TODO: implement startSessionWithOpenURLOptions
-    throw UnimplementedError();
+    throw UnimplementedError('Only works in iOS');
   }
 
   @override
-  Future<bool> suspendSessionWithReason() {
-    // TODO: implement suspendSessionWithReason
-    throw UnimplementedError();
+  Future<bool> suspendSessionWithReason() async {
+    return (await _channel.invokeMethod('suspendSession')) == true;
   }
 
   Future _onMethodCallHandler(MethodCall call) async {

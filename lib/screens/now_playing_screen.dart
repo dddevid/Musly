@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/material.dart' hide RepeatMode;
-import 'package:flutter/cupertino.dart' hide RepeatMode;
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
@@ -979,7 +979,8 @@ class _AlbumArtworkSection extends StatelessWidget {
                             key: ValueKey(imageUrl),
                             fit: BoxFit.contain,
                             cacheWidth: 600,
-                            errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                            errorBuilder: (ctx, __, ___) =>
+                                _buildNoArtPlaceholder(ctx),
                           )
                         : CachedNetworkImage(
                             key: ValueKey(imageUrl), // Optimize rebuilds
@@ -991,10 +992,11 @@ class _AlbumArtworkSection extends StatelessWidget {
                             fadeInDuration:
                                 Duration.zero, // Prevent flashing (Issue #4)
                             fadeOutDuration: Duration.zero,
-                            placeholder: (_, __) => _buildPlaceholder(),
-                            errorWidget: (_, __, ___) => _buildPlaceholder(),
+                            placeholder: (_, __) => _buildLoadingPlaceholder(),
+                            errorWidget: (ctx, __, ___) =>
+                                _buildNoArtPlaceholder(ctx),
                           )
-                  : _buildPlaceholder(),
+                  : _buildNoArtPlaceholder(context),
             ),
           ),
         ),
@@ -1002,27 +1004,50 @@ class _AlbumArtworkSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  // Shimmer shown only while the network image is loading
+  Widget _buildLoadingPlaceholder() {
     return Shimmer.fromColors(
       baseColor: const Color(0xFF2A2A2A),
       highlightColor: const Color(0xFF3A3A3A),
       child: Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
-          ),
+        color: const Color(0xFF2A2A2A),
+      ),
+    );
+  }
+
+  // Static placeholder for songs that genuinely have no artwork
+  Widget _buildNoArtPlaceholder(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2C2C2E), Color(0xFF1C1C1E)],
         ),
-        child: Center(
-          child: Icon(
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
             Icons.music_note_rounded,
-            size: (size * 0.3).clamp(40.0, 100.0),
-            color: Colors.white24,
+            size: (size * 0.28).clamp(40.0, 100.0),
+            color: Colors.white.withValues(alpha: 0.15),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context)!.noArtwork,
+            style: TextStyle(
+              fontSize: (size * 0.045).clamp(11.0, 16.0),
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.18),
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

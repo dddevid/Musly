@@ -23,6 +23,7 @@ enum RepeatMode { off, all, one }
 
 class PlayerProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
+  late final StorageService _storageService;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final OfflineService _offlineService = OfflineService();
   final AndroidAutoService _androidAutoService = AndroidAutoService();
@@ -63,6 +64,7 @@ class PlayerProvider extends ChangeNotifier {
     this._castService,
     this._upnpService,
   ) {
+    _storageService = storageService;
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
     _initializePlayer();
@@ -422,6 +424,13 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _initializePlayer() {
+    // Load persisted volume
+    _storageService.getVolume().then((savedVolume) {
+      _volume = savedVolume;
+      _audioPlayer.setVolume(_volume);
+      notifyListeners();
+    });
+
     // Note: just_audio_windows may print "Error accessing BufferingProgress" messages.
     // This is a known harmless issue in the plugin and doesn't affect playback.
     // See: https://github.com/bdlukaa/just_audio_windows/issues
@@ -495,6 +504,16 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _onSongComplete() {
+    // Send completion scrobble (submission: true) for server tracks.
+    // If the server is unreachable, queue it to be flushed later.
+    if (_currentSong != null && _currentSong!.isLocal != true) {
+      _subsonicService.scrobble(_currentSong!.id, submission: true).catchError((
+        e,
+      ) {
+        _offlineService.queueScrobble(_currentSong!.id, submission: true);
+      });
+    }
+
     if (_currentSong != null && _recommendationService != null) {
       _recommendationService!.trackSongPlay(
         _currentSong!,
@@ -646,7 +665,9 @@ class PlayerProvider extends ChangeNotifier {
 
       // Only scrobble for server tracks
       if (song.isLocal != true) {
-        _subsonicService.scrobble(song.id, submission: false);
+        _subsonicService.scrobble(song.id, submission: false).catchError((e) {
+          _offlineService.queueScrobble(song.id, submission: false);
+        });
       }
 
       if (_recommendationService != null) {
@@ -985,6 +1006,7 @@ class PlayerProvider extends ChangeNotifier {
 
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
+    await _storageService.saveVolume(_volume);
     await _applyReplayGain(_currentSong);
     notifyListeners();
   }
@@ -1095,24 +1117,22 @@ class PlayerProvider extends ChangeNotifier {
     );
 
     // Fetch public cover art asynchronously
-    if (_currentSong!.artist != null && _currentSong!.title != null) {
-      _fetchPublicCoverArt(_currentSong!.artist!, _currentSong!.title!).then((
-        artworkUrl,
-      ) {
-        if (artworkUrl != null && _currentSong?.title == currentSongTitle) {
-          _discordRpcService.updatePresence(
-            state: _currentSong!.artist ?? 'Unknown Artist',
-            details: _currentSong!.title,
-            largeImageKey: artworkUrl,
-            largeImageText: _currentSong!.album,
-            smallImageKey: 'musly_logo',
-            smallImageText: _isPlaying ? 'Playing' : 'Paused',
-            startTime: startTimestamp,
-            endTime: endTimestamp,
-          );
-        }
-      });
-    }
+    _fetchPublicCoverArt(_currentSong!.artist ?? '', _currentSong!.title).then((
+      artworkUrl,
+    ) {
+      if (artworkUrl != null && _currentSong?.title == currentSongTitle) {
+        _discordRpcService.updatePresence(
+          state: _currentSong!.artist ?? 'Unknown Artist',
+          details: _currentSong!.title,
+          largeImageKey: artworkUrl,
+          largeImageText: _currentSong!.album,
+          smallImageKey: 'musly_logo',
+          smallImageText: _isPlaying ? 'Playing' : 'Paused',
+          startTime: startTimestamp,
+          endTime: endTimestamp,
+        );
+      }
+    });
   }
 
   Future<String?> _fetchPublicCoverArt(String artist, String title) async {

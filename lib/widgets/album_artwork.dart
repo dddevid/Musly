@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
+import '../services/player_ui_settings_service.dart';
+import '../theme/app_theme.dart';
 
 /// Returns true if [s] looks like an absolute file system path rather than a
 /// Subsonic cover-art ID or network URL.
@@ -29,7 +31,11 @@ class _ImageUrlCache {
 class AlbumArtwork extends StatelessWidget {
   final String? coverArt;
   final double size;
-  final double borderRadius;
+
+  /// Explicit corner radius. When null (the default) the value from
+  /// [PlayerUiSettingsService.albumArtCornerRadiusNotifier] is used so that
+  /// all artwork respects the user's global preference.
+  final double? borderRadius;
   final BoxShadow? shadow;
 
   /// When true the image is shown at its natural aspect ratio (no cropping).
@@ -40,13 +46,99 @@ class AlbumArtwork extends StatelessWidget {
     super.key,
     this.coverArt,
     this.size = 150,
-    this.borderRadius = 8,
+    this.borderRadius,
     this.shadow,
     this.preserveAspectRatio = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final svc = PlayerUiSettingsService();
+    return ValueListenableBuilder<String>(
+      valueListenable: svc.artworkShapeNotifier,
+      builder: (context, shape, _) {
+        return ValueListenableBuilder<double>(
+          valueListenable: svc.albumArtCornerRadiusNotifier,
+          builder: (context, globalRadius, _) {
+            return ValueListenableBuilder<String>(
+              valueListenable: svc.artworkShadowNotifier,
+              builder: (context, shadowLevel, _) {
+                return ValueListenableBuilder<String>(
+                  valueListenable: svc.artworkShadowColorNotifier,
+                  builder: (context, shadowColor, _) {
+                    final resolvedRadius =
+                        borderRadius ??
+                        (shape == 'circle'
+                            ? 9999.0
+                            : shape == 'square'
+                            ? 0.0
+                            : globalRadius);
+                    return _buildContent(
+                      context,
+                      resolvedRadius,
+                      shadowLevel,
+                      shadowColor,
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Compute the shadow based on user settings. If [shadow] is provided
+  /// explicitly it overrides the global preference.
+  BoxShadow? _resolvedShadow(
+    double resolvedRadius,
+    String shadowLevel,
+    String shadowColor,
+    bool isDark,
+  ) {
+    if (shadow != null) return shadow;
+    if (shadowLevel == 'none') return null;
+    final Color color;
+    switch (shadowColor) {
+      case 'accent':
+        color = AppTheme.appleMusicRed;
+        break;
+      default:
+        color = Colors.black;
+    }
+    double opacity;
+    double blur;
+    Offset offset;
+    switch (shadowLevel) {
+      case 'medium':
+        opacity = isDark ? 0.35 : 0.25;
+        blur = size / 6;
+        offset = Offset(0, size / 20);
+        break;
+      case 'strong':
+        opacity = isDark ? 0.55 : 0.40;
+        blur = size / 4;
+        offset = Offset(0, size / 12);
+        break;
+      default: // 'soft'
+        opacity = isDark ? 0.22 : 0.14;
+        blur = size / 10;
+        offset = Offset(0, size / 30);
+    }
+    return BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: blur,
+      offset: offset,
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    double resolvedRadius,
+    String shadowLevel,
+    String shadowColor,
+  ) {
     final validSize = size.isFinite && !size.isNaN ? size : 150.0;
 
     // Optimized cache size calculation:
@@ -55,27 +147,23 @@ class AlbumArtwork extends StatelessWidget {
     final cacheSize = (validSize * 1.5).toInt().clamp(100, 400);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedShadow = _resolvedShadow(
+      resolvedRadius,
+      shadowLevel,
+      shadowColor,
+      isDark,
+    );
 
     if (preserveAspectRatio) {
       // Show image at its natural aspect ratio, constrained to [size] width.
       return Container(
         constraints: BoxConstraints(maxWidth: validSize),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: shadow != null
-              ? [shadow!]
-              : validSize > 60
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
-                    blurRadius: validSize / 10,
-                    offset: Offset(0, validSize / 30),
-                  ),
-                ]
-              : null,
+          borderRadius: BorderRadius.circular(resolvedRadius),
+          boxShadow: resolvedShadow != null ? [resolvedShadow] : null,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(resolvedRadius),
           child: _buildImageNatural(isDark, cacheSize),
         ),
       );
@@ -87,23 +175,15 @@ class AlbumArtwork extends StatelessWidget {
       width: validSize,
       height: validSize,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(resolvedRadius),
         // Only show shadow if explicitly provided or if the image is large enough.
         // Rendering shadows for every small list item is expensive.
-        boxShadow: shadow != null
-            ? [shadow!]
-            : validSize > 60
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
-                  blurRadius: validSize / 10,
-                  offset: Offset(0, validSize / 30),
-                ),
-              ]
+        boxShadow: resolvedShadow != null && validSize > 60
+            ? [resolvedShadow]
             : null,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(resolvedRadius),
         child: _buildImage(isDark, cacheSize),
       ),
     );

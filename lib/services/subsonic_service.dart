@@ -57,13 +57,13 @@ class SubsonicService {
     final hasClientCert = clientCertPath != null && clientCertPath.isNotEmpty;
 
     if (hasCustomServerCert || allowSelfSigned || hasClientCert) {
-      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      HttpClient createClient() {
         try {
           final context = SecurityContext(withTrustedRoots: true);
 
           // Server CA certificate (for verifying the server identity)
           if (hasCustomServerCert) {
-            final file = File(customCertPath!);
+            final file = File(customCertPath);
             if (file.existsSync()) {
               context.setTrustedCertificatesBytes(file.readAsBytesSync());
             }
@@ -71,7 +71,7 @@ class SubsonicService {
 
           // Client certificate for mutual TLS (mTLS)
           if (hasClientCert) {
-            final file = File(clientCertPath!);
+            final file = File(clientCertPath);
             if (file.existsSync()) {
               final bytes = file.readAsBytesSync();
               final password = clientCertPassword;
@@ -97,7 +97,20 @@ class SubsonicService {
           }
           return client;
         }
-      };
+      }
+
+      // Apply globally so that CachedNetworkImage, just_audio, and any other
+      // library that creates its own HttpClient also uses the correct TLS
+      // context (client certificate + trusted CA). Without this, only Dio
+      // requests would succeed while image loading and audio streaming would
+      // still fail with certificate errors.
+      HttpOverrides.global = _TlsHttpOverrides(createClient);
+
+      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient =
+          createClient;
+    } else {
+      // Reset to default behaviour when no special TLS configuration is needed.
+      HttpOverrides.global = null;
     }
   }
 
@@ -821,3 +834,15 @@ class SearchResult {
   bool get isEmpty => artists.isEmpty && albums.isEmpty && songs.isEmpty;
 }
 
+/// A global [HttpOverrides] that delegates [createHttpClient] to a factory
+/// function. This ensures that every [HttpClient] created anywhere in the app
+/// (e.g. inside `cached_network_image` or `just_audio`) uses the same TLS
+/// configuration as the Dio instance (client certificate, trusted CA, etc.).
+class _TlsHttpOverrides extends HttpOverrides {
+  final HttpClient Function() _factory;
+
+  _TlsHttpOverrides(this._factory);
+
+  @override
+  HttpClient createHttpClient(SecurityContext? context) => _factory();
+}

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -49,6 +50,7 @@ class OfflineService {
   bool _isBackgroundDownloadActive = false;
 
   static const String _keyDownloadedSongs = 'offline_downloaded_songs';
+  static const String _keyPendingScrobbles = 'pending_scrobbles';
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -286,6 +288,68 @@ class OfflineService {
       return _getSongPath(songId);
     }
     return null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Offline scrobble queue
+  // ---------------------------------------------------------------------------
+
+  /// Queue a scrobble to be sent to the server once connectivity is restored.
+  Future<void> queueScrobble(String songId, {bool submission = true}) async {
+    if (_prefs == null) await initialize();
+    final scrobbles = _getPendingScrobbles();
+    scrobbles.add({
+      'id': songId,
+      'submission': submission ? 'true' : 'false',
+      'time': DateTime.now().millisecondsSinceEpoch.toString(),
+    });
+    await _prefs!.setString(_keyPendingScrobbles, json.encode(scrobbles));
+    debugPrint(
+      'Scrobble queued for $songId (submission=$submission). Total pending: ${scrobbles.length}',
+    );
+  }
+
+  List<Map<String, String>> _getPendingScrobbles() {
+    final raw = _prefs?.getString(_keyPendingScrobbles);
+    if (raw == null) return [];
+    try {
+      final list = json.decode(raw) as List;
+      return list.map((e) => Map<String, String>.from(e as Map)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  int getPendingScrobbleCount() => _getPendingScrobbles().length;
+
+  /// Attempt to send all queued scrobbles to the server.
+  /// Successfully sent ones are removed; failed ones are kept for the next attempt.
+  Future<void> flushPendingScrobbles(SubsonicService subsonicService) async {
+    if (_prefs == null) await initialize();
+    final pending = _getPendingScrobbles();
+    if (pending.isEmpty) return;
+
+    debugPrint('Flushing ${pending.length} pending scrobble(s)...');
+    final remaining = <Map<String, String>>[];
+    for (final scrobble in pending) {
+      try {
+        await subsonicService.scrobble(
+          scrobble['id']!,
+          submission: scrobble['submission'] == 'true',
+        );
+      } catch (e) {
+        debugPrint('Scrobble flush failed for ${scrobble['id']}: $e');
+        remaining.add(scrobble);
+      }
+    }
+
+    if (remaining.isEmpty) {
+      await _prefs!.remove(_keyPendingScrobbles);
+      debugPrint('All pending scrobbles flushed successfully.');
+    } else {
+      await _prefs!.setString(_keyPendingScrobbles, json.encode(remaining));
+      debugPrint('${remaining.length} scrobble(s) still pending after flush.');
+    }
   }
 
   String getPlayableUrl(Song song, SubsonicService subsonicService) {
