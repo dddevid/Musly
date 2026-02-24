@@ -1096,6 +1096,14 @@
   "@collapse": {
     "description": "Tooltip/label for the sidebar collapse button"
   },
+  "expand": "Expandir",
+  "@expand": {
+    "description": "Tooltip/label for the sidebar expand button"
+  },
+  "createPlaylist": "Criar Playlist",
+  "@createPlaylist": {
+    "description": "Tooltip/label for the create-playlist button in the sidebar library header"
+  },
   "likedSongsSidebar": "Músicas favoritas",
   "@likedSongsSidebar": {
     "description": "Liked Songs item label in the desktop sidebar"
@@ -1377,5 +1385,86 @@
   "musicFoldersSaved": "Seleção de pastas de música salva",
   "@musicFoldersSaved": {
     "description": "Snackbar shown after saving music folder selection"
+  },
+  "artworkStyleSection": "Estilo da Capa",
+  "@artworkStyleSection": {
+    "description": "Display settings section header for artwork customisation"
+  },
+  "artworkCornerRadius": "Arredondamento dos Cantos",
+  "@artworkCornerRadius": {
+    "description": "Label for the album art corner radius slider"
+  },
+  "artworkCornerRadiusSubtitle": "Ajustar o nível de arredondamento dos cantos das capas de álbum",
+  "@artworkCornerRadiusSubtitle": {
+    "description": "Subtitle for the album art corner radius slider"
+  },
+  "artworkCornerRadiusNone": "Nenhum",
+  "@artworkCornerRadiusNone": {
+    "description": "Label shown when corner radius is set to 0 (no rounded corners)"
+  },
+  "artworkShape": "Forma",
+  "@artworkShape": {
+    "description": "Label for the artwork shape selector"
+  },
+  "artworkShapeRounded": "Arredondado",
+  "@artworkShapeRounded": {
+    "description": "Rounded rectangle artwork shape option"
+  },
+  "artworkShapeCircle": "Círculo",
+  "@artworkShapeCircle": {
+    "description": "Circle artwork shape option"
+  },
+  "artworkShapeSquare": "Quadrado",
+  "@artworkShapeSquare": {
+    "description": "Square (no rounding) artwork shape option"
+  },
+  "artworkShadow": "Sombra",
+  "@artworkShadow": {
+    "description": "Label for the artwork shadow intensity selector"
+  },
+  "artworkShadowNone": "Nenhum",
+  "@artworkShadowNone": {
+    "description": "No shadow option for artwork"
+  },
+  "artworkShadowSoft": "Suave",
+  "@artworkShadowSoft": {
+    "description": "Soft shadow option for artwork"
+  },
+  "artworkShadowMedium": "Média",
+  "@artworkShadowMedium": {
+    "description": "Medium shadow option for artwork"
+  },
+  "artworkShadowStrong": "Forte",
+  "@artworkShadowStrong": {
+    "description": "Strong shadow option for artwork"
+  },
+  "artworkShadowColor": "Cor da Sombra",
+  "@artworkShadowColor": {
+    "description": "Label for the artwork shadow color selector"
+  },
+  "artworkShadowColorBlack": "Preto",
+  "@artworkShadowColorBlack": {
+    "description": "Black shadow color option"
+  },
+  "artworkShadowColorAccent": "Destaque",
+  "@artworkShadowColorAccent": {
+    "description": "Accent color shadow (matches app accent color)"
+  },
+  "artworkPreview": "Prévia",
+  "@artworkPreview": {
+    "description": "Label shown above the live artwork style preview"
+  },
+  "artworkCornerRadiusLabel": "{value}px",
+  "@artworkCornerRadiusLabel": {
+    "description": "Formatted corner radius value label",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "noArtwork": "Sem Capa",
+  "@noArtwork": {
+    "description": "Placeholder label shown in the player when a song has no cover art"
   }
 }

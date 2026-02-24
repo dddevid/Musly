@@ -1,12 +1,371 @@
 {
   "@@locale": "ru",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Доброе утро",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Добрый день",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Добрый вечер",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Для вас",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Быстрые подборки",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Микс «Открытия»",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Недавно играли",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Ваши плейлисты",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Сделано для вас",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Высоко оценённые",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Нет доступного контента",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Попробуйте обновить или проверить подключение к серверу",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Обновить",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Ошибка при загрузке треков",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Нет песен в этом жанре",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Ошибка при загрузке альбомов",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
+  "noTopRatedAlbums": "Нет высоко оценённых альбомов",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Войти",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "URL-адрес сервера",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Имя пользователя",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Пароль",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "Выберите сертификат TLS/SSL",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Не удалось выбрать сертификат: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "URL-адрес сервера должен начинаться с http:// или https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Не удалось подключиться",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Библиотека",
+  "@library": {
+    "description": "Library tab label"
+  },
+  "search": "Поиск",
+  "@search": {
+    "description": "Search tab label"
+  },
+  "settings": "Настройки",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "albums": "Альбомы",
+  "@albums": {
+    "description": "Albums section label"
+  },
+  "artists": "Исполнители",
+  "@artists": {
+    "description": "Artists section label"
+  },
+  "songs": "Песни",
+  "@songs": {
+    "description": "Songs section label"
+  },
+  "playlists": "Плейлисты",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+  "genres": "Жанры",
+  "@genres": {
+    "description": "Genres section label"
+  },
+  "favorites": "Избранное",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+  "nowPlaying": "Сейчас играет",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+  "queue": "Очередь",
+  "@queue": {
+    "description": "Queue section label"
+  },
+  "lyrics": "Текст",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+  "play": "Играть",
+  "@play": {
+    "description": "Play button label"
+  },
+  "pause": "Пауза",
+  "@pause": {
+    "description": "Pause button label"
+  },
+  "next": "Далее",
+  "@next": {
+    "description": "Next button label"
+  },
+  "previous": "Предыдущ.",
+  "@previous": {
+    "description": "Previous button label"
+  },
+  "shuffle": "Перемешивание",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+  "repeat": "Повтор",
+  "@repeat": {
+    "description": "Repeat button label"
+  },
+  "repeatOne": "Повтор одного",
+  "@repeatOne": {
+    "description": "Repeat one button label"
+  },
+  "repeatOff": "Повтор выкл.",
+  "@repeatOff": {
+    "description": "Repeat off button label"
+  },
+  "addToPlaylist": "Добавить в плейлист",
+  "@addToPlaylist": {
+    "description": "Add to playlist option"
+  },
+  "removeFromPlaylist": "Удалить из плейлиста",
+  "@removeFromPlaylist": {
+    "description": "Remove from playlist option"
+  },
+  "addToFavorites": "Добавить в избранное",
+  "@addToFavorites": {
+    "description": "Add to favorites option"
+  },
+  "removeFromFavorites": "Удалить из избранного",
+  "@removeFromFavorites": {
+    "description": "Remove from favorites option"
+  },
+  "server": "Сервер",
+  "@server": {
+    "description": "Server settings section"
+  },
+  "display": "Дисплей",
+  "@display": {
+    "description": "Display settings section"
+  },
+  "playerInterface": "Интерфейс плеера",
+  "@playerInterface": {
+    "description": "Player Interface settings section"
+  },
+  "smartRecommendations": "Умные рекомендации",
+  "@smartRecommendations": {
+    "description": "Smart Recommendations settings section title"
+  },
+  "showVolumeSlider": "Показать ползунок громкости",
+  "@showVolumeSlider": {
+    "description": "Show Volume Slider toggle label"
+  },
+  "showVolumeSliderSubtitle": "Отображать управление громкостью на экране воспроизведения",
+  "@showVolumeSliderSubtitle": {
+    "description": "Show Volume Slider toggle subtitle"
+  },
+  "showStarRatings": "Отображать оценку звёздами",
+  "@showStarRatings": {
+    "description": "Show Star Ratings toggle label"
+  },
+  "showStarRatingsSubtitle": "Оценивайте песни и просматривайте рейтинги",
+  "@showStarRatingsSubtitle": {
+    "description": "Show Star Ratings toggle subtitle"
+  },
+  "enableRecommendations": "Включить рекомендации",
+  "@enableRecommendations": {
+    "description": "Enable Recommendations toggle label"
+  },
+  "enableRecommendationsSubtitle": "Получайте персональные рекомендации",
+  "@enableRecommendationsSubtitle": {
+    "description": "Enable Recommendations toggle subtitle"
+  },
+  "listeningData": "Данные о прослушивании",
+  "@listeningData": {
+    "description": "Listening Data section label"
+  },
+  "totalPlays": "Всего прослушиваний: {count} ",
+  "@totalPlays": {
+    "description": "Total plays count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearListeningHistory": "Очистить историю прослушивания",
+  "@clearListeningHistory": {
+    "description": "Clear Listening History button label"
+  },
+  "confirmClearHistory": "Это сбросит все ваши данные и рекомендации. Вы уверены?",
+  "@confirmClearHistory": {
+    "description": "Confirmation dialog for clearing history"
+  },
+  "historyCleared": "История прослушивания очищена",
+  "@historyCleared": {
+    "description": "SnackBar message when history is cleared"
+  },
+  "discordStatus": "Discord Статус",
+  "@discordStatus": {
+    "description": "Discord RPC toggle label"
+  },
+  "discordStatusSubtitle": "Показывать проигрываемую песню в профиле Discord",
+  "@discordStatusSubtitle": {
+    "description": "Discord RPC toggle subtitle"
+  },
+  "selectLanguage": "Выберите язык",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "systemDefault": "Системный по умолчанию",
+  "@systemDefault": {
+    "description": "System default language option"
+  },
+  "communityTranslations": "Переведено сообществом",
+  "@communityTranslations": {
+    "description": "Community translations credit label"
+  },
+  "communityTranslationsSubtitle": "Помогите перевести Musly на Crowdin",
+  "@communityTranslationsSubtitle": {
+    "description": "Community translations credit subtitle"
+  },
   "@_LIBRARY": {},
+  "yourLibrary": "Ваша библиотека",
+  "filterAll": "Все",
+  "filterPlaylists": "Плейлисты",
+  "filterAlbums": "Альбомы",
+  "filterArtists": "Исполнители",
+  "likedSongs": "Понравившиеся песни",
+  "radioStations": "Радиостанции",
+  "playlist": "Плейлист",
+  "internetRadio": "Интернет-радио",
+  "newPlaylist": "Новый плейлист",
+  "playlistName": "Название плейлиста",
+  "create": "Создать",
+  "deletePlaylist": "Удалить плейлист",
+  "deletePlaylistConfirmation": "Вы уверены, что хотите удалить плейлист «{name}»?",
+  "@deletePlaylistConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDeleted": "Плейлист с названием «{name}» удалён",
+  "@playlistDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCreatingPlaylist": "Ошибка при создании плейлиста: {error}",
+  "@errorCreatingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "errorDeletingPlaylist": "Ошибка при удалении плейлиста: {error}",
+  "@errorDeletingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "playlistCreated": "Плейлист с названием «{name}» создан",
+  "@playlistCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_SEARCH": {},
+  "searchTitle": "Поиск",
+  "searchPlaceholder": "Исполнители, Песни, Альбомы",
+  "tryDifferentSearch": "Попробуйте другой поисковый запрос",
+  "noSuggestions": "Нет предложений",
+  "browseCategories": "Просмотреть категории",
+  "categoryMadeForYou": "Сделано для вас",
+  "categoryNewReleases": "Новые выпуски",
+  "categoryTopRated": "Высоко оценённые",
+  "categoryGenres": "Жанры",
+  "categoryFavorites": "Избранное",
+  "categoryRadio": "Радио",
   "@_SETTINGS_GENERAL": {},
   "@_SETTINGS_PLAYBACK": {},
   "@_SETTINGS_SERVER": {},
   "@_SETTINGS_STORAGE": {},
+  "noSongsAvailable": "Нет доступных песен. Пожалуйста, загрузите сначала вашу библиотеку.",
   "@_SETTINGS_ABOUT": {},
   "@_PLAYER_AND_MENUS": {},
   "@_ALBUM_ARTIST_SCREENS": {},
