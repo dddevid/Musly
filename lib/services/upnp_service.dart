@@ -280,9 +280,13 @@ class UpnpService extends ChangeNotifier {
     _pollTimer = null;
   }
 
+  bool _isPolling = false;
+
   Future<void> _poll() async {
+    if (_isPolling) return; // prevent overlapping polls
     final device = _connectedDevice;
     if (device == null) return;
+    _isPolling = true;
 
     try {
       final state = await getPlaybackState();
@@ -306,6 +310,8 @@ class UpnpService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('UPnP: poll error: $e');
+    } finally {
+      _isPolling = false;
     }
   }
 
@@ -426,7 +432,9 @@ class UpnpService extends ChangeNotifier {
         final state = _xmlText(xml, 'CurrentTransportState') ?? '';
         if (state == 'TRANSITIONING') {
           debugPrint('UPnP: Renderer TRANSITIONING, waiting… (attempt $attempt)');
-          delay *= 2;
+          delay = delay * 2 < const Duration(milliseconds: 3200)
+              ? delay * 2
+              : const Duration(milliseconds: 3200);
           continue;
         }
       } catch (_) {
@@ -441,7 +449,9 @@ class UpnpService extends ChangeNotifier {
       } catch (e) {
         debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
         if (attempt == maxAttempts) rethrow;
-        delay *= 2;
+        delay = delay * 2 < const Duration(milliseconds: 3200)
+            ? delay * 2
+            : const Duration(milliseconds: 3200);
       }
     }
     return false;
@@ -601,7 +611,16 @@ class UpnpService extends ChangeNotifier {
       ),
     );
 
-    return response.data ?? '';
+    final status = response.statusCode ?? 0;
+    final responseBody = response.data ?? '';
+    if (status < 200 || status >= 300) {
+      throw Exception('UPnP SOAP $action failed — HTTP $status');
+    }
+    if (responseBody.contains('<s:Fault') ||
+        responseBody.contains('<faultcode>')) {
+      throw Exception('UPnP SOAP fault for $action');
+    }
+    return responseBody;
   }
 
   /// DIDL-Lite metadata for the renderer's Now Playing display.

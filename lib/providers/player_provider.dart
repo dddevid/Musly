@@ -630,7 +630,7 @@ class PlayerProvider extends ChangeNotifier {
             artist: song.artist ?? 'Unknown Artist',
             album: song.album,
             albumArtUrl: song.coverArt != null
-                ? _subsonicService.getCoverArtUrl(song.coverArt)
+                ? _subsonicService.getCoverArtUrl(song.coverArt, size: 0)
                 : null,
             durationSecs: song.duration,
           );
@@ -1235,11 +1235,13 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    // On disconnect: reset
+    // On disconnect: reset all state so UI doesn't show stale values
     if (!connected && _upnpWasConnected) {
       _upnpWasConnected = false;
       _upnpWasPlaying = false;
       _isPlaying = false;
+      _position = Duration.zero;
+      _duration = Duration.zero;
       notifyListeners();
       return;
     }
@@ -1272,7 +1274,7 @@ class PlayerProvider extends ChangeNotifier {
       _position = pos;
       changed = true;
     }
-    if (dur != _duration && dur > Duration.zero) {
+    if (dur != _duration) {
       _duration = dur;
       changed = true;
     }
