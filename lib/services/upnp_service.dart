@@ -381,9 +381,6 @@ class UpnpService extends ChangeNotifier {
       debugPrint('UPnP: Stop failed (ignoring): $e');
     }
 
-    // Brief pause so the renderer resets its state
-    await Future.delayed(const Duration(milliseconds: 300));
-
     // SetAVTransportURI — throws on fault or network error
     final didl = _didl(
       title: title,
@@ -402,22 +399,20 @@ class UpnpService extends ChangeNotifier {
     );
     debugPrint('UPnP: SetAVTransportURI OK');
 
-    // Send Play with retry and back-off.
-    //
-    // Some renderers (notably gmrender-resurrect with GStreamer) need time
-    // after SetAVTransportURI to set up their pipeline for remote HTTPS
-    // streams. If Play arrives too early the renderer returns UPnP error
-    // 501/704 ("Playing failed"). Spec-compliant renderers may report
-    // TRANSITIONING in GetTransportInfo while they buffer.
-    //
-    // Strategy (inspired by Home Assistant async_upnp_client):
-    //   1. Poll GetTransportInfo — skip Play while TRANSITIONING.
-    //   2. On Play failure with a retriable UPnP error, back off and retry.
-    //   3. Exponential delays: 200 → 400 → 800 → 1600 → 3200 ms.
-    //      Total worst-case wait ~6.2 s (enough for slow HTTPS + TLS).
-    debugPrint('UPnP: Waiting for renderer ready…');
-    const maxAttempts = 6;
-    var delay = const Duration(milliseconds: 200);
+    // Try Play immediately — many renderers accept it right away.
+    // Only fall back to retry/backoff if the first attempt fails.
+    try {
+      await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
+      debugPrint('UPnP: Playing "$title" on ${device.friendlyName} (instant)');
+      return true;
+    } catch (e) {
+      debugPrint('UPnP: Instant Play failed ($e), retrying with backoff…');
+    }
+
+    // Retry with backoff — renderer may need time for HTTPS pipeline setup.
+    // Delays: 150 → 300 → 600 → 1200 → 2400 ms (total worst-case ~4.7s).
+    const maxAttempts = 5;
+    var delay = const Duration(milliseconds: 150);
 
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       await Future.delayed(delay);
@@ -431,27 +426,26 @@ class UpnpService extends ChangeNotifier {
         );
         final state = _xmlText(xml, 'CurrentTransportState') ?? '';
         if (state == 'TRANSITIONING') {
-          debugPrint('UPnP: Renderer TRANSITIONING, waiting… (attempt $attempt)');
-          delay = delay * 2 < const Duration(milliseconds: 3200)
+          debugPrint('UPnP: Renderer TRANSITIONING (attempt $attempt)');
+          delay = delay * 2 < const Duration(milliseconds: 2400)
               ? delay * 2
-              : const Duration(milliseconds: 3200);
+              : const Duration(milliseconds: 2400);
           continue;
         }
       } catch (_) {
-        // If we can't even query state, just try Play anyway.
+        // Can't query state — try Play anyway.
       }
 
-      // Attempt Play.
       try {
         await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
-        debugPrint('UPnP: Playing "$title" on ${device.friendlyName}');
+        debugPrint('UPnP: Playing "$title" on ${device.friendlyName} (attempt $attempt)');
         return true;
       } catch (e) {
         debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
         if (attempt == maxAttempts) rethrow;
-        delay = delay * 2 < const Duration(milliseconds: 3200)
+        delay = delay * 2 < const Duration(milliseconds: 2400)
             ? delay * 2
-            : const Duration(milliseconds: 3200);
+            : const Duration(milliseconds: 2400);
       }
     }
     return false;
