@@ -1063,6 +1063,8 @@ class PlayerProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _castService.removeListener(_onCastStateChanged);
+    _upnpService.removeListener(_onUpnpStateChanged);
     _audioPlayer.dispose();
     _androidAutoService.dispose();
     _androidSystemService.dispose();
@@ -1197,6 +1199,7 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   bool _upnpWasConnected = false;
+  bool _upnpWasPlaying = false;
 
   void _onUpnpStateChanged() {
     final connected = _upnpService.isConnected;
@@ -1204,6 +1207,7 @@ class PlayerProvider extends ChangeNotifier {
     // On fresh connect: pause local audio, start playing current song on renderer
     if (connected && !_upnpWasConnected) {
       _upnpWasConnected = true;
+      _upnpWasPlaying = false;
       if (_audioPlayer.playing) _audioPlayer.pause();
       if (_currentSong != null) {
         playSong(_currentSong!);
@@ -1214,6 +1218,7 @@ class PlayerProvider extends ChangeNotifier {
     // On disconnect: reset
     if (!connected && _upnpWasConnected) {
       _upnpWasConnected = false;
+      _upnpWasPlaying = false;
       _isPlaying = false;
       notifyListeners();
       return;
@@ -1225,6 +1230,21 @@ class PlayerProvider extends ChangeNotifier {
     final pos = _upnpService.rendererPosition;
     final dur = _upnpService.rendererDuration;
     final playing = _upnpService.isRendererPlaying;
+    final rendererState = _upnpService.rendererState;
+
+    // Detect track completion: renderer was playing, now stopped,
+    // and position reached (or passed) the end of the track.
+    if (_upnpWasPlaying &&
+        rendererState == 'STOPPED' &&
+        dur > Duration.zero &&
+        pos.inSeconds >= dur.inSeconds - 1) {
+      debugPrint('UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
+      _upnpWasPlaying = false;
+      _onSongComplete();
+      return;
+    }
+
+    _upnpWasPlaying = playing;
 
     bool changed = false;
 

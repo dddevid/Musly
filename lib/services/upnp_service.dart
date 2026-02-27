@@ -234,7 +234,9 @@ class UpnpService extends ChangeNotifier {
   /// unreachable or returns a SOAP fault.
   Future<bool> connect(UpnpDevice device) async {
     try {
-      await _soapQuery(device.avTransportUrl, 'GetTransportInfo', '');
+      // Use _soap (not _soapQuery) so HTTP errors and SOAP faults throw,
+      // preventing connect() from succeeding against an unreachable/broken renderer.
+      await _soap(device.avTransportUrl, 'GetTransportInfo', '');
       _connectedDevice = device;
       debugPrint('UPnP: Connected to ${device.friendlyName}');
       _startPolling();
