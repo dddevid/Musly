@@ -42,10 +42,18 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _liveSearch = PlayerUiSettingsService().getLiveSearch();
+    PlayerUiSettingsService().liveSearchNotifier.addListener(_onLiveSearchChanged);
+  }
+
+  void _onLiveSearchChanged() {
+    setState(() {
+      _liveSearch = PlayerUiSettingsService().liveSearchNotifier.value;
+    });
   }
 
   @override
   void dispose() {
+    PlayerUiSettingsService().liveSearchNotifier.removeListener(_onLiveSearchChanged);
     _searchController.dispose();
     _focusNode.dispose();
     _debounceTimer?.cancel();
