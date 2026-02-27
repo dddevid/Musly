@@ -249,13 +249,23 @@ class UpnpService extends ChangeNotifier {
   }
 
   void disconnect() {
-    debugPrint('UPnP: Disconnected from ${_connectedDevice?.friendlyName}');
+    final device = _connectedDevice;
+    debugPrint('UPnP: Disconnecting from ${device?.friendlyName}');
     _stopPolling();
     _connectedDevice = null;
     _rendererState = 'STOPPED';
     _rendererPosition = Duration.zero;
     _rendererDuration = Duration.zero;
     notifyListeners();
+
+    // Fire-and-forget Stop so the renderer actually stops playback
+    if (device != null) {
+      _soap(device.avTransportUrl, 'Stop', '').then((_) {
+        debugPrint('UPnP: Stop sent on disconnect');
+      }).catchError((e) {
+        debugPrint('UPnP: Stop on disconnect failed (ok): $e');
+      });
+    }
   }
 
   // --- Position / state polling ---
