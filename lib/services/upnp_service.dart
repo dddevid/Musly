@@ -386,13 +386,55 @@ class UpnpService extends ChangeNotifier {
     );
     debugPrint('UPnP: SetAVTransportURI OK');
 
-    // Wait for the renderer to load the URI before sending Play
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Send Play with retry and back-off.
+    //
+    // Some renderers (notably gmrender-resurrect with GStreamer) need time
+    // after SetAVTransportURI to set up their pipeline for remote HTTPS
+    // streams. If Play arrives too early the renderer returns UPnP error
+    // 501/704 ("Playing failed"). Spec-compliant renderers may report
+    // TRANSITIONING in GetTransportInfo while they buffer.
+    //
+    // Strategy (inspired by Home Assistant async_upnp_client):
+    //   1. Poll GetTransportInfo — skip Play while TRANSITIONING.
+    //   2. On Play failure with a retriable UPnP error, back off and retry.
+    //   3. Exponential delays: 200 → 400 → 800 → 1600 → 3200 ms.
+    //      Total worst-case wait ~6.2 s (enough for slow HTTPS + TLS).
+    debugPrint('UPnP: Waiting for renderer ready…');
+    const maxAttempts = 6;
+    var delay = const Duration(milliseconds: 200);
 
-    debugPrint('UPnP: Play…');
-    await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
-    debugPrint('UPnP: Playing "$title" on ${device.friendlyName}');
-    return true;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      await Future.delayed(delay);
+
+      // Check transport state — wait if renderer reports TRANSITIONING.
+      try {
+        final xml = await _soapQuery(
+          device.avTransportUrl,
+          'GetTransportInfo',
+          '',
+        );
+        final state = _xmlText(xml, 'CurrentTransportState') ?? '';
+        if (state == 'TRANSITIONING') {
+          debugPrint('UPnP: Renderer TRANSITIONING, waiting… (attempt $attempt)');
+          delay *= 2;
+          continue;
+        }
+      } catch (_) {
+        // If we can't even query state, just try Play anyway.
+      }
+
+      // Attempt Play.
+      try {
+        await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
+        debugPrint('UPnP: Playing "$title" on ${device.friendlyName}');
+        return true;
+      } catch (e) {
+        debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
+        if (attempt == maxAttempts) rethrow;
+        delay *= 2;
+      }
+    }
+    return false;
   }
 
   Future<void> pause() async {
