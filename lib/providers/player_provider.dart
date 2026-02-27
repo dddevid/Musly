@@ -67,6 +67,7 @@ class PlayerProvider extends ChangeNotifier {
     _storageService = storageService;
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
+    _upnpService.addListener(_onUpnpStateChanged);
     _initializePlayer();
     _initializeAndroidAuto();
     _initializeSystemServices();
@@ -627,6 +628,11 @@ class PlayerProvider extends ChangeNotifier {
             url: playUrl,
             title: song.title,
             artist: song.artist ?? 'Unknown Artist',
+            album: song.album,
+            albumArtUrl: song.coverArt != null
+                ? _subsonicService.getCoverArtUrl(song.coverArt)
+                : null,
+            durationSecs: song.duration,
           );
         } catch (e) {
           // SOAP call failed — disconnect so the UI reflects the real state
@@ -1079,6 +1085,8 @@ class PlayerProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _castService.removeListener(_onCastStateChanged);
+    _upnpService.removeListener(_onUpnpStateChanged);
     _audioPlayer.dispose();
     _androidAutoService.dispose();
     _androidSystemService.dispose();
@@ -1207,6 +1215,75 @@ class PlayerProvider extends ChangeNotifier {
       // Cast disconnected
       _isPlaying = false;
       notifyListeners();
+    }
+  }
+
+  bool _upnpWasConnected = false;
+  bool _upnpWasPlaying = false;
+
+  void _onUpnpStateChanged() {
+    final connected = _upnpService.isConnected;
+
+    // On fresh connect: pause local audio, start playing current song on renderer
+    if (connected && !_upnpWasConnected) {
+      _upnpWasConnected = true;
+      _upnpWasPlaying = false;
+      if (_audioPlayer.playing) _audioPlayer.pause();
+      if (_currentSong != null) {
+        playSong(_currentSong!);
+      }
+      return;
+    }
+
+    // On disconnect: reset
+    if (!connected && _upnpWasConnected) {
+      _upnpWasConnected = false;
+      _upnpWasPlaying = false;
+      _isPlaying = false;
+      notifyListeners();
+      return;
+    }
+
+    if (!connected) return;
+
+    // Sync position/duration from the renderer's polling data
+    final pos = _upnpService.rendererPosition;
+    final dur = _upnpService.rendererDuration;
+    final playing = _upnpService.isRendererPlaying;
+    final rendererState = _upnpService.rendererState;
+
+    // Detect track completion: renderer was playing, now stopped,
+    // and position reached (or passed) the end of the track.
+    if (_upnpWasPlaying &&
+        rendererState == 'STOPPED' &&
+        dur > Duration.zero &&
+        pos.inSeconds >= dur.inSeconds - 1) {
+      debugPrint('UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
+      _upnpWasPlaying = false;
+      _onSongComplete();
+      return;
+    }
+
+    _upnpWasPlaying = playing;
+
+    bool changed = false;
+
+    if ((_position - pos).abs() > const Duration(milliseconds: 500)) {
+      _position = pos;
+      changed = true;
+    }
+    if (dur != _duration && dur > Duration.zero) {
+      _duration = dur;
+      changed = true;
+    }
+    if (playing != _isPlaying) {
+      _isPlaying = playing;
+      changed = true;
+    }
+
+    if (changed) {
+      notifyListeners();
+      _updateAndroidAuto();
     }
   }
 }

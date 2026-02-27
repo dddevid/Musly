@@ -33,6 +33,18 @@ class UpnpDevice {
   String toString() => 'UpnpDevice($friendlyName @ $avTransportUrl)';
 }
 
+class UpnpPlaybackState {
+  final String transportState; // PLAYING, PAUSED_PLAYBACK, STOPPED, etc.
+  final Duration position;
+  final Duration duration;
+
+  const UpnpPlaybackState({
+    required this.transportState,
+    required this.position,
+    required this.duration,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -46,6 +58,17 @@ class UpnpService extends ChangeNotifier {
   final List<UpnpDevice> _devices = [];
   UpnpDevice? _connectedDevice;
   bool _isDiscovering = false;
+  Timer? _pollTimer;
+
+  // Playback state from the renderer (updated by polling)
+  Duration _rendererPosition = Duration.zero;
+  Duration _rendererDuration = Duration.zero;
+  String _rendererState = 'STOPPED';
+
+  Duration get rendererPosition => _rendererPosition;
+  Duration get rendererDuration => _rendererDuration;
+  String get rendererState => _rendererState;
+  bool get isRendererPlaying => _rendererState == 'PLAYING';
 
   List<UpnpDevice> get devices => List.unmodifiable(_devices);
   UpnpDevice? get connectedDevice => _connectedDevice;
@@ -211,9 +234,12 @@ class UpnpService extends ChangeNotifier {
   /// unreachable or returns a SOAP fault.
   Future<bool> connect(UpnpDevice device) async {
     try {
+      // Use _soap (not _soapQuery) so HTTP errors and SOAP faults throw,
+      // preventing connect() from succeeding against an unreachable/broken renderer.
       await _soap(device.avTransportUrl, 'GetTransportInfo', '');
       _connectedDevice = device;
       debugPrint('UPnP: Connected to ${device.friendlyName}');
+      _startPolling();
       notifyListeners();
       return true;
     } catch (e) {
@@ -224,8 +250,88 @@ class UpnpService extends ChangeNotifier {
 
   void disconnect() {
     debugPrint('UPnP: Disconnected from ${_connectedDevice?.friendlyName}');
+    _stopPolling();
     _connectedDevice = null;
+    _rendererState = 'STOPPED';
+    _rendererPosition = Duration.zero;
+    _rendererDuration = Duration.zero;
     notifyListeners();
+  }
+
+  // --- Position / state polling ---
+
+  void _startPolling() {
+    _stopPolling();
+    _pollTimer = Timer.periodic(const Duration(seconds: 1), (_) => _poll());
+  }
+
+  void _stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+  }
+
+  Future<void> _poll() async {
+    final device = _connectedDevice;
+    if (device == null) return;
+
+    try {
+      final state = await getPlaybackState();
+      if (state == null) return;
+
+      bool changed = false;
+      if (state.transportState != _rendererState) {
+        _rendererState = state.transportState;
+        changed = true;
+      }
+      if (state.position != _rendererPosition) {
+        _rendererPosition = state.position;
+        changed = true;
+      }
+      if (state.duration != _rendererDuration) {
+        _rendererDuration = state.duration;
+        changed = true;
+      }
+      if (changed) {
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('UPnP: poll error: $e');
+    }
+  }
+
+  /// Query renderer for current transport state and position.
+  Future<UpnpPlaybackState?> getPlaybackState() async {
+    final device = _connectedDevice;
+    if (device == null) return null;
+
+    try {
+      // GetTransportInfo for state
+      final transportXml = await _soapQuery(
+        device.avTransportUrl,
+        'GetTransportInfo',
+        '',
+      );
+      final state =
+          _xmlText(transportXml, 'CurrentTransportState') ?? 'STOPPED';
+
+      // GetPositionInfo for position + duration
+      final posXml = await _soapQuery(
+        device.avTransportUrl,
+        'GetPositionInfo',
+        '',
+      );
+      final relTime = _xmlText(posXml, 'RelTime') ?? '0:00:00';
+      final trackDuration = _xmlText(posXml, 'TrackDuration') ?? '0:00:00';
+
+      return UpnpPlaybackState(
+        transportState: state,
+        position: _parseTime(relTime),
+        duration: _parseTime(trackDuration),
+      );
+    } catch (e) {
+      debugPrint('UPnP: getPlaybackState error: $e');
+      return null;
+    }
   }
 
   // --- Playback control ---
@@ -237,7 +343,9 @@ class UpnpService extends ChangeNotifier {
     required String url,
     required String title,
     required String artist,
-    String? albumUri,
+    String? album,
+    String? albumArtUrl,
+    int? durationSecs,
   }) async {
     final device = _connectedDevice;
     if (device == null) {
@@ -261,7 +369,14 @@ class UpnpService extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 300));
 
     // SetAVTransportURI — throws on fault or network error
-    final didl = _didl(title: title, artist: artist, url: url);
+    final didl = _didl(
+      title: title,
+      artist: artist,
+      url: url,
+      album: album,
+      albumArtUrl: albumArtUrl,
+      durationSecs: durationSecs,
+    );
     debugPrint('UPnP: SetAVTransportURI…');
     await _soap(
       device.avTransportUrl,
@@ -271,13 +386,55 @@ class UpnpService extends ChangeNotifier {
     );
     debugPrint('UPnP: SetAVTransportURI OK');
 
-    // Wait for the renderer to load the URI before sending Play
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Send Play with retry and back-off.
+    //
+    // Some renderers (notably gmrender-resurrect with GStreamer) need time
+    // after SetAVTransportURI to set up their pipeline for remote HTTPS
+    // streams. If Play arrives too early the renderer returns UPnP error
+    // 501/704 ("Playing failed"). Spec-compliant renderers may report
+    // TRANSITIONING in GetTransportInfo while they buffer.
+    //
+    // Strategy (inspired by Home Assistant async_upnp_client):
+    //   1. Poll GetTransportInfo — skip Play while TRANSITIONING.
+    //   2. On Play failure with a retriable UPnP error, back off and retry.
+    //   3. Exponential delays: 200 → 400 → 800 → 1600 → 3200 ms.
+    //      Total worst-case wait ~6.2 s (enough for slow HTTPS + TLS).
+    debugPrint('UPnP: Waiting for renderer ready…');
+    const maxAttempts = 6;
+    var delay = const Duration(milliseconds: 200);
 
-    debugPrint('UPnP: Play…');
-    await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
-    debugPrint('UPnP: Playing "$title" on ${device.friendlyName}');
-    return true;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      await Future.delayed(delay);
+
+      // Check transport state — wait if renderer reports TRANSITIONING.
+      try {
+        final xml = await _soapQuery(
+          device.avTransportUrl,
+          'GetTransportInfo',
+          '',
+        );
+        final state = _xmlText(xml, 'CurrentTransportState') ?? '';
+        if (state == 'TRANSITIONING') {
+          debugPrint('UPnP: Renderer TRANSITIONING, waiting… (attempt $attempt)');
+          delay *= 2;
+          continue;
+        }
+      } catch (_) {
+        // If we can't even query state, just try Play anyway.
+      }
+
+      // Attempt Play.
+      try {
+        await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
+        debugPrint('UPnP: Playing "$title" on ${device.friendlyName}');
+        return true;
+      } catch (e) {
+        debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
+        if (attempt == maxAttempts) rethrow;
+        delay *= 2;
+      }
+    }
+    return false;
   }
 
   Future<void> pause() async {
@@ -327,6 +484,7 @@ class UpnpService extends ChangeNotifier {
 
   // --- SOAP helpers ---
 
+  /// Fire-and-forget SOAP action (throws on error).
   Future<void> _soap(String controlUrl, String action, String body) async {
     const serviceType = 'urn:schemas-upnp-org:service:AVTransport:1';
     final envelope =
@@ -401,7 +559,42 @@ class UpnpService extends ChangeNotifier {
     }
   }
 
-  /// Minimal DIDL-Lite metadata for the renderer's Now Playing display.
+  /// SOAP query that returns the response body XML for parsing.
+  Future<String> _soapQuery(
+    String controlUrl,
+    String action,
+    String body,
+  ) async {
+    const serviceType = 'urn:schemas-upnp-org:service:AVTransport:1';
+    final envelope =
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"'
+        ' s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n'
+        '  <s:Body>\n'
+        '    <u:$action xmlns:u="$serviceType">\n'
+        '      <InstanceID>0</InstanceID>\n'
+        '      $body\n'
+        '    </u:$action>\n'
+        '  </s:Body>\n'
+        '</s:Envelope>';
+
+    final response = await _dio.post<String>(
+      controlUrl,
+      data: envelope,
+      options: Options(
+        headers: {
+          'Content-Type': 'text/xml; charset="utf-8"',
+          'SOAPAction': '"$serviceType#$action"',
+        },
+        validateStatus: (_) => true,
+        responseType: ResponseType.plain,
+      ),
+    );
+
+    return response.data ?? '';
+  }
+
+  /// DIDL-Lite metadata for the renderer's Now Playing display.
   ///
   /// Returns an already-XML-escaped DIDL string, safe to embed as the text
   /// content of `<CurrentURIMetaData>` in the SOAP body.
@@ -409,6 +602,9 @@ class UpnpService extends ChangeNotifier {
     required String title,
     required String artist,
     required String url,
+    String? album,
+    String? albumArtUrl,
+    int? durationSecs,
   }) {
     String esc(String s) => s
         .replaceAll('&', '&amp;')
@@ -420,6 +616,17 @@ class UpnpService extends ChangeNotifier {
     // including Samsung TVs which are picky about MIME type matching.
     const protocol = 'http-get:*:*:*';
 
+    // Format duration as HH:MM:SS for the <res> element
+    final durationAttr = durationSecs != null
+        ? ' duration="${_formatTimeSecs(durationSecs)}"'
+        : '';
+
+    final albumTag =
+        album != null ? '<upnp:album>${esc(album)}</upnp:album>' : '';
+    final artTag = albumArtUrl != null
+        ? '<upnp:albumArtURI>${esc(albumArtUrl)}</upnp:albumArtURI>'
+        : '';
+
     final didl =
         '<DIDL-Lite '
         'xmlns:dc="http://purl.org/dc/elements/1.1/" '
@@ -429,8 +636,10 @@ class UpnpService extends ChangeNotifier {
         '<dc:title>${esc(title)}</dc:title>'
         '<dc:creator>${esc(artist)}</dc:creator>'
         '<upnp:artist>${esc(artist)}</upnp:artist>'
+        '$albumTag'
+        '$artTag'
         '<upnp:class>object.item.audioItem.musicTrack</upnp:class>'
-        '<res protocolInfo="${esc(protocol)}">${esc(url)}</res>'
+        '<res protocolInfo="${esc(protocol)}"$durationAttr>${esc(url)}</res>'
         '</item></DIDL-Lite>';
 
     // XML-escape the whole DIDL so it sits as text content of
@@ -452,8 +661,26 @@ class UpnpService extends ChangeNotifier {
     return '$h:$m:$s';
   }
 
+  static String _formatTimeSecs(int totalSeconds) {
+    final h = (totalSeconds ~/ 3600).toString().padLeft(2, '0');
+    final m = ((totalSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  static Duration _parseTime(String hms) {
+    if (hms == 'NOT_IMPLEMENTED' || hms.isEmpty) return Duration.zero;
+    final parts = hms.split(':');
+    if (parts.length != 3) return Duration.zero;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = int.tryParse(parts[1]) ?? 0;
+    final s = int.tryParse(parts[2].split('.')[0]) ?? 0;
+    return Duration(hours: h, minutes: m, seconds: s);
+  }
+
   @override
   void dispose() {
+    _stopPolling();
     _dio.close();
     super.dispose();
   }
