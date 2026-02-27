@@ -610,8 +610,10 @@ class UpnpService extends ChangeNotifier {
     if (status < 200 || status >= 300) {
       throw Exception('UPnP SOAP $action failed — HTTP $status');
     }
-    if (responseBody.contains('<s:Fault') ||
-        responseBody.contains('<faultcode>')) {
+    final lowerBody = responseBody.toLowerCase();
+    if (lowerBody.contains('<s:fault>') ||
+        lowerBody.contains('<soap:fault>') ||
+        lowerBody.contains('<fault>')) {
       throw Exception('UPnP SOAP fault for $action');
     }
     return responseBody;

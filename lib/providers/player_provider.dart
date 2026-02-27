@@ -1209,7 +1209,10 @@ class PlayerProvider extends ChangeNotifier {
     if (_castService.isConnected) {
       _audioPlayer.pause(); // Ensure local is paused
       if (_currentSong != null) {
-        playSong(_currentSong!);
+        // Clear so playSong() does a full load instead of togglePlayPause()
+        final song = _currentSong!;
+        _currentSong = null;
+        playSong(song);
       }
     } else {
       // Cast disconnected
@@ -1230,7 +1233,12 @@ class PlayerProvider extends ChangeNotifier {
       _upnpWasPlaying = false;
       if (_audioPlayer.playing) _audioPlayer.pause();
       if (_currentSong != null) {
-        playSong(_currentSong!);
+        // Clear _currentSong so playSong() does a full loadAndPlay on the
+        // renderer instead of short-circuiting into togglePlayPause() (which
+        // would just resume whatever old track the renderer had loaded).
+        final song = _currentSong!;
+        _currentSong = null;
+        playSong(song);
       }
       return;
     }
