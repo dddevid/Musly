@@ -26,6 +26,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   String _artworkShape = 'rounded';
   String _artworkShadow = 'soft';
   String _artworkShadowColor = 'black';
+  bool _liveSearch = true;
 
   bool get _isDesktop {
     if (kIsWeb) return false;
@@ -50,6 +51,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _artworkShape = _playerUiSettings.getArtworkShape();
       _artworkShadow = _playerUiSettings.getArtworkShadow();
       _artworkShadowColor = _playerUiSettings.getArtworkShadowColor();
+      _liveSearch = _playerUiSettings.getLiveSearch();
     });
   }
 
@@ -74,6 +76,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             _buildDivider(),
             _buildStarRatingsToggle(),
             if (_isDesktop) ...[_buildDivider(), _buildDiscordRpcToggle()],
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildSection(
+          title: AppLocalizations.of(context)!.liveSearchSection.toUpperCase(),
+          children: [
+            _buildLiveSearchToggle(),
           ],
         ),
         const SizedBox(height: 24),
@@ -226,6 +235,48 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         onChanged: (value) async {
           setState(() => _showStarRatings = value);
           await _playerUiSettings.setShowStarRatings(value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLiveSearchToggle() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF9500), Color(0xFFFFCC00)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.search,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.liveSearch,
+        style: const TextStyle(fontSize: 16),
+      ),
+      subtitle: Text(
+        AppLocalizations.of(context)!.liveSearchSubtitle,
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _liveSearch,
+        activeTrackColor: AppTheme.appleMusicRed,
+        onChanged: (value) async {
+          setState(() => _liveSearch = value);
+          await _playerUiSettings.setLiveSearch(value);
         },
       ),
     );

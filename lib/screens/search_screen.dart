@@ -17,6 +17,7 @@ import 'top_rated_screen.dart';
 import 'favorites_screen.dart';
 import 'radio_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../services/player_ui_settings_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -35,6 +36,13 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _showSuggestions = false;
   String _query = '';
   Timer? _debounceTimer;
+  bool _liveSearch = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _liveSearch = PlayerUiSettingsService().getLiveSearch();
+  }
 
   @override
   void dispose() {
@@ -93,7 +101,11 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      _loadAutocomplete(value);
+      if (_liveSearch) {
+        _search(value);
+      } else {
+        _loadAutocomplete(value);
+      }
     });
   }
 
