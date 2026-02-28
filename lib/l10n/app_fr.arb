@@ -429,19 +429,330 @@
   "@display": {
     "description": "Display settings section"
   },
+  "playerInterface": "Interface du lecteur",
+  "@playerInterface": {
+    "description": "Player Interface settings section"
+  },
+  "smartRecommendations": "Recommandations intelligentes",
+  "@smartRecommendations": {
+    "description": "Smart Recommendations settings section title"
+  },
+  "showVolumeSliderSubtitle": "Afficher le contrôle du volume dans l'écran de lecture en cours",
+  "@showVolumeSliderSubtitle": {
+    "description": "Show Volume Slider toggle subtitle"
+  },
+  "showStarRatings": "Afficher les évaluations en étoiles",
+  "@showStarRatings": {
+    "description": "Show Star Ratings toggle label"
+  },
+  "showStarRatingsSubtitle": "Noter les chansons et afficher les notes",
+  "@showStarRatingsSubtitle": {
+    "description": "Show Star Ratings toggle subtitle"
+  },
+  "enableRecommendations": "Activer les Recommandations",
+  "@enableRecommendations": {
+    "description": "Enable Recommendations toggle label"
+  },
+  "enableRecommendationsSubtitle": "Recevez des suggestions musicales personnalisées",
+  "@enableRecommendationsSubtitle": {
+    "description": "Enable Recommendations toggle subtitle"
+  },
+  "listeningData": "Données d'écoute",
+  "@listeningData": {
+    "description": "Listening Data section label"
+  },
+  "totalPlays": "Lectures au total : {count}",
+  "@totalPlays": {
+    "description": "Total plays count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearListeningHistory": "Effacer l'historique des écoutes",
+  "@clearListeningHistory": {
+    "description": "Clear Listening History button label"
+  },
+  "confirmClearHistory": "Cela réinitialisera toutes vos données d'écoute et recommandations. Êtes-vous sûr(e) ?",
+  "@confirmClearHistory": {
+    "description": "Confirmation dialog for clearing history"
+  },
+  "historyCleared": "Historique d'écoutes effacé",
+  "@historyCleared": {
+    "description": "SnackBar message when history is cleared"
+  },
+  "discordStatus": "Statut Discord",
+  "@discordStatus": {
+    "description": "Discord RPC toggle label"
+  },
+  "discordStatusSubtitle": "Afficher la chanson en cours de lecture sur le profil Discord",
+  "@discordStatusSubtitle": {
+    "description": "Discord RPC toggle subtitle"
+  },
+  "selectLanguage": "Sélectionner la langue",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "systemDefault": "Système par défaut",
+  "@systemDefault": {
+    "description": "System default language option"
+  },
+  "communityTranslations": "Traductions par la communauté",
+  "@communityTranslations": {
+    "description": "Community translations credit label"
+  },
+  "communityTranslationsSubtitle": "Aidez à traduire Musly sur Crowdin",
+  "@communityTranslationsSubtitle": {
+    "description": "Community translations credit subtitle"
+  },
   "@_LIBRARY": {},
+  "yourLibrary": "Votre Bibliothèque",
+  "filterAll": "Tout",
+  "filterPlaylists": "Playlists",
+  "filterAlbums": "Albums",
+  "filterArtists": "Artistes",
+  "likedSongs": "Titres \"J'aime\"",
+  "radioStations": "Stations radio",
+  "playlist": "Playlist",
+  "internetRadio": "Radio Internet",
+  "newPlaylist": "Nouvelle Playlist",
+  "create": "Créer",
+  "deletePlaylist": "Supprimer la Playlist",
+  "deletePlaylistConfirmation": "Êtes-vous sûr de vouloir supprimer la playlist \"{name} \" ?",
+  "@deletePlaylistConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDeleted": "Playlist \"{name}\" supprimée",
+  "@playlistDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCreatingPlaylist": "Erreur lors de la création de la playlist : {error}",
+  "@errorCreatingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "errorDeletingPlaylist": "Erreur lors de la suppression de la playlist : {error}",
+  "@errorDeletingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "playlistCreated": "Playlist \"{name}\" créée",
+  "@playlistCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_SEARCH": {},
+  "searchTitle": "Rechercher",
+  "searchPlaceholder": "Artistes, chansons, albums",
+  "tryDifferentSearch": "Essayez une recherche différente",
+  "noSuggestions": "Aucune suggestion",
+  "browseCategories": "Parcourir les catégories",
+  "categoryMadeForYou": "Fait pour vous",
+  "categoryNewReleases": "Nouvelles sorties",
+  "categoryTopRated": "Les mieux notés",
+  "categoryGenres": "Genres",
+  "categoryFavorites": "Favoris",
+  "categoryRadio": "Radio",
   "@_SETTINGS_GENERAL": {},
+  "settingsTitle": "Paramètres",
   "tabPlayback": "Lecture",
+  "tabStorage": "Stockage",
   "@_SETTINGS_PLAYBACK": {},
   "preventClipping": "Empêcher le découpage audio",
   "@_SETTINGS_SERVER": {},
   "@_SETTINGS_STORAGE": {},
+  "cachedBpms": "BPMs en cache",
+  "cacheAllBpms": "Mettre en cache tous les BPMs",
+  "clearBpmCache": "Vider le cache BPM",
+  "bpmCacheCleared": "Cache BPM effacé",
+  "downloadedStats": "Chansons {count} • {size}",
+  "@downloadedStats": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "@_SETTINGS_ABOUT": {},
+  "sectionInformation": "INFORMATIONS",
+  "sectionDeveloper": "DÉVELOPPEURS",
+  "sectionLinks": "LIENS",
+  "githubRepo": "Dépôt GitHub",
   "@_PLAYER_AND_MENUS": {},
+  "playingFrom": "LECTURE DEPUIS",
+  "live": "EN DIRECT",
+  "streamingLive": "Diffusion en direct",
+  "stopRadio": "Arrêter la radio",
+  "removeFromLiked": "Supprimer des titres favoris",
   "addToLiked": "Ajouter aux pistes \"J'aime\"",
+  "playNext": "Lecture suivante",
+  "addToQueue": "Ajouter à la liste",
+  "goToAlbum": "Aller à l’album",
+  "goToArtist": "Aller à l'artiste",
+  "rateSong": "Noter la chanson",
+  "rateSongValue": "Noter la chanson ({rating} {stars})",
+  "@rateSongValue": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "stars": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingRemoved": "Note effacée",
+  "rated": "Notée {rating} {stars}",
+  "@rated": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "stars": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRating": "Supprimer la note",
+  "downloaded": "Téléchargé",
+  "downloading": "Téléchargement... {percent}%",
+  "@downloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "removeDownload": "Supprimer le téléchargement",
+  "removeDownloadConfirm": "Supprimer cette chanson du stockage hors-ligne ?",
+  "downloadRemoved": "Téléchargement supprimé",
+  "downloadedTitle": "Téléchargé \"{title}\"",
+  "@downloadedTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "Echec du téléchargement",
+  "downloadError": "Erreur de téléchargement : {error}",
+  "@downloadError": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "addedToPlaylist": "Ajout de «{title}» à {playlist}",
+  "@addedToPlaylist": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "playlist": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAddingToPlaylist": "Erreur lors de l'ajout à la playlist : {error}",
+  "@errorAddingToPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "noPlaylists": "Aucune playlist disponible",
+  "createNewPlaylist": "Créer une nouvelle playlist",
+  "artistNotFound": "Artiste «{name}» introuvable",
+  "@artistNotFound": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorSearchingArtist": "Erreur lors de la recherche de l'artiste: {error}",
+  "@errorSearchingArtist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "selectArtist": "Sélectionner un artiste",
+  "removedFromFavorites": "Retiré des favoris",
+  "addedToFavorites": "Ajouté aux favoris",
+  "star": "étoile",
+  "stars": "étoiles",
   "@_ALBUM_ARTIST_SCREENS": {},
+  "albumNotFound": "Album introuvable",
+  "@albumNotFound": {
+    "description": "Message when album data is not available"
+  },
+  "durationHoursMinutes": "{hours} HR {minutes} MIN",
+  "@durationHoursMinutes": {
+    "description": "Album duration in hours and minutes",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{minutes} MIN",
+  "@durationMinutes": {
+    "description": "Album duration in minutes only",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "topSongs": "Top Chansons",
+  "@topSongs": {
+    "description": "Top songs section header on artist screen"
+  },
+  "connected": "Connecté",
+  "@connected": {
+    "description": "Server connection status — connected"
+  },
   "@_PLAYER_SCREENS": {},
+  "noSongPlaying": "Aucun morceau en cours de lecture",
+  "@noSongPlaying": {
+    "description": "Placeholder when no song is loaded in the player"
+  },
+  "internetRadioUppercase": "RADIO INTERNET",
+  "@internetRadioUppercase": {
+    "description": "Uppercase badge shown in the now-playing radio player"
+  },
+  "playingNext": "Lecture suivante",
+  "@playingNext": {
+    "description": "Title of the queue / playing-next bottom sheet"
+  },
   "createPlaylistTitle": "Créer une liste de lecture",
   "@createPlaylistTitle": {
     "description": "Title of the create-new-playlist dialog"
