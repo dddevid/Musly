@@ -16,6 +16,7 @@
     <!-- Media and audio permissions -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     
     <!-- Storage permissions for local music files -->
     <!-- For Android 12 and below -->
@@ -85,7 +86,7 @@
             android:name=".MusicService"
             android:exported="true"
             android:enabled="true"
-            android:stopWithTask="true"
+            android:stopWithTask="false"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService"/>

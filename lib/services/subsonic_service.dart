@@ -273,7 +273,9 @@ class SubsonicService {
       _stableAuthParams ?? _getAuthParams(),
     );
     params['id'] = coverArt;
-    params['size'] = size.toString();
+    if (size > 0) {
+      params['size'] = size.toString();
+    }
 
     if (_config!.selectedMusicFolderIds.isNotEmpty) {
       params['musicFolderId'] = _config!.selectedMusicFolderIds.first;

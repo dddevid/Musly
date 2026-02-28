@@ -2,6 +2,9 @@ package com.devid.musly
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
@@ -9,14 +12,16 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
-    
+
+    private const val TAG = "AndroidAutoPlugin"
     private const val METHOD_CHANNEL = "com.devid.musly/android_auto"
     private const val EVENT_CHANNEL = "com.devid.musly/android_auto_events"
-    
+
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
     private var eventSink: EventChannel.EventSink? = null
     private var context: Context? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
     
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
@@ -29,13 +34,13 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                 eventSink = events
             }
-            
+
             override fun onCancel(arguments: Any?) {
                 eventSink = null
             }
         })
-        
-        startMusicService()
+
+        Log.d(TAG, "AndroidAutoPlugin attached (service will start on first playback)")
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -65,10 +70,21 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val duration = call.argument<Number>("duration")?.toLong() ?: 0L
                 val position = call.argument<Number>("position")?.toLong() ?: 0L
                 val playing = call.argument<Boolean>("playing") ?: false
-                
-                MusicService.getInstance()?.updatePlaybackState(
-                    songId, title, artist, album, artworkUrl, duration, position, playing
-                )
+
+                // Ensure the service is running before updating state
+                val pushState = {
+                    MusicService.getInstance()?.updatePlaybackState(
+                        songId, title, artist, album, artworkUrl, duration, position, playing
+                    )
+                }
+                if (MusicService.getInstance() == null) {
+                    Log.d(TAG, "MusicService not running, starting it now")
+                    startMusicService()
+                    // Service start is async; retry after a short delay
+                    mainHandler.postDelayed({ pushState() }, 200)
+                } else {
+                    pushState()
+                }
                 result.success(null)
             }
             "updateRecentSongs" -> {
@@ -113,11 +129,16 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
     }
     
-    private fun startMusicService() {
+    fun startMusicService() {
         context?.let { ctx ->
-            val intent = Intent(ctx, MusicService::class.java)
-            ContextCompat.startForegroundService(ctx, intent)
-        }
+            try {
+                val intent = Intent(ctx, MusicService::class.java)
+                ContextCompat.startForegroundService(ctx, intent)
+                Log.d(TAG, "startForegroundService called successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to start MusicService: ${e.message}", e)
+            }
+        } ?: Log.w(TAG, "Cannot start MusicService: context is null")
     }
     
     private fun stopMusicService() {

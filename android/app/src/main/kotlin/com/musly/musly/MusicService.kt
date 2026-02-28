@@ -18,12 +18,16 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import android.media.AudioManager
+import android.util.Log
+import androidx.media.VolumeProviderCompat
 import kotlinx.coroutines.*
 import java.net.URL
 
 class MusicService : MediaBrowserServiceCompat() {
 
     companion object {
+        private const val TAG = "MusicService"
         private const val CHANNEL_ID = "musly_music_channel"
         private const val NOTIFICATION_ID = 1
         private const val MY_MEDIA_ROOT_ID = "media_root_id"
@@ -54,7 +58,8 @@ class MusicService : MediaBrowserServiceCompat() {
     private var currentDuration: Long = 0
     private var currentPosition: Long = 0
     private var isPlaying: Boolean = false
-    
+    private var volumeProvider: VolumeProviderCompat? = null
+
     private val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val recentSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val albums = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -72,16 +77,18 @@ class MusicService : MediaBrowserServiceCompat() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        
+        Log.d(TAG, "MusicService onCreate")
+
         createNotificationChannel()
         initializeMediaSession()
-        
+
         showIdleNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "MusicService onStartCommand action=${intent?.action}")
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun showIdleNotification() {
@@ -633,14 +640,46 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 
+    fun setRemoteVolume(isRemote: Boolean, currentVolume: Int) {
+        if (isRemote) {
+            volumeProvider = object : VolumeProviderCompat(
+                VOLUME_CONTROL_ABSOLUTE, 100, currentVolume
+            ) {
+                override fun onSetVolumeTo(volume: Int) {
+                    setCurrentVolume(volume)
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to volume))
+                }
+
+                override fun onAdjustVolume(direction: Int) {
+                    val newVolume = (currentVolume + direction * 5).coerceIn(0, 100)
+                    setCurrentVolume(newVolume)
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to newVolume))
+                }
+            }
+            mediaSession.setPlaybackToRemote(volumeProvider!!)
+            Log.d(TAG, "MediaSession set to remote volume (current=$currentVolume)")
+        } else {
+            volumeProvider = null
+            mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC)
+            Log.d(TAG, "MediaSession set to local volume")
+        }
+    }
+
+    fun updateRemoteVolume(volume: Int) {
+        volumeProvider?.currentVolume = volume
+    }
+
     override fun onDestroy() {
+        Log.d(TAG, "MusicService onDestroy")
+        instance = null
         super.onDestroy()
         serviceScope.cancel()
         mediaSession.isActive = false
         mediaSession.release()
     }
-    
+
     override fun onTaskRemoved(rootIntent: Intent?) {
+        Log.d(TAG, "MusicService onTaskRemoved")
         super.onTaskRemoved(rootIntent)
         mediaSession.isActive = false
         stopForeground(true)
