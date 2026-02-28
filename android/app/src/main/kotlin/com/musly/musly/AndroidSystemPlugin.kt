@@ -122,7 +122,12 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val duration = call.argument<Number>("duration")?.toLong() ?: 0L
                 val position = call.argument<Number>("position")?.toLong() ?: 0L
                 val playing = call.argument<Boolean>("playing") ?: false
-                
+
+                // Ensure the service is running before updating state
+                if (MusicService.getInstance() == null) {
+                    Log.d(TAG, "MusicService not running, requesting start via AndroidAutoPlugin")
+                    AndroidAutoPlugin.startMusicService()
+                }
                 MusicService.getInstance()?.updatePlaybackState(
                     songId, title, artist, album, artworkUrl, duration, position, playing
                 )

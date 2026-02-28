@@ -442,7 +442,7 @@ class UpnpService extends ChangeNotifier {
         return true;
       } catch (e) {
         debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
-        if (attempt == maxAttempts) rethrow;
+        if (attempt == maxAttempts) return false;
         delay = delay * 2 < const Duration(milliseconds: 2400)
             ? delay * 2
             : const Duration(milliseconds: 2400);

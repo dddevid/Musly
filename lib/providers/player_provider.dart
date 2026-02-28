@@ -328,17 +328,6 @@ class PlayerProvider extends ChangeNotifier {
       isPlaying: _isPlaying,
     );
 
-    _androidAutoService.updatePlaybackState(
-      songId: _currentSong!.id,
-      title: _currentSong!.title,
-      artist: _currentSong!.artist ?? '',
-      album: _currentSong!.album ?? '',
-      artworkUrl: artworkUrl,
-      duration: _duration,
-      position: _position,
-      isPlaying: _isPlaying,
-    );
-
     _updateDiscordRpc();
     _updateAllServices();
   }
@@ -790,10 +779,12 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.play();
       _isPlaying = true;
       notifyListeners();
+      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
       await _upnpService.play();
       _isPlaying = true;
       notifyListeners();
+      _updateAndroidAuto();
     } else {
       await _audioPlayer.play();
     }
@@ -804,10 +795,12 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.pause();
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
       await _upnpService.pause();
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
     } else {
       await _audioPlayer.pause();
     }
@@ -1218,6 +1211,7 @@ class PlayerProvider extends ChangeNotifier {
       // Cast disconnected
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
     }
   }
 
@@ -1251,6 +1245,7 @@ class PlayerProvider extends ChangeNotifier {
       _position = Duration.zero;
       _duration = Duration.zero;
       notifyListeners();
+      _updateAndroidAuto();
       return;
     }
 
