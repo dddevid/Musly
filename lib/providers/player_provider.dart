@@ -1250,6 +1250,8 @@ class PlayerProvider extends ChangeNotifier {
       _upnpWasPlaying = false;
       if (_audioPlayer.playing) _audioPlayer.pause();
       final vol = _upnpService.volume;
+      // Sync local volume with renderer so stale local value doesn't leak back
+      if (vol >= 0) _volume = vol / 100.0;
       _androidSystemService.setRemotePlayback(
         isRemote: true,
         volume: vol >= 0 ? vol : 50,
@@ -1315,9 +1317,14 @@ class PlayerProvider extends ChangeNotifier {
       changed = true;
     }
 
-    // Sync volume from renderer to Android system volume slider
+    // Sync volume from renderer to both local state and Android system slider
     final vol = _upnpService.volume;
     if (vol >= 0) {
+      final normalized = vol / 100.0;
+      if ((_volume - normalized).abs() > 0.005) {
+        _volume = normalized;
+        changed = true;
+      }
       _androidSystemService.updateRemoteVolume(vol);
     }
 
