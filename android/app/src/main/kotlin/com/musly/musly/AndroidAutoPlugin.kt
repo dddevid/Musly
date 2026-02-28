@@ -2,6 +2,8 @@ package com.devid.musly
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -14,11 +16,12 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private const val TAG = "AndroidAutoPlugin"
     private const val METHOD_CHANNEL = "com.devid.musly/android_auto"
     private const val EVENT_CHANNEL = "com.devid.musly/android_auto_events"
-    
+
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
     private var eventSink: EventChannel.EventSink? = null
     private var context: Context? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
     
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
@@ -69,13 +72,19 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val playing = call.argument<Boolean>("playing") ?: false
 
                 // Ensure the service is running before updating state
+                val pushState = {
+                    MusicService.getInstance()?.updatePlaybackState(
+                        songId, title, artist, album, artworkUrl, duration, position, playing
+                    )
+                }
                 if (MusicService.getInstance() == null) {
                     Log.d(TAG, "MusicService not running, starting it now")
                     startMusicService()
+                    // Service start is async; retry after a short delay
+                    mainHandler.postDelayed({ pushState() }, 200)
+                } else {
+                    pushState()
                 }
-                MusicService.getInstance()?.updatePlaybackState(
-                    songId, title, artist, album, artworkUrl, duration, position, playing
-                )
                 result.success(null)
             }
             "updateRecentSongs" -> {

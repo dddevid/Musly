@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -124,13 +125,18 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 val playing = call.argument<Boolean>("playing") ?: false
 
                 // Ensure the service is running before updating state
+                val pushState = {
+                    MusicService.getInstance()?.updatePlaybackState(
+                        songId, title, artist, album, artworkUrl, duration, position, playing
+                    )
+                }
                 if (MusicService.getInstance() == null) {
                     Log.d(TAG, "MusicService not running, requesting start via AndroidAutoPlugin")
                     AndroidAutoPlugin.startMusicService()
+                    handler.postDelayed({ pushState() }, 200)
+                } else {
+                    pushState()
                 }
-                MusicService.getInstance()?.updatePlaybackState(
-                    songId, title, artist, album, artworkUrl, duration, position, playing
-                )
                 result.success(null)
             }
             "setNotificationColor" -> {
@@ -160,6 +166,17 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             }
             "getAndroidSdkVersion" -> {
                 result.success(Build.VERSION.SDK_INT)
+            }
+            "setRemotePlayback" -> {
+                val isRemote = call.argument<Boolean>("isRemote") ?: false
+                val volume = call.argument<Int>("volume") ?: 50
+                MusicService.getInstance()?.setRemoteVolume(isRemote, volume)
+                result.success(null)
+            }
+            "updateRemoteVolume" -> {
+                val volume = call.argument<Int>("volume") ?: 50
+                MusicService.getInstance()?.updateRemoteVolume(volume)
+                result.success(null)
             }
             "dispose" -> {
                 dispose()

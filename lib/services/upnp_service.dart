@@ -20,6 +20,7 @@ class UpnpDevice {
   final String manufacturer;
   final String modelName;
   final String avTransportUrl; // absolute URL for AVTransport control
+  final String? renderingControlUrl; // absolute URL for RenderingControl (volume)
 
   const UpnpDevice({
     required this.friendlyName,
@@ -27,6 +28,7 @@ class UpnpDevice {
     required this.manufacturer,
     required this.modelName,
     required this.avTransportUrl,
+    this.renderingControlUrl,
   });
 
   @override
@@ -64,11 +66,13 @@ class UpnpService extends ChangeNotifier {
   Duration _rendererPosition = Duration.zero;
   Duration _rendererDuration = Duration.zero;
   String _rendererState = 'STOPPED';
+  int _volume = -1; // -1 = unknown (device may not support RenderingControl)
 
   Duration get rendererPosition => _rendererPosition;
   Duration get rendererDuration => _rendererDuration;
   String get rendererState => _rendererState;
   bool get isRendererPlaying => _rendererState == 'PLAYING';
+  int get volume => _volume; // 0-100 or -1 if unknown
 
   List<UpnpDevice> get devices => List.unmodifiable(_devices);
   UpnpDevice? get connectedDevice => _connectedDevice;
@@ -187,12 +191,15 @@ class UpnpService extends ChangeNotifier {
       return null;
     }
 
+    final renderingControlUrl = _extractRenderingControlUrl(xml, location);
+
     return UpnpDevice(
       friendlyName: friendlyName,
       location: location,
       manufacturer: manufacturer,
       modelName: modelName,
       avTransportUrl: avTransportUrl,
+      renderingControlUrl: renderingControlUrl,
     );
   }
 
@@ -227,6 +234,26 @@ class UpnpService extends ChangeNotifier {
     return null;
   }
 
+  /// Find the RenderingControl service's controlURL (for volume control).
+  static String? _extractRenderingControlUrl(String xml, String location) {
+    final servicePattern = RegExp(
+      r'<service>(.*?)</service>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    for (final match in servicePattern.allMatches(xml)) {
+      final serviceBlock = match.group(1) ?? '';
+      final serviceType = _xmlText(serviceBlock, 'serviceType') ?? '';
+      if (serviceType.toLowerCase().contains('renderingcontrol')) {
+        final controlPath = _xmlText(serviceBlock, 'controlURL');
+        if (controlPath == null) continue;
+        final base = Uri.parse(location);
+        return base.resolve(controlPath).toString();
+      }
+    }
+    return null;
+  }
+
   // --- Connection ---
 
   /// Connects to [device] after verifying reachability via a GetTransportInfo
@@ -239,6 +266,10 @@ class UpnpService extends ChangeNotifier {
       await _soap(device.avTransportUrl, 'GetTransportInfo', '');
       _connectedDevice = device;
       debugPrint('UPnP: Connected to ${device.friendlyName}');
+      // Fetch initial volume if RenderingControl is available
+      if (device.renderingControlUrl != null) {
+        _volume = await getVolume();
+      }
       _startPolling();
       notifyListeners();
       return true;
@@ -256,6 +287,7 @@ class UpnpService extends ChangeNotifier {
     _rendererState = 'STOPPED';
     _rendererPosition = Duration.zero;
     _rendererDuration = Duration.zero;
+    _volume = -1;
     notifyListeners();
 
     // Fire-and-forget Stop so the renderer actually stops playback
@@ -281,12 +313,14 @@ class UpnpService extends ChangeNotifier {
   }
 
   bool _isPolling = false;
+  int _pollCount = 0;
 
   Future<void> _poll() async {
     if (_isPolling) return; // prevent overlapping polls
     final device = _connectedDevice;
     if (device == null) return;
     _isPolling = true;
+    _pollCount++;
 
     try {
       final state = await getPlaybackState();
@@ -305,6 +339,16 @@ class UpnpService extends ChangeNotifier {
         _rendererDuration = state.duration;
         changed = true;
       }
+
+      // Poll volume every 5 seconds (every 5th poll) if device supports it
+      if (device.renderingControlUrl != null && _pollCount % 5 == 0) {
+        final vol = await getVolume();
+        if (vol >= 0 && vol != _volume) {
+          _volume = vol;
+          changed = true;
+        }
+      }
+
       if (changed) {
         notifyListeners();
       }
@@ -617,6 +661,81 @@ class UpnpService extends ChangeNotifier {
       throw Exception('UPnP SOAP fault for $action');
     }
     return responseBody;
+  }
+
+  /// SOAP query against the RenderingControl service (for volume).
+  Future<String> _renderingQuery(String action, String body) async {
+    final device = _connectedDevice;
+    if (device?.renderingControlUrl == null) {
+      throw Exception('No RenderingControl URL');
+    }
+    const serviceType = 'urn:schemas-upnp-org:service:RenderingControl:1';
+    final envelope =
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"'
+        ' s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n'
+        '  <s:Body>\n'
+        '    <u:$action xmlns:u="$serviceType">\n'
+        '      <InstanceID>0</InstanceID>\n'
+        '      $body\n'
+        '    </u:$action>\n'
+        '  </s:Body>\n'
+        '</s:Envelope>';
+
+    final response = await _dio.post<String>(
+      device!.renderingControlUrl!,
+      data: envelope,
+      options: Options(
+        headers: {
+          'Content-Type': 'text/xml; charset="utf-8"',
+          'SOAPAction': '"$serviceType#$action"',
+        },
+        validateStatus: (_) => true,
+        responseType: ResponseType.plain,
+      ),
+    );
+
+    final status = response.statusCode ?? 0;
+    final responseBody = response.data ?? '';
+    if (status < 200 || status >= 300) {
+      throw Exception('UPnP RenderingControl $action failed — HTTP $status');
+    }
+    final lowerBody = responseBody.toLowerCase();
+    if (lowerBody.contains('<s:fault>') ||
+        lowerBody.contains('<soap:fault>') ||
+        lowerBody.contains('<fault>')) {
+      throw Exception('UPnP RenderingControl fault for $action');
+    }
+    return responseBody;
+  }
+
+  /// Set the renderer's volume (0-100).
+  Future<void> setVolume(int vol) async {
+    vol = vol.clamp(0, 100);
+    try {
+      await _renderingQuery(
+        'SetVolume',
+        '<Channel>Master</Channel><DesiredVolume>$vol</DesiredVolume>',
+      );
+      _volume = vol;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('UPnP: SetVolume failed: $e');
+    }
+  }
+
+  /// Get the renderer's current volume (0-100). Returns -1 on failure.
+  Future<int> getVolume() async {
+    try {
+      final xml = await _renderingQuery(
+        'GetVolume',
+        '<Channel>Master</Channel>',
+      );
+      final val = _xmlText(xml, 'CurrentVolume');
+      return val != null ? int.tryParse(val) ?? -1 : -1;
+    } catch (_) {
+      return -1;
+    }
   }
 
   /// DIDL-Lite metadata for the renderer's Now Playing display.

@@ -18,7 +18,9 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import android.media.AudioManager
 import android.util.Log
+import androidx.media.VolumeProviderCompat
 import kotlinx.coroutines.*
 import java.net.URL
 
@@ -56,7 +58,8 @@ class MusicService : MediaBrowserServiceCompat() {
     private var currentDuration: Long = 0
     private var currentPosition: Long = 0
     private var isPlaying: Boolean = false
-    
+    private var volumeProvider: VolumeProviderCompat? = null
+
     private val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val recentSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val albums = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -635,6 +638,35 @@ class MusicService : MediaBrowserServiceCompat() {
                 AndroidAutoPlugin.sendCommand("playFromMediaId", mapOf("mediaId" to it))
             }
         }
+    }
+
+    fun setRemoteVolume(isRemote: Boolean, currentVolume: Int) {
+        if (isRemote) {
+            volumeProvider = object : VolumeProviderCompat(
+                VOLUME_CONTROL_ABSOLUTE, 100, currentVolume
+            ) {
+                override fun onSetVolumeTo(volume: Int) {
+                    setCurrentVolume(volume)
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to volume))
+                }
+
+                override fun onAdjustVolume(direction: Int) {
+                    val newVolume = (currentVolume + direction * 5).coerceIn(0, 100)
+                    setCurrentVolume(newVolume)
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to newVolume))
+                }
+            }
+            mediaSession.setPlaybackToRemote(volumeProvider!!)
+            Log.d(TAG, "MediaSession set to remote volume (current=$currentVolume)")
+        } else {
+            volumeProvider = null
+            mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC)
+            Log.d(TAG, "MediaSession set to local volume")
+        }
+    }
+
+    fun updateRemoteVolume(volume: Int) {
+        volumeProvider?.currentVolume = volume
     }
 
     override fun onDestroy() {
