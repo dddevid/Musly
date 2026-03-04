@@ -296,16 +296,51 @@ class CastButton extends StatelessWidget {
               ),
               const SizedBox(height: 16),
             ],
-            Text(
-              'Playback is being sent to this DLNA device. '
-              'Use Musly\'s player controls to manage playback.',
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark
-                    ? AppTheme.darkSecondaryText
-                    : AppTheme.lightSecondaryText,
-              ),
-              textAlign: TextAlign.center,
+            Consumer<UpnpService>(
+              builder: (context, us, _) {
+                if (us.volume < 0) {
+                  // Device doesn't support RenderingControl
+                  return Text(
+                    'Playback is being sent to this DLNA device. '
+                    'Use Musly\'s player controls to manage playback.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppTheme.darkSecondaryText
+                          : AppTheme.lightSecondaryText,
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                return Row(
+                  children: [
+                    Icon(
+                      us.volume == 0
+                          ? Icons.volume_off
+                          : us.volume < 50
+                          ? Icons.volume_down
+                          : Icons.volume_up,
+                      color: AppTheme.appleMusicRed,
+                    ),
+                    Expanded(
+                      child: Slider(
+                        value: (us.volume / 100.0).clamp(0.0, 1.0),
+                        onChanged: (v) => us.setVolume((v * 100).round()),
+                        activeColor: AppTheme.appleMusicRed,
+                      ),
+                    ),
+                    Text(
+                      '${us.volume}%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

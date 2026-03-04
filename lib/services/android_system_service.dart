@@ -294,6 +294,32 @@ class AndroidSystemService {
     }
   }
 
+  Future<void> setRemotePlayback({
+    required bool isRemote,
+    int volume = 50,
+  }) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      await _methodChannel.invokeMethod('setRemotePlayback', {
+        'isRemote': isRemote,
+        'volume': volume,
+      });
+    } catch (e) {
+      debugPrint('Error setting remote playback: $e');
+    }
+  }
+
+  Future<void> updateRemoteVolume(int volume) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      await _methodChannel.invokeMethod('updateRemoteVolume', {
+        'volume': volume,
+      });
+    } catch (e) {
+      debugPrint('Error updating remote volume: $e');
+    }
+  }
+
   Future<void> dispose() async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
 

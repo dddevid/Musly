@@ -67,6 +67,7 @@ class PlayerProvider extends ChangeNotifier {
     _storageService = storageService;
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
+    _upnpService.addListener(_onUpnpStateChanged);
     _initializePlayer();
     _initializeAndroidAuto();
     _initializeSystemServices();
@@ -179,6 +180,7 @@ class PlayerProvider extends ChangeNotifier {
     _androidAutoService.onSkipPrevious = skipPrevious;
     _androidAutoService.onSeekTo = seek;
     _androidAutoService.onPlayFromMediaId = _playFromMediaId;
+    _androidAutoService.onSetVolume = _onRemoteVolumeChange;
 
     _androidAutoService.onGetAlbumSongs = _getAlbumSongsForAndroidAuto;
     _androidAutoService.onGetArtistAlbums = _getArtistAlbumsForAndroidAuto;
@@ -315,17 +317,6 @@ class PlayerProvider extends ChangeNotifier {
                   size: 300,
                 ))
         : null;
-
-    _androidAutoService.updatePlaybackState(
-      songId: _currentSong!.id,
-      title: _currentSong!.title,
-      artist: _currentSong!.artist ?? '',
-      album: _currentSong!.album ?? '',
-      artworkUrl: artworkUrl,
-      duration: _duration,
-      position: _position,
-      isPlaying: _isPlaying,
-    );
 
     _androidAutoService.updatePlaybackState(
       songId: _currentSong!.id,
@@ -623,11 +614,21 @@ class PlayerProvider extends ChangeNotifier {
             : await _subsonicService.getStreamUrl(song.id);
 
         try {
-          await _upnpService.loadAndPlay(
+          final success = await _upnpService.loadAndPlay(
             url: playUrl,
             title: song.title,
             artist: song.artist ?? 'Unknown Artist',
+            album: song.album,
+            albumArtUrl: song.coverArt != null
+                ? _subsonicService.getCoverArtUrl(song.coverArt, size: 0)
+                : null,
+            durationSecs: song.duration,
           );
+          if (!success) {
+            _upnpService.disconnect();
+            debugPrint('UPnP playback failed (retries exhausted), disconnected');
+            return;
+          }
         } catch (e) {
           // SOAP call failed — disconnect so the UI reflects the real state
           _upnpService.disconnect();
@@ -784,10 +785,12 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.play();
       _isPlaying = true;
       notifyListeners();
+      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
       await _upnpService.play();
       _isPlaying = true;
       notifyListeners();
+      _updateAndroidAuto();
     } else {
       await _audioPlayer.play();
     }
@@ -798,10 +801,12 @@ class PlayerProvider extends ChangeNotifier {
       await _castService.pause();
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
       await _upnpService.pause();
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
     } else {
       await _audioPlayer.pause();
     }
@@ -1007,8 +1012,23 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
     await _storageService.saveVolume(_volume);
-    await _applyReplayGain(_currentSong);
+    if (_castService.isConnected) {
+      await _castService.setVolume(_volume);
+    } else if (_upnpService.isConnected) {
+      await _upnpService.setVolume((_volume * 100).round());
+    } else {
+      await _applyReplayGain(_currentSong);
+    }
     notifyListeners();
+  }
+
+  /// Called when the Android system volume slider changes (remote playback).
+  void _onRemoteVolumeChange(int volume) {
+    if (_castService.isConnected) {
+      _castService.setVolume(volume / 100.0);
+    } else if (_upnpService.isConnected) {
+      _upnpService.setVolume(volume);
+    }
   }
 
   /// Apply ReplayGain volume adjustment for the current song
@@ -1079,6 +1099,8 @@ class PlayerProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _castService.removeListener(_onCastStateChanged);
+    _upnpService.removeListener(_onUpnpStateChanged);
     _audioPlayer.dispose();
     _androidAutoService.dispose();
     _androidSystemService.dispose();
@@ -1200,13 +1222,115 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
     if (_castService.isConnected) {
       _audioPlayer.pause(); // Ensure local is paused
+      _androidSystemService.setRemotePlayback(isRemote: true, volume: 50);
       if (_currentSong != null) {
-        playSong(_currentSong!);
+        // Clear so playSong() does a full load instead of togglePlayPause()
+        final song = _currentSong!;
+        _currentSong = null;
+        playSong(song);
       }
     } else {
       // Cast disconnected
+      _androidSystemService.setRemotePlayback(isRemote: false);
       _isPlaying = false;
       notifyListeners();
+      _updateAndroidAuto();
+    }
+  }
+
+  bool _upnpWasConnected = false;
+  bool _upnpWasPlaying = false;
+
+  void _onUpnpStateChanged() {
+    final connected = _upnpService.isConnected;
+
+    // On fresh connect: pause local audio, start playing current song on renderer
+    if (connected && !_upnpWasConnected) {
+      _upnpWasConnected = true;
+      _upnpWasPlaying = false;
+      if (_audioPlayer.playing) _audioPlayer.pause();
+      final vol = _upnpService.volume;
+      // Sync local volume with renderer so stale local value doesn't leak back
+      if (vol >= 0) _volume = vol / 100.0;
+      _androidSystemService.setRemotePlayback(
+        isRemote: true,
+        volume: vol >= 0 ? vol : 50,
+      );
+      if (_currentSong != null) {
+        // Clear _currentSong so playSong() does a full loadAndPlay on the
+        // renderer instead of short-circuiting into togglePlayPause() (which
+        // would just resume whatever old track the renderer had loaded).
+        final song = _currentSong!;
+        _currentSong = null;
+        playSong(song);
+      }
+      return;
+    }
+
+    // On disconnect: reset all state so UI doesn't show stale values
+    if (!connected && _upnpWasConnected) {
+      _upnpWasConnected = false;
+      _upnpWasPlaying = false;
+      _isPlaying = false;
+      _position = Duration.zero;
+      _duration = Duration.zero;
+      _androidSystemService.setRemotePlayback(isRemote: false);
+      notifyListeners();
+      _updateAndroidAuto();
+      return;
+    }
+
+    if (!connected) return;
+
+    // Sync position/duration from the renderer's polling data
+    final pos = _upnpService.rendererPosition;
+    final dur = _upnpService.rendererDuration;
+    final playing = _upnpService.isRendererPlaying;
+    final rendererState = _upnpService.rendererState;
+
+    // Detect track completion: renderer was playing, now stopped,
+    // and position reached (or passed) the end of the track.
+    if (_upnpWasPlaying &&
+        rendererState == 'STOPPED' &&
+        dur > Duration.zero &&
+        pos.inSeconds >= dur.inSeconds - 1) {
+      debugPrint('UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
+      _upnpWasPlaying = false;
+      _onSongComplete();
+      return;
+    }
+
+    _upnpWasPlaying = playing;
+
+    bool changed = false;
+
+    if ((_position - pos).abs() > const Duration(milliseconds: 500)) {
+      _position = pos;
+      changed = true;
+    }
+    if (dur != _duration) {
+      _duration = dur;
+      changed = true;
+    }
+    if (playing != _isPlaying) {
+      _isPlaying = playing;
+      changed = true;
+    }
+
+    // Sync volume from renderer to both local state and Android system slider
+    final vol = _upnpService.volume;
+    if (vol >= 0) {
+      final normalized = vol / 100.0;
+      if ((_volume - normalized).abs() > 0.005) {
+        _volume = normalized;
+        changed = true;
+      }
+      _androidSystemService.updateRemoteVolume(vol);
+    }
+
+    if (changed) {
+      notifyListeners();
+      _updateAndroidAuto();
     }
   }
 }

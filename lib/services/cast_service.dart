@@ -359,14 +359,12 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  // Volume control - simplified for compatibility
+  // Volume control
   Future<void> setVolume(double volume) async {
     if (!isConnected) return;
-    debugPrint(
-      'CastService: Volume control via device (${volume.toStringAsFixed(2)})',
-    );
-    // Note: Volume control depends on the Cast SDK implementation
-    // Some methods may not be available in all versions
+    volume = volume.clamp(0.0, 1.0);
+    _sessionManager.setDeviceVolume(volume);
+    debugPrint('CastService: Volume set to ${volume.toStringAsFixed(2)}');
   }
 
   @override

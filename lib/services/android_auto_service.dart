@@ -27,6 +27,7 @@ class AndroidAutoService {
   VoidCallback? onSkipPrevious;
   Function(Duration position)? onSeekTo;
   Function(String mediaId)? onPlayFromMediaId;
+  Function(int volume)? onSetVolume;
 
   Future<List<Map<String, String>>> Function(String albumId)? onGetAlbumSongs;
   Future<List<Map<String, String>>> Function(String artistId)?
@@ -82,6 +83,12 @@ class AndroidAutoService {
         final mediaId = event['mediaId'] as String?;
         if (mediaId != null) {
           onPlayFromMediaId?.call(mediaId);
+        }
+        break;
+      case 'setVolume':
+        final volume = event['volume'] as int?;
+        if (volume != null) {
+          onSetVolume?.call(volume);
         }
         break;
       case 'getAlbumSongs':
