@@ -8,6 +8,7 @@ class PlayerUiSettingsService {
   static const String _keyArtworkShape = 'artwork_shape';
   static const String _keyArtworkShadow = 'artwork_shadow';
   static const String _keyArtworkShadowColor = 'artwork_shadow_color';
+  static const String _keyLiveSearch = 'search_live_search';
 
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
@@ -17,6 +18,7 @@ class PlayerUiSettingsService {
   SharedPreferences? _prefs;
 
   final ValueNotifier<bool> showStarRatingsNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> liveSearchNotifier = ValueNotifier(true);
   final ValueNotifier<double> albumArtCornerRadiusNotifier = ValueNotifier(8.0);
 
   /// 'rounded' | 'circle' | 'square'
@@ -37,6 +39,7 @@ class PlayerUiSettingsService {
     artworkShapeNotifier.value = getArtworkShape();
     artworkShadowNotifier.value = getArtworkShadow();
     artworkShadowColorNotifier.value = getArtworkShadowColor();
+    liveSearchNotifier.value = getLiveSearch();
   }
 
   Future<void> setShowVolumeSlider(bool show) async {
@@ -96,5 +99,15 @@ class PlayerUiSettingsService {
 
   String getArtworkShadowColor() {
     return _prefs?.getString(_keyArtworkShadowColor) ?? 'black';
+  }
+
+  Future<void> setLiveSearch(bool enabled) async {
+    await initialize();
+    await _prefs!.setBool(_keyLiveSearch, enabled);
+    liveSearchNotifier.value = enabled;
+  }
+
+  bool getLiveSearch() {
+    return _prefs?.getBool(_keyLiveSearch) ?? true;
   }
 }
