@@ -4,7 +4,7 @@
 
 🌐 **Website:** [musly.devid.ink](https://musly.devid.ink)
 
-[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.6-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.6)
+[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.6-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/vA1.0.6)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.ink)
 [![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.ink)
 
@@ -60,6 +60,18 @@ Join our Discord community to get support, share feedback, and connect with othe
 
 </div>
 
+## 💖 Support the Project / Donazioni
+
+If you find Musly useful and want to support its development, feel free to buy me a digital coffee!
+
+| Network | Address |
+| :--- | :--- |
+| **Bitcoin (BTC)** | `bc1qrfv880kc8qamanalc5kcqs9q5wszh90e5eggyz` |
+| **Solana (SOL)** | `E3JUcjyR6UCJtppU24iDrq82FyPeV9nhL1PKHx57iPXu` |
+| **ETH / Monad / Hype** | `0x01195b0Ae97b2D461aB0C746663bFE915eb9ac7c` |
+
+---
+
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
@@ -86,58 +98,3 @@ Join our Discord community to get support, share feedback, and connect with othe
 1. Install dependencies:
    ```bash
    flutter pub get
-   ```
-2. Run the app:
-   ```bash
-   flutter run
-   ```
-
-### Connecting to Your Server
-
-1. Launch the app
-2. Enter your Subsonic server URL (e.g., `https://your-server.com`)
-3. Enter your username and password
-4. Toggle "Legacy Authentication" if using an older server
-5. Tap "Connect"
-
-## Translations
-
-Musly is translated into 24+ languages! Help translate Musly into your language:
-
-📝 **[Contribute on Crowdin](https://crowdin.com/project/musly)**
-
-See [TRANSLATIONS.md](TRANSLATIONS.md) for a complete guide on how to contribute translations.
-
-## Supported Servers
-
-Musly works with any Subsonic API-compatible server:
-
-- [Navidrome](https://www.navidrome.org/) - **Best with Musly!**
-- [Subsonic](http://www.subsonic.org/)
-- [Airsonic](https://airsonic.github.io/)
-- [Gonic](https://github.com/sentriz/gonic)
-
-## License
-
-> [!IMPORTANT]
-> **DO NOT redistribute this app to the Google Play Store or other commercial stores.**
-
-This project is open source and available under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** License. See the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-  <sub>Made with <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2764.svg" width="14" height="14" alt="❤️"> in Italy <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ee-1f1f9.svg" width="14" height="14" alt="🇮🇹"> by an Albanian developer <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1e6-1f1f1.svg" width="14" height="14" alt="🇦🇱"></sub>
-</div>
-
-<br/>
-
-<div align="center">
-
-[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
-
-</div>
-
-
-
-
