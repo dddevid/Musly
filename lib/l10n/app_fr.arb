@@ -433,19 +433,23 @@
   "@playerInterface": {
     "description": "Player Interface settings section"
   },
-  "smartRecommendations": "Recommandations intelligentes",
+  "smartRecommendations": "Recommandations personnalisées",
   "@smartRecommendations": {
     "description": "Smart Recommendations settings section title"
+  },
+  "showVolumeSlider": "Afficher le curseur du volume",
+  "@showVolumeSlider": {
+    "description": "Show Volume Slider toggle label"
   },
   "showVolumeSliderSubtitle": "Afficher le contrôle du volume dans l'écran de lecture en cours",
   "@showVolumeSliderSubtitle": {
     "description": "Show Volume Slider toggle subtitle"
   },
-  "showStarRatings": "Afficher les évaluations en étoiles",
+  "showStarRatings": "Afficher les notes",
   "@showStarRatings": {
     "description": "Show Star Ratings toggle label"
   },
-  "showStarRatingsSubtitle": "Noter les chansons et afficher les notes",
+  "showStarRatingsSubtitle": "Noter les pistes et voir les notes",
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
@@ -502,7 +506,7 @@
   "@communityTranslations": {
     "description": "Community translations credit label"
   },
-  "communityTranslationsSubtitle": "Aidez à traduire Musly sur Crowdin",
+  "communityTranslationsSubtitle": "Aidez-nous à traduire Musly sur Crowdin",
   "@communityTranslationsSubtitle": {
     "description": "Community translations credit subtitle"
   },
@@ -517,6 +521,7 @@
   "playlist": "Playlist",
   "internetRadio": "Radio Internet",
   "newPlaylist": "Nouvelle Playlist",
+  "playlistName": "Nom de la liste de lecture",
   "create": "Créer",
   "deletePlaylist": "Supprimer la Playlist",
   "deletePlaylistConfirmation": "Êtes-vous sûr de vouloir supprimer la playlist \"{name} \" ?",
@@ -575,10 +580,96 @@
   "settingsTitle": "Paramètres",
   "tabPlayback": "Lecture",
   "tabStorage": "Stockage",
+  "tabServer": "Serveur",
+  "tabDisplay": "Affichage",
+  "tabAbout": "À propos",
   "@_SETTINGS_PLAYBACK": {},
+  "sectionAutoDj": "DJ AUTO",
+  "autoDjMode": "Mode DJ Auto",
+  "songsToAdd": "Pistes à ajouter : {count}",
+  "@songsToAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionReplayGain": "NORMALISATION DE VOLUME (REPLAYGAIN)",
+  "replayGainMode": "Mode",
+  "preamp": "Pré-ampli : {value} dB",
+  "@preamp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "preventClipping": "Empêcher le découpage audio",
+  "fallbackGain": "Gain de repli : {value} dB",
+  "@fallbackGain": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionStreamingQuality": "QUALITÉ DE STREAMING",
+  "enableTranscoding": "Activer le transcodage",
+  "qualityWifi": "Qualité sur réseau Wi-Fi",
+  "qualityMobile": "Qualité sur réseau mobile",
+  "format": "Format",
+  "transcodingSubtitle": "Réduire la consommation de données avec une qualité inférieure",
+  "modeOff": "Désactivé",
+  "modeTrack": "Piste",
+  "modeAlbum": "Album",
   "@_SETTINGS_SERVER": {},
+  "sectionServerConnection": "CONNEXION DU SERVEUR",
+  "serverType": "Type de serveur",
+  "notConnected": "Non connecté",
+  "unknown": "Inconnu",
+  "sectionMusicFolders": "RÉPERTOIRES DE MUSIQUE",
+  "musicFolders": "Dossiers musicaux",
+  "noMusicFolders": "Aucun dossier de musique trouvé",
+  "sectionAccount": "COMPTE",
+  "logoutConfirmation": "Êtes-vous sûr de vouloir vous déconnecter ? Cela effacera également toutes les données mises en cache.",
   "@_SETTINGS_STORAGE": {},
+  "sectionCacheSettings": "PARAMÈTRES DU CACHE",
+  "imageCache": "Cache d'images",
+  "musicCache": "Cache de musiques",
+  "bpmCache": "Cache BPM",
+  "saveAlbumCovers": "Enregistrer les pochettes d'album en local",
+  "saveSongMetadata": "Enregistrer les métadonnées de la piste en local",
+  "saveBpmAnalysis": "Enregistrer les analyses BPM en local",
+  "sectionCacheCleanup": "SUPPRESSION DE CACHE",
+  "clearAllCache": "Vider tout le cache",
+  "allCacheCleared": "Tout le cache a été effacé",
+  "sectionOfflineDownloads": "TÉLÉCHARGEMENT HORS LIGNE",
+  "downloadedSongs": "Pistes téléchargées",
+  "downloadingLibrary": "Téléchargement de la bibliothèque... {progress}/{total}",
+  "@downloadingLibrary": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadAllLibrary": "Télécharger toute la bibliothèque",
+  "downloadLibraryConfirm": "Cette action va télécharger {count} pistes sur votre appareil. Cela peut prendre un certain temps et utiliser un espace de stockage significatif.\n\nVoulez-vous continuer ?",
+  "@downloadLibraryConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryDownloadStarted": "Le téléchargement de la bibliothèque a démarré",
+  "deleteDownloads": "Supprimer tous les téléchargements",
+  "downloadsDeleted": "Tous les téléchargements ont été supprimés",
+  "noSongsAvailable": "Aucune musique disponible. Veuillez d'abord charger votre bibliothèque.",
+  "sectionBpmAnalysis": "ANALYSE BPM",
   "cachedBpms": "BPMs en cache",
   "cacheAllBpms": "Mettre en cache tous les BPMs",
   "clearBpmCache": "Vider le cache BPM",
@@ -757,32 +848,526 @@
   "@createPlaylistTitle": {
     "description": "Title of the create-new-playlist dialog"
   },
+  "playlistNameHint": "Nom de la liste de lecture",
+  "@playlistNameHint": {
+    "description": "Hint text for the playlist name input field"
+  },
+  "playlistCreatedWithSong": "Liste de lecture «{name}» créée avec cette piste",
+  "@playlistCreatedWithSong": {
+    "description": "Snackbar shown after creating a playlist with the current song",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingPlaylists": "Erreur lors du chargement des listes de lecture : {error}",
+  "@errorLoadingPlaylists": {
+    "description": "Snackbar shown when playlists fail to load",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_PLAYLIST_SCREEN": {},
+  "playlistNotFound": "Liste de lecture introuvable",
+  "@playlistNotFound": {
+    "description": "Message when a playlist cannot be found"
+  },
+  "noSongsInPlaylist": "Aucune piste dans cette liste de lecture",
+  "@noSongsInPlaylist": {
+    "description": "Empty state message for a playlist with no songs"
+  },
   "@_FAVORITES_SCREEN": {},
+  "noFavoriteSongsYet": "Aucune piste favorite pour le moment",
+  "@noFavoriteSongsYet": {
+    "description": "Empty state for the favorite songs list"
+  },
+  "noFavoriteAlbumsYet": "Aucun album favori pour le moment",
+  "@noFavoriteAlbumsYet": {
+    "description": "Empty state for the favorite albums list"
+  },
   "@_HISTORY_SCREEN": {},
+  "listeningHistory": "Historique d'écoute",
+  "@listeningHistory": {
+    "description": "Title of the listening history screen"
+  },
+  "noListeningHistory": "Pas d'historique d'écoute",
+  "@noListeningHistory": {
+    "description": "Empty state headline on the history screen"
+  },
+  "songsWillAppearHere": "Les pistes que vous jouez apparaîtront ici",
+  "@songsWillAppearHere": {
+    "description": "Empty state subtitle on the history screen"
+  },
   "@_SORT_OPTIONS": {},
+  "sortByTitleAZ": "Titre (A-Z)",
+  "@sortByTitleAZ": {
+    "description": "Sort option: title ascending"
+  },
+  "sortByTitleZA": "Titre (Z-A)",
+  "@sortByTitleZA": {
+    "description": "Sort option: title descending"
+  },
+  "sortByArtistAZ": "Artiste (A-Z)",
+  "@sortByArtistAZ": {
+    "description": "Sort option: artist ascending"
+  },
+  "sortByArtistZA": "Artiste (Z-A)",
+  "@sortByArtistZA": {
+    "description": "Sort option: artist descending"
+  },
+  "sortByAlbumAZ": "Album (A-Z)",
+  "@sortByAlbumAZ": {
+    "description": "Sort option: album ascending"
+  },
+  "sortByAlbumZA": "Album (Z-A)",
+  "@sortByAlbumZA": {
+    "description": "Sort option: album descending"
+  },
+  "recentlyAdded": "Récemment Ajouté",
+  "@recentlyAdded": {
+    "description": "Sort option: recently added"
+  },
+  "noSongsFound": "Aucune piste trouvée",
+  "@noSongsFound": {
+    "description": "Empty state when no songs match a filter"
+  },
+  "noAlbumsFound": "Aucun album trouvé",
+  "@noAlbumsFound": {
+    "description": "Empty state when no albums match a filter"
+  },
   "@_RADIO_SCREEN": {},
+  "noHomepageUrl": "Aucune URL de page d'accueil disponible",
+  "@noHomepageUrl": {
+    "description": "Snackbar when a radio station has no homepage URL"
+  },
+  "playStation": "Lancer la station",
+  "@playStation": {
+    "description": "Context menu option to play a radio station"
+  },
+  "openHomepage": "Ouvrir la page d'accueil",
+  "@openHomepage": {
+    "description": "Context menu option to open a radio station's homepage"
+  },
+  "copyStreamUrl": "Copier l'URL du flux",
+  "@copyStreamUrl": {
+    "description": "Context menu option to copy a radio station stream URL"
+  },
+  "failedToLoadRadioStations": "Impossible de charger les stations radio",
+  "@failedToLoadRadioStations": {
+    "description": "Error state message on the radio screen"
+  },
+  "noRadioStations": "Aucune station radio",
+  "@noRadioStations": {
+    "description": "Empty state headline on the radio screen"
+  },
+  "noRadioStationsHint": "Ajoutez des stations radio dans les paramètres de votre serveur Navidrome pour les voir ici.",
+  "@noRadioStationsHint": {
+    "description": "Empty state subtitle on the radio screen"
+  },
   "@_LOGIN_SCREEN": {},
+  "connectToServerSubtitle": "Connectez-vous à votre serveur Subsonic",
+  "@connectToServerSubtitle": {
+    "description": "Subtitle below the app name on the login screen"
+  },
+  "pleaseEnterServerUrl": "Veuillez entrer l'URL du serveur",
+  "@pleaseEnterServerUrl": {
+    "description": "Validation message when server URL is empty"
+  },
+  "invalidUrlFormat": "L'URL doit commencer par http:// ou https://",
+  "@invalidUrlFormat": {
+    "description": "Validation message when server URL format is invalid"
+  },
+  "pleaseEnterUsername": "Veuillez entrer le nom d'utilisateur",
+  "@pleaseEnterUsername": {
+    "description": "Validation message when username is empty"
+  },
   "pleaseEnterPassword": "Veuillez saisir votre mot de passe",
   "@pleaseEnterPassword": {
     "description": "Validation message when password is empty"
   },
+  "legacyAuthentication": "Authentification héritée",
+  "@legacyAuthentication": {
+    "description": "Toggle label for legacy Subsonic authentication"
+  },
+  "legacyAuthSubtitle": "Utiliser pour les anciens serveurs Subsonic",
+  "@legacyAuthSubtitle": {
+    "description": "Subtitle for the legacy authentication toggle"
+  },
+  "allowSelfSignedCerts": "Autoriser les certificats autosignés",
+  "@allowSelfSignedCerts": {
+    "description": "Toggle label to allow self-signed TLS certificates"
+  },
+  "allowSelfSignedSubtitle": "Pour les serveurs avec des certificats TLS/SSL personnalisés",
+  "@allowSelfSignedSubtitle": {
+    "description": "Subtitle for the self-signed certificate toggle"
+  },
+  "advancedOptions": "Options avancées",
+  "@advancedOptions": {
+    "description": "Expandable section label for advanced login options"
+  },
+  "customTlsCertificate": "Certificat TLS/SSL personnalisé",
+  "@customTlsCertificate": {
+    "description": "Label for the custom certificate upload section"
+  },
+  "customCertificateSubtitle": "Télécharger un certificat personnalisé pour les serveurs avec une AC non standard",
+  "@customCertificateSubtitle": {
+    "description": "Subtitle for the custom certificate upload section"
+  },
+  "selectCertificateFile": "Sélectionner un fichier de certificat",
+  "@selectCertificateFile": {
+    "description": "Button label to open the certificate file picker"
+  },
+  "clientCertificate": "Certificat client (mTLS)",
+  "@clientCertificate": {
+    "description": "Label for the mutual TLS client certificate section"
+  },
+  "clientCertificateSubtitle": "Authentifier ce client en utilisant un certificat (nécessite le serveur mTLS)",
+  "@clientCertificateSubtitle": {
+    "description": "Subtitle for the client certificate (mTLS) section"
+  },
+  "selectClientCertificate": "Sélectionnez le certificat client",
+  "@selectClientCertificate": {
+    "description": "Button label to open the client certificate file picker"
+  },
+  "clientCertPassword": "Mot de passe du certificat (facultatif)",
+  "@clientCertPassword": {
+    "description": "Hint text for the PKCS12 client certificate password field"
+  },
+  "failedToSelectClientCert": "Impossible de sélectionner le certificat client : {error}",
+  "@failedToSelectClientCert": {
+    "description": "Error message when client certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "connect": "Connexion",
+  "@connect": {
+    "description": "Login submit button label"
+  },
+  "or": "OU",
+  "@or": {
+    "description": "Divider label between Connect and Use Local Files"
+  },
+  "useLocalFiles": "Utiliser les fichiers locaux",
+  "@useLocalFiles": {
+    "description": "Button label to start local-files mode"
+  },
+  "startingScan": "Démarrage de l'analyse...",
+  "@startingScan": {
+    "description": "Initial status message when a local file scan begins"
+  },
+  "storagePermissionRequired": "Autorisation d'accès au stockage requise pour scanner les fichiers locaux",
+  "@storagePermissionRequired": {
+    "description": "Snackbar when storage permission is denied"
+  },
+  "noMusicFilesFound": "Aucun fichier de musique trouvé sur votre appareil",
+  "@noMusicFilesFound": {
+    "description": "Snackbar when a local scan finds no audio files"
+  },
   "@_COMMON_ACTIONS": {},
+  "remove": "Retirer",
+  "@remove": {
+    "description": "Generic remove / delete confirm button"
+  },
+  "failedToSetRating": "Impossible de définir la note : {error}",
+  "@failedToSetRating": {
+    "description": "Snackbar shown when setting a star rating fails",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_DESKTOP_SIDEBAR": {},
+  "home": "Accueil",
+  "@home": {
+    "description": "Home navigation item label in the desktop sidebar"
+  },
+  "playlistsSection": "LISTES DE LECTURE",
+  "@playlistsSection": {
+    "description": "Uppercase section header for playlists in the desktop sidebar"
+  },
+  "collapse": "Réduire",
+  "@collapse": {
+    "description": "Tooltip/label for the sidebar collapse button"
+  },
+  "expand": "Étendre",
+  "@expand": {
+    "description": "Tooltip/label for the sidebar expand button"
+  },
+  "createPlaylist": "Créer une liste de lecture",
+  "@createPlaylist": {
+    "description": "Tooltip/label for the create-playlist button in the sidebar library header"
+  },
+  "likedSongsSidebar": "Pistes \"J'aime\"",
+  "@likedSongsSidebar": {
+    "description": "Liked Songs item label in the desktop sidebar"
+  },
+  "playlistSongsCount": "Liste de lecture • {count} pistes",
+  "@playlistSongsCount": {
+    "description": "Subtitle for a playlist item in the desktop sidebar",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@_LYRICS": {},
+  "failedToLoadLyrics": "Impossible de charger les paroles",
+  "@failedToLoadLyrics": {
+    "description": "Error state message when lyrics cannot be loaded"
+  },
+  "lyricsNotFoundSubtitle": "Les paroles de cette piste n'ont pas pu être trouvées",
+  "@lyricsNotFoundSubtitle": {
+    "description": "Empty/error subtitle in the lyrics view"
+  },
+  "backToCurrent": "Revenir à l'actuel",
+  "@backToCurrent": {
+    "description": "Button to scroll the lyrics view back to the current line"
+  },
+  "exitFullscreen": "Quitter le mode plein écran",
+  "@exitFullscreen": {
+    "description": "Tooltip for the exit-fullscreen button in lyrics view"
+  },
+  "fullscreen": "Plein écran",
+  "@fullscreen": {
+    "description": "Tooltip for the enter-fullscreen button in lyrics view"
+  },
+  "noLyrics": "Aucune parole",
+  "@noLyrics": {
+    "description": "Fallback text when no lyrics controller is available"
+  },
+  "internetRadioMiniPlayer": "Radio Internet",
+  "@internetRadioMiniPlayer": {
+    "description": "Subtitle shown in the mini player when streaming internet radio"
+  },
+  "liveBadge": "EN DIRECT",
+  "@liveBadge": {
+    "description": "Badge text shown in the mini player for live radio streams"
+  },
   "@_BANNERS": {},
+  "localFilesModeBanner": "Mode fichiers locaux",
+  "@localFilesModeBanner": {
+    "description": "Banner shown at the top of the screen in local-files mode"
+  },
+  "offlineModeBanner": "Mode hors-ligne – Lecture de la musique téléchargée uniquement",
+  "@offlineModeBanner": {
+    "description": "Banner shown at the top of the screen in offline mode"
+  },
   "@_UPDATE_DIALOG": {},
+  "updateAvailable": "Mise à jour disponible",
+  "@updateAvailable": {
+    "description": "Title of the update available dialog"
+  },
+  "updateAvailableSubtitle": "Une nouvelle version de Musly est disponible !",
+  "@updateAvailableSubtitle": {
+    "description": "Subtitle in the update dialog"
+  },
+  "updateCurrentVersion": "Version actuelle : v{version}",
+  "@updateCurrentVersion": {
+    "description": "Current version label in the update dialog",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateLatestVersion": "Dernière version : v{version}",
+  "@updateLatestVersion": {
+    "description": "Latest version label in the update dialog",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNew": "Quoi de neuf",
+  "@whatsNew": {
+    "description": "Section header for the changelog in the update dialog"
+  },
+  "downloadUpdate": "Télécharger",
+  "@downloadUpdate": {
+    "description": "Primary button in the update dialog that opens the release page"
+  },
+  "remindLater": "Me rappeler plus tard",
+  "@remindLater": {
+    "description": "Dismiss button in the update dialog"
+  },
+  "seeAll": "Tout Afficher",
+  "@seeAll": {
+    "description": "See All button in horizontal scroll sections"
+  },
   "@_ARTIST_SCREEN": {},
+  "artistDataNotFound": "Artiste introuvable",
+  "@artistDataNotFound": {
+    "description": "Error state on the artist screen when artist data fails to load"
+  },
   "@_CAST_DLNA": {},
+  "casting": "Diffusion",
+  "@casting": {
+    "description": "Title shown in the Chromecast control dialog when actively casting"
+  },
+  "dlna": "DLNA",
+  "@dlna": {
+    "description": "Title shown in the DLNA control dialog when connected"
+  },
+  "castDlnaBeta": "Diffusion / DLNA (Bêta)",
+  "@castDlnaBeta": {
+    "description": "Title of the Cast/DLNA device picker dialog"
+  },
+  "chromecast": "Chromecast",
+  "@chromecast": {
+    "description": "Section header for Chromecast devices in the device picker"
+  },
+  "dlnaUpnp": "DLNA / UPnP",
+  "@dlnaUpnp": {
+    "description": "Section header for DLNA/UPnP devices in the device picker"
+  },
+  "disconnect": "Déconnexion",
+  "@disconnect": {
+    "description": "Button to disconnect from a Cast or DLNA device"
+  },
+  "searchingDevices": "Recherche de périphériques",
+  "@searchingDevices": {
+    "description": "Loading message in the device picker when no devices have been found yet"
+  },
+  "castWifiHint": "Assurez-vous que votre appareil Cast / DLNA\nest sur le même réseau Wi-Fi",
+  "@castWifiHint": {
+    "description": "Hint shown while searching for cast/DLNA devices"
+  },
+  "connectedToDevice": "Connecté à {name}",
+  "@connectedToDevice": {
+    "description": "Snackbar shown after successfully connecting to a cast/DLNA device",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToConnectDevice": "Impossible de se connecter à {name}",
+  "@failedToConnectDevice": {
+    "description": "Snackbar shown when connecting to a cast/DLNA device fails",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_LIKED_SONGS_SNACKBARS": {},
+  "removedFromLikedSongs": "Retiré des pistes \"J'aime\"",
+  "@removedFromLikedSongs": {
+    "description": "Snackbar shown after un-liking a song in the song tile menu"
+  },
+  "addedToLikedSongs": "Ajouté aux pistes \"J'aime\"",
+  "@addedToLikedSongs": {
+    "description": "Snackbar shown after liking a song in the song tile menu"
+  },
   "@_PLAYER_BAR": {},
+  "enableShuffle": "Activer la lecture aléatoire",
+  "@enableShuffle": {
+    "description": "Tooltip for the shuffle toggle button in the desktop player bar"
+  },
+  "enableRepeat": "Activer la répétition",
+  "@enableRepeat": {
+    "description": "Tooltip for the repeat toggle button in the desktop player bar"
+  },
   "@_CAST_TOOLTIPS": {},
+  "connecting": "Connexion en cours",
+  "@connecting": {
+    "description": "Tooltip for the cast button when connecting to a device"
+  },
+  "closeLyrics": "Désactiver les paroles",
+  "@closeLyrics": {
+    "description": "Tooltip for the lyrics button when lyrics panel is open"
+  },
   "@_ERROR_MESSAGES": {},
+  "errorStartingDownload": "Erreur lors du démarrage du téléchargement : {error}",
+  "@errorStartingDownload": {
+    "description": "Snackbar shown when the library background download fails to start",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_GENRE_SCREEN": {},
+  "errorLoadingGenres": "Erreur lors du chargement des genres",
+  "@errorLoadingGenres": {
+    "description": "Error message when the genre list fails to load"
+  },
+  "noGenresFound": "Aucun genre trouvé",
+  "@noGenresFound": {
+    "description": "Empty state when no genres are returned from the server"
+  },
+  "noAlbumsInGenre": "Aucun album dans ce genre",
+  "@noAlbumsInGenre": {
+    "description": "Empty state on the Albums tab of the genre screen"
+  },
+  "genreTooltip": "{songCount} pistes • {albumCount} albums",
+  "@genreTooltip": {
+    "description": "Tooltip shown when hovering a genre chip, showing song and album counts",
+    "placeholders": {
+      "songCount": {
+        "type": "int"
+      },
+      "albumCount": {
+        "type": "int"
+      }
+    }
+  },
   "@_JUKEBOX": {},
   "sectionJukebox": "MODE JUKEBOX",
   "@sectionJukebox": {
     "description": "Section header for the jukebox settings in the Server tab"
+  },
+  "jukeboxMode": "Mode Jukebox",
+  "@jukeboxMode": {
+    "description": "Toggle label for enabling jukebox mode"
+  },
+  "jukeboxModeSubtitle": "Jouer l'audio via le serveur au lieu de cet appareil",
+  "@jukeboxModeSubtitle": {
+    "description": "Subtitle for the jukebox mode toggle"
+  },
+  "openJukeboxController": "Ouvrir le contrôleur du Jukebox",
+  "@openJukeboxController": {
+    "description": "List tile label to navigate to the jukebox controller screen"
+  },
+  "jukeboxClearQueue": "Vider la file d'attente",
+  "@jukeboxClearQueue": {
+    "description": "Action label to clear the jukebox playback queue"
+  },
+  "jukeboxShuffleQueue": "Mélanger la file d'attente",
+  "@jukeboxShuffleQueue": {
+    "description": "Action label to shuffle the jukebox playback queue"
+  },
+  "jukeboxQueueEmpty": "Aucune piste dans la file d'attente",
+  "@jukeboxQueueEmpty": {
+    "description": "Empty state when the jukebox queue has no songs"
+  },
+  "jukeboxNowPlaying": "En cours de lecture",
+  "@jukeboxNowPlaying": {
+    "description": "Section header for the now-playing area in the jukebox controller"
+  },
+  "jukeboxQueue": "File d'attente",
+  "@jukeboxQueue": {
+    "description": "Section header for the queue list in the jukebox controller"
+  },
+  "jukeboxVolume": "Volume",
+  "@jukeboxVolume": {
+    "description": "Label for the volume slider in the jukebox controller"
+  },
+  "playOnJukebox": "Jouer sur le Jukebox",
+  "@playOnJukebox": {
+    "description": "Option to replace the jukebox queue with this song and start playback"
+  },
+  "addToJukeboxQueue": "Ajouter à la file d'attente du Jukebox",
+  "@addToJukeboxQueue": {
+    "description": "Option to append a song to the jukebox queue"
   },
   "jukeboxNotSupported": "Le mode Jukebox n'est pas pris en charge par ce serveur. Activez-le dans la configuration de votre serveur (par exemple EnableJukebox = true dans Navidrome).",
   "@jukeboxNotSupported": {
@@ -792,5 +1377,94 @@
   "musicFoldersDialogTitle": "Sélectionner les dossiers de musique",
   "@musicFoldersDialogTitle": {
     "description": "Title of the music folders selection dialog"
+  },
+  "musicFoldersHint": "Laisser tout activer pour utiliser tous les dossiers (par défaut).",
+  "@musicFoldersHint": {
+    "description": "Hint text in the music folders selection dialog"
+  },
+  "musicFoldersSaved": "Sélection de dossier de musique enregistrée",
+  "@musicFoldersSaved": {
+    "description": "Snackbar shown after saving music folder selection"
+  },
+  "artworkStyleSection": "Style d’illustration",
+  "@artworkStyleSection": {
+    "description": "Display settings section header for artwork customisation"
+  },
+  "artworkCornerRadius": "Arrondi des coins",
+  "@artworkCornerRadius": {
+    "description": "Label for the album art corner radius slider"
+  },
+  "artworkCornerRadiusSubtitle": "Ajuster l'apparence des angles des pochettes d'album",
+  "@artworkCornerRadiusSubtitle": {
+    "description": "Subtitle for the album art corner radius slider"
+  },
+  "artworkCornerRadiusNone": "Aucun",
+  "@artworkCornerRadiusNone": {
+    "description": "Label shown when corner radius is set to 0 (no rounded corners)"
+  },
+  "artworkShape": "Forme",
+  "@artworkShape": {
+    "description": "Label for the artwork shape selector"
+  },
+  "artworkShapeRounded": "Arrondi",
+  "@artworkShapeRounded": {
+    "description": "Rounded rectangle artwork shape option"
+  },
+  "artworkShapeCircle": "Cercle",
+  "@artworkShapeCircle": {
+    "description": "Circle artwork shape option"
+  },
+  "artworkShapeSquare": "Carré",
+  "@artworkShapeSquare": {
+    "description": "Square (no rounding) artwork shape option"
+  },
+  "artworkShadow": "Ombre",
+  "@artworkShadow": {
+    "description": "Label for the artwork shadow intensity selector"
+  },
+  "artworkShadowNone": "Aucun",
+  "@artworkShadowNone": {
+    "description": "No shadow option for artwork"
+  },
+  "artworkShadowSoft": "Faible",
+  "@artworkShadowSoft": {
+    "description": "Soft shadow option for artwork"
+  },
+  "artworkShadowMedium": "Moyen",
+  "@artworkShadowMedium": {
+    "description": "Medium shadow option for artwork"
+  },
+  "artworkShadowStrong": "Fort",
+  "@artworkShadowStrong": {
+    "description": "Strong shadow option for artwork"
+  },
+  "artworkShadowColor": "Couleur d'ombre",
+  "@artworkShadowColor": {
+    "description": "Label for the artwork shadow color selector"
+  },
+  "artworkShadowColorBlack": "Noir",
+  "@artworkShadowColorBlack": {
+    "description": "Black shadow color option"
+  },
+  "artworkShadowColorAccent": "Accentuation",
+  "@artworkShadowColorAccent": {
+    "description": "Accent color shadow (matches app accent color)"
+  },
+  "artworkPreview": "Aperçu",
+  "@artworkPreview": {
+    "description": "Label shown above the live artwork style preview"
+  },
+  "artworkCornerRadiusLabel": "{value} pixels",
+  "@artworkCornerRadiusLabel": {
+    "description": "Formatted corner radius value label",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "noArtwork": "Pas de pochette d'album",
+  "@noArtwork": {
+    "description": "Placeholder label shown in the player when a song has no cover art"
   }
 }
