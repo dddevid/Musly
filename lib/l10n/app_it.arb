@@ -1230,7 +1230,7 @@
   },
   "disconnect": "Disconnetti",
   "@disconnect": {
-    "description": "Button to disconnect from a Cast or DLNA device"
+    "description": "Button to clear server credentials and go back to login"
   },
   "searchingDevices": "Ricerca di dispositivi in corso",
   "@searchingDevices": {

@@ -1,8 +1,9 @@
 {
-  "@@locale": "zh",
+  "@@locale": "uk",
   "@@last_modified": "2026-02-07T16:10:00Z",
   "@_LIBRARY": {},
   "@_SEARCH": {},
+  "categoryGenres": "Жанри",
   "@_SETTINGS_GENERAL": {},
   "@_SETTINGS_PLAYBACK": {},
   "@_SETTINGS_SERVER": {},

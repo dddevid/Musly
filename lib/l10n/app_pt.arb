@@ -565,11 +565,14 @@
     }
   },
   "@_SEARCH": {},
-  "searchTitle": "Pesquisar",
+  "searchTitle": "Buscar",
   "searchPlaceholder": "Artistas, músicas e álbuns",
   "tryDifferentSearch": "Tente uma busca diferente",
   "noSuggestions": "Sem sugestões",
   "browseCategories": "Navegar categorias",
+  "liveSearchSection": "Busca",
+  "liveSearch": "Busca em tempo real",
+  "liveSearchSubtitle": "Atualizar resultados enquanto digita em vez de mostrar um menu suspenso",
   "categoryMadeForYou": "Feito para você",
   "categoryNewReleases": "Novos lançamentos",
   "categoryTopRated": "Melhor Avaliados",
@@ -1230,7 +1233,7 @@
   },
   "disconnect": "Encerrar sessão",
   "@disconnect": {
-    "description": "Button to disconnect from a Cast or DLNA device"
+    "description": "Button to clear server credentials and go back to login"
   },
   "searchingDevices": "Buscando dispositivos",
   "@searchingDevices": {
