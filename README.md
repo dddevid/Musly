@@ -2,7 +2,7 @@
 
 **Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful Apple Music-inspired interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
 
-🌐 **Website:** [musly.devid.ink](https://musly.devid.ink/) (Temporarily unavailable)
+🌐 **Website:** [musly.devid.ink](https://musly.devid.ink/)
 
 [![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.8-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.8)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.ink)
@@ -146,5 +146,6 @@ This project is open source and available under the **Creative Commons Attributi
 [![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
 
 </div>
+
 
 
