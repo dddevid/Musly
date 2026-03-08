@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class SettingsAboutTab extends StatelessWidget {
@@ -17,21 +17,21 @@ class SettingsAboutTab extends StatelessWidget {
       children: [
         _buildSection(
           context,
-          title: 'INFORMATION',
+          title: AppLocalizations.of(context)!.sectionAboutInformation,
           children: [
             _buildInfoTile(
               context,
               icon: CupertinoIcons.info,
-              iconColor: AppTheme.appleMusicRed,
-              title: 'Version',
-              subtitle: '1.0.7',
+              iconColor: Theme.of(context).colorScheme.primary,
+              title: AppLocalizations.of(context)!.aboutVersion,
+              subtitle: '1.0.8',
             ),
             _buildDivider(context),
             _buildInfoTile(
               context,
               icon: CupertinoIcons.device_phone_portrait,
               iconColor: const Color(0xFF007AFF),
-              title: 'Platform',
+              title: AppLocalizations.of(context)!.aboutPlatform,
               subtitle: Theme.of(context).platform.name.toUpperCase(),
             ),
           ],
@@ -39,39 +39,39 @@ class SettingsAboutTab extends StatelessWidget {
         const SizedBox(height: 24),
         _buildSection(
           context,
-          title: 'DEVELOPER',
+          title: AppLocalizations.of(context)!.sectionAboutDeveloper,
           children: [_buildDeveloperInfo(context)],
         ),
         const SizedBox(height: 24),
         _buildSection(
           context,
-          title: 'LINKS',
+          title: AppLocalizations.of(context)!.sectionAboutLinks,
           children: [
             _buildLinkTile(
               context,
               icon: Icons.code_rounded,
-              title: 'GitHub Repository',
+              title: AppLocalizations.of(context)!.aboutLinkGitHub,
               url: 'https://github.com/dddevid/Musly',
             ),
             _buildDivider(context),
             _buildLinkTile(
               context,
               icon: CupertinoIcons.doc_text,
-              title: 'Changelog',
-              url: 'https://github.com/dddevid/Musly/releases/tag/v1.0.7',
+              title: AppLocalizations.of(context)!.aboutLinkChangelog,
+              url: 'https://github.com/dddevid/Musly/releases/tag/v1.0.8',
             ),
             _buildDivider(context),
             _buildLinkTile(
               context,
               icon: CupertinoIcons.exclamationmark_bubble,
-              title: 'Report Issue',
+              title: AppLocalizations.of(context)!.aboutLinkReportIssue,
               url: 'https://github.com/dddevid/Musly/issues/new',
             ),
             _buildDivider(context),
             _buildLinkTile(
               context,
               icon: Icons.chat_bubble_rounded,
-              title: 'Join Discord Community',
+              title: AppLocalizations.of(context)!.aboutLinkDiscord,
               url: 'https://discord.gg/k9FqpbT65M',
             ),
           ],
@@ -173,10 +173,10 @@ class SettingsAboutTab extends StatelessWidget {
         ),
         child: const Icon(Icons.code_rounded, color: Colors.white, size: 18),
       ),
-      title: const Text('Made by dddevid', style: TextStyle(fontSize: 16)),
-      subtitle: const Text(
-        'github.com/dddevid',
-        style: TextStyle(fontSize: 13),
+      title: Text(AppLocalizations.of(context)!.aboutMadeBy, style: const TextStyle(fontSize: 16)),
+      subtitle: Text(
+        AppLocalizations.of(context)!.aboutGitHub,
+        style: const TextStyle(fontSize: 13),
       ),
       trailing: const Icon(Icons.open_in_new_rounded, size: 18),
       onTap: () => _openUrl('https://github.com/dddevid'),
@@ -195,10 +195,10 @@ class SettingsAboutTab extends StatelessWidget {
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: AppTheme.appleMusicRed, size: 18),
+        child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 18),
       ),
       title: Text(title, style: const TextStyle(fontSize: 16)),
       trailing: Icon(

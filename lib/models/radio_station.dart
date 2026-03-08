@@ -1,4 +1,4 @@
-/// Represents an internet radio station from the Subsonic/Navidrome server.
+
 class RadioStation {
   final String id;
   final String name;

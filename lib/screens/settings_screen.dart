@@ -52,8 +52,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          indicatorColor: AppTheme.appleMusicRed,
-          labelColor: AppTheme.appleMusicRed,
+          indicatorColor: Theme.of(context).colorScheme.primary,
+          labelColor: Theme.of(context).colorScheme.primary,
           unselectedLabelColor: _isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,

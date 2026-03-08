@@ -1301,4 +1301,183 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get openOfflineMode => 'Open in offline mode';
+
+  @override
+  String get appearanceSection => 'Appearance';
+
+  @override
+  String get themeLabel => 'Theme';
+
+  @override
+  String get accentColorLabel => 'Accent color';
+
+  @override
+  String get circularDesignLabel => 'Circular Design';
+
+  @override
+  String get circularDesignSubtitle =>
+      'Floating, rounded UI with translucent panels and glass-blur effect on the player and navigation bar.';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get liveLabel => 'LIVE';
+
+  @override
+  String get discordStatusText => 'Discord status text';
+
+  @override
+  String get discordStatusTextSubtitle =>
+      'Second line shown in Discord activity';
+
+  @override
+  String get discordRpcStyleArtist => 'Artist name';
+
+  @override
+  String get discordRpcStyleSong => 'Song title';
+
+  @override
+  String get discordRpcStyleApp => 'App name (Musly)';
+
+  @override
+  String get sectionVolumeNormalization => 'VOLUME NORMALIZATION (REPLAYGAIN)';
+
+  @override
+  String get replayGainModeOff => 'Off';
+
+  @override
+  String get replayGainModeTrack => 'Track';
+
+  @override
+  String get replayGainModeAlbum => 'Album';
+
+  @override
+  String replayGainPreamp(String value) {
+    return 'Preamp: $value dB';
+  }
+
+  @override
+  String get replayGainPreventClipping => 'Prevent Clipping';
+
+  @override
+  String replayGainFallbackGain(String value) {
+    return 'Fallback Gain: $value dB';
+  }
+
+  @override
+  String autoDjSongsToAdd(int count) {
+    return 'Songs to Add: $count';
+  }
+
+  @override
+  String get transcodingEnable => 'Enable Transcoding';
+
+  @override
+  String get transcodingEnableSubtitle =>
+      'Reduce data usage with lower quality';
+
+  @override
+  String get smartTranscoding => 'Smart Transcoding';
+
+  @override
+  String get smartTranscodingSubtitle =>
+      'Automatically adjusts quality based on your connection (WiFi vs mobile data)';
+
+  @override
+  String get smartTranscodingDetectedNetwork => 'Detected network: ';
+
+  @override
+  String smartTranscodingActiveBitrate(String bitrate) {
+    return 'Active bitrate: $bitrate';
+  }
+
+  @override
+  String get transcodingWifiQuality => 'WiFi Quality';
+
+  @override
+  String get transcodingWifiQualitySubtitleSmart =>
+      'Used automatically on WiFi';
+
+  @override
+  String get transcodingWifiQualitySubtitle => 'Bitrate when on WiFi';
+
+  @override
+  String get transcodingMobileQuality => 'Mobile Quality';
+
+  @override
+  String get transcodingMobileQualitySubtitleSmart =>
+      'Used automatically on cellular data';
+
+  @override
+  String get transcodingMobileQualitySubtitle => 'Bitrate when on mobile data';
+
+  @override
+  String get transcodingFormat => 'Format';
+
+  @override
+  String get transcodingFormatSubtitle => 'Audio codec used for streaming';
+
+  @override
+  String get transcodingBitrateOriginal => 'Original (No Transcoding)';
+
+  @override
+  String get transcodingFormatOriginal => 'Original';
+
+  @override
+  String get imageCacheTitle => 'Image Cache';
+
+  @override
+  String get imageCacheSubtitle => 'Save album covers locally';
+
+  @override
+  String get musicCacheTitle => 'Music Cache';
+
+  @override
+  String get musicCacheSubtitle => 'Save song metadata locally';
+
+  @override
+  String get bpmCacheTitle => 'BPM Cache';
+
+  @override
+  String get bpmCacheSubtitle => 'Save BPM analysis locally';
+
+  @override
+  String get sectionAboutInformation => 'INFORMATION';
+
+  @override
+  String get sectionAboutDeveloper => 'DEVELOPER';
+
+  @override
+  String get sectionAboutLinks => 'LINKS';
+
+  @override
+  String get aboutVersion => 'Version';
+
+  @override
+  String get aboutPlatform => 'Platform';
+
+  @override
+  String get aboutMadeBy => 'Made by dddevid';
+
+  @override
+  String get aboutGitHub => 'github.com/dddevid';
+
+  @override
+  String get aboutLinkGitHub => 'GitHub Repository';
+
+  @override
+  String get aboutLinkChangelog => 'Changelog';
+
+  @override
+  String get aboutLinkReportIssue => 'Report Issue';
+
+  @override
+  String get aboutLinkDiscord => 'Join Discord Community';
 }

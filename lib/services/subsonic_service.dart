@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 
@@ -30,6 +31,50 @@ class SubsonicService {
   SubsonicService() : _dio = Dio() {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _addLogInterceptor(_dio);
+  }
+
+  static String _sanitizeUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final q = Map<String, String>.from(uri.queryParameters);
+      for (final key in const ['p', 't', 's']) {
+        if (q.containsKey(key)) q[key] = '***';
+      }
+      return uri.replace(queryParameters: q).toString();
+    } catch (_) {
+      return url;
+    }
+  }
+
+  void _addLogInterceptor(Dio dio) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          options.extra['_logSw'] = Stopwatch()..start();
+          final safe = _sanitizeUrl(options.uri.toString());
+          debugPrint('[Musly] → ${options.method} $safe');
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          final sw = response.requestOptions.extra['_logSw'] as Stopwatch?;
+          sw?.stop();
+          final ms = sw?.elapsedMilliseconds ?? 0;
+          final safe = _sanitizeUrl(response.requestOptions.uri.toString());
+          debugPrint('[Musly] ← ${response.statusCode} $safe (${ms}ms)');
+          handler.next(response);
+        },
+        onError: (e, handler) {
+          final sw = e.requestOptions.extra['_logSw'] as Stopwatch?;
+          sw?.stop();
+          final ms = sw?.elapsedMilliseconds ?? 0;
+          final safe = _sanitizeUrl(e.requestOptions.uri.toString());
+          debugPrint('[Musly] ✗ ${e.type.name} $safe (${ms}ms) — ${e.message}');
+          if (e.error != null) debugPrint('[Musly]   cause: ${e.error}');
+          handler.next(e);
+        },
+      ),
+    );
   }
 
   void configure(ServerConfig config) {
@@ -51,6 +96,7 @@ class SubsonicService {
     _dio = Dio();
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _addLogInterceptor(_dio);
 
     final hasCustomServerCert =
         customCertPath != null && customCertPath.isNotEmpty;
@@ -61,7 +107,6 @@ class SubsonicService {
         try {
           final context = SecurityContext(withTrustedRoots: true);
 
-          // Server CA certificate (for verifying the server identity)
           if (hasCustomServerCert) {
             final file = File(customCertPath);
             if (file.existsSync()) {
@@ -69,28 +114,27 @@ class SubsonicService {
             }
           }
 
-          // Client certificate for mutual TLS (mTLS)
           if (hasClientCert) {
             final file = File(clientCertPath);
             if (file.existsSync()) {
               final bytes = file.readAsBytesSync();
               final password = clientCertPassword;
-              // Load the client certificate chain (supports PEM and PKCS12)
+              
               context.useCertificateChainBytes(bytes, password: password);
-              // Load the private key (same file for PKCS12 / combined PEM)
+              
               context.usePrivateKeyBytes(bytes, password: password);
             }
           }
 
           final client = HttpClient(context: context);
           if (allowSelfSigned) {
-            // Allow self-signed or otherwise invalid server certs
+            
             client.badCertificateCallback = (cert, host, port) => true;
           }
           return client;
         } catch (e) {
-          print('Failed to configure TLS: $e');
-          // Fallback: at minimum honour the allowSelfSigned flag
+          debugPrint('Failed to configure TLS: $e');
+          
           final client = HttpClient();
           if (allowSelfSigned) {
             client.badCertificateCallback = (cert, host, port) => true;
@@ -99,17 +143,12 @@ class SubsonicService {
         }
       }
 
-      // Apply globally so that CachedNetworkImage, just_audio, and any other
-      // library that creates its own HttpClient also uses the correct TLS
-      // context (client certificate + trusted CA). Without this, only Dio
-      // requests would succeed while image loading and audio streaming would
-      // still fail with certificate errors.
       HttpOverrides.global = _TlsHttpOverrides(createClient);
 
       (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient =
           createClient;
     } else {
-      // Reset to default behaviour when no special TLS configuration is needed.
+      
       HttpOverrides.global = null;
     }
   }
@@ -158,7 +197,7 @@ class SubsonicService {
     if (_config!.useLegacyAuth) {
       params['p'] = _config!.password;
     } else {
-      // Use a fixed salt for stable URLs (images/streams) to allow caching
+      
       const salt = 'musly_stable';
       final token = md5
           .convert(utf8.encode('${_config!.password}$salt'))
@@ -217,7 +256,26 @@ class SubsonicService {
 
       return subsonicResponse;
     } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          throw Exception('Connection timed out. Check your server URL.');
+        case DioExceptionType.connectionError:
+          final cause = e.error?.toString() ?? '';
+          if (cause.contains('HandshakeException') || cause.contains('CERTIFICATE_VERIFY_FAILED') || cause.contains('SSL')) {
+            throw Exception('SSL certificate error. Enable "Allow Self-Signed Certificates" for custom CA servers.');
+          }
+          throw Exception('Cannot connect to server. Check the URL and your internet connection.');
+        case DioExceptionType.badResponse:
+          final status = e.response?.statusCode;
+          if (status == 401 || status == 403) throw Exception('Invalid username or password.');
+          if (status == 404) throw Exception('Server not found. Check your URL path.');
+          if (status != null && status >= 500) throw Exception('Server error ($status). The server failed to process the request.');
+          throw Exception('Request failed (HTTP $status).');
+        default:
+          throw Exception('Network error. Check your connection.');
+      }
     }
   }
 
@@ -428,7 +486,7 @@ class SubsonicService {
       }
     }
 
-    print('updatePlaylist URL: $url');
+    debugPrint('updatePlaylist URL: $url');
 
     try {
       final response = await _dio.get(url);
@@ -446,10 +504,11 @@ class SubsonicService {
         throw Exception(error?['message'] ?? 'Unknown error');
       }
 
-      print('updatePlaylist successful');
+      debugPrint('updatePlaylist successful');
     } on DioException catch (e) {
-      print('updatePlaylist DioException: ${e.message}');
-      throw Exception('Network error: ${e.message}');
+      final status = e.response?.statusCode;
+      if (status != null && status >= 500) throw Exception('Server error ($status). The server failed to process the request.');
+      throw Exception('Network error. Check your connection.');
     }
   }
 
@@ -523,7 +582,6 @@ class SubsonicService {
     await _request('unstar', params);
   }
 
-  /// Set rating for a song (1-5 stars, 0 to remove rating)
   Future<void> setRating(String id, int rating) async {
     if (rating < 0 || rating > 5) {
       throw ArgumentError('Rating must be between 0 and 5');
@@ -641,8 +699,6 @@ class SubsonicService {
     }
   }
 
-  // ─── Jukebox API ──────────────────────────────────────────────────────────
-
   Future<Map<String, dynamic>> jukeboxControl(
     String action, {
     int? index,
@@ -675,7 +731,9 @@ class SubsonicService {
           sr['jukeboxPlaylist'] as Map<String, dynamic>? ??
           {};
     } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
+      final status = e.response?.statusCode;
+      if (status != null && status >= 500) throw Exception('Server error ($status). The server failed to process the request.');
+      throw Exception('Network error. Check your connection.');
     }
   }
 
@@ -696,7 +754,6 @@ class SubsonicService {
   Future<Map<String, dynamic>> jukeboxSetGain(double gain) =>
       jukeboxControl('setGain', gain: gain);
 
-  /// Get all internet radio stations from the server.
   Future<List<RadioStation>> getInternetRadioStations() async {
     try {
       final response = await _request('getInternetRadioStations');
@@ -709,12 +766,11 @@ class SubsonicService {
       }
       return [];
     } catch (e) {
-      // Server might not support radio stations
+      
       return [];
     }
   }
 
-  /// Create a new internet radio station.
   Future<void> createInternetRadioStation({
     required String name,
     required String streamUrl,
@@ -727,7 +783,6 @@ class SubsonicService {
     await _request('createInternetRadioStation', params);
   }
 
-  /// Update an existing internet radio station.
   Future<void> updateInternetRadioStation({
     required String id,
     required String name,
@@ -745,12 +800,10 @@ class SubsonicService {
     await _request('updateInternetRadioStation', params);
   }
 
-  /// Delete an internet radio station.
   Future<void> deleteInternetRadioStation(String id) async {
     await _request('deleteInternetRadioStation', {'id': id});
   }
 
-  /// Get songs similar to a given song.
   Future<List<Song>> getSimilarSongs(String id, {int count = 50}) async {
     try {
       final response = await _request('getSimilarSongs2', {
@@ -765,7 +818,7 @@ class SubsonicService {
       }
       return [];
     } catch (e) {
-      // Fallback to getSimilarSongs (older API)
+      
       try {
         final response = await _request('getSimilarSongs', {
           'id': id,
@@ -782,13 +835,12 @@ class SubsonicService {
     }
   }
 
-  /// Get top songs for an artist.
   Future<List<Song>> getArtistTopSongs(
     String artistId, {
     int count = 50,
   }) async {
     try {
-      // First get artist name
+      
       final artist = await getArtist(artistId);
 
       final response = await _request('getTopSongs', {
@@ -803,7 +855,7 @@ class SubsonicService {
       }
       return [];
     } catch (e) {
-      // Fallback: get songs from artist's albums
+      
       try {
         final albums = await getArtistAlbums(artistId);
         if (albums.isEmpty) return [];
@@ -836,10 +888,6 @@ class SearchResult {
   bool get isEmpty => artists.isEmpty && albums.isEmpty && songs.isEmpty;
 }
 
-/// A global [HttpOverrides] that delegates [createHttpClient] to a factory
-/// function. This ensures that every [HttpClient] created anywhere in the app
-/// (e.g. inside `cached_network_image` or `just_audio`) uses the same TLS
-/// configuration as the Dio instance (client certificate, trusted CA, etc.).
 class _TlsHttpOverrides extends HttpOverrides {
   final HttpClient Function() _factory;
 

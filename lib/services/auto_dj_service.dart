@@ -6,7 +6,6 @@ import 'bpm_analyzer_service.dart';
 import 'subsonic_service.dart';
 import 'recommendation_service.dart';
 
-/// Auto DJ modes for automatic queue continuation
 enum AutoDjMode {
   off,
   shuffleLibrary,
@@ -63,7 +62,6 @@ class AutoDjService extends ChangeNotifier {
 
   final Map<String, SongAnalysis> _analysisCache = {};
 
-  // Auto-continue settings
   static const String _modeKey = 'auto_dj_mode';
   static const String _countKey = 'auto_dj_songs_to_add';
   static const String _thresholdKey = 'auto_dj_threshold';
@@ -72,7 +70,6 @@ class AutoDjService extends ChangeNotifier {
   int _songsToAdd = 5;
   int _triggerThreshold = 2;
 
-  // Cache for avoiding repeated songs
   final Set<String> _recentlyAddedIds = {};
   static const int _maxRecentlyAdded = 100;
 
@@ -110,7 +107,6 @@ class AutoDjService extends ChangeNotifier {
       await _bpmAnalyzer.initialize();
       await _loadAnalysisCache();
 
-      // Load mode settings
       final modeIndex = _prefs?.getInt(_modeKey) ?? 0;
       _mode =
           AutoDjMode.values[modeIndex.clamp(0, AutoDjMode.values.length - 1)];
@@ -141,14 +137,12 @@ class AutoDjService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Check if Auto DJ should add songs to the queue
   bool shouldAddSongs(int currentIndex, int queueLength) {
     if (!isEnabled) return false;
     final remaining = queueLength - currentIndex - 1;
     return remaining <= _triggerThreshold;
   }
 
-  /// Get songs to add to the queue based on the current mode
   Future<List<Song>> getSongsToQueue({
     required Song? currentSong,
     required List<Song> currentQueue,
@@ -167,18 +161,21 @@ class AutoDjService extends ChangeNotifier {
           return await _getShuffledLibrarySongs(existingIds);
 
         case AutoDjMode.similarSongs:
-          if (currentSong == null)
+          if (currentSong == null) {
             return await _getShuffledLibrarySongs(existingIds);
+          }
           return await _getSimilarSongs(currentSong, existingIds);
 
         case AutoDjMode.sameGenre:
-          if (currentSong?.genre == null)
+          if (currentSong?.genre == null) {
             return await _getShuffledLibrarySongs(existingIds);
+          }
           return await _getSameGenreSongs(currentSong!.genre!, existingIds);
 
         case AutoDjMode.sameArtist:
-          if (currentSong?.artistId == null)
+          if (currentSong?.artistId == null) {
             return await _getShuffledLibrarySongs(existingIds);
+          }
           return await _getSameArtistSongs(currentSong!.artistId!, existingIds);
 
         case AutoDjMode.smartMix:
@@ -212,7 +209,6 @@ class AutoDjService extends ChangeNotifier {
       return _filterAndLimit(similarSongs, existingIds);
     }
 
-    // Fallback: try same genre or artist
     if (song.genre != null) {
       final genreSongs = await _getSameGenreSongs(song.genre!, existingIds);
       if (genreSongs.isNotEmpty) return genreSongs;
@@ -270,7 +266,7 @@ class AutoDjService extends ChangeNotifier {
     final List<Future<List<Song>>> futures = [];
 
     if (currentSong != null) {
-      // 40% similar songs
+      
       futures.add(
         _subsonicService!.getSimilarSongs(
           currentSong.id,
@@ -278,7 +274,6 @@ class AutoDjService extends ChangeNotifier {
         ),
       );
 
-      // 30% same genre
       if (currentSong.genre != null) {
         futures.add(
           _subsonicService!.getSongsByGenre(
@@ -289,7 +284,6 @@ class AutoDjService extends ChangeNotifier {
       }
     }
 
-    // Use recommendation service for intelligent picks
     if (_recommendationService != null) {
       final topGenres = _recommendationService!.getRecommendedGenres(limit: 3);
       for (final genre in topGenres.take(2)) {
@@ -297,12 +291,10 @@ class AutoDjService extends ChangeNotifier {
       }
     }
 
-    // Add some random for variety
     futures.add(
       _subsonicService!.getRandomSongs(size: (_songsToAdd * 0.3).ceil()),
     );
 
-    // If we have BPM analysis and available songs, use smart transition
     if (currentSong != null &&
         availableSongs != null &&
         _analysisCache.containsKey(currentSong.id)) {
@@ -314,7 +306,7 @@ class AutoDjService extends ChangeNotifier {
         queueLength: _songsToAdd,
       );
       if (smartQueue.length > 1) {
-        return smartQueue.skip(1).toList(); // Skip the seed song
+        return smartQueue.skip(1).toList(); 
       }
     }
 
@@ -335,7 +327,6 @@ class AutoDjService extends ChangeNotifier {
     filtered.shuffle(Random());
     final result = filtered.take(_songsToAdd).toList();
 
-    // Add to recently added cache
     for (final song in result) {
       _recentlyAddedIds.add(song.id);
       if (_recentlyAddedIds.length > _maxRecentlyAdded) {
@@ -346,12 +337,10 @@ class AutoDjService extends ChangeNotifier {
     return result;
   }
 
-  /// Clear the recently added cache
   void clearRecentlyAdded() {
     _recentlyAddedIds.clear();
   }
 
-  /// Get display name for mode
   static String getModeDisplayName(AutoDjMode mode) {
     switch (mode) {
       case AutoDjMode.off:
@@ -369,7 +358,6 @@ class AutoDjService extends ChangeNotifier {
     }
   }
 
-  /// Get description for mode
   static String getModeDescription(AutoDjMode mode) {
     switch (mode) {
       case AutoDjMode.off:

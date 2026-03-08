@@ -5,7 +5,6 @@ import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'playlist_screen.dart';
 
-// Library Search Delegate
 class LibrarySearchDelegate extends SearchDelegate<String> {
   final LibraryProvider libraryProvider;
   final bool isDark;
@@ -84,7 +83,6 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
   Widget _buildSearchResults(BuildContext context) {
     final lowerQuery = query.toLowerCase();
 
-    // Filter playlists only (albums/artists not directly accessible)
     final matchingPlaylists = libraryProvider.playlists
         .where((p) => p.name.toLowerCase().contains(lowerQuery))
         .toList();

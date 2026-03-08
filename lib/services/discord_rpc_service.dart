@@ -18,7 +18,7 @@ class DiscordRpcService {
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       _enabled = await _storageService.getDiscordRpcEnabled();
       if (_enabled) {
-        // Initialize the library properly before creating instance
+        
         DiscordRPC.initialize();
         _rpc = DiscordRPC(applicationId: _applicationId);
         _startRpc();
@@ -40,10 +40,7 @@ class DiscordRpcService {
   void shutdown() {
     if (_initialized) {
       _rpc?.clearPresence();
-      // shutDown() is not exposed in all versions, usually clearing presence is enough or loop stops on app exit
-      // But typically we just let it be or clear presence.
-      // dart_discord_rpc doesn't have a stop() method that fully kills the process connection without disposing,
-      // but we can just clear presence.
+      
       _initialized = false;
     }
   }
@@ -53,7 +50,7 @@ class DiscordRpcService {
     await _storageService.saveDiscordRpcEnabled(enabled);
 
     if (enabled) {
-      // Create instance if it doesn't exist yet
+      
       if (_rpc == null) {
         DiscordRPC.initialize();
         _rpc = DiscordRPC(applicationId: _applicationId);
@@ -61,7 +58,7 @@ class DiscordRpcService {
       _startRpc();
     } else {
       _rpc?.clearPresence();
-      // We don't fully shut down the IPC connection usually, just clear presence so it stops showing.
+      
     }
   }
 
@@ -79,9 +76,9 @@ class DiscordRpcService {
     String? button1Label,
     String? button1Url,
   }) {
-    // Discord RPC is desktop-only; silently ignore calls on mobile/web.
+    
     if (kIsWeb ||
-        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) return;
+        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) { return; }
     if (!_enabled) return;
     if (!_initialized || _rpc == null) {
       _startRpc();
@@ -96,12 +93,11 @@ class DiscordRpcService {
           startTimeStamp: startTime,
           endTimeStamp: endTime,
           largeImageKey:
-              largeImageKey, // Pass null if not provided, don't force 'active' which might not exist
+              largeImageKey, 
           largeImageText: largeImageText,
           smallImageKey: smallImageKey,
           smallImageText: smallImageText,
-          //   button1Label: button1Label,
-          //   button1Url: button1Url,
+          
         ),
       );
       debugPrint('Discord Presence updated successfully request sent.');
@@ -112,7 +108,7 @@ class DiscordRpcService {
 
   void clearPresence() {
     if (kIsWeb ||
-        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) return;
+        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) { return; }
     debugPrint('Clearing Discord Presence');
     if (_initialized) {
       try {

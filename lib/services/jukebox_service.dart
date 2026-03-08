@@ -31,10 +31,6 @@ class JukeboxStatus {
       : null;
 }
 
-/// Manages Navidrome/Subsonic jukebox mode.
-///
-/// Jukebox mode routes audio playback to the server instead of the local device.
-/// The client acts as a remote control.
 class JukeboxService extends ChangeNotifier {
   static final JukeboxService _instance = JukeboxService._internal();
   factory JukeboxService() => _instance;
@@ -81,7 +77,7 @@ class JukeboxService extends ChangeNotifier {
       final msg = e.toString();
       if (msg.contains('501')) {
         _serverUnsupported = true;
-        _error = null; // use the localised string in the UI
+        _error = null; 
       } else {
         _error = msg.replaceFirst('Exception: ', '');
       }

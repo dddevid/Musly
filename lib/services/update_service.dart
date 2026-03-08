@@ -14,12 +14,11 @@ class ReleaseAsset {
 }
 
 class ReleaseInfo {
-  /// Version string without the leading "v" (e.g. "1.0.7")
+  
   final String version;
   final String tagName;
   final String htmlUrl;
 
-  /// Raw release body (may contain Markdown).
   final String body;
   final List<ReleaseAsset> assets;
 
@@ -48,8 +47,8 @@ class ReleaseInfo {
 }
 
 class UpdateService {
-  /// Must match the `version` field in pubspec.yaml (without +build).
-  static const String currentVersion = '1.0.7';
+  
+  static const String currentVersion = '1.0.8';
 
   static const String _apiUrl =
       'https://api.github.com/repos/dddevid/Musly/releases/latest';
@@ -65,8 +64,6 @@ class UpdateService {
     ),
   );
 
-  /// Returns [ReleaseInfo] when a newer version is available on GitHub.
-  /// Returns null if the app is up-to-date or the check fails.
   static Future<ReleaseInfo?> checkForUpdate() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(_apiUrl);
@@ -84,8 +81,6 @@ class UpdateService {
     }
   }
 
-  /// Returns true if [remote] is strictly newer than [current].
-  /// Both must be in "major.minor.patch" form (missing parts default to 0).
   static bool _isNewer(String remote, String current) {
     try {
       List<int> parse(String v) =>
@@ -94,8 +89,8 @@ class UpdateService {
       final r = parse(remote);
       final c = parse(current);
       final len = r.length > c.length ? r.length : c.length;
-      while (r.length < len) r.add(0);
-      while (c.length < len) c.add(0);
+      while (r.length < len) { r.add(0); }
+      while (c.length < len) { c.add(0); }
 
       for (int i = 0; i < len; i++) {
         if (r[i] > c[i]) return true;
@@ -107,7 +102,6 @@ class UpdateService {
     }
   }
 
-  /// Strips the most common Markdown symbols for plain-text display.
   static String stripMarkdown(String md) {
     return md
         .replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '')

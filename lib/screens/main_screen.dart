@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/providers.dart';
-import '../providers/auth_provider.dart';
 import '../services/local_music_service.dart';
 import '../services/recommendation_service.dart';
+import '../services/theme_service.dart';
 import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
@@ -71,28 +72,24 @@ class _MainScreenState extends State<MainScreen> {
           context,
           listen: false,
         );
-        // Wire service first (sets up listener + resets _isInitialized)
+        
         libraryProvider.setLocalMusicService(localMusicService);
 
         if (localMusicService.isEmpty && !localMusicService.isScanning) {
-          // No songs yet – trigger a fresh scan (listener will reload library)
+          
           localMusicService.scanForMusic();
         } else if (!localMusicService.isScanning) {
-          // Songs already loaded from the login screen scan – initialize immediately
+          
           libraryProvider.initialize();
         }
-        // If scanning is in progress, the listener on LocalMusicService
-        // (_onLocalMusicServiceChanged) will fire when done and populate the library.
+        
       } else {
-        // Ensure local-only mode is disabled when connecting to a server,
-        // so that any previously-loaded local songs are cleared before the
-        // server library is fetched.
+        
         libraryProvider.setLocalOnlyMode(false);
         libraryProvider.setServerOfflineMode(widget.isOfflineMode);
         libraryProvider.initialize();
       }
 
-      // Check for updates after a short delay so the UI is fully settled
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) _checkForUpdate();
       });
@@ -121,7 +118,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
+              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -185,7 +182,6 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
 
-              // Changelog
               if (changelog.isNotEmpty)
                 Flexible(
                   child: Padding(
@@ -226,7 +222,6 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
 
-              // Buttons
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -282,9 +277,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // https://github.com/dddevid/Musly/issues/73
-  // Opaque route avoids the double-render compositing that caused grey screens
-  // on low-memory / small-screen devices (e.g. Sony NW-A306).
   void _openNowPlaying() {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -311,10 +303,7 @@ class _MainScreenState extends State<MainScreen> {
         transitionDuration: const Duration(milliseconds: 400),
       ),
     ).then((_) async {
-      // On iOS, volume_controller's VolumeListener.onCancel() calls
-      // AVAudioSession.setActive(false) when the NowPlayingScreen's volume
-      // slider widget is disposed, stopping just_audio playback.
-      // We wait one frame so the dispose() completes before re-activating.
+      
       if (!mounted) return;
       if (Platform.isIOS) {
         await Future.delayed(const Duration(milliseconds: 50));
@@ -356,11 +345,11 @@ class _MainScreenState extends State<MainScreen> {
                       key: NavigationHelper.desktopNavigatorKey,
                       onGenerateRoute: (settings) {
                         return PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => IndexedStack(
+                          pageBuilder: (ctx, anim, _) => IndexedStack(
                             index: _currentIndex,
                             children: _screens,
                           ),
-                          transitionsBuilder: (_, animation, __, child) {
+                          transitionsBuilder: (ctx, animation, _, child) {
                             return FadeTransition(
                               opacity: animation,
                               child: child,
@@ -388,7 +377,7 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    // Mobile layout with nested navigator for persistent bottom bar
+    final bool liquidGlass = Provider.of<ThemeService>(context).liquidGlass;
     return Selector<PlayerProvider, bool>(
       selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
       builder: (context, hasCurrentSong, _) {
@@ -400,10 +389,10 @@ class _MainScreenState extends State<MainScreen> {
           },
           child: Scaffold(
             resizeToAvoidBottomInset:
-                false, // Prevent miniplayer from moving with keyboard
+                false, 
             body: Column(
               children: [
-                // Offline mode banner
+                
                 if (widget.isOfflineMode || isLocalMode)
                   Container(
                     width: double.infinity,
@@ -444,7 +433,7 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                   ),
-                // LocalMusicService scan progress indicator
+                
                 if (isLocalMode)
                   Selector<LocalMusicService, (bool, double, String)>(
                     selector: (_, s) =>
@@ -492,12 +481,14 @@ class _MainScreenState extends State<MainScreen> {
                     },
                   ),
                 ),
-                // Persistent bottom bar
+                
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (hasCurrentSong) MiniPlayer(onTap: _openNowPlaying),
-                    _buildBottomNav(context),
+                    liquidGlass
+                        ? _buildGlassBottomNav(context)
+                        : _buildBottomNav(context),
                   ],
                 ),
               ],
@@ -509,21 +500,153 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _handleBackButton() {
-    // First, try to pop the nested navigator
+    
     final navigatorState = NavigationHelper.mobileNavigatorKey.currentState;
     if (navigatorState != null && navigatorState.canPop()) {
       navigatorState.pop();
       return;
     }
 
-    // If we're not on the home tab, go to home
     if (_currentIndex != 0) {
       setState(() => _currentIndex = 0);
       return;
     }
 
-    // We're on home tab and can't pop - exit the app
     SystemNavigator.pop();
+  }
+
+  Widget _buildGlassBottomNav(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final accent = theme.colorScheme.primary;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final l10n = AppLocalizations.of(context)!;
+
+    final items = [
+      (
+        icon: CupertinoIcons.music_house,
+        activeIcon: CupertinoIcons.music_house_fill,
+        label: l10n.home,
+      ),
+      (
+        icon: CupertinoIcons.collections,
+        activeIcon: CupertinoIcons.collections_solid,
+        label: l10n.library,
+      ),
+      (
+        icon: CupertinoIcons.search,
+        activeIcon: CupertinoIcons.search,
+        label: l10n.search,
+      ),
+    ];
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, 4, 12, safeBottom > 0 ? safeBottom : 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.14),
+              blurRadius: 28,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              height: 62,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.8),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                children: List.generate(items.length, (idx) {
+                  final item = items[idx];
+                  final isSelected = _currentIndex == idx;
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        final navigatorState =
+                            NavigationHelper.mobileNavigatorKey.currentState;
+                        navigatorState?.popUntil((route) => route.isFirst);
+
+                        if (idx == 2) {
+                          final now = DateTime.now();
+                          if (now.difference(_lastSearchTap).inSeconds > 3) {
+                            _searchTapCount = 0;
+                          }
+                          _searchTapCount++;
+                          _lastSearchTap = now;
+                          if (_searchTapCount >= 11) {
+                            _searchTapCount = 0;
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const FantasyScreen(),
+                              ),
+                            );
+                            return;
+                          }
+                        } else {
+                          _searchTapCount = 0;
+                        }
+
+                        setState(() => _currentIndex = idx);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            child: Icon(
+                              isSelected ? item.activeIcon : item.icon,
+                              key: ValueKey(isSelected),
+                              color: isSelected
+                                  ? accent
+                                  : (isDark
+                                        ? Colors.white54
+                                        : Colors.black38),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.label,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              color: isSelected
+                                  ? accent
+                                  : (isDark
+                                        ? Colors.white54
+                                        : Colors.black38),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomNav(BuildContext context) {
@@ -546,12 +669,11 @@ class _MainScreenState extends State<MainScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            // Pop nested navigator to root when switching tabs
+            
             final navigatorState =
                 NavigationHelper.mobileNavigatorKey.currentState;
             navigatorState?.popUntil((route) => route.isFirst);
 
-            // Easter egg: 11 taps on the search tab within 3 s each
             if (index == 2) {
               final now = DateTime.now();
               if (now.difference(_lastSearchTap).inSeconds > 3) {

@@ -16,7 +16,7 @@ class Song {
   final int? size;
   final String? path;
   final bool? starred;
-  final int? userRating; // 1-5 stars, null if not rated
+  final int? userRating; 
   final bool isLocal;
   final double? replayGainTrackGain;
   final double? replayGainAlbumGain;
@@ -50,7 +50,7 @@ class Song {
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
-    // Parse ReplayGain data - Subsonic API provides it in a nested 'replayGain' object
+    
     final replayGain = json['replayGain'] as Map<String, dynamic>?;
 
     return Song(

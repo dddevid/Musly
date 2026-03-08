@@ -638,7 +638,7 @@ abstract class AppLocalizations {
   /// **'Error'**
   String get error;
 
-  /// Retry button label
+  /// Button to retry a failed server connection
   ///
   /// In en, this message translates to:
   /// **'Retry'**
@@ -914,7 +914,7 @@ abstract class AppLocalizations {
   /// **'Playlist'**
   String get playlist;
 
-  /// No description provided for @internetRadio.
+  /// Subtitle shown in the mini player and player bar when a radio station is playing
   ///
   /// In en, this message translates to:
   /// **'Internet Radio'**
@@ -1094,7 +1094,7 @@ abstract class AppLocalizations {
   /// **'About'**
   String get tabAbout;
 
-  /// No description provided for @sectionAutoDj.
+  /// Playback settings section header for Auto DJ
   ///
   /// In en, this message translates to:
   /// **'AUTO DJ'**
@@ -1118,7 +1118,7 @@ abstract class AppLocalizations {
   /// **'VOLUME NORMALIZATION (REPLAYGAIN)'**
   String get sectionReplayGain;
 
-  /// No description provided for @replayGainMode.
+  /// Label for the ReplayGain mode selector
   ///
   /// In en, this message translates to:
   /// **'Mode'**
@@ -1142,7 +1142,7 @@ abstract class AppLocalizations {
   /// **'Fallback Gain: {value} dB'**
   String fallbackGain(String value);
 
-  /// No description provided for @sectionStreamingQuality.
+  /// Playback settings section header for transcoding / streaming quality
   ///
   /// In en, this message translates to:
   /// **'STREAMING QUALITY'**
@@ -1250,7 +1250,7 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to logout? This will also clear all cached data.'**
   String get logoutConfirmation;
 
-  /// No description provided for @sectionCacheSettings.
+  /// Storage settings section header
   ///
   /// In en, this message translates to:
   /// **'CACHE SETTINGS'**
@@ -1292,13 +1292,13 @@ abstract class AppLocalizations {
   /// **'Save BPM analysis locally'**
   String get saveBpmAnalysis;
 
-  /// No description provided for @sectionCacheCleanup.
+  /// Storage settings section header for cache cleanup
   ///
   /// In en, this message translates to:
   /// **'CACHE CLEANUP'**
   String get sectionCacheCleanup;
 
-  /// No description provided for @clearAllCache.
+  /// Button to clear all cached data
   ///
   /// In en, this message translates to:
   /// **'Clear All Cache'**
@@ -1310,7 +1310,7 @@ abstract class AppLocalizations {
   /// **'All cache cleared'**
   String get allCacheCleared;
 
-  /// No description provided for @sectionOfflineDownloads.
+  /// Storage settings section header for offline downloads
   ///
   /// In en, this message translates to:
   /// **'OFFLINE DOWNLOADS'**
@@ -1364,7 +1364,7 @@ abstract class AppLocalizations {
   /// **'No songs available. Please load your library first.'**
   String get noSongsAvailable;
 
-  /// No description provided for @sectionBpmAnalysis.
+  /// Storage settings section header for BPM analysis
   ///
   /// In en, this message translates to:
   /// **'BPM ANALYSIS'**
@@ -2503,6 +2503,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in offline mode'**
   String get openOfflineMode;
+
+  /// Display settings section header for theme / appearance
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceSection;
+
+  /// Label for the theme mode selector (System / Light / Dark)
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeLabel;
+
+  /// Label for the accent color picker
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get accentColorLabel;
+
+  /// Label for the Circular Design (glass-blur UI) toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Circular Design'**
+  String get circularDesignLabel;
+
+  /// Subtitle describing the Circular Design visual style
+  ///
+  /// In en, this message translates to:
+  /// **'Floating, rounded UI with translucent panels and glass-blur effect on the player and navigation bar.'**
+  String get circularDesignSubtitle;
+
+  /// Theme mode option that follows the OS setting
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// Light theme mode option
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// Dark theme mode option
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// Badge shown next to a live radio stream
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get liveLabel;
+
+  /// Settings label for the Discord Rich Presence second-line style
+  ///
+  /// In en, this message translates to:
+  /// **'Discord status text'**
+  String get discordStatusText;
+
+  /// Subtitle for the Discord status text setting
+  ///
+  /// In en, this message translates to:
+  /// **'Second line shown in Discord activity'**
+  String get discordStatusTextSubtitle;
+
+  /// Discord RPC state style option: show artist name
+  ///
+  /// In en, this message translates to:
+  /// **'Artist name'**
+  String get discordRpcStyleArtist;
+
+  /// Discord RPC state style option: show song title
+  ///
+  /// In en, this message translates to:
+  /// **'Song title'**
+  String get discordRpcStyleSong;
+
+  /// Discord RPC state style option: show app name
+  ///
+  /// In en, this message translates to:
+  /// **'App name (Musly)'**
+  String get discordRpcStyleApp;
+
+  /// Playback settings section header for ReplayGain
+  ///
+  /// In en, this message translates to:
+  /// **'VOLUME NORMALIZATION (REPLAYGAIN)'**
+  String get sectionVolumeNormalization;
+
+  /// ReplayGain mode: disabled
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get replayGainModeOff;
+
+  /// ReplayGain mode: per-track normalization
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get replayGainModeTrack;
+
+  /// ReplayGain mode: album-level normalization
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get replayGainModeAlbum;
+
+  /// ReplayGain preamp slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Preamp: {value} dB'**
+  String replayGainPreamp(String value);
+
+  /// Toggle label for ReplayGain prevent-clipping option
+  ///
+  /// In en, this message translates to:
+  /// **'Prevent Clipping'**
+  String get replayGainPreventClipping;
+
+  /// ReplayGain fallback gain slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Fallback Gain: {value} dB'**
+  String replayGainFallbackGain(String value);
+
+  /// Auto DJ slider label showing how many songs to add
+  ///
+  /// In en, this message translates to:
+  /// **'Songs to Add: {count}'**
+  String autoDjSongsToAdd(int count);
+
+  /// Toggle label to enable transcoding
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Transcoding'**
+  String get transcodingEnable;
+
+  /// Subtitle for the enable transcoding toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce data usage with lower quality'**
+  String get transcodingEnableSubtitle;
+
+  /// Toggle label for smart (auto) transcoding mode
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Transcoding'**
+  String get smartTranscoding;
+
+  /// Subtitle for the smart transcoding toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically adjusts quality based on your connection (WiFi vs mobile data)'**
+  String get smartTranscodingSubtitle;
+
+  /// Label shown before the live network type badge
+  ///
+  /// In en, this message translates to:
+  /// **'Detected network: '**
+  String get smartTranscodingDetectedNetwork;
+
+  /// Shows the currently active transcoding bitrate
+  ///
+  /// In en, this message translates to:
+  /// **'Active bitrate: {bitrate}'**
+  String smartTranscodingActiveBitrate(String bitrate);
+
+  /// Label for WiFi bitrate selector
+  ///
+  /// In en, this message translates to:
+  /// **'WiFi Quality'**
+  String get transcodingWifiQuality;
+
+  /// WiFi quality subtitle when smart mode is on
+  ///
+  /// In en, this message translates to:
+  /// **'Used automatically on WiFi'**
+  String get transcodingWifiQualitySubtitleSmart;
+
+  /// WiFi quality subtitle when smart mode is off
+  ///
+  /// In en, this message translates to:
+  /// **'Bitrate when on WiFi'**
+  String get transcodingWifiQualitySubtitle;
+
+  /// Label for mobile data bitrate selector
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Quality'**
+  String get transcodingMobileQuality;
+
+  /// Mobile quality subtitle when smart mode is on
+  ///
+  /// In en, this message translates to:
+  /// **'Used automatically on cellular data'**
+  String get transcodingMobileQualitySubtitleSmart;
+
+  /// Mobile quality subtitle when smart mode is off
+  ///
+  /// In en, this message translates to:
+  /// **'Bitrate when on mobile data'**
+  String get transcodingMobileQualitySubtitle;
+
+  /// Label for the transcoding format selector
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get transcodingFormat;
+
+  /// Subtitle for the transcoding format selector
+  ///
+  /// In en, this message translates to:
+  /// **'Audio codec used for streaming'**
+  String get transcodingFormatSubtitle;
+
+  /// Transcoding bitrate option: no transcoding, use original
+  ///
+  /// In en, this message translates to:
+  /// **'Original (No Transcoding)'**
+  String get transcodingBitrateOriginal;
+
+  /// Transcoding format option: original (no conversion)
+  ///
+  /// In en, this message translates to:
+  /// **'Original'**
+  String get transcodingFormatOriginal;
+
+  /// Toggle title for image (album art) cache
+  ///
+  /// In en, this message translates to:
+  /// **'Image Cache'**
+  String get imageCacheTitle;
+
+  /// Subtitle for image cache toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Save album covers locally'**
+  String get imageCacheSubtitle;
+
+  /// Toggle title for music metadata cache
+  ///
+  /// In en, this message translates to:
+  /// **'Music Cache'**
+  String get musicCacheTitle;
+
+  /// Subtitle for music cache toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Save song metadata locally'**
+  String get musicCacheSubtitle;
+
+  /// Toggle title for BPM analysis cache
+  ///
+  /// In en, this message translates to:
+  /// **'BPM Cache'**
+  String get bpmCacheTitle;
+
+  /// Subtitle for BPM cache toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Save BPM analysis locally'**
+  String get bpmCacheSubtitle;
+
+  /// About screen section header
+  ///
+  /// In en, this message translates to:
+  /// **'INFORMATION'**
+  String get sectionAboutInformation;
+
+  /// About screen developer section header
+  ///
+  /// In en, this message translates to:
+  /// **'DEVELOPER'**
+  String get sectionAboutDeveloper;
+
+  /// About screen links section header
+  ///
+  /// In en, this message translates to:
+  /// **'LINKS'**
+  String get sectionAboutLinks;
+
+  /// About screen version row title
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get aboutVersion;
+
+  /// About screen platform row title
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get aboutPlatform;
+
+  /// Developer credit text in the about tab
+  ///
+  /// In en, this message translates to:
+  /// **'Made by dddevid'**
+  String get aboutMadeBy;
+
+  /// Developer GitHub handle shown as subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'github.com/dddevid'**
+  String get aboutGitHub;
+
+  /// Link tile title for the GitHub repo
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get aboutLinkGitHub;
+
+  /// Link tile title for the app changelog
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get aboutLinkChangelog;
+
+  /// Link tile title for reporting a bug
+  ///
+  /// In en, this message translates to:
+  /// **'Report Issue'**
+  String get aboutLinkReportIssue;
+
+  /// Link tile title for the Discord server
+  ///
+  /// In en, this message translates to:
+  /// **'Join Discord Community'**
+  String get aboutLinkDiscord;
 }
 
 class _AppLocalizationsDelegate

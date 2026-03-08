@@ -8,6 +8,7 @@ class HorizontalScrollSection extends StatelessWidget {
   final VoidCallback? onSeeAllTap;
   final double itemSpacing;
   final EdgeInsets padding;
+  final double? cardSize;
 
   const HorizontalScrollSection({
     super.key,
@@ -17,11 +18,13 @@ class HorizontalScrollSection extends StatelessWidget {
     this.onSeeAllTap,
     this.itemSpacing = 16,
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    this.cardSize,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final listHeight = (cardSize ?? 150) + 60; 
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +55,7 @@ class HorizontalScrollSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 220,
+          height: listHeight,
           child: ListView.separated(
             padding: padding,
             scrollDirection: Axis.horizontal,

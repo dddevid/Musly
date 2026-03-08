@@ -43,7 +43,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
           children: [
             _buildInfoTile(
               icon: CupertinoIcons.cloud,
-              iconColor: AppTheme.appleMusicRed,
+              iconColor: Theme.of(context).colorScheme.primary,
               title: l10n.serverType,
               subtitle: serverSubtitle,
             ),
@@ -253,7 +253,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               ),
             ),
             value: jukebox.enabled,
-            activeColor: AppTheme.appleMusicRed,
+            activeThumbColor: Theme.of(context).colorScheme.primary,
             onChanged: (v) => jukebox.setEnabled(v),
           ),
           if (jukebox.enabled) ...[
@@ -340,7 +340,6 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     );
   }
 }
-// ─── Music Folders Dialog ─────────────────────────────────────────────────────
 
 class _MusicFoldersDialog extends StatefulWidget {
   final List<MusicFolder> folders;
@@ -368,25 +367,25 @@ class _MusicFoldersDialogState extends State<_MusicFoldersDialog> {
   }
 
   bool _isFolderEnabled(MusicFolder folder) {
-    // Empty selection = all folders enabled (Subsonic default)
+    
     return _selected.isEmpty || _selected.contains(folder.id);
   }
 
   void _toggle(MusicFolder folder) {
     setState(() {
       if (_selected.isEmpty) {
-        // Currently "all" — switch to explicit: enable all except this one
+        
         _selected = widget.folders
             .map((f) => f.id)
             .where((id) => id != folder.id)
             .toSet();
       } else if (_selected.contains(folder.id)) {
         _selected.remove(folder.id);
-        // If nothing left selected, treat as "all"
+        
         if (_selected.isEmpty) _selected = {};
       } else {
         _selected.add(folder.id);
-        // If all folders are selected, simplify to "all"
+        
         if (_selected.length == widget.folders.length) _selected = {};
       }
     });

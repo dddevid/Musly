@@ -42,7 +42,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   late AnimationController _bgAnimationController;
   StreamSubscription<Duration>? _positionSubscription;
 
-  // Track song internally to handle updates independent of parent
   late Song _song;
 
   bool _isPlaying = false;
@@ -50,10 +49,8 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   bool _isFullscreen = false;
   bool _showReturnButton = false;
 
-  // flutter_lyric controller
   LyricController? _lyricController;
 
-  // Throttle position updates for performance
   Duration _lastUpdatePosition = Duration.zero;
 
   bool get _isDesktop {
@@ -70,7 +67,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     );
     _bgAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 30), // Slower animation = less GPU work
+      duration: const Duration(seconds: 30), 
     )..repeat(reverse: true);
 
     _song = widget.song;
@@ -78,7 +75,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     _setupPositionListener();
     _maybeSetHighRefreshRate();
 
-    // Listen to Song changes from provider directly (since this is a pushed route)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PlayerProvider>(
         context,
@@ -89,7 +85,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
   @override
   void dispose() {
-    // Try/catch in case provider is already disposed
+    
     try {
       Provider.of<PlayerProvider>(
         context,
@@ -149,7 +145,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   void didUpdateWidget(SyncedLyricsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.song.id != widget.song.id) {
-      // If parent triggers update, sync internal state
+      
       if (widget.song.id != _song.id) {
         setState(() {
           _song = widget.song;
@@ -162,7 +158,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   void _setupPositionListener() {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     _positionSubscription = playerProvider.positionStream.listen((position) {
-      // Throttle updates - update more frequently (approx 30fps) to catch fast lyrics
+      
       final diff = (position - _lastUpdatePosition).abs();
       final wentBackwards = position < _lastUpdatePosition;
 
@@ -183,13 +179,11 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     _lyricController?.dispose();
     _lyricController = LyricController();
 
-    // Ignore updates during initial layout
     _canShowReturnButton = false;
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _canShowReturnButton = true;
     });
 
-    // Set up tap callback to seek
     _lyricController!.setOnTapLineCallback((Duration position) {
       final playerProvider = Provider.of<PlayerProvider>(
         context,
@@ -202,7 +196,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       }
     });
 
-    // Listen for selection events to show/hide return button
     _lyricController!.registerEvent(LyricEvent.stopSelection, (_) {
       if (mounted && _canShowReturnButton) {
         setState(() => _showReturnButton = true);
@@ -230,8 +223,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     return buffer.toString();
   }
 
-  /// Syncs the lyric controller to the player's current position so that
-  /// opening lyrics mid-song immediately shows the correct line.
   void _syncToCurrentPosition() {
     if (_lyricController == null) return;
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
@@ -250,7 +241,6 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
         listen: false,
       );
 
-      // Check local lyrics cache first (available offline)
       final offlineService = OfflineService();
       final cached = await offlineService.getLocalLyrics(_song.id);
       final syncedData = cached?['lyricsList'] as Map<String, dynamic>?
@@ -261,8 +251,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       if (syncedData != null) {
         final structuredLyrics = syncedData['structuredLyrics'];
         if (structuredLyrics is List && structuredLyrics.isNotEmpty) {
-          // Prefer the synced entry — unsynced entries have null start times
-          // that all default to 0, making every line appear at position 0.
+          
           final syncedEntry = structuredLyrics
               .cast<Map<String, dynamic>>()
               .firstWhere(
@@ -347,7 +336,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   void _returnToSyncedPosition() {
-    // Simply hide the button - the LyricStyle auto-resume will handle scrolling
+    
     setState(() {
       _showReturnButton = false;
     });
@@ -428,7 +417,7 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
               filter: ImageFilter.blur(
                 sigmaX: 40,
                 sigmaY: 40,
-              ), // Reduced blur for better performance
+              ), 
               child: Container(color: Colors.black.withValues(alpha: 0.6)),
             ),
           ),
@@ -541,9 +530,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                           fadeInDuration: Duration.zero,
                           fadeOutDuration: Duration.zero,
                           useOldImageOnUrlChange: true,
-                          placeholder: (_, __) =>
+                          placeholder: (_, _) =>
                               Container(color: Colors.grey[900]),
-                          errorWidget: (_, __, ___) =>
+                          errorWidget: (_, _, _) =>
                               Container(color: Colors.grey[900]),
                         ),
                       ),
@@ -717,16 +706,16 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
       animation: _bgAnimationController,
       builder: (context, child) {
         final scale =
-            1.2 + (_bgAnimationController.value * 0.2); // Reduced scale range
+            1.2 + (_bgAnimationController.value * 0.2); 
         final offsetX =
-            (_bgAnimationController.value - 0.5) * 30; // Reduced offset
+            (_bgAnimationController.value - 0.5) * 30; 
         final offsetY = (_bgAnimationController.value - 0.5) * 20;
 
         return Transform(
           alignment: Alignment.center,
           transform: Matrix4.identity()
-            ..translate(offsetX, offsetY)
-            ..scale(scale),
+            ..translateByDouble(offsetX, offsetY, 0.0, 1.0)
+            ..scaleByDouble(scale, scale, 1.0, 1.0),
           child: child,
         );
       },
@@ -739,18 +728,18 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
                 fit: BoxFit.cover,
                 cacheWidth: 300,
                 cacheHeight: 300,
-                errorBuilder: (_, __, ___) => Container(color: Colors.black),
+                errorBuilder: (_, _, _) => Container(color: Colors.black),
               )
             : CachedNetworkImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                memCacheWidth: 300, // Reduced cache size
+                memCacheWidth: 300, 
                 memCacheHeight: 300,
                 fadeInDuration: Duration.zero,
                 fadeOutDuration: Duration.zero,
                 useOldImageOnUrlChange: true,
-                placeholder: (_, __) => Container(color: Colors.black),
-                errorWidget: (_, __, ___) => Container(color: Colors.black),
+                placeholder: (_, _) => Container(color: Colors.black),
+                errorWidget: (_, _, _) => Container(color: Colors.black),
               ),
       ),
     );

@@ -69,7 +69,7 @@ class CastService extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    // On iOS, Cast is replaced by native AirPlay — never initialize the SDK.
+    
     if (Platform.isIOS) return;
     _sessionSubscription = _sessionManager.currentSessionStream.listen((
       session,
@@ -77,7 +77,6 @@ class CastService extends ChangeNotifier {
       _handleSessionChange(session);
     });
 
-    // Listen to media status changes
     _mediaStatusSubscription = _remoteMediaClient.mediaStatusStream.listen((
       status,
     ) {
@@ -99,7 +98,6 @@ class CastService extends ChangeNotifier {
       }
       debugPrint('CastService: Context initialized successfully');
 
-      // Check initial state
       if (_sessionManager.hasConnectedSession) {
         _state = CastState.connected;
         notifyListeners();
@@ -147,7 +145,7 @@ class CastService extends ChangeNotifier {
 
     _mediaState = CastMediaState(
       isPlaying: status.playerState == CastMediaPlayerState.playing,
-      position: _mediaState.position, // Keep current position, update via timer
+      position: _mediaState.position, 
       duration: mediaInfo?.duration ?? Duration.zero,
       title: title,
       artist: artist,
@@ -166,7 +164,7 @@ class CastService extends ChangeNotifier {
     _stopPositionTimer();
     _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_mediaState.isPlaying && _state == CastState.connected) {
-        // Update position locally for smoother UI
+        
         _mediaState = _mediaState.copyWith(
           position: _mediaState.position + const Duration(seconds: 1),
         );
@@ -180,7 +178,6 @@ class CastService extends ChangeNotifier {
     _positionTimer = null;
   }
 
-  // Connect to a Cast device
   Future<bool> connectToDevice(GoogleCastDevice device) async {
     try {
       _state = CastState.connecting;
@@ -203,7 +200,6 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  // Disconnect from Cast device
   Future<void> disconnect() async {
     try {
       _state = CastState.disconnecting;
@@ -225,7 +221,6 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  // Load media
   Future<bool> loadMedia({
     required String url,
     required String title,
@@ -244,8 +239,6 @@ class CastService extends ChangeNotifier {
     try {
       debugPrint('CastService: Loading media: $title by $artist');
 
-      // Use MusicTrackMediaMetadata (type 3) so Cast devices show proper
-      // Now Playing card with artist, album, and cover art.
       final metadata = GoogleCastMusicMediaMetadata(
         title: title,
         artist: artist,
@@ -257,11 +250,10 @@ class CastService extends ChangeNotifier {
         ],
       );
 
-      // Detect MIME type from URL for correct Cast receiver handling.
       final contentType = _mimeTypeFromUrl(url);
 
       final mediaInfo = GoogleCastMediaInformation(
-        // contentId is a logical identifier; actual stream URL goes in contentUrl.
+        
         contentId: url,
         contentUrl: Uri.tryParse(url),
         streamType: CastMediaStreamType.buffered,
@@ -276,8 +268,6 @@ class CastService extends ChangeNotifier {
         playPosition: Duration.zero,
       );
 
-      // Sync initial media state title immediately so the control dialog
-      // shows the song before the first mediaStatus event arrives.
       _mediaState = _mediaState.copyWith(
         title: title,
         artist: artist,
@@ -296,7 +286,6 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  /// Infer an appropriate MIME type from the stream URL.
   static String _mimeTypeFromUrl(String url) {
     final lower = url.toLowerCase().split('?').first;
     if (lower.endsWith('.flac')) return 'audio/flac';
@@ -306,12 +295,10 @@ class CastService extends ChangeNotifier {
     if (lower.endsWith('.aac')) return 'audio/aac';
     if (lower.endsWith('.m4a')) return 'audio/mp4';
     if (lower.endsWith('.mp3')) return 'audio/mpeg';
-    // Subsonic /rest/stream URLs: prefer audio/mpeg as the most universally
-    // supported Cast audio type.
+    
     return 'audio/mpeg';
   }
 
-  // Playback controls
   Future<void> play() async {
     if (!isConnected) return;
 
@@ -360,7 +347,6 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  // Volume control
   Future<void> setVolume(double volume) async {
     if (!isConnected) return;
     volume = volume.clamp(0.0, 1.0);

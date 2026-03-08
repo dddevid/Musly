@@ -25,9 +25,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   bool _imageCacheEnabled = true;
   bool _musicCacheEnabled = true;
   bool _bpmCacheEnabled = true;
-  bool _isCaching = false;
-  int _currentProgress = 0;
-  int _totalSongs = 0;
+  final bool _isCaching = false;
+  final int _currentProgress = 0;
+  final int _totalSongs = 0;
   int _downloadedCount = 0;
   String _downloadedSize = '0 B';
 
@@ -87,13 +87,13 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         _buildSection(
-          title: 'CACHE SETTINGS',
+          title: AppLocalizations.of(context)!.sectionCacheSettings,
           children: [
             _buildCacheToggle(
               icon: CupertinoIcons.photo,
               iconGradient: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
-              title: 'Image Cache',
-              subtitle: 'Save album covers locally',
+              title: AppLocalizations.of(context)!.imageCacheTitle,
+              subtitle: AppLocalizations.of(context)!.imageCacheSubtitle,
               value: _imageCacheEnabled,
               onChanged: _toggleImageCache,
             ),
@@ -101,8 +101,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             _buildCacheToggle(
               icon: CupertinoIcons.music_note,
               iconGradient: const [Color(0xFF34C759), Color(0xFF30D158)],
-              title: 'Music Cache',
-              subtitle: 'Save song metadata locally',
+              title: AppLocalizations.of(context)!.musicCacheTitle,
+              subtitle: AppLocalizations.of(context)!.musicCacheSubtitle,
               value: _musicCacheEnabled,
               onChanged: _toggleMusicCache,
             ),
@@ -110,8 +110,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             _buildCacheToggle(
               icon: CupertinoIcons.speedometer,
               iconGradient: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
-              title: 'BPM Cache',
-              subtitle: 'Save BPM analysis locally',
+              title: AppLocalizations.of(context)!.bpmCacheTitle,
+              subtitle: AppLocalizations.of(context)!.bpmCacheSubtitle,
               value: _bpmCacheEnabled,
               onChanged: _toggleBpmCache,
             ),
@@ -119,12 +119,12 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'CACHE CLEANUP',
+          title: AppLocalizations.of(context)!.sectionCacheCleanup,
           children: [_buildClearAllCacheButton()],
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'OFFLINE DOWNLOADS',
+          title: AppLocalizations.of(context)!.sectionOfflineDownloads,
           children: [
             _buildOfflineInfo(),
             _buildDivider(),
@@ -135,7 +135,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'BPM ANALYSIS',
+          title: AppLocalizations.of(context)!.sectionBpmAnalysis,
           children: [
             _buildBPMCacheInfo(),
             if (_isCaching) _buildCachingProgress(),
@@ -225,7 +225,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
       trailing: CupertinoSwitch(
         value: value,
-        activeTrackColor: AppTheme.appleMusicRed,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
         onChanged: onChanged,
       ),
     );
@@ -266,9 +266,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 16,
         ),
       ),
-      title: const Text(
-        'Clear All Cache',
-        style: TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
+      title: Text(
+        AppLocalizations.of(context)!.clearAllCache,
+        style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       onTap: _clearAllCache,
     );
@@ -415,11 +415,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
   Future<void> _downloadAllLibrary() async {
     try {
-      // Access providers
+      
       final libraryProvider = context.read<LibraryProvider>();
       final subsonicService = context.read<SubsonicService>();
 
-      // Get all songs from cache or load them
       final allSongs = libraryProvider.cachedAllSongs;
 
       if (allSongs.isEmpty) {
@@ -432,7 +431,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         return;
       }
 
-      // Confirm action
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -457,7 +455,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
       if (confirm != true || !mounted) return;
 
-      // Start background download
       await _offlineService.startBackgroundDownload(allSongs, subsonicService);
 
       if (mounted) {
@@ -561,7 +558,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       child: LinearProgressIndicator(
         value: progress,
         backgroundColor: _isDark ? AppTheme.darkCard : AppTheme.lightDivider,
-        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.appleMusicRed),
+        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
       ),
     );
   }

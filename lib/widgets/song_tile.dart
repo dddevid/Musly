@@ -46,7 +46,6 @@ class SongTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Use Selector to only rebuild when currentSong.id changes
     return Selector<PlayerProvider, String?>(
       selector: (_, provider) => provider.currentSong?.id,
       builder: (context, currentSongId, _) {
@@ -61,7 +60,7 @@ class SongTile extends StatelessWidget {
           title: Text(
             song.title,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: isCurrentSong ? AppTheme.appleMusicRed : null,
+              color: isCurrentSong ? Theme.of(context).colorScheme.primary : null,
               fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
             ),
             maxLines: 1,
@@ -91,8 +90,8 @@ class SongTile extends StatelessWidget {
           child: isCurrentSong
               ? Selector<PlayerProvider, bool>(
                   selector: (_, p) => p.isPlaying,
-                  builder: (_, isPlaying, __) => AnimatedEqualizer(
-                    color: AppTheme.appleMusicRed,
+                  builder: (_, isPlaying, _) => AnimatedEqualizer(
+                    color: Theme.of(context).colorScheme.primary,
                     isPlaying: isPlaying,
                   ),
                 )
@@ -123,7 +122,7 @@ class SongTile extends StatelessWidget {
                     child: Center(
                       child: Selector<PlayerProvider, bool>(
                         selector: (_, p) => p.isPlaying,
-                        builder: (_, isPlaying, __) => AnimatedEqualizer(
+                        builder: (_, isPlaying, _) => AnimatedEqualizer(
                           color: Colors.white,
                           isPlaying: isPlaying,
                         ),
@@ -161,7 +160,7 @@ class SongTile extends StatelessWidget {
             child: Icon(
               CupertinoIcons.heart_fill,
               size: 14,
-              color: AppTheme.appleMusicRed.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
             ),
           ),
         if (showDuration)
@@ -289,10 +288,10 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                       title: _isStarred
                           ? 'Remove from Liked Songs'
                           : 'Add to Liked Songs',
-                      iconColor: _isStarred ? AppTheme.appleMusicRed : null,
+                      iconColor: _isStarred ? Theme.of(context).colorScheme.primary : null,
                       onTap: () async {
                         await _toggleFavorite(context);
-                        if (mounted) {
+                        if (context.mounted) {
                           Navigator.pop(context);
                         }
                       },
@@ -419,7 +418,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
           child: CircularProgressIndicator(
             value: _downloadProgress > 0 ? _downloadProgress : null,
             strokeWidth: 2,
-            color: AppTheme.appleMusicRed,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         title: Text(
@@ -436,6 +435,8 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         title: AppLocalizations.of(context)!.downloaded,
         iconColor: Colors.green,
         onTap: () async {
+          final l10n = AppLocalizations.of(context)!;
+          final messenger = ScaffoldMessenger.of(context);
           final confirm = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
@@ -461,9 +462,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
               setState(() {
                 _isDownloaded = false;
               });
-              ScaffoldMessenger.of(context).showSnackBar(
+              messenger.showSnackBar(
                 SnackBar(
-                  content: Text(AppLocalizations.of(context)!.downloadRemoved),
+                  content: Text(l10n.downloadRemoved),
                   duration: const Duration(seconds: 2),
                 ),
               );
@@ -487,6 +488,8 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       context,
       listen: false,
     );
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     setState(() {
       _isDownloading = true;
@@ -513,20 +516,16 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         });
 
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(
-                AppLocalizations.of(
-                  context,
-                )!.downloadedTitle(widget.song.title),
-              ),
+              content: Text(l10n.downloadedTitle(widget.song.title)),
               duration: const Duration(seconds: 2),
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.downloadFailed),
+              content: Text(l10n.downloadFailed),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -537,9 +536,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
         setState(() {
           _isDownloading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.downloadError(e)),
+            content: Text(l10n.downloadError(e)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -624,16 +623,18 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       context,
       listen: false,
     );
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       await subsonicService.setRating(widget.song.id, rating);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               rating > 0
-                  ? 'Rated ${rating} ${rating == 1 ? "star" : "stars"}'
+                  ? 'Rated $rating ${rating == 1 ? "star" : "stars"}'
                   : 'Rating removed',
             ),
             duration: const Duration(seconds: 2),
@@ -642,9 +643,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.failedToSetRating(e)),
+            content: Text(l10n.failedToSetRating(e)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -657,6 +658,8 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       context,
       listen: false,
     );
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       if (_isStarred) {
@@ -665,11 +668,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
           _isStarred = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(
-                AppLocalizations.of(context)!.removedFromLikedSongs,
-              ),
+              content: Text(l10n.removedFromLikedSongs),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -680,9 +681,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
           _isStarred = true;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.addedToLikedSongs),
+              content: Text(l10n.addedToLikedSongs),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -690,11 +691,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.error + ': ${e.toString()}',
-            ),
+            content: Text('${l10n.error}: ${e.toString()}'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -755,14 +754,16 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                   onTap: () async {
                     Navigator.pop(context);
 
-                    try {
-                      print(
-                        'Attempting to add song ${song.id} (${song.title}) to playlist ${playlist.id} (${playlist.name})',
-                      );
+                    final subsonicService = Provider.of<SubsonicService>(
+                      context,
+                      listen: false,
+                    );
+                    final l10n = AppLocalizations.of(context)!;
+                    final messenger = ScaffoldMessenger.of(context);
 
-                      final subsonicService = Provider.of<SubsonicService>(
-                        context,
-                        listen: false,
+                    try {
+                      debugPrint(
+                        'Attempting to add song ${song.id} (${song.title}) to playlist ${playlist.id} (${playlist.name})',
                       );
 
                       await subsonicService.updatePlaylist(
@@ -770,57 +771,49 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                         songIdsToAdd: [song.id],
                       );
 
-                      print('Successfully added song to playlist via API');
+                      debugPrint('Successfully added song to playlist via API');
 
                       await libraryProvider.loadPlaylists();
 
-                      print('Playlists refreshed');
+                      debugPrint('Playlists refreshed');
 
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Added "${song.title}" to ${playlist.name}',
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Added "${song.title}" to ${playlist.name}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            duration: const Duration(seconds: 2),
-                            backgroundColor: Colors.green,
+                              ),
+                            ],
                           ),
-                        );
-                      }
+                          duration: const Duration(seconds: 2),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
                     } catch (e) {
-                      print('Error adding song to playlist: $e');
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.error, color: Colors.white),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.errorAddingToPlaylist(e),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            duration: const Duration(seconds: 3),
-                            backgroundColor: Colors.red,
+                      debugPrint('Error adding song to playlist: $e');
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(Icons.error, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(l10n.errorAddingToPlaylist(e)),
+                              ),
+                            ],
                           ),
-                        );
-                      }
+                          duration: const Duration(seconds: 3),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                     }
                   },
                 ),
@@ -849,7 +842,7 @@ class _OptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? AppTheme.appleMusicRed),
+      leading: Icon(icon, color: iconColor ?? Theme.of(context).colorScheme.primary),
       title: Text(title),
       onTap: onTap,
     );

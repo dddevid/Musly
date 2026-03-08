@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../l10n/app_localizations.dart';
@@ -30,13 +31,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _serverController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _serverFocusNode = FocusNode();
+  final _usernameFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
   bool _useLegacyAuth = false;
   bool _allowSelfSignedCertificates = false;
   bool _obscurePassword = true;
   bool _showAdvancedOptions = false;
   String? _customCertificatePath;
   String? _customCertificateName;
-  // mTLS client certificate
+  
   String? _clientCertificatePath;
   String? _clientCertificateName;
   final _clientCertPasswordController = TextEditingController();
@@ -45,13 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
   double _scanProgress = 0.0;
   String _scanStatus = '';
 
-  // Inline error state
   String? _loginError;
 
   @override
   void initState() {
     super.initState();
-    // Clear the inline error whenever user edits any field
+    
     _serverController.addListener(_clearError);
     _usernameController.addListener(_clearError);
     _passwordController.addListener(_clearError);
@@ -63,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// Categorises a login error string for icon/colour selection.
   _LoginErrorType _categoriseError(String message) {
     final lower = message.toLowerCase();
     if (lower.contains('ssl') ||
@@ -111,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (type) {
       case _LoginErrorType.ssl:
         icon = CupertinoIcons.lock_slash;
-        color = const Color(0xFFFF9500); // orange
+        color = const Color(0xFFFF9500); 
         if (!_allowSelfSignedCertificates) {
           hint = 'Try enabling "Allow Self-Signed Certificates" below.';
         }
@@ -161,13 +163,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
+                  child: SelectableText(
                     error,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.copy_rounded, size: 16, color: color.withValues(alpha: 0.7)),
+                  tooltip: 'Copy error',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: error));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Error copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        width: 260,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -183,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ],
-            // Quick action: enable self-signed certs
+            
             if (type == _LoginErrorType.ssl &&
                 !_allowSelfSignedCertificates) ...[
               const SizedBox(height: 10),
@@ -197,7 +216,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   },
                   child: Text(
-                    'Tap to enable self-signed certificates',
+                    Platform.isIOS || Platform.isAndroid
+                        ? 'Tap to enable self-signed certificates'
+                        : 'Click to enable self-signed certificates',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: color,
                       fontWeight: FontWeight.w600,
@@ -223,6 +244,9 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     _clientCertPasswordController.dispose();
+    _serverFocusNode.dispose();
+    _usernameFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -292,7 +316,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final serverUrl = _serverController.text.trim();
 
-    // URL scheme check (redundant with validator, but kept as a safety net)
     if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
       setState(
         () => _loginError = 'Server URL must start with http:// or https://',
@@ -319,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
         () => _loginError = authProvider.error ?? 'Failed to connect to server',
       );
     }
-    // Support dialog is now shown by AuthWrapper after successful login
+    
   }
 
   Future<void> _useLocalFiles() async {
@@ -340,7 +363,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // On iOS: use system file picker instead of directory scan
     if (Platform.isIOS) {
       setState(() {
         _isScanning = true;
@@ -376,7 +398,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _scanStatus = 'Starting scan...';
     });
 
-    // Listen to progress updates
     void updateProgress() {
       if (mounted) {
         setState(() {
@@ -429,11 +450,14 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                   Center(
                     child: Container(
                       width: 100,
@@ -481,8 +505,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextFormField(
                     controller: _serverController,
+                    focusNode: _serverFocusNode,
                     keyboardType: TextInputType.url,
                     autocorrect: false,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _usernameFocusNode.requestFocus(),
                     decoration: InputDecoration(
                       labelText: 'Server URL',
                       hintText: 'https://your-server.com',
@@ -507,7 +534,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextFormField(
                     controller: _usernameController,
+                    focusNode: _usernameFocusNode,
                     autocorrect: false,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
                     decoration: InputDecoration(
                       labelText: 'Username',
                       prefixIcon: const Icon(CupertinoIcons.person),
@@ -526,7 +556,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextFormField(
                     controller: _passwordController,
+                    focusNode: _passwordFocusNode,
                     obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) { if (!isBusy) _login(); },
                     decoration: InputDecoration(
                       labelText: 'Password',
                       prefixIcon: const Icon(CupertinoIcons.lock),
@@ -617,7 +650,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Advanced Options
                   InkWell(
                     onTap: () {
                       setState(() {
@@ -735,7 +767,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
-                          // ── mTLS Client Certificate ──────────────────────
                           const SizedBox(height: 20),
                           const Divider(height: 1),
                           const SizedBox(height: 16),
@@ -895,7 +926,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Divider with "OR"
                   Row(
                     children: [
                       const Expanded(child: Divider()),
@@ -914,7 +944,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Use Local Files button (disabled on iOS)
                   if (!Platform.isIOS) SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -950,7 +979,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Scan progress bar
                   if (!Platform.isIOS && _isScanning) ...[
                     const SizedBox(height: 12),
                     LinearProgressIndicator(
@@ -962,7 +990,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ],
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

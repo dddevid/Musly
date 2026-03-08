@@ -1,9 +1,10 @@
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Bitrate options for transcoding
 class TranscodeBitrate {
-  static const int original = 0; // No transcoding
+  static const int original = 0; 
   static const int kbps64 = 64;
   static const int kbps128 = 128;
   static const int kbps192 = 192;
@@ -21,13 +22,12 @@ class TranscodeBitrate {
 
   static String getLabel(int bitrate) {
     if (bitrate == original) return 'Original (No Transcoding)';
-    return '${bitrate} kbps';
+    return '$bitrate kbps';
   }
 }
 
-/// Transcoding format options
 class TranscodeFormat {
-  static const String original = 'raw'; // No transcoding
+  static const String original = 'raw'; 
   static const String mp3 = 'mp3';
   static const String opus = 'opus';
   static const String aac = 'aac';
@@ -50,27 +50,30 @@ class TranscodeFormat {
   }
 }
 
-/// Connection type for transcoding settings
 enum ConnectionType { wifi, mobile }
 
-/// Service for managing transcoding settings
 class TranscodingService extends ChangeNotifier {
   static const String _wifiBitrateKey = 'transcoding_wifi_bitrate';
   static const String _mobileBitrateKey = 'transcoding_mobile_bitrate';
   static const String _formatKey = 'transcoding_format';
   static const String _enabledKey = 'transcoding_enabled';
   static const String _connectionTypeKey = 'transcoding_connection_type';
+  static const String _smartEnabledKey = 'transcoding_smart_enabled';
 
   int _wifiBitrate = TranscodeBitrate.original;
   int _mobileBitrate = TranscodeBitrate.kbps192;
   String _format = TranscodeFormat.mp3;
   bool _enabled = false;
+  bool _smartEnabled = false;
   ConnectionType _currentConnectionType = ConnectionType.wifi;
+
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   int get wifiBitrate => _wifiBitrate;
   int get mobileBitrate => _mobileBitrate;
   String get format => _format;
   bool get enabled => _enabled;
+  bool get smartEnabled => _smartEnabled;
   ConnectionType get currentConnectionType => _currentConnectionType;
 
   TranscodingService() {
@@ -84,15 +87,65 @@ class TranscodingService extends ChangeNotifier {
         prefs.getInt(_mobileBitrateKey) ?? TranscodeBitrate.kbps192;
     _format = prefs.getString(_formatKey) ?? TranscodeFormat.mp3;
     _enabled = prefs.getBool(_enabledKey) ?? false;
+    _smartEnabled = prefs.getBool(_smartEnabledKey) ?? false;
     final connectionIndex = prefs.getInt(_connectionTypeKey) ?? 0;
     _currentConnectionType = ConnectionType.values[connectionIndex];
+
+    if (_smartEnabled) {
+      await _initConnectivityWatcher();
+    }
+
     notifyListeners();
+  }
+
+  Future<void> _initConnectivityWatcher() async {
+    
+    final result = await Connectivity().checkConnectivity();
+    _updateConnectionType(result);
+
+    _connectivitySub?.cancel();
+    _connectivitySub = Connectivity()
+        .onConnectivityChanged
+        .listen(_updateConnectionType);
+  }
+
+  void _updateConnectionType(List<ConnectivityResult> results) {
+    
+    final newType = results.contains(ConnectivityResult.wifi)
+        ? ConnectionType.wifi
+        : ConnectionType.mobile;
+
+    if (newType != _currentConnectionType) {
+      _currentConnectionType = newType;
+      debugPrint(
+        '[Transcoding] Network changed → ${newType.name} '
+        '(bitrate: ${getCurrentBitrate() ?? "original"})',
+      );
+      notifyListeners();
+    }
+  }
+
+  void _stopConnectivityWatcher() {
+    _connectivitySub?.cancel();
+    _connectivitySub = null;
   }
 
   Future<void> setEnabled(bool value) async {
     _enabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_enabledKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setSmartEnabled(bool value) async {
+    _smartEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_smartEnabledKey, value);
+    if (value) {
+      await _initConnectivityWatcher();
+    } else {
+      _stopConnectivityWatcher();
+    }
     notifyListeners();
   }
 
@@ -124,20 +177,22 @@ class TranscodingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the current bitrate based on connection type
   int? getCurrentBitrate() {
     if (!_enabled) return null;
-
     final bitrate = _currentConnectionType == ConnectionType.wifi
         ? _wifiBitrate
         : _mobileBitrate;
-
     return bitrate == TranscodeBitrate.original ? null : bitrate;
   }
 
-  /// Get the current format (null means no transcoding)
   String? getCurrentFormat() {
     if (!_enabled) return null;
     return _format == TranscodeFormat.original ? null : _format;
+  }
+
+  @override
+  void dispose() {
+    _stopConnectivityWatcher();
+    super.dispose();
   }
 }

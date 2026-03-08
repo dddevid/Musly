@@ -5,6 +5,46 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-03-08
+
+### Added
+- **Smart Transcoding**: New automatic quality mode that switches bitrate in real time based on active network
+  - Detects WiFi vs mobile data via `connectivity_plus`
+  - Configure separate bitrates for WiFi and mobile; the app picks the right one automatically
+  - Live connection badge (WiFi / Mobile pill) in Settings → Playback while smart mode is active
+  - Smart mode toggle persists across restarts
+- **Dynamic & Custom Accent Colors**: The accent color now propagates everywhere in the app
+  - On Android 12+ the wallpaper-derived Material You palette is used automatically (via `dynamic_color`)
+  - On all other platforms any color picked in Settings → Display is applied to every widget
+  - Eliminated all hardcoded `AppTheme.appleMusicRed` references in settings tabs, mini player, song tiles, cast button, and album artwork shadow
+- **iOS Control Center player**: Fixed the player widget shown in the iOS Control Center and Lock Screen
+  - Disabled the podcast-style ±15 s skip buttons that were hiding the standard ⏮ ▶/⏸ ⏭ controls
+  - Added `MPNowPlayingInfoPropertyMediaType = .audio` and `MPNowPlayingInfoPropertyDefaultPlaybackRate` for correct system content categorization
+  - Fixed an artwork caching race condition: concurrent 1-second position updates no longer restart artwork downloads already in progress
+- **Server connection retry**: `AuthProvider._verifyConnection()` now retries the ping up to 3 times (2 s backoff) before declaring the server unreachable — handles slow mobile network initialization on launch
+- **Retry button on the server-unreachable screen**: A "Retry" button lets users re-attempt the connection without restarting the app (`AuthProvider.retryConnection()`)
+- **Localization — Settings strings**: All hardcoded strings in the five Settings tabs are now in `app_en.arb` (~100 new keys covering Playback, Storage, About, Display, and Server sections)
+
+### Changed
+- **Loading screen**: The app no longer flashes the login screen while checking the server on startup; `AuthState.authenticating` now shows a centered `CircularProgressIndicator` on a black background
+- **Home screen desktop layout**: Improved density and alignment for macOS/Windows/Linux
+  - Wider horizontal padding (32 px), larger section headers and album cards (180 px)
+  - Song lists render as a compact table (`_DesktopSongRow`) instead of full `SongTile` cards
+  - Recent albums (6) and playlists (3) shown instead of 4 and 2
+- **Error messages**: Improved error string formatting in `AuthProvider._formatError()` — strips `Exception:`, `Network error:`, and verbose library boilerplate for cleaner display
+- **Connection timeout**: Server ping timeout increased from 6 s to 10 s
+- **Now Playing screen**: Matrix transforms updated to Flutter 3.41-compatible `scaleByDouble`/`translateByDouble` signatures; `.withOpacity()` replaced with `.withValues(alpha:)` throughout
+
+### Fixed
+- **`seekForward`/`seekBackward` events from iOS Control Center**: Added `onSeekForward`/`onSeekBackward` callbacks to `AndroidSystemService` and registered handlers in `PlayerProvider` (clamping backward seeks to `Duration.zero`)
+- **Settings tab indicator color hardcoded**: `indicatorColor` and `labelColor` in `settings_screen.dart` now use `Theme.of(context).colorScheme.primary`
+- **`DjMixerService` removed**: Deleted unused `dj_mixer_service.dart` that was included by mistake; `services.dart` barrel still intact
+
+### Dependencies
+- Added `connectivity_plus: ^7.0.0` — network type detection for Smart Transcoding
+- Added `dynamic_color: ^1.7.0` — Material You wallpaper color extraction on Android 12+
+- Added `path: ^1.9.0`
+
 ## [1.0.7] - 2026-02-22
 
 ### Added

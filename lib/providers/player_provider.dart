@@ -52,21 +52,15 @@ class PlayerProvider extends ChangeNotifier {
   Song? _currentSong;
   double _volume = 1.0;
 
-  // Pre-resolved artwork URL (local file path or server URL, set async per-song)
   String? _resolvedArtworkUrl;
 
-  // Radio station support
   RadioStation? _currentRadioStation;
   bool _isPlayingRadio = false;
 
-  // Android 16 Media3 workaround: track first playback attempt
   bool _hasPlayedOnce = false;
 
-  // Suppresses playerStateStream UI notifications during session reactivation
-  // to avoid visual micro-stutters from the internal pause→play cycle.
   bool _reactivatingSession = false;
 
-  // https://github.com/dddevid/Musly/issues/72 — sleep timer
   Timer? _sleepTimer;
   DateTime? _sleepTimerEnd;
 
@@ -84,7 +78,7 @@ class PlayerProvider extends ChangeNotifier {
     _initializeAndroidAuto();
     _initializeSystemServices();
     _initializeAutoDj();
-    // Discord RPC is desktop-only (Windows / Linux / macOS).
+    
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       _discordRpcService.initialize();
@@ -116,6 +110,11 @@ class PlayerProvider extends ChangeNotifier {
     _androidSystemService.onSkipNext = skipNext;
     _androidSystemService.onSkipPrevious = skipPrevious;
     _androidSystemService.onSeekTo = seek;
+    _androidSystemService.onSeekForward = (interval) => seek(_position + interval);
+    _androidSystemService.onSeekBackward = (interval) {
+      final target = _position - interval;
+      seek(target.isNegative ? Duration.zero : target);
+    };
     _androidSystemService.onHeadsetHook = togglePlayPause;
     _androidSystemService.onHeadsetDoubleClick = skipNext;
 
@@ -157,7 +156,7 @@ class PlayerProvider extends ChangeNotifier {
     _bluetoothService.onDeviceDisconnected = (device) {
       debugPrint('Bluetooth device disconnected: ${device.name}');
     };
-    // Register absolute volume control when available (AVRCP 1.6 capable devices).
+    
     _bluetoothService.registerAbsoluteVolumeControl();
 
     _samsungService.initialize();
@@ -209,7 +208,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getAlbumSongsForAndroidAuto(
     String albumId,
   ) async {
-    // In offline mode, serve directly from the cached library + downloaded songs.
+    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -259,7 +258,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getArtistAlbumsForAndroidAuto(
     String artistId,
   ) async {
-    // In offline mode, derive albums from downloaded songs in the cached library.
+    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -311,7 +310,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getPlaylistSongsForAndroidAuto(
     String playlistId,
   ) async {
-    // In offline mode, serve from the cached playlist songs (no network call).
+    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -367,7 +366,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _searchForAndroidAuto(
     String query,
   ) async {
-    // In offline mode, search within the cached downloaded songs.
+    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -428,7 +427,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> _playFromSearchForAndroidAuto(String query) async {
     debugPrint('Android Auto: playFromSearch called with query: "$query"');
     try {
-      // Empty query = play anything (resume or play first available song)
+      
       if (query.trim().isEmpty) {
         if (_currentSong != null) {
           await play();
@@ -508,17 +507,10 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong!.isLocal) {
       return Uri.file(_currentSong!.coverArt!).toString();
     }
-    // Return the pre-resolved artwork URL (local file or server URL).
-    // _resolvedArtworkUrl is populated asynchronously by _refreshArtworkUrl()
-    // which is triggered in playSong() and playRadioStation().
+    
     return _resolvedArtworkUrl;
   }
 
-  /// Asynchronously resolves the best artwork URL for [_currentSong] and
-  /// stores it in [_resolvedArtworkUrl].  Priority:
-  ///   1. downloaded .jpg in offline_music/
-  ///   2. flutter_cache_manager disk cache (filled by CachedNetworkImage)
-  ///   3. Subsonic server URL (works online, may fail offline)
   Future<void> _refreshArtworkUrl() async {
     final song = _currentSong;
     if (song == null || song.coverArt == null) {
@@ -530,10 +522,8 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    // Ensure offline dir is set before calling getLocalCoverArtPath
     await _offlineService.initialize();
 
-    // 1. Our own offline_music/<id>.jpg (downloaded alongside the song)
     final localPath = _offlineService.getLocalCoverArtPath(song.id);
     if (localPath != null) {
       _resolvedArtworkUrl = Uri.file(localPath).toString();
@@ -541,13 +531,8 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    // 2. flutter_cache_manager disk cache (populated by CachedNetworkImage
-    //    while the app was online — works without a server connection).
-    //    CachedNetworkImage stores entries under custom cache keys of the form
-    //    '${coverArt}_$cacheSize' and '${coverArt}_natural_$cacheSize', NOT
-    //    the raw URL, so we must probe those keys instead of the URL.
     final coverArtId = song.coverArt!;
-    // Try common resolvedSizes (largest first for best artwork quality).
+    
     for (final sz in [400, 300, 200, 150, 100]) {
       for (final key in ['${coverArtId}_natural_$sz', '${coverArtId}_$sz']) {
         try {
@@ -564,9 +549,6 @@ class PlayerProvider extends ChangeNotifier {
     }
     final serverUrl = _subsonicService.getCoverArtUrl(coverArtId, size: 600);
 
-    // 3. Fall back to Subsonic server URL (works online only)
-    // Skip in offline mode: the request will always fail and the iOS plugin
-    // would fire a URLSession call on every 1-second position update.
     if (!_offlineService.isOfflineMode) {
       _resolvedArtworkUrl = serverUrl;
       if (_currentSong?.id == song.id) _updateAllServices();
@@ -577,7 +559,7 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _resolveArtworkUrl();
-    // Use song metadata duration as fallback when just_audio hasn't reported it yet
+    
     final effectiveDuration = _duration.inMilliseconds > 0
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
@@ -601,7 +583,7 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _resolveArtworkUrl();
-    // Use song metadata duration as fallback when just_audio hasn't reported it yet
+    
     final effectiveDuration = _duration.inMilliseconds > 0
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
@@ -664,7 +646,6 @@ class PlayerProvider extends ChangeNotifier {
   bool get hasPrevious => _currentIndex > 0;
   double get volume => _volume;
 
-  // Radio station getters
   RadioStation? get currentRadioStation => _currentRadioStation;
   bool get isPlayingRadio => _isPlayingRadio;
 
@@ -675,7 +656,6 @@ class PlayerProvider extends ChangeNotifier {
     return _position.inMilliseconds / _duration.inMilliseconds;
   }
 
-  // https://github.com/dddevid/Musly/issues/72 — sleep timer getters & setter
   bool get hasSleepTimer => _sleepTimer != null;
 
   Duration? get sleepTimerRemaining {
@@ -684,8 +664,6 @@ class PlayerProvider extends ChangeNotifier {
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
-  /// Set a sleep timer that pauses playback after [duration].
-  /// Pass [Duration.zero] to cancel an active timer.
   void setSleepTimer(Duration duration) {
     _sleepTimer?.cancel();
     _sleepTimer = null;
@@ -704,28 +682,29 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _initializePlayer() {
-    // Load persisted volume
+    
     _storageService.getVolume().then((savedVolume) {
       _volume = savedVolume;
       _audioPlayer.setVolume(_volume);
       notifyListeners();
     });
 
-    // Note: just_audio_windows may print "Error accessing BufferingProgress" messages.
-    // This is a known harmless issue in the plugin and doesn't affect playback.
-    // See: https://github.com/bdlukaa/just_audio_windows/issues
-    //
-    // Android 16 workaround: Media3 1.4.x has a bug where the first setUrl() call
-    // may fail with IllegalArgumentException in getFramesPerEncodedSample().
-    // We implement a retry mechanism in playSong() and playRadioStation() to handle this.
-
     _audioPlayer.playerStateStream.listen(
       (state) {
         final wasPlaying = _isPlaying;
         _isPlaying = state.playing;
 
+        if (wasPlaying != _isPlaying && !_reactivatingSession) {
+          debugPrint('[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
+        }
+
         if (state.processingState == ProcessingState.completed) {
+          debugPrint('[Player] ✓ Song completed: "${_currentSong?.title ?? 'unknown'}"');
           _onSongComplete();
+        }
+
+        if (state.processingState == ProcessingState.buffering && !wasPlaying) {
+          debugPrint('[Player] ⟳ Buffering: "${_currentSong?.title ?? 'unknown'}"');
         }
 
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
@@ -734,8 +713,8 @@ class PlayerProvider extends ChangeNotifier {
         }
       },
       onError: (error) {
-        // Silently handle stream errors (e.g., buffering progress access issues on Windows)
-        debugPrint('Player state stream error (can be ignored): $error');
+        
+        debugPrint('[Player] State stream error (usually harmless): $error');
       },
     );
 
@@ -743,14 +722,13 @@ class PlayerProvider extends ChangeNotifier {
     Duration? lastSystemUpdate;
     _audioPlayer.positionStream.listen(
       (position) {
-        // Detect if song changed (position went backwards significantly)
+        
         final positionJumpedBack =
             _position.inMilliseconds > 0 &&
             position.inMilliseconds < _position.inMilliseconds - 1000;
 
         _position = position;
 
-        // Always notify immediately if song changed, otherwise throttle to 250ms
         if (positionJumpedBack ||
             lastNotified == null ||
             position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
@@ -758,7 +736,6 @@ class PlayerProvider extends ChangeNotifier {
           notifyListeners();
         }
 
-        // Update system services progress (SMTC, Taskbar) every 1s
         if (lastSystemUpdate == null ||
             (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() >
                 1000) {
@@ -775,7 +752,7 @@ class PlayerProvider extends ChangeNotifier {
       (duration) {
         _duration = duration ?? Duration.zero;
         notifyListeners();
-        _updateAndroidAuto(); // Ensure RPC gets updated with new duration (needed for endTime/progress)
+        _updateAndroidAuto(); 
       },
       onError: (error) {
         debugPrint('Duration stream error (can be ignored): $error');
@@ -784,8 +761,7 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _onSongComplete() {
-    // Send completion scrobble (submission: true) for server tracks.
-    // If the server is unreachable, queue it to be flushed later.
+    
     if (_currentSong != null && _currentSong!.isLocal != true) {
       _subsonicService.scrobble(_currentSong!.id, submission: true).catchError((
         e,
@@ -818,7 +794,7 @@ class PlayerProvider extends ChangeNotifier {
         if (_currentIndex < _queue.length - 1) {
           skipNext();
         } else {
-          // End of queue - try Auto DJ
+          
           _handleEndOfQueue();
         }
         break;
@@ -828,7 +804,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> _handleEndOfQueue() async {
     if (_autoDjService.isEnabled) {
       await _addAutoDjSongs();
-      // If songs were added, play the next one
+      
       if (_currentIndex < _queue.length - 1) {
         await skipToIndex(_currentIndex + 1);
       }
@@ -848,6 +824,7 @@ class PlayerProvider extends ChangeNotifier {
     _isPlayingRadio = false;
     _currentRadioStation = null;
 
+    debugPrint('[Player] ▶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
     _isLoading = true;
     notifyListeners();
 
@@ -865,12 +842,10 @@ class PlayerProvider extends ChangeNotifier {
       }
 
       _currentSong = song;
-      _resolvedArtworkUrl = null; // reset; _refreshArtworkUrl() will populate it
+      _resolvedArtworkUrl = null; 
       _position = Duration.zero;
       notifyListeners();
 
-      // Resolve artwork URL before starting playback so the first Now Playing
-      // update includes the correct artwork (file, cache, or server URL).
       await _refreshArtworkUrl();
 
       if (_castService.isConnected) {
@@ -878,7 +853,7 @@ class PlayerProvider extends ChangeNotifier {
 
         final playUrl = song.isLocal == true
             ? Uri.file(song.path!).toString()
-            : await _subsonicService.getStreamUrl(song.id);
+            : _subsonicService.getStreamUrl(song.id);
         final coverUrl = song.isLocal == true && song.coverArt != null
             ? song.coverArt!
             : _subsonicService.getCoverArtUrl(song.coverArt ?? song.id);
@@ -897,7 +872,7 @@ class PlayerProvider extends ChangeNotifier {
         );
         _isPlaying = true;
       } else if (_upnpService.isConnected) {
-        // Stream to the DLNA renderer.
+        
         debugPrint(
           'UPnP: playSong() taking UPnP branch, isConnected=${_upnpService.isConnected}',
         );
@@ -905,7 +880,7 @@ class PlayerProvider extends ChangeNotifier {
 
         final playUrl = song.isLocal == true && song.path != null
             ? Uri.file(song.path!).toString()
-            : await _subsonicService.getStreamUrl(song.id);
+            : _subsonicService.getStreamUrl(song.id);
 
         try {
           final success = await _upnpService.loadAndPlay(
@@ -924,14 +899,14 @@ class PlayerProvider extends ChangeNotifier {
             return;
           }
         } catch (e) {
-          // SOAP call failed — disconnect so the UI reflects the real state
+          
           _upnpService.disconnect();
           debugPrint('UPnP playback failed, disconnected: $e');
           rethrow;
         }
         _isPlaying = true;
       } else {
-        // Resolve playback URL: local file takes priority
+        
         final String playUrl;
         if (song.isLocal == true && song.path != null) {
           playUrl = Uri.file(song.path!).toString();
@@ -958,18 +933,15 @@ class PlayerProvider extends ChangeNotifier {
         await _audioPlayer.play();
       }
 
-      // Only scrobble for server tracks
       if (song.isLocal != true) {
         if (_offlineService.isOfflineMode) {
-          // In offline mode, queue directly without attempting the network call.
+          
           _offlineService.queueScrobble(song.id, submission: false);
         } else {
           _subsonicService.scrobble(song.id, submission: false).catchError((e) {
             _offlineService.queueScrobble(song.id, submission: false);
           });
 
-          // https://github.com/dddevid/Musly/issues/64
-          // We're clearly online — flush any previously queued offline scrobbles.
           _offlineService.flushPendingScrobbles(_subsonicService).catchError((e) {
             debugPrint('Scrobble flush failed: $e');
           });
@@ -986,7 +958,7 @@ class PlayerProvider extends ChangeNotifier {
 
       _updateAndroidAuto();
     } catch (e) {
-      debugPrint('Error playing song: $e');
+      debugPrint('[Player] ✗ Error playing song "${song.title}": $e');
       _isPlaying = false;
       _position = Duration.zero;
       _updateAndroidAuto();
@@ -996,9 +968,8 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  /// Play an internet radio station stream.
   Future<void> playRadioStation(RadioStation station) async {
-    // If the same station is already playing, toggle play/pause
+    
     if (_isPlayingRadio && _currentRadioStation?.id == station.id) {
       await togglePlayPause();
       return;
@@ -1008,7 +979,7 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Clear song queue and set radio state
+      
       _currentSong = null;
       _queue = [];
       _currentIndex = -1;
@@ -1017,7 +988,6 @@ class PlayerProvider extends ChangeNotifier {
       _position = Duration.zero;
       _duration = Duration.zero;
 
-      // Android 16 Media3 workaround: retry setUrl if first attempt fails
       try {
         await _audioPlayer.setUrl(station.streamUrl);
       } catch (e) {
@@ -1033,12 +1003,10 @@ class PlayerProvider extends ChangeNotifier {
         }
       }
 
-      // Apply full volume for radio (no ReplayGain)
       await _audioPlayer.setVolume(_volume);
 
       await _audioPlayer.play();
 
-      // Update system services with radio info
       _updateSystemServicesForRadio(station);
     } catch (e) {
       debugPrint('Error playing radio station: $e');
@@ -1051,7 +1019,6 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  /// Stop radio playback and clear radio state.
   void stopRadio() {
     if (_isPlayingRadio) {
       _audioPlayer.stop();
@@ -1063,7 +1030,7 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _updateSystemServicesForRadio(RadioStation station) {
-    // Update Windows SMTC with radio info
+    
     _windowsService.updatePlaybackState(
       song: null,
       isPlaying: true,
@@ -1072,7 +1039,6 @@ class PlayerProvider extends ChangeNotifier {
       artworkUrl: null,
     );
 
-    // Update Android system service
     _androidSystemService.updatePlaybackState(
       songId: station.id,
       title: station.name,
@@ -1125,7 +1091,7 @@ class PlayerProvider extends ChangeNotifier {
     } else {
       await _audioPlayer.stop();
     }
-    // Shared cleanup
+    
     _isPlaying = false;
     _position = Duration.zero;
     notifyListeners();
@@ -1174,7 +1140,6 @@ class PlayerProvider extends ChangeNotifier {
       }
     }
 
-    // Check if Auto DJ should add more songs
     if (_autoDjService.shouldAddSongs(_currentIndex, _queue.length)) {
       await _addAutoDjSongs();
     }
@@ -1184,7 +1149,6 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  /// Add songs to the queue using Auto DJ
   Future<void> _addAutoDjSongs() async {
     if (!_autoDjService.isEnabled) return;
 
@@ -1327,7 +1291,6 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Called when the Android system volume slider changes (remote playback).
   void _onRemoteVolumeChange(int volume) {
     if (_castService.isConnected) {
       _castService.setVolume(volume / 100.0);
@@ -1336,7 +1299,6 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  /// Apply ReplayGain volume adjustment for the current song
   Future<void> _applyReplayGain(Song? song) async {
     await _replayGainService.initialize();
 
@@ -1347,18 +1309,15 @@ class PlayerProvider extends ChangeNotifier {
       albumPeak: song?.replayGainAlbumPeak,
     );
 
-    // Apply both user volume and ReplayGain adjustment
     final effectiveVolume = _volume * replayGainMultiplier;
     await _audioPlayer.setVolume(effectiveVolume);
   }
 
-  /// Refresh ReplayGain settings (call when settings change)
   Future<void> refreshReplayGain() async {
     await _applyReplayGain(_currentSong);
     notifyListeners();
   }
 
-  /// Get the ReplayGain service for settings access
   ReplayGainService get replayGainService => _replayGainService;
 
   Future<void> toggleFavorite() async {
@@ -1384,10 +1343,28 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> toggleFavoriteForSong(Song song) async {
+    final isStarred = song.starred == true;
+    try {
+      if (isStarred) {
+        await _subsonicService.unstar(id: song.id);
+      } else {
+        await _subsonicService.star(id: song.id);
+      }
+      _libraryProvider?.loadStarred();
+      
+      if (_currentSong?.id == song.id) {
+        _currentSong = _currentSong!.copyWith(starred: !isStarred);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error toggling favorite for song: $e');
+    }
+  }
+
   Future<void> setRating(String songId, int rating) async {
     if (_currentSong?.id != songId) return;
 
-    // Optimistic update
     final previousRating = _currentSong?.userRating;
     _currentSong = _currentSong?.copyWith(userRating: rating);
     notifyListeners();
@@ -1395,44 +1372,25 @@ class PlayerProvider extends ChangeNotifier {
     try {
       await _subsonicService.setRating(songId, rating);
     } catch (e) {
-      // Revert if failed
+      
       _currentSong = _currentSong?.copyWith(userRating: previousRating);
       notifyListeners();
       rethrow;
     }
   }
 
-  /// Re-activates the iOS AVAudioSession after the NowPlayingScreen is dismissed.
-  /// Called from main_screen.dart because volume_controller's onCancel handler
-  /// calls audioSession.setActive(false), which stops just_audio playback.
   Future<void> reactivateAudioSession() async {
-    // Capture intended playing state before any async calls, because
-    // just_audio may or may not have updated _isPlaying by this point.
+    
     final wasPlaying = _isPlaying;
 
     await _androidSystemService.requestAudioFocus();
 
-    // Always re-push Now Playing metadata after reactivating the audio session.
-    // volume_controller's AVAudioSession.setActive(false) can clear the iOS
-    // Control Center / Lock Screen info. When the song is paused just_audio
-    // emits no positionStream events, so the normal 1-second refresh won't fire.
-    // Calling _updateAllServices() here guarantees info is always restored,
-    // regardless of whether the song was playing or paused.
     if (_currentSong != null) {
       _updateAllServices();
     }
 
     if (wasPlaying && !_castService.isConnected && !_upnpService.isConnected) {
-      // volume_controller deactivates the AVAudioSession without notifying
-      // just_audio, so just_audio still believes playing == true and
-      // calling play() on it is a no-op.
-      // Force a full restart by pausing first (syncing just_audio's state)
-      // then resuming, so just_audio re-establishes audio output properly.
-      //
-      // Suppress playerStateStream notifications during the pause→play cycle
-      // to avoid visual micro-stutters (progress bar / button flickering).
-      // The audio session was already deactivated, so pause() has no audible
-      // effect — it only syncs just_audio's internal state.
+      
       _reactivatingSession = true;
       try {
         await _audioPlayer.pause();
@@ -1440,9 +1398,7 @@ class PlayerProvider extends ChangeNotifier {
       } finally {
         _reactivatingSession = false;
         notifyListeners();
-        // Re-push metadata + playing state to the iOS Now Playing info center
-        // (and all other system services). Covers any state change during the
-        // pause→play cycle that the early _updateAllServices() didn't capture.
+        
         _updateAndroidAuto();
       }
     }
@@ -1459,13 +1415,11 @@ class PlayerProvider extends ChangeNotifier {
     _windowsService.dispose();
     _bluetoothService.dispose();
     _samsungService.dispose();
-    // Discord RPC typically doesn't need explicit disposal if app closes, but we can clear presence
+    
     _discordRpcService.shutdown();
     super.dispose();
   }
 
-  // https://github.com/dddevid/Musly/issues/69
-  // Returns the `state` line text for Discord RPC based on user preference.
   String _discordStateText() {
     switch (_discordRpcStateStyle) {
       case 'song_title':
@@ -1492,7 +1446,6 @@ class PlayerProvider extends ChangeNotifier {
 
     final stateText = _discordStateText();
 
-    // Initial update with placeholder
     _discordRpcService.updatePresence(
       state: stateText,
       details: _currentSong!.title,
@@ -1515,7 +1468,6 @@ class PlayerProvider extends ChangeNotifier {
 
   bool get discordRpcEnabled => _discordRpcService.enabled;
 
-  // https://github.com/dddevid/Musly/issues/69
   String _discordRpcStateStyle = 'artist';
 
   Future<void> loadDiscordRpcStateStyle() async {
@@ -1534,16 +1486,16 @@ class PlayerProvider extends ChangeNotifier {
   void _onCastStateChanged() {
     notifyListeners();
     if (_castService.isConnected) {
-      _audioPlayer.pause(); // Ensure local is paused
+      _audioPlayer.pause(); 
       _androidSystemService.setRemotePlayback(isRemote: true, volume: 50);
       if (_currentSong != null) {
-        // Clear so playSong() does a full load instead of togglePlayPause()
+        
         final song = _currentSong!;
         _currentSong = null;
         playSong(song);
       }
     } else {
-      // Cast disconnected
+      
       _androidSystemService.setRemotePlayback(isRemote: false);
       _isPlaying = false;
       notifyListeners();
@@ -1557,22 +1509,19 @@ class PlayerProvider extends ChangeNotifier {
   void _onUpnpStateChanged() {
     final connected = _upnpService.isConnected;
 
-    // On fresh connect: pause local audio, start playing current song on renderer
     if (connected && !_upnpWasConnected) {
       _upnpWasConnected = true;
       _upnpWasPlaying = false;
       if (_audioPlayer.playing) _audioPlayer.pause();
       final vol = _upnpService.volume;
-      // Sync local volume with renderer so stale local value doesn't leak back
+      
       if (vol >= 0) _volume = vol / 100.0;
       _androidSystemService.setRemotePlayback(
         isRemote: true,
         volume: vol >= 0 ? vol : 50,
       );
       if (_currentSong != null) {
-        // Clear _currentSong so playSong() does a full loadAndPlay on the
-        // renderer instead of short-circuiting into togglePlayPause() (which
-        // would just resume whatever old track the renderer had loaded).
+        
         final song = _currentSong!;
         _currentSong = null;
         playSong(song);
@@ -1580,7 +1529,6 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    // On disconnect: reset all state so UI doesn't show stale values
     if (!connected && _upnpWasConnected) {
       _upnpWasConnected = false;
       _upnpWasPlaying = false;
@@ -1595,14 +1543,11 @@ class PlayerProvider extends ChangeNotifier {
 
     if (!connected) return;
 
-    // Sync position/duration from the renderer's polling data
     final pos = _upnpService.rendererPosition;
     final dur = _upnpService.rendererDuration;
     final playing = _upnpService.isRendererPlaying;
     final rendererState = _upnpService.rendererState;
 
-    // Detect track completion: renderer was playing, now stopped,
-    // and position reached (or passed) the end of the track.
     if (_upnpWasPlaying &&
         rendererState == 'STOPPED' &&
         dur > Duration.zero &&
@@ -1630,7 +1575,6 @@ class PlayerProvider extends ChangeNotifier {
       changed = true;
     }
 
-    // Sync volume from renderer to both local state and Android system slider
     final vol = _upnpService.volume;
     if (vol >= 0) {
       final normalized = vol / 100.0;

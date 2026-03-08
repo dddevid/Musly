@@ -37,18 +37,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   late AnimationController _bgAnimationController;
   bool _showLyrics = false;
 
-  // Swipe to dismiss state
   double _dragOffset = 0.0;
   bool _isDragging = false;
   static const double _dismissThreshold = 150.0;
   static const double _maxDragDistance = 400.0;
 
-  // Calculate morph progress (0.0 to 1.0)
   double get _morphProgress => (_dragOffset / _maxDragDistance).clamp(0.0, 1.0);
 
-  // Derived morph values
-  double get _scale => 1.0 - (_morphProgress * 0.15); // Scale down to 0.85
-  double get _borderRadius => _morphProgress * 32.0; // Round corners
+  double get _scale => 1.0 - (_morphProgress * 0.15); 
+  double get _borderRadius => _morphProgress * 32.0; 
 
   @override
   void initState() {
@@ -72,7 +69,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
     setState(() {
-      // Only allow downward drag (positive delta)
+      
       _dragOffset = (_dragOffset + details.delta.dy).clamp(
         0.0,
         double.infinity,
@@ -84,12 +81,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     if (!_isDragging) return;
     _isDragging = false;
 
-    // Check if we should dismiss based on distance or velocity
     final velocity = details.primaryVelocity ?? 0;
     if (_dragOffset > _dismissThreshold || velocity > 800) {
       Navigator.pop(context);
     } else {
-      // Animate back to original position
+      
       setState(() {
         _dragOffset = 0.0;
       });
@@ -114,7 +110,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
     return Row(
       children: [
-        // Left side: Album artwork
+        
         Expanded(
           flex: 4,
           child: Center(
@@ -123,7 +119,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               curve: animCurve,
               transform: Matrix4.identity()
                 ..setTranslationRaw(0.0, -_morphProgress * 10, 0.0)
-                ..scale(1.0 + _morphProgress * 0.03),
+                ..scaleByDouble(1.0 + _morphProgress * 0.03, 1.0 + _morphProgress * 0.03, 1.0, 1.0),
               transformAlignment: Alignment.center,
               child: _AlbumArtworkSection(
                 imageUrl: _cachedImageUrl ?? '',
@@ -133,14 +129,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
         ),
 
-        // Right side: Song info and controls OR lyrics
         Expanded(
           flex: 5,
           child: _showLyrics
-              ? // Show lyrics when active
+              ? 
                 Column(
                   children: [
-                    // Header with lyrics toggle
+                    
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -171,7 +166,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     ),
                   ],
                 )
-              : // Show controls when lyrics not active
+              : 
                 SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -181,7 +176,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Header with close button
+                      
                       AnimatedOpacity(
                         duration: animDuration,
                         opacity: (1.0 - _morphProgress * 1.5).clamp(0.0, 1.0),
@@ -200,7 +195,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                       const SizedBox(height: 16),
 
-                      // Controls
                       AnimatedOpacity(
                         duration: animDuration,
                         opacity: (1.0 - _morphProgress * 1.2).clamp(0.0, 1.0),
@@ -235,7 +229,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       builder: (context, data, _) {
         final (song, radioStation, isPlayingRadio) = data;
 
-        // Handle radio playback
         if (isPlayingRadio && radioStation != null) {
           return _buildRadioPlayer(context, radioStation);
         }
@@ -251,7 +244,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         if (_cachedCoverArtId != song.coverArt) {
           _cachedCoverArtId = song.coverArt;
           if (isLocalFilePath(song.coverArt)) {
-            // Local file – coverArt IS the absolute path to the artwork image
+            
             _cachedImageUrl = song.coverArt;
           } else {
             final subsonicService = Provider.of<SubsonicService>(
@@ -279,13 +272,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Main player content with morph animation
+                
                 AnimatedContainer(
                   duration: animDuration,
                   curve: animCurve,
                   transform: Matrix4.identity()
-                    ..translate(0.0, _dragOffset)
-                    ..scale(_scale),
+                    ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
+                    ..scaleByDouble(_scale, _scale, 1.0, 1.0),
                   transformAlignment: Alignment.topCenter,
                   child: AnimatedContainer(
                     duration: animDuration,
@@ -310,11 +303,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 final screenHeight = constraints.maxHeight;
                                 final screenWidth = constraints.maxWidth;
 
-                                // Check if landscape mode
                                 final isLandscape = screenWidth > screenHeight;
 
                                 if (isLandscape) {
-                                  // Landscape layout: artwork on left, controls on right
+                                  
                                   return _buildLandscapeLayout(
                                     context,
                                     song,
@@ -325,7 +317,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                   );
                                 }
 
-                                // Portrait layout (original)
                                 final artworkSize = (screenWidth * 0.80).clamp(
                                   200.0,
                                   screenHeight * 0.38,
@@ -357,7 +348,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        // Header fades out faster
+                                        
                                         AnimatedOpacity(
                                           duration: animDuration,
                                           opacity: (1.0 - _morphProgress * 1.5)
@@ -378,17 +369,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                                         SizedBox(height: topSpacing),
 
-                                        // Album art scales up slightly and moves up
                                         AnimatedContainer(
                                           duration: animDuration,
                                           curve: animCurve,
                                           transform: Matrix4.identity()
-                                            ..translate(
+                                            ..translateByDouble(
                                               0.0,
                                               -_morphProgress * 20,
+                                              0.0,
+                                              1.0,
                                             )
-                                            ..scale(
+                                            ..scaleByDouble(
                                               1.0 + _morphProgress * 0.05,
+                                              1.0 + _morphProgress * 0.05,
+                                              1.0,
+                                              1.0,
                                             ),
                                           transformAlignment: Alignment.center,
                                           child: _AlbumArtworkSection(
@@ -399,7 +394,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                                         SizedBox(height: middleSpacing),
 
-                                        // Controls fade out and slide down
                                         AnimatedOpacity(
                                           duration: animDuration,
                                           opacity: (1.0 - _morphProgress * 1.2)
@@ -408,10 +402,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                             duration: animDuration,
                                             curve: animCurve,
                                             transform: Matrix4.identity()
-                                              ..translate(
+                                              ..translateByDouble(
                                                 0.0,
                                                 _morphProgress * 30,
                                                 0.0,
+                                                1.0,
                                               ),
                                             child: _PlayerControls(
                                               formatDuration: _formatDuration,
@@ -428,7 +423,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             ),
                           ),
 
-                          // Fullscreen lyrics overlay - only in portrait mode
                           LayoutBuilder(
                             builder: (context, constraints) {
                               final isPortrait =
@@ -464,7 +458,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     );
   }
 
-  /// Build a simplified player UI for radio stations
   Widget _buildRadioPlayer(BuildContext context, RadioStation station) {
     final animDuration = _isDragging
         ? Duration.zero
@@ -484,8 +477,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               duration: animDuration,
               curve: animCurve,
               transform: Matrix4.identity()
-                ..translate(0.0, _dragOffset)
-                ..scale(_scale),
+                ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
+                ..scaleByDouble(_scale, _scale, 1.0, 1.0),
               transformAlignment: Alignment.topCenter,
               child: AnimatedContainer(
                 duration: animDuration,
@@ -510,7 +503,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     child: SafeArea(
                       child: Column(
                         children: [
-                          // Header
+                          
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Row(
@@ -556,14 +549,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                     ),
                                   ],
                                 ),
-                                const SizedBox(width: 48), // Balance the header
+                                const SizedBox(width: 48), 
                               ],
                             ),
                           ),
 
                           const Spacer(flex: 2),
 
-                          // Radio icon
                           Container(
                             width: 200,
                             height: 200,
@@ -593,7 +585,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                           const Spacer(),
 
-                          // Station name
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 32),
                             child: Text(
@@ -611,7 +602,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                           const SizedBox(height: 8),
 
-                          // Live indicator with pulse
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -623,9 +613,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppTheme.appleMusicRed.withOpacity(
-                                        0.5,
-                                      ),
+                                      color: AppTheme.appleMusicRed.withValues(alpha: 0.5),
                                       blurRadius: 8,
                                       spreadRadius: 2,
                                     ),
@@ -645,7 +633,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                           const Spacer(flex: 2),
 
-                          // Play/Pause button
                           Selector<PlayerProvider, bool>(
                             selector: (_, p) => p.isPlaying,
                             builder: (context, isPlaying, _) {
@@ -682,7 +669,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
                           const SizedBox(height: 16),
 
-                          // Stop button
                           TextButton.icon(
                             onPressed: () {
                               context.read<PlayerProvider>().stopRadio();
@@ -737,8 +723,8 @@ class _DynamicBackground extends StatelessWidget {
                 return Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.identity()
-                    ..translate(offsetX, offsetY)
-                    ..scale(scale),
+                    ..translateByDouble(offsetX, offsetY, 0.0, 1.0)
+                    ..scaleByDouble(scale, scale, 1.0, 1.0),
                   child: child,
                 );
               },
@@ -749,7 +735,7 @@ class _DynamicBackground extends StatelessWidget {
                       fit: BoxFit.cover,
                       cacheWidth: 400,
                       cacheHeight: 400,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (ctx, e, _) =>
                           Container(color: Colors.black),
                     )
                   : CachedNetworkImage(
@@ -760,8 +746,8 @@ class _DynamicBackground extends StatelessWidget {
                       useOldImageOnUrlChange: true,
                       fadeInDuration: const Duration(milliseconds: 300),
                       fadeOutDuration: Duration.zero,
-                      placeholder: (_, __) => Container(color: Colors.black),
-                      errorWidget: (_, __, ___) =>
+                      placeholder: (_, _) => Container(color: Colors.black),
+                      errorWidget: (ctx, e, _) =>
                           Container(color: Colors.black),
                     ),
             )
@@ -769,7 +755,7 @@ class _DynamicBackground extends StatelessWidget {
             AnimatedBuilder(
               animation: animation,
               builder: (context, _) {
-                // Nice gradient placeholder when there is no album art
+                
                 final t = animation.value;
                 return Container(
                   decoration: BoxDecoration(
@@ -813,8 +799,8 @@ class _DynamicBackground extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.black.withOpacity(opacity1),
-                      Colors.black.withOpacity(opacity2),
+                      Colors.black.withValues(alpha: opacity1),
+                      Colors.black.withValues(alpha: opacity2),
                     ],
                     stops: [0.0 + animation.value * 0.1, 1.0],
                   ),
@@ -918,7 +904,7 @@ class _PlayerHeader extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-              // https://github.com/dddevid/Musly/issues/72 — sleep timer
+              
               Selector<PlayerProvider, bool>(
                 selector: (_, p) => p.hasSleepTimer,
                 builder: (context, hasTimer, _) => IconButton(
@@ -948,7 +934,6 @@ class _PlayerHeader extends StatelessWidget {
     );
   }
 
-  // https://github.com/dddevid/Musly/issues/72
   void _showSleepTimerDialog(BuildContext context) {
     final player = context.read<PlayerProvider>();
 
@@ -1074,21 +1059,21 @@ class _AlbumArtworkSection extends StatelessWidget {
                             key: ValueKey(imageUrl),
                             fit: BoxFit.contain,
                             cacheWidth: 600,
-                            errorBuilder: (ctx, __, ___) =>
+                            errorBuilder: (ctx, e, _) =>
                                 _buildNoArtPlaceholder(ctx),
                           )
                         : CachedNetworkImage(
-                            key: ValueKey(imageUrl), // Optimize rebuilds
+                            key: ValueKey(imageUrl), 
                             imageUrl: imageUrl,
-                            fit: BoxFit.contain, // Show full image (Issue #1)
-                            memCacheWidth: 600, // Maintain width quality
-                            // memCacheHeight removed to avoid distortion
+                            fit: BoxFit.contain, 
+                            memCacheWidth: 600, 
+                            
                             useOldImageOnUrlChange: true,
                             fadeInDuration:
-                                Duration.zero, // Prevent flashing (Issue #4)
+                                Duration.zero, 
                             fadeOutDuration: Duration.zero,
-                            placeholder: (_, __) => _buildLoadingPlaceholder(),
-                            errorWidget: (ctx, __, ___) =>
+                            placeholder: (_, _) => _buildLoadingPlaceholder(),
+                            errorWidget: (ctx, e, _) =>
                                 _buildNoArtPlaceholder(ctx),
                           )
                   : _buildNoArtPlaceholder(context),
@@ -1099,7 +1084,6 @@ class _AlbumArtworkSection extends StatelessWidget {
     );
   }
 
-  // Shimmer shown only while the network image is loading
   Widget _buildLoadingPlaceholder() {
     return Shimmer.fromColors(
       baseColor: const Color(0xFF2A2A2A),
@@ -1112,7 +1096,6 @@ class _AlbumArtworkSection extends StatelessWidget {
     );
   }
 
-  // Static placeholder for songs that genuinely have no artwork
   Widget _buildNoArtPlaceholder(BuildContext context) {
     return Container(
       width: size,
@@ -1216,9 +1199,6 @@ class _PlayerControlsState extends State<_PlayerControls> {
             },
           ),
 
-          // https://github.com/dddevid/Musly/issues/70
-          // Use StreamBuilder so the progress bar updates on every audio
-          // position tick, regardless of Selector equality comparisons.
           Selector<PlayerProvider, Duration>(
             selector: (_, p) => p.duration,
             builder: (context, duration, _) {
@@ -1289,17 +1269,14 @@ class _SongInfoState extends State<_SongInfo> {
 
     if (artistName == null) return;
 
-    // Check if there are multiple artists (separated by common delimiters)
-    // Support: /, &, feat., ft., featuring
     List<String> artists = [];
 
-    // First split by / which is most common
     final slashParts = artistName.split('/');
     for (final part in slashParts) {
-      // Then split by &
+      
       final ampParts = part.split('&');
       for (final ampPart in ampParts) {
-        // Then split by feat., ft., featuring
+        
         String remaining = ampPart;
         final featPatterns = [
           ' feat. ',
@@ -1326,18 +1303,17 @@ class _SongInfoState extends State<_SongInfo> {
       }
     }
 
-    // Remove duplicates and empty strings
     artists = artists.where((a) => a.isNotEmpty).toSet().toList();
 
     if (artists.length > 1) {
-      // Show dialog to choose which artist
+      
       _showArtistSelectionDialog(context, artists);
     } else if (artistId != null) {
-      // Single artist with known ID
+      
       Navigator.pop(context);
       NavigationHelper.push(context, ArtistScreen(artistId: artistId));
     } else if (artists.isNotEmpty) {
-      // Single artist without ID - search for it
+      
       _searchAndNavigateToArtist(context, artists.first);
     }
   }
@@ -1360,7 +1336,7 @@ class _SongInfoState extends State<_SongInfo> {
       );
 
       if (result.artists.isNotEmpty) {
-        // Find exact match or closest match
+        
         final matchedArtist = result.artists.firstWhere(
           (a) => a.name.toLowerCase() == artistName.toLowerCase(),
           orElse: () => result.artists.first,
@@ -1445,9 +1421,8 @@ class _SongInfoState extends State<_SongInfo> {
                   leading: const CircleAvatar(child: Icon(Icons.person)),
                   title: Text(artistName),
                   onTap: () async {
-                    Navigator.pop(ctx); // Close bottom sheet
+                    Navigator.pop(ctx); 
 
-                    // Search for the artist
                     try {
                       final result = await subsonicService.search(
                         artistName,
@@ -1457,7 +1432,7 @@ class _SongInfoState extends State<_SongInfo> {
                       );
 
                       if (result.artists.isNotEmpty) {
-                        // Find exact match or closest match
+                        
                         final matchedArtist = result.artists.firstWhere(
                           (a) =>
                               a.name.toLowerCase() == artistName.toLowerCase(),
@@ -1465,7 +1440,7 @@ class _SongInfoState extends State<_SongInfo> {
                         );
 
                         if (context.mounted) {
-                          Navigator.pop(context); // Close now playing
+                          Navigator.pop(context); 
                           NavigationHelper.push(
                             context,
                             ArtistScreen(artistId: matchedArtist.id),
@@ -1514,7 +1489,6 @@ class _SongInfoState extends State<_SongInfo> {
   Widget build(BuildContext context) {
     if (widget.song == null) return const SizedBox.shrink();
 
-    // Check if artist is clickable (has ID or has multiple artists that can be searched)
     final artistName = widget.song!.artist;
     final hasMultipleArtists =
         artistName != null &&
@@ -1631,10 +1605,6 @@ class _SongInfoState extends State<_SongInfo> {
     }
   }
 
-  // https://github.com/dddevid/Musly/issues/76
-  // The bottom-sheet builder shadows `context` with its own parameter;
-  // capture the outer context before entering the builder so that
-  // _showCreatePlaylistDialog receives a valid context after the sheet pops.
   Future<void> _showAddToPlaylistDialog(BuildContext context) async {
     if (widget.song == null) return;
 
@@ -1648,7 +1618,6 @@ class _SongInfoState extends State<_SongInfo> {
 
       if (!context.mounted) return;
 
-      // Capture outer context BEFORE the builder shadows the variable.
       final outerContext = context;
 
       showModalBottomSheet(
@@ -1756,7 +1725,7 @@ class _SongInfoState extends State<_SongInfo> {
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
+                                placeholder: (_, _) => Container(
                                   width: 50,
                                   height: 50,
                                   color: AppTheme.darkCard,
@@ -1766,7 +1735,7 @@ class _SongInfoState extends State<_SongInfo> {
                                     size: 24,
                                   ),
                                 ),
-                                errorWidget: (_, __, ___) => Container(
+                                errorWidget: (ctx, e, _) => Container(
                                   width: 50,
                                   height: 50,
                                   color: AppTheme.darkCard,
@@ -2254,7 +2223,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
   double _dragValue = 0.0;
   double _systemVolume = 0.5;
   StreamSubscription<double>? _volumeSubscription;
-  // Captured in didChangeDependencies so it's safe to use in dispose().
+  
   PlayerProvider? _playerProvider;
 
   @override
@@ -2287,9 +2256,7 @@ class _VolumeSliderState extends State<_VolumeSlider> {
   @override
   void dispose() {
     _volumeSubscription?.cancel();
-    // On iOS, volume_controller's onCancel() internally calls
-    // AVAudioSession.setActive(false), which stops just_audio.
-    // Use the pre-captured provider reference — context is unsafe here.
+    
     if (Platform.isIOS) {
       final player = _playerProvider;
       if (player != null) {

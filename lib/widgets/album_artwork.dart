@@ -4,14 +4,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/player_ui_settings_service.dart';
-import '../theme/app_theme.dart';
 
-/// Returns true if [s] looks like an absolute file system path rather than a
-/// Subsonic cover-art ID or network URL.
 bool isLocalFilePath(String? s) {
   if (s == null || s.isEmpty) return false;
-  if (s.startsWith('/')) return true; // Unix / Android / macOS
-  if (s.length > 2 && s[1] == ':') return true; // Windows  C:\…
+  if (s.startsWith('/')) return true; 
+  if (s.length > 2 && s[1] == ':') return true; 
   return false;
 }
 
@@ -32,14 +29,9 @@ class AlbumArtwork extends StatelessWidget {
   final String? coverArt;
   final double size;
 
-  /// Explicit corner radius. When null (the default) the value from
-  /// [PlayerUiSettingsService.albumArtCornerRadiusNotifier] is used so that
-  /// all artwork respects the user's global preference.
   final double? borderRadius;
   final BoxShadow? shadow;
 
-  /// When true the image is shown at its natural aspect ratio (no cropping).
-  /// The [size] parameter is then used as the maximum width.
   final bool preserveAspectRatio;
 
   const AlbumArtwork({
@@ -89,9 +81,8 @@ class AlbumArtwork extends StatelessWidget {
     );
   }
 
-  /// Compute the shadow based on user settings. If [shadow] is provided
-  /// explicitly it overrides the global preference.
   BoxShadow? _resolvedShadow(
+    BuildContext context,
     double resolvedRadius,
     String shadowLevel,
     String shadowColor,
@@ -102,7 +93,7 @@ class AlbumArtwork extends StatelessWidget {
     final Color color;
     switch (shadowColor) {
       case 'accent':
-        color = AppTheme.appleMusicRed;
+        color = Theme.of(context).colorScheme.primary;
         break;
       default:
         color = Colors.black;
@@ -121,7 +112,7 @@ class AlbumArtwork extends StatelessWidget {
         blur = size / 4;
         offset = Offset(0, size / 12);
         break;
-      default: // 'soft'
+      default: 
         opacity = isDark ? 0.22 : 0.14;
         blur = size / 10;
         offset = Offset(0, size / 30);
@@ -141,13 +132,11 @@ class AlbumArtwork extends StatelessWidget {
   ) {
     final validSize = size.isFinite && !size.isNaN ? size : 150.0;
 
-    // Optimized cache size calculation:
-    // Reduced multiplier from 2 to 1.5 to save memory on low-end devices.
-    // Reduced max cache size from 600 to 400.
     final cacheSize = (validSize * 1.5).toInt().clamp(100, 400);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final resolvedShadow = _resolvedShadow(
+      context,
       resolvedRadius,
       shadowLevel,
       shadowColor,
@@ -155,7 +144,7 @@ class AlbumArtwork extends StatelessWidget {
     );
 
     if (preserveAspectRatio) {
-      // Show image at its natural aspect ratio, constrained to [size] width.
+      
       return Container(
         constraints: BoxConstraints(maxWidth: validSize),
         decoration: BoxDecoration(
@@ -169,15 +158,12 @@ class AlbumArtwork extends StatelessWidget {
       );
     }
 
-    // Removed RepaintBoundary which creates a new layer for every image.
-    // This significantly reduces GPU memory usage in long lists (e.g. SongTile).
     return Container(
       width: validSize,
       height: validSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(resolvedRadius),
-        // Only show shadow if explicitly provided or if the image is large enough.
-        // Rendering shadows for every small list item is expensive.
+        
         boxShadow: resolvedShadow != null && validSize > 60
             ? [resolvedShadow]
             : null,
@@ -198,7 +184,7 @@ class AlbumArtwork extends StatelessWidget {
         artFile,
         key: ValueKey(coverArt),
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+        errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
       );
     }
 
@@ -218,8 +204,8 @@ class AlbumArtwork extends StatelessWidget {
           fadeInDuration: const Duration(milliseconds: 100),
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
-          placeholder: (_, __) => _buildPlaceholder(isDark),
-          errorWidget: (_, __, ___) => _buildPlaceholder(isDark),
+          placeholder: (_, _) => _buildPlaceholder(isDark),
+          errorWidget: (_, _, _) => _buildPlaceholder(isDark),
         );
       },
     );
@@ -228,7 +214,6 @@ class AlbumArtwork extends StatelessWidget {
   Widget _buildImage(bool isDark, int cacheSize) {
     if (coverArt == null || coverArt!.isEmpty) return _buildPlaceholder(isDark);
 
-    // Local file (absolute path saved by LocalMusicService)
     if (isLocalFilePath(coverArt)) {
       final artFile = File(coverArt!);
       return Image.file(
@@ -237,13 +222,10 @@ class AlbumArtwork extends StatelessWidget {
         fit: BoxFit.cover,
         cacheWidth: cacheSize,
         cacheHeight: cacheSize,
-        errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+        errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
       );
     }
 
-    // Network image via Subsonic cover-art ID
-    // NOTE: _ImageUrlCache requires a BuildContext so this is called lazily.
-    // We build an empty-URL guard here to avoid boilerplate at every call site.
     return Builder(
       builder: (context) {
         final imageUrl = _ImageUrlCache.getUrl(
@@ -264,8 +246,8 @@ class AlbumArtwork extends StatelessWidget {
           fadeInDuration: const Duration(milliseconds: 100),
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
-          placeholder: (_, __) => _buildPlaceholder(isDark),
-          errorWidget: (_, __, ___) => _buildPlaceholder(isDark),
+          placeholder: (_, _) => _buildPlaceholder(isDark),
+          errorWidget: (_, _, _) => _buildPlaceholder(isDark),
         );
       },
     );

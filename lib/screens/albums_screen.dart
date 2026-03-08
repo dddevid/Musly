@@ -49,10 +49,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
     );
 
     try {
-      // First, get all artists
+      
       _allArtists = await subsonicService.getArtists();
 
-      // Then load albums from the first batch of artists
       await _loadAlbumsFromArtists(0, 20);
 
       if (mounted) {
@@ -89,7 +88,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
       }
     }
 
-    // Sort albums alphabetically by name
     _albums.sort(
       (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
     );

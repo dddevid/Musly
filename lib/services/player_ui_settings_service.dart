@@ -21,13 +21,10 @@ class PlayerUiSettingsService {
   final ValueNotifier<bool> liveSearchNotifier = ValueNotifier(true);
   final ValueNotifier<double> albumArtCornerRadiusNotifier = ValueNotifier(8.0);
 
-  /// 'rounded' | 'circle' | 'square'
   final ValueNotifier<String> artworkShapeNotifier = ValueNotifier('rounded');
 
-  /// 'none' | 'soft' | 'medium' | 'strong'
   final ValueNotifier<String> artworkShadowNotifier = ValueNotifier('soft');
 
-  /// 'black' | 'accent'
   final ValueNotifier<String> artworkShadowColorNotifier = ValueNotifier(
     'black',
   );

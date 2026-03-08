@@ -105,7 +105,7 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
         );
         break;
       case SongSortOption.recentlyAdded:
-        // Keep original order (usually server returns recently added first) or reverse
+        
         _sortedSongs = List.from(_songs.reversed);
         break;
     }
@@ -257,7 +257,7 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
             )
           : Column(
               children: [
-                // Header with count, sort info, and playback controls
+                
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
@@ -298,7 +298,7 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
                           ],
                         ),
                       ),
-                      // Shuffle button
+                      
                       IconButton(
                         onPressed: () => _playAll(shuffle: true),
                         icon: Icon(
@@ -309,7 +309,7 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
                         tooltip: 'Shuffle play',
                       ),
                       const SizedBox(width: 8),
-                      // Play button
+                      
                       Consumer<PlayerProvider>(
                         builder: (context, playerProvider, _) {
                           final isCurrentPlaylist =

@@ -38,7 +38,6 @@ class WindowsSystemService {
           ),
         );
 
-        // smtc_windows 1.1.0 initialization
         _isInitialized = true;
         debugPrint('WindowsSystemService initialized (SMTC & Taskbar)');
       } catch (e) {
@@ -46,7 +45,7 @@ class WindowsSystemService {
         debugPrint(
           'SMTC will be disabled. This is normal if flutter_rust_bridge is not initialized.',
         );
-        // Don't rethrow - allow app to continue without SMTC
+        
       }
     }
   }
@@ -60,7 +59,7 @@ class WindowsSystemService {
   }) async {
     if (!kIsWeb && Platform.isWindows && _isInitialized) {
       try {
-        // SMTC Updates (Verified to compile)
+        
         _smtc?.setPlaybackStatus(
           isPlaying ? PlaybackStatus.playing : PlaybackStatus.paused,
         );
@@ -78,7 +77,6 @@ class WindowsSystemService {
 
         _smtc?.setPosition(position);
 
-        // Taskbar Updates
         if (duration.inMilliseconds > 0) {
           WindowsTaskbar.setProgress(
             position.inMilliseconds,

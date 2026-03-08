@@ -7,7 +7,6 @@ class LocaleService extends ChangeNotifier {
 
   Locale? get currentLocale => _currentLocale;
 
-  /// Available languages with their display names
   static const Map<String, String> supportedLanguages = {
     'en': 'English',
     'sq': 'Shqip (Albanian)',

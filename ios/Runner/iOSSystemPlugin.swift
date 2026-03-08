@@ -184,25 +184,11 @@ public class iOSSystemPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             return .success
         }
         
-        commandCenter.skipForwardCommand.isEnabled = true
-        commandCenter.skipForwardCommand.preferredIntervals = [15]
-        commandCenter.skipForwardCommand.addTarget { [weak self] event in
-            if let event = event as? MPSkipIntervalCommandEvent {
-                let interval = Int(event.interval * 1000)
-                self?.sendEvent("seekForward", data: ["interval": interval])
-            }
-            return .success
-        }
-        
-        commandCenter.skipBackwardCommand.isEnabled = true
-        commandCenter.skipBackwardCommand.preferredIntervals = [15]
-        commandCenter.skipBackwardCommand.addTarget { [weak self] event in
-            if let event = event as? MPSkipIntervalCommandEvent {
-                let interval = Int(event.interval * 1000)
-                self?.sendEvent("seekBackward", data: ["interval": interval])
-            }
-            return .success
-        }
+        // Skip forward/backward (podcast-style ±15s) are intentionally disabled
+        // for this music player so that the Control Center compact widget shows the
+        // standard prev-track / play-pause / next-track buttons instead.
+        commandCenter.skipForwardCommand.isEnabled = false
+        commandCenter.skipBackwardCommand.isEnabled = false
         
         print("Remote command center configured")
     }
@@ -306,6 +292,8 @@ public class iOSSystemPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = Double(duration) / 1000.0
         nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = Double(position) / 1000.0
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = playing ? 1.0 : 0.0
+        nowPlayingInfo[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
+        nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
         
         if let trackNumber = trackNumber {
             nowPlayingInfo[MPMediaItemPropertyAlbumTrackNumber] = trackNumber
@@ -319,6 +307,10 @@ public class iOSSystemPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             if artworkUrl == lastLoadedArtworkUrl, let cached = lastLoadedArtwork {
                 // Same URL: reuse cached artwork — avoids re-fetching on every 1-second position tick
                 nowPlayingInfo[MPMediaItemPropertyArtwork] = cached
+                nowPlayingCenter.nowPlayingInfo = nowPlayingInfo
+            } else if artworkUrl == lastLoadedArtworkUrl {
+                // Same URL but artwork is still loading asynchronously — update text
+                // metadata now; the completion handler will add the artwork when ready.
                 nowPlayingCenter.nowPlayingInfo = nowPlayingInfo
             } else {
                 // New artwork URL: set text metadata immediately, then load artwork async

@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/providers.dart';
-import '../providers/library_provider.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
@@ -53,7 +52,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
             actions: [
-              // Code from https://github.com/dingtwo/Musly
+              
               IconButton(
                 icon: Icon(
                   CupertinoIcons.refresh,
@@ -225,7 +224,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
 
     if (_selectedFilter == 'All' || _selectedFilter == 'Albums') {
-      // In local mode use all cached albums; otherwise recent albums (max 20)
+      
       final albums = provider.isLocalOnlyMode
           ? provider.cachedAllAlbums
           : provider.recentAlbums.take(20).toList();

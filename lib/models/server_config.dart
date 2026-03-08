@@ -8,11 +8,11 @@ class ServerConfig {
   final String? serverType;
   final String? serverVersion;
   final String?
-  customCertificatePath; // Path to custom server CA certificate file
+  customCertificatePath; 
   final String?
-  clientCertificatePath; // Path to client certificate for mTLS (.p12/.pfx/.pem)
+  clientCertificatePath; 
   final String?
-  clientCertificatePassword; // Password for PKCS12 client certificate
+  clientCertificatePassword; 
 
   ServerConfig({
     required this.serverUrl,

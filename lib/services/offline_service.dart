@@ -44,8 +44,6 @@ class OfflineService {
   SharedPreferences? _prefs;
   String? _offlineDir;
 
-  // Set to true when the user enters server-offline mode so that
-  // PlayerProvider does not fall back to server artwork URLs.
   bool _offlineMode = false;
   bool get isOfflineMode => _offlineMode;
   void setOfflineMode(bool value) => _offlineMode = value;
@@ -174,7 +172,6 @@ class OfflineService {
         await _prefs?.setStringList(_keyDownloadedSongs, downloadedIds);
       }
 
-      // Download cover art for offline artwork display
       try {
         if (song.coverArt != null) {
           final coverUrl = subsonicService.getCoverArtUrl(song.coverArt, size: 600);
@@ -365,11 +362,6 @@ class OfflineService {
     return null;
   }
 
-  // ---------------------------------------------------------------------------
-  // Offline scrobble queue
-  // ---------------------------------------------------------------------------
-
-  /// Queue a scrobble to be sent to the server once connectivity is restored.
   Future<void> queueScrobble(String songId, {bool submission = true}) async {
     if (_prefs == null) await initialize();
     final scrobbles = _getPendingScrobbles();
@@ -397,8 +389,6 @@ class OfflineService {
 
   int getPendingScrobbleCount() => _getPendingScrobbles().length;
 
-  /// Attempt to send all queued scrobbles to the server.
-  /// Successfully sent ones are removed; failed ones are kept for the next attempt.
   Future<void> flushPendingScrobbles(SubsonicService subsonicService) async {
     if (_prefs == null) await initialize();
     final pending = _getPendingScrobbles();
@@ -428,7 +418,7 @@ class OfflineService {
   }
 
   String getPlayableUrl(Song song, SubsonicService subsonicService) {
-    // If it's a local file, return the file URI directly
+    
     if (song.isLocal == true && song.path != null) {
       return 'file://${song.path}';
     }

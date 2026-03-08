@@ -27,6 +27,8 @@ class AndroidSystemService {
   VoidCallback? onHeadsetHook;
   VoidCallback? onHeadsetDoubleClick;
   Function(Duration position)? onSeekTo;
+  Function(Duration interval)? onSeekForward;
+  Function(Duration interval)? onSeekBackward;
 
   VoidCallback? onAudioFocusGain;
   VoidCallback? onAudioFocusLoss;
@@ -49,7 +51,7 @@ class AndroidSystemService {
 
   Future<void> initialize() async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) return;
+        defaultTargetPlatform != TargetPlatform.iOS) { return; }
     if (_isInitialized) return;
 
     try {
@@ -105,6 +107,14 @@ class AndroidSystemService {
           onSeekTo?.call(Duration(milliseconds: position));
         }
         break;
+      case 'seekForward':
+        final fwdInterval = event['interval'] as int?;
+        onSeekForward?.call(Duration(milliseconds: fwdInterval ?? 15000));
+        break;
+      case 'seekBackward':
+        final bwdInterval = event['interval'] as int?;
+        onSeekBackward?.call(Duration(milliseconds: bwdInterval ?? 15000));
+        break;
       case 'headsetHook':
         onHeadsetHook?.call();
         break;
@@ -148,7 +158,7 @@ class AndroidSystemService {
     int? year,
   }) async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) return;
+        defaultTargetPlatform != TargetPlatform.iOS) { return; }
 
     try {
       await _methodChannel.invokeMethod('updatePlaybackState', {
@@ -196,7 +206,7 @@ class AndroidSystemService {
   }
 
   Future<void> setNotificationColor(int argbColor) async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
+    if (defaultTargetPlatform != TargetPlatform.android) { return; }
 
     try {
       await _methodChannel.invokeMethod('setNotificationColor', {
@@ -208,10 +218,9 @@ class AndroidSystemService {
   }
 
   Future<bool> requestAudioFocus() async {
-    // Works on Android and iOS — iOSSystemPlugin handles this on iOS to
-    // re-activate AVAudioSession after volume_controller deactivates it.
+    
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) return true;
+        defaultTargetPlatform != TargetPlatform.iOS) { return true; }
 
     try {
       final result = await _methodChannel.invokeMethod<bool>(
@@ -226,7 +235,7 @@ class AndroidSystemService {
 
   Future<void> abandonAudioFocus() async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) return;
+        defaultTargetPlatform != TargetPlatform.iOS) { return; }
 
     try {
       await _methodChannel.invokeMethod('abandonAudioFocus');
@@ -243,14 +252,15 @@ class AndroidSystemService {
     bool? colorizeNotification,
   }) async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) return;
+        defaultTargetPlatform != TargetPlatform.iOS) { return; }
 
     if (showOnLockScreen != null) _showOnLockScreen = showOnLockScreen;
     if (handleAudioFocus != null) _handleAudioFocus = handleAudioFocus;
     if (handleMediaButtons != null) _handleMediaButtons = handleMediaButtons;
     if (showInQuickSettings != null) _showInQuickSettings = showInQuickSettings;
-    if (colorizeNotification != null)
+    if (colorizeNotification != null) {
       _colorizeNotification = colorizeNotification;
+    }
 
     try {
       await _methodChannel.invokeMethod('updateSettings', {
@@ -310,7 +320,7 @@ class AndroidSystemService {
     required bool isRemote,
     int volume = 50,
   }) async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
+    if (defaultTargetPlatform != TargetPlatform.android) { return; }
     try {
       await _methodChannel.invokeMethod('setRemotePlayback', {
         'isRemote': isRemote,
@@ -322,7 +332,7 @@ class AndroidSystemService {
   }
 
   Future<void> updateRemoteVolume(int volume) async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
+    if (defaultTargetPlatform != TargetPlatform.android) { return; }
     try {
       await _methodChannel.invokeMethod('updateRemoteVolume', {
         'volume': volume,
@@ -333,7 +343,7 @@ class AndroidSystemService {
   }
 
   Future<void> dispose() async {
-    if (defaultTargetPlatform != TargetPlatform.android) return;
+    if (defaultTargetPlatform != TargetPlatform.android) { return; }
 
     _eventSubscription?.cancel();
     _isInitialized = false;

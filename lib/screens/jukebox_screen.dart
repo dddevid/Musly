@@ -59,7 +59,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
           final status = jukebox.status;
           final song = status.currentSong;
 
-          // ── Error / not-supported banner ─────────────────────────────
           if (jukebox.serverUnsupported) {
             return Center(
               child: Padding(
@@ -124,12 +123,12 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
 
           return Column(
             children: [
-              // ── Now Playing ────────────────────────────────────────────
+              
               Container(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Artwork
+                    
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: AlbumArtwork(
@@ -139,7 +138,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Title + Artist
+                    
                     Text(
                       song?.title ?? l10n.noSongPlaying,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -162,7 +161,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                       ),
                     const SizedBox(height: 24),
 
-                    // ── Playback Controls ──────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -208,7 +206,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // ── Volume / Gain ───────────────────────────────────
                     Row(
                       children: [
                         Icon(
@@ -238,7 +235,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                       ],
                     ),
 
-                    // ── Extra Actions ────────────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -273,7 +269,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                 ),
               ),
 
-              // ── Queue ──────────────────────────────────────────────────
               if (status.playlist.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(

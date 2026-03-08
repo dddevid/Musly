@@ -5,7 +5,6 @@ import '../models/models.dart';
 import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
-import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
@@ -68,8 +67,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     playerProvider.playSong(songs.first, playlist: songs.cast(), startIndex: 0);
   }
 
-  // https://github.com/dddevid/Musly/issues/77
-  // Remove a song at [index] from the playlist using songIndexToRemove API.
   Future<void> _removeSongFromPlaylist(int index) async {
     final subsonicService = Provider.of<SubsonicService>(
       context,
@@ -107,8 +104,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     }
   }
 
-  // https://github.com/dddevid/Musly/issues/78
-  // Download every song in the playlist for offline playback.
   Future<void> _downloadPlaylist() async {
     final songs = _playlist?.songs;
     if (songs == null || songs.isEmpty) return;
@@ -175,7 +170,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         title: Text(_playlist!.name),
         actions: [
           if (!isOffline)
-            // https://github.com/dddevid/Musly/issues/78
+            
             IconButton(
               tooltip: 'Download playlist',
               onPressed: _isDownloading ? null : _downloadPlaylist,
@@ -273,8 +268,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     itemCount: _playlist!.songs!.length,
                     itemBuilder: (context, index) {
                       final song = _playlist!.songs![index];
-                      // https://github.com/dddevid/Musly/issues/77
-                      // Swipe left to remove the song from this playlist.
+                      
                       return Dismissible(
                         key: ValueKey('${song.id}_$index'),
                         direction: DismissDirection.endToStart,

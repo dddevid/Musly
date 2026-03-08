@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../models/server_config.dart';
 import '../services/services.dart';
-import '../services/offline_service.dart';
 
 enum AuthState {
   unknown,
   unauthenticated,
   authenticating,
   authenticated,
-  offlineMode, // Server unreachable but has downloaded content
-  serverUnreachable, // Server could not be reached on startup
+  offlineMode, 
+  serverUnreachable, 
   error,
 }
 
@@ -38,7 +37,6 @@ class AuthProvider extends ChangeNotifier {
     if (config != null && config.isValid) {
       _config = config;
 
-      // Local-only mode: skip server ping entirely
       if (config.serverType == 'local') {
         OfflineService().setOfflineMode(true);
         _state = AuthState.offlineMode;
@@ -55,14 +53,25 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _verifyConnection() async {
+    debugPrint('[Auth] _verifyConnection: pinging ${_config?.serverUrl}');
     _state = AuthState.authenticating;
     notifyListeners();
 
-    final pingResult = await _subsonicService.pingWithError().timeout(
-      const Duration(seconds: 6),
-      onTimeout: () => PingResult(success: false, error: 'Connection timed out'),
-    );
-    if (pingResult.success) {
+    PingResult? pingResult;
+    const maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      pingResult = await _subsonicService.pingWithError().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => PingResult(success: false, error: 'Connection timed out'),
+      );
+      if (pingResult.success) break;
+      debugPrint('[Auth] Ping attempt $attempt/$maxAttempts failed: ${pingResult.error}');
+      if (attempt < maxAttempts) {
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+    if (pingResult!.success) {
+      debugPrint('[Auth] Ping OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
       if (_config != null) {
         final updatedConfig = _config!.copyWith(
           serverType: pingResult.serverType,
@@ -74,8 +83,9 @@ class AuthProvider extends ChangeNotifier {
           await _storageService.saveServerConfig(updatedConfig);
         }
       }
+      debugPrint('[Auth] State: authenticating → authenticated');
       _state = AuthState.authenticated;
-      // Flush any scrobbles that were queued while offline
+      
       final offlineService = OfflineService();
       await offlineService.initialize();
       offlineService
@@ -84,23 +94,29 @@ class AuthProvider extends ChangeNotifier {
             (e) => debugPrint('Error flushing pending scrobbles: $e'),
           );
     } else {
-      // Server unreachable — let user choose offline or disconnect
+      debugPrint('[Auth] Ping failed: ${pingResult.error}');
+      
       final offlineService = OfflineService();
       await offlineService.initialize();
       _hasOfflineContent = offlineService.getDownloadedCount() > 0;
+      debugPrint('[Auth] State: authenticating → serverUnreachable (offlineContent=$_hasOfflineContent)');
       _state = AuthState.serverUnreachable;
     }
     notifyListeners();
   }
 
-  /// Transition from serverUnreachable to offline mode.
   void enterOfflineMode() {
     OfflineService().setOfflineMode(true);
     _state = AuthState.offlineMode;
     notifyListeners();
   }
 
-  /// Clear server credentials and go back to login without deleting downloads.
+  Future<void> retryConnection() async {
+    if (_config == null) return;
+    _subsonicService.configure(_config!);
+    await _verifyConnection();
+  }
+
   Future<void> disconnect() async {
     _config = null;
     _state = AuthState.unauthenticated;
@@ -118,6 +134,7 @@ class AuthProvider extends ChangeNotifier {
     String? clientCertificatePath,
     String? clientCertificatePassword,
   }) async {
+    debugPrint('[Auth] login: user=$username server=$serverUrl legacy=$useLegacyAuth selfSigned=$allowSelfSignedCertificates');
     _state = AuthState.authenticating;
     _error = null;
     notifyListeners();
@@ -138,6 +155,8 @@ class AuthProvider extends ChangeNotifier {
     try {
       final pingResult = await _subsonicService.pingWithError();
       if (pingResult.success) {
+        debugPrint('[Auth] Login OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
+        debugPrint('[Auth] State: authenticating → authenticated');
         final updatedConfig = config.copyWith(
           serverType: pingResult.serverType,
           serverVersion: pingResult.serverVersion,
@@ -146,7 +165,7 @@ class AuthProvider extends ChangeNotifier {
         await _storageService.saveServerConfig(updatedConfig);
         _state = AuthState.authenticated;
         notifyListeners();
-        // Flush any scrobbles that were queued while offline
+        
         final offlineService = OfflineService();
         await offlineService.initialize();
         offlineService
@@ -156,13 +175,17 @@ class AuthProvider extends ChangeNotifier {
             );
         return true;
       } else {
-        _error = pingResult.error ?? 'Failed to connect to server';
+        _error = _formatError(pingResult.error ?? 'Failed to connect to server');
+        debugPrint('[Auth] Login failed: $_error');
+        debugPrint('[Auth] State: authenticating → error');
         _state = AuthState.error;
         notifyListeners();
         return false;
       }
     } catch (e) {
       _error = _formatError(e);
+      debugPrint('[Auth] Login exception: $e');
+      debugPrint('[Auth] State: authenticating → error (formatted: $_error)');
       _state = AuthState.error;
       notifyListeners();
       return false;
@@ -172,25 +195,36 @@ class AuthProvider extends ChangeNotifier {
   String _formatError(dynamic error) {
     final errorStr = error.toString();
     if (errorStr.contains('SocketException') ||
-        errorStr.contains('Connection refused')) {
+        errorStr.contains('Connection refused') ||
+        errorStr.contains('Connection failed') ||
+        errorStr.contains('connection errored') ||
+        errorStr.contains('Cannot connect')) {
       return 'Cannot connect to server. Check the URL and your internet connection.';
     } else if (errorStr.contains('HandshakeException') ||
-        errorStr.contains('CERTIFICATE_VERIFY_FAILED')) {
+        errorStr.contains('CERTIFICATE_VERIFY_FAILED') ||
+        errorStr.contains('SSL certificate')) {
       return 'SSL certificate error. Enable "Allow Self-Signed Certificates" for custom CA servers.';
-    } else if (errorStr.contains('TimeoutException')) {
+    } else if (errorStr.contains('TimeoutException') ||
+        errorStr.contains('timed out')) {
       return 'Connection timed out. Check your server URL.';
     } else if (errorStr.contains('FormatException')) {
       return 'Invalid server URL format.';
-    } else if (errorStr.contains('401') || errorStr.contains('Unauthorized')) {
+    } else if (errorStr.contains('401') || errorStr.contains('Unauthorized') ||
+        errorStr.contains('Invalid username or password')) {
       return 'Invalid username or password.';
-    } else if (errorStr.contains('404') || errorStr.contains('Not Found')) {
+    } else if (errorStr.contains('404') || errorStr.contains('Not Found') ||
+        errorStr.contains('Server not found')) {
       return 'Server not found. Check your URL path.';
     } else {
-      return errorStr.replaceAll('Exception:', '').trim();
+      
+      return errorStr
+          .replaceAll('Exception:', '')
+          .replaceAll('Network error:', '')
+          .replaceAll('This indicates an error which most likely cannot be solved by the library.', '')
+          .trim();
     }
   }
 
-  /// Set local-only mode (no server, just local files)
   Future<void> setLocalOnlyMode(bool enabled) async {
     if (enabled) {
       _config = ServerConfig(
@@ -211,7 +245,6 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLocalOnlyMode => _config?.serverType == 'local';
 
-  /// Update which music folders are active. Pass an empty list to use all folders.
   Future<void> updateSelectedMusicFolderIds(List<String> ids) async {
     if (_config == null) return;
     final updated = _config!.copyWith(selectedMusicFolderIds: ids);

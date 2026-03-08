@@ -6,9 +6,9 @@ import '../providers/library_provider.dart';
 import '../models/playlist.dart';
 import '../screens/playlist_screen.dart';
 import '../screens/favorites_screen.dart';
+import '../screens/radio_screen.dart';
 import '../screens/settings_screen.dart';
 
-/// Spotify-style desktop navigation sidebar.
 class DesktopNavigationSidebar extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -28,6 +28,7 @@ class DesktopNavigationSidebar extends StatefulWidget {
 
 class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
   bool _isCollapsed = false;
+  bool _isPushing = false;
 
   void _toggleCollapse() => setState(() => _isCollapsed = !_isCollapsed);
 
@@ -43,11 +44,20 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
     _push(MaterialPageRoute(builder: (_) => const FavoritesScreen()));
   }
 
+  void _navigateToRadio() {
+    _push(MaterialPageRoute(builder: (_) => const RadioScreen()));
+  }
+
   void _navigateToSettings() {
     _push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
   }
 
   void _push(Route<dynamic> route) {
+    if (_isPushing) return;
+    _isPushing = true;
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _isPushing = false;
+    });
     if (widget.navigatorKey?.currentState != null) {
       widget.navigatorKey!.currentState!.push(route);
     } else {
@@ -100,6 +110,14 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
             onPlaylistTap: _navigateToPlaylist,
           ),
           _NavItem(
+            icon: Icons.radio_rounded,
+            activeIcon: Icons.radio_rounded,
+            label: l10n.categoryRadio,
+            isSelected: false,
+            isCollapsed: _isCollapsed,
+            onTap: _navigateToRadio,
+          ),
+          _NavItem(
             icon: Icons.settings_outlined,
             activeIcon: Icons.settings_rounded,
             label: l10n.settings,
@@ -119,7 +137,6 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
   }
 }
 
-// Logo row
 class _LogoRow extends StatelessWidget {
   final bool isCollapsed;
   const _LogoRow({required this.isCollapsed});
@@ -157,7 +174,6 @@ class _LogoRow extends StatelessWidget {
   }
 }
 
-// Primary nav item
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
@@ -230,7 +246,6 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// Your Library section
 class _LibrarySection extends StatelessWidget {
   final bool isCollapsed;
   final int selectedIndex;
@@ -263,7 +278,7 @@ class _LibrarySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Your Library + create button
+          
           if (!isCollapsed)
             InkWell(
               onTap: onLibraryTap,
@@ -307,7 +322,7 @@ class _LibrarySection extends StatelessWidget {
                 ),
               ),
             ),
-          // Collapsed: library icon button
+          
           if (isCollapsed)
             Tooltip(
               message: l10n.yourLibrary,
@@ -336,9 +351,9 @@ class _LibrarySection extends StatelessWidget {
                 ),
               ),
             ),
-          // Liked Songs
+          
           _LikedSongsItem(isCollapsed: isCollapsed, onTap: onFavoritesTap),
-          // Playlist list
+          
           Expanded(
             child: Consumer<LibraryProvider>(
               builder: (context, libraryProvider, _) {
@@ -444,7 +459,6 @@ class _LibrarySection extends StatelessWidget {
   }
 }
 
-// Liked Songs item
 class _LikedSongsItem extends StatelessWidget {
   final bool isCollapsed;
   final VoidCallback onTap;
@@ -549,7 +563,6 @@ class _LikedSongsItem extends StatelessWidget {
   }
 }
 
-// Playlist tile
 class _PlaylistTile extends StatelessWidget {
   final Playlist playlist;
   final bool isCollapsed;
@@ -655,7 +668,6 @@ class _PlaylistTile extends StatelessWidget {
   }
 }
 
-// Artwork image with placeholder
 class _ArtworkImage extends StatelessWidget {
   final String? url;
   final bool isDark;
@@ -693,7 +705,6 @@ class _ArtworkImage extends StatelessWidget {
   }
 }
 
-// Collapse / expand button
 class _CollapseButton extends StatelessWidget {
   final bool isCollapsed;
   final VoidCallback onTap;

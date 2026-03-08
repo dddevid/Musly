@@ -8,7 +8,6 @@ import '../providers/player_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
 
-/// Compact lyrics widget for landscape mode - shows only lyrics without background
 class CompactLyricsView extends StatefulWidget {
   final Song song;
   final VoidCallback? onClose;
@@ -29,10 +28,8 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
   bool _showReturnButton = false;
   bool _canShowReturnButton = false;
 
-  // Throttle position updates for performance
   Duration _lastUpdatePosition = Duration.zero;
 
-  // Track song internally to handle updates independent of parent
   late Song _song;
 
   @override
@@ -42,7 +39,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
     _loadLyrics();
     _setupPositionListener();
 
-    // Listen to Song changes from provider directly
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PlayerProvider>(
         context,
@@ -53,7 +49,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
 
   @override
   void dispose() {
-    // Try/catch in case provider is already disposed
+    
     try {
       Provider.of<PlayerProvider>(
         context,
@@ -83,7 +79,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
   void didUpdateWidget(CompactLyricsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.song.id != widget.song.id) {
-      // If parent *does* update correctly, sync our internal state
+      
       if (widget.song.id != _song.id) {
         setState(() {
           _song = widget.song;
@@ -105,7 +101,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       playerProvider.seek(position);
     });
 
-    // Ignore initial stopSelection events that might fire during layout/build
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _canShowReturnButton = true;
     });
@@ -127,7 +122,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
 
     _positionSubscription = playerProvider.positionStream.listen((position) {
       if (_lyricController != null && mounted) {
-        // Throttle updates to every 100ms for performance
+        
         final diff = (position - _lastUpdatePosition).abs();
         final wentBackwards = position < _lastUpdatePosition;
 
@@ -151,7 +146,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
         listen: false,
       );
 
-      // Check local lyrics cache first (available offline)
       final offlineService = OfflineService();
       final cached = await offlineService.getLocalLyrics(_song.id);
       final syncedData = cached?['lyricsList'] as Map<String, dynamic>?
@@ -162,8 +156,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       if (syncedData != null) {
         final structuredLyrics = syncedData['structuredLyrics'];
         if (structuredLyrics is List && structuredLyrics.isNotEmpty) {
-          // Prefer the synced entry — unsynced entries have null start times
-          // that all default to 0, making every line appear at position 0.
+          
           final syncedEntry = structuredLyrics
               .cast<Map<String, dynamic>>()
               .firstWhere(
@@ -199,7 +192,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
         }
       }
 
-      // Fallback to plain lyrics
       final plainData = cached?['lyrics'] as Map<String, dynamic>?
           ?? await subsonicService.getLyrics(
         artist: _song.artist,
@@ -342,7 +334,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
 
     return Stack(
       children: [
-        // Lyrics content
+        
         LyricView(
           controller: _lyricController!,
           style: _buildCompactStyle(),
@@ -350,7 +342,6 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
           height: double.infinity,
         ),
 
-        // Return button when scrolled away
         if (_showReturnButton)
           Positioned(
             bottom: 16,

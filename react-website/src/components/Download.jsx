@@ -65,7 +65,7 @@ export default function DownloadSection() {
                     <div className="download-version">
                         <div className="download-version-badge">
                             <span className="download-version-number">
-                                {vLoading ? '\u2026' : (version ?? 'v1.0.7')}
+                                {vLoading ? '…' : (version ?? 'v1.0.8')}
                             </span>
                             <span className="download-version-label">Latest Release</span>
                         </div>

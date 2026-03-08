@@ -43,7 +43,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
     try {
       Album? album;
 
-      // In local-only mode, look up from cached albums
       if (libraryProvider.isLocalOnlyMode) {
         album = libraryProvider.cachedAllAlbums.firstWhere(
           (a) => a.id == widget.albumId,

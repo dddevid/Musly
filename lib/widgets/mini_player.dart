@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/song.dart';
 import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import 'album_artwork.dart';
 
@@ -25,14 +27,13 @@ class MiniPlayer extends StatelessWidget {
       builder: (context, data, _) {
         final (currentSong, currentRadioStation, isPlayingRadio) = data;
 
-        // Show nothing if no song and no radio
-        if (currentSong == null && !isPlayingRadio)
+        if (currentSong == null && !isPlayingRadio) {
           return const SizedBox.shrink();
+        }
 
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
 
-        // Determine what to display
         final String title;
         final String? subtitle;
         final String? coverArt;
@@ -41,13 +42,65 @@ class MiniPlayer extends StatelessWidget {
           title = currentRadioStation.name;
           subtitle = 'Internet Radio • LIVE';
           coverArt =
-              null; // Radio stations don't have cover art in this implementation
+              null; 
         } else if (currentSong != null) {
           title = currentSong.title;
           subtitle = currentSong.artist;
           coverArt = currentSong.coverArt;
         } else {
           return const SizedBox.shrink();
+        }
+
+        final bool isGlass = Provider.of<ThemeService>(context).liquidGlass;
+
+        final Widget row = _MiniPlayerRow(
+          title: title,
+          subtitle: subtitle,
+          coverArt: coverArt,
+          isPlayingRadio: isPlayingRadio,
+        );
+
+        if (isGlass) {
+          return RepaintBoundary(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 24,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+                  child: GestureDetector(
+                    onTap: onTap,
+                    child: Container(
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.45)
+                            : Colors.white.withValues(alpha: 0.62),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.14)
+                              : Colors.white.withValues(alpha: 0.85),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: row,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
         }
 
         return RepaintBoundary(
@@ -70,124 +123,121 @@ class MiniPlayer extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  // Hide progress bar for radio (live stream has no duration)
                   if (!isPlayingRadio)
                     Selector<PlayerProvider, double>(
                       selector: (_, p) => p.progress,
-                      builder: (_, progress, __) => LinearProgressIndicator(
+                      builder: (_, progress, _) => LinearProgressIndicator(
                         value: progress,
                         backgroundColor: Colors.transparent,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppTheme.appleMusicRed,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.primary,
                         ),
                         minHeight: 2,
                       ),
                     )
                   else
-                    const SizedBox(height: 2), // Keep consistent height
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          if (isPlayingRadio)
-                            // Radio icon instead of album art
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFFFF2D55),
-                                    Color(0xFFFF6B35),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(
-                                Icons.radio,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            )
-                          else
-                            AlbumArtwork(
-                              coverArt: coverArt,
-                              size: 44,
-                              borderRadius: 6,
-                            ),
-                          const SizedBox(width: 12),
-
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (subtitle != null)
-                                  Row(
-                                    children: [
-                                      if (isPlayingRadio) ...[
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 4,
-                                            vertical: 1,
-                                          ),
-                                          margin: const EdgeInsets.only(
-                                            right: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.appleMusicRed,
-                                            borderRadius: BorderRadius.circular(
-                                              3,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'LIVE',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 8,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      Expanded(
-                                        child: Text(
-                                          isPlayingRadio
-                                              ? 'Internet Radio'
-                                              : subtitle,
-                                          style: theme.textTheme.bodySmall,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                          _MiniPlayerControls(isRadio: isPlayingRadio),
-                        ],
-                      ),
-                    ),
-                  ),
+                    const SizedBox(height: 2),
+                  Expanded(child: row),
                 ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _MiniPlayerRow extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final String? coverArt;
+  final bool isPlayingRadio;
+
+  const _MiniPlayerRow({
+    required this.title,
+    required this.subtitle,
+    required this.coverArt,
+    required this.isPlayingRadio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          if (isPlayingRadio)
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFF2D55), Color(0xFFFF6B35)],
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.radio, color: Colors.white, size: 24),
+            )
+          else
+            AlbumArtwork(coverArt: coverArt, size: 44, borderRadius: 6),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null)
+                  Row(
+                    children: [
+                      if (isPlayingRadio) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: const Text(
+                            'LIVE',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                      Expanded(
+                        child: Text(
+                          isPlayingRadio ? 'Internet Radio' : subtitle!,
+                          style: theme.textTheme.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          _MiniPlayerControls(isRadio: isPlayingRadio),
+        ],
+      ),
     );
   }
 }
@@ -219,7 +269,7 @@ class _MiniPlayerControls extends StatelessWidget {
               ),
               color: color,
             ),
-            // Hide skip button for radio
+            
             if (!isRadio)
               IconButton(
                 onPressed: hasNext ? provider.skipNext : null,

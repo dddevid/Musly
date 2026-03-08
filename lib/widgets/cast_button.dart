@@ -17,7 +17,7 @@ class CastButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // On iOS, replace Cast/UPnP with native AirPlay picker.
+    
     if (Platform.isIOS) {
       return AirPlayButton(
         tintColor: iconColor ?? Colors.white,
@@ -36,7 +36,7 @@ class CastButton extends StatelessWidget {
 
     if (castState == CastState.connected) {
       icon = Icons.cast_connected;
-      color = AppTheme.appleMusicRed;
+      color = Theme.of(context).colorScheme.primary;
       tooltip =
           'Casting to ${context.read<CastService>().deviceName ?? "device"}';
     } else if (castState == CastState.connecting) {
@@ -45,7 +45,7 @@ class CastButton extends StatelessWidget {
       tooltip = AppLocalizations.of(context)!.connecting;
     } else if (upnpConnected) {
       icon = Icons.speaker_rounded;
-      color = AppTheme.appleMusicRed;
+      color = Theme.of(context).colorScheme.primary;
       tooltip =
           'DLNA: ${context.read<UpnpService>().connectedDevice?.friendlyName ?? "device"}';
     } else {
@@ -73,8 +73,6 @@ class CastButton extends StatelessWidget {
     );
   }
 
-  //  Cast control dialog
-
   Future<void> _showCastControlDialog(
     BuildContext context,
     CastService castService,
@@ -88,7 +86,7 @@ class CastButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.cast_connected, color: AppTheme.appleMusicRed, size: 28),
+            Icon(Icons.cast_connected, color: Theme.of(context).colorScheme.primary, size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -189,13 +187,13 @@ class CastButton extends StatelessWidget {
                         : cs.mediaState.volume < 0.5
                         ? Icons.volume_down
                         : Icons.volume_up,
-                    color: AppTheme.appleMusicRed,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   Expanded(
                     child: Slider(
                       value: cs.mediaState.volume.clamp(0.0, 1.0),
                       onChanged: (v) => cs.setVolume(v),
-                      activeColor: AppTheme.appleMusicRed,
+                      activeColor: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   Text(
@@ -236,8 +234,6 @@ class CastButton extends StatelessWidget {
     );
   }
 
-  //  UPnP control dialog
-
   Future<void> _showUpnpControlDialog(
     BuildContext context,
     UpnpService upnpService,
@@ -254,7 +250,7 @@ class CastButton extends StatelessWidget {
           children: [
             Icon(
               Icons.speaker_rounded,
-              color: AppTheme.appleMusicRed,
+              color: Theme.of(context).colorScheme.primary,
               size: 28,
             ),
             const SizedBox(width: 12),
@@ -309,7 +305,7 @@ class CastButton extends StatelessWidget {
             Consumer<UpnpService>(
               builder: (context, us, _) {
                 if (us.volume < 0) {
-                  // Device doesn't support RenderingControl
+                  
                   return Text(
                     'Playback is being sent to this DLNA device. '
                     'Use Musly\'s player controls to manage playback.',
@@ -330,13 +326,13 @@ class CastButton extends StatelessWidget {
                           : us.volume < 50
                           ? Icons.volume_down
                           : Icons.volume_up,
-                      color: AppTheme.appleMusicRed,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     Expanded(
                       child: Slider(
                         value: (us.volume / 100.0).clamp(0.0, 1.0),
                         onChanged: (v) => us.setVolume((v * 100).round()),
-                        activeColor: AppTheme.appleMusicRed,
+                        activeColor: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
@@ -404,8 +400,6 @@ class CastButton extends StatelessWidget {
     );
   }
 
-  //  Combined device picker (Chromecast + DLNA/UPnP)
-
   Future<void> _showDevicePickerDialog(
     BuildContext context,
     CastService castService,
@@ -434,8 +428,6 @@ class CastButton extends StatelessWidget {
   }
 }
 
-//  Internal dialog widget
-
 class _DevicePickerDialog extends StatefulWidget {
   final bool isDark;
   final GoogleCastDiscoveryManagerPlatformInterface discoveryManager;
@@ -460,7 +452,7 @@ class _DevicePickerDialogState extends State<_DevicePickerDialog> {
   @override
   void initState() {
     super.initState();
-    // Poll UPnP service every 500 ms while dialog is open.
+    
     _pollTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted) {
         final devices = widget.upnpService.devices;
@@ -486,7 +478,7 @@ class _DevicePickerDialogState extends State<_DevicePickerDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
-          Icon(Icons.cast, color: AppTheme.appleMusicRed, size: 28),
+          Icon(Icons.cast, color: Theme.of(context).colorScheme.primary, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -501,7 +493,7 @@ class _DevicePickerDialogState extends State<_DevicePickerDialog> {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: AppTheme.appleMusicRed,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -527,7 +519,7 @@ class _DevicePickerDialogState extends State<_DevicePickerDialog> {
                       width: 48,
                       height: 48,
                       child: CircularProgressIndicator(
-                        color: AppTheme.appleMusicRed,
+                        color: Theme.of(context).colorScheme.primary,
                         strokeWidth: 3,
                       ),
                     ),
@@ -689,10 +681,10 @@ class _DeviceTile extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: AppTheme.appleMusicRed.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppTheme.appleMusicRed, size: 26),
+        child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 26),
       ),
       title: Text(
         name,

@@ -12,7 +12,6 @@ import '../models/song.dart';
 import '../models/album.dart';
 import '../models/artist.dart';
 
-/// Service for managing local music files on device
 class LocalMusicService extends ChangeNotifier {
   static final LocalMusicService _instance = LocalMusicService._internal();
   factory LocalMusicService() => _instance;
@@ -24,7 +23,6 @@ class LocalMusicService extends ChangeNotifier {
   double _scanProgress = 0.0;
   String _scanStatus = '';
 
-  // Cover art cache: albumId → absolute path to saved .jpg file
   final Map<String, String> _albumArtCache = {};
   String? _artCacheDir;
 
@@ -32,7 +30,6 @@ class LocalMusicService extends ChangeNotifier {
   final List<Album> _albums = [];
   final List<Artist> _artists = [];
 
-  // Supported audio extensions
   static const _supportedExtensions = {
     '.mp3',
     '.flac',
@@ -44,7 +41,6 @@ class LocalMusicService extends ChangeNotifier {
     '.wma',
   };
 
-  // Default scan directories
   static const _defaultScanPaths = [
     '/storage/emulated/0/Music',
     '/storage/emulated/0/Download',
@@ -60,15 +56,12 @@ class LocalMusicService extends ChangeNotifier {
   int get songCount => _songs.length;
   bool get isEmpty => _songs.isEmpty;
 
-  // Excluded folders key
   static const String _excludedFoldersKey = 'local_excluded_folders';
 
-  /// Get list of excluded folders
   List<String> get excludedFolders {
     return _prefs?.getStringList(_excludedFoldersKey) ?? [];
   }
 
-  /// Add folder to exclusion list
   Future<void> addExcludedFolder(String folderPath) async {
     final folders = excludedFolders;
     if (!folders.contains(folderPath)) {
@@ -78,7 +71,6 @@ class LocalMusicService extends ChangeNotifier {
     }
   }
 
-  /// Remove folder from exclusion list
   Future<void> removeExcludedFolder(String folderPath) async {
     final folders = excludedFolders;
     folders.remove(folderPath);
@@ -86,20 +78,17 @@ class LocalMusicService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Clear all excluded folders
   Future<void> clearExcludedFolders() async {
     await _prefs?.remove(_excludedFoldersKey);
     notifyListeners();
   }
 
-  /// Initialize the service
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
       _prefs = await SharedPreferences.getInstance();
 
-      // Set up cover-art cache directory
       final appDir = await getApplicationDocumentsDirectory();
       _artCacheDir = '${appDir.path}/art_cache';
       await Directory(_artCacheDir!).create(recursive: true);
@@ -111,42 +100,33 @@ class LocalMusicService extends ChangeNotifier {
     }
   }
 
-  /// Request storage permission
   Future<bool> requestPermission() async {
     if (Platform.isAndroid) {
       if (await Permission.manageExternalStorage.isGranted) {
         return true;
       }
 
-      // Try audio permission first (Android 13+)
       var status = await Permission.audio.request();
       if (status.isGranted) return true;
 
-      // Fall back to storage permission
       status = await Permission.storage.request();
       if (status.isGranted) return true;
 
-      // Try manage external storage
       status = await Permission.manageExternalStorage.request();
       return status.isGranted;
     }
 
     if (Platform.isIOS) {
-      // Request media library access for reading music metadata
+      
       final status = await Permission.mediaLibrary.request();
-      // Even if denied we can still let the user pick files via FilePicker,
-      // so we always return true and handle lack of access gracefully.
+      
       debugPrint('iOS mediaLibrary permission: $status');
       return true;
     }
 
-    // Desktop platforms don't need permission
     return true;
   }
 
-  /// iOS: open system file picker, copy selected audio files into the app's
-  /// Documents directory (permanent sandbox-accessible path), and add them.
-  /// Returns the number of songs added.
   Future<int> pickAndAddFiles() async {
     if (!Platform.isIOS) return 0;
 
@@ -160,7 +140,6 @@ class LocalMusicService extends ChangeNotifier {
 
     if (result == null || result.files.isEmpty) return 0;
 
-    // Destination: <Documents>/Music/ — always accessible by the app & AVPlayer
     final docsDir = await getApplicationDocumentsDirectory();
     final musicDir = Directory('${docsDir.path}/Music');
     if (!await musicDir.exists()) await musicDir.create(recursive: true);
@@ -173,7 +152,6 @@ class LocalMusicService extends ChangeNotifier {
       final srcFile = File(srcPath);
       if (!await srcFile.exists()) continue;
 
-      // Copy file into sandbox so AVPlayer can read it without auth errors
       final destPath = '${musicDir.path}/${pf.name}';
       final destFile = File(destPath);
       File fileToProcess;
@@ -187,7 +165,6 @@ class LocalMusicService extends ChangeNotifier {
         fileToProcess = srcFile;
       }
 
-      // Skip duplicates (by stable dest path)
       final id = 'local_${destPath.hashCode.abs()}';
       if (_songs.any((s) => s.id == id)) continue;
 
@@ -208,7 +185,6 @@ class LocalMusicService extends ChangeNotifier {
     return _songs.length - before;
   }
 
-  /// Scan device for audio files
   Future<void> scanForMusic({List<String>? customPaths}) async {
     if (_isScanning) return;
 
@@ -228,7 +204,6 @@ class LocalMusicService extends ChangeNotifier {
       final paths = customPaths ?? _getDefaultScanPaths();
       final audioFiles = <File>[];
 
-      // Collect all audio files
       for (final dirPath in paths) {
         final dir = Directory(dirPath);
         if (await dir.exists()) {
@@ -239,12 +214,10 @@ class LocalMusicService extends ChangeNotifier {
       _scanStatus = 'Found ${audioFiles.length} files, processing...';
       notifyListeners();
 
-      // Clear existing data
       _songs.clear();
       _albums.clear();
       _artists.clear();
 
-      // Process files
       final totalFiles = audioFiles.length;
       for (var i = 0; i < totalFiles; i++) {
         final file = audioFiles[i];
@@ -262,10 +235,8 @@ class LocalMusicService extends ChangeNotifier {
         }
       }
 
-      // Build album and artist lists
       _buildAlbumsAndArtists();
 
-      // Cache the library
       await _cacheLibrary();
 
       _scanStatus = 'Found ${_songs.length} songs';
@@ -283,8 +254,7 @@ class LocalMusicService extends ChangeNotifier {
     if (Platform.isAndroid) {
       return _defaultScanPaths;
     } else if (Platform.isIOS) {
-      // On iOS we can only scan directories inside our own sandbox.
-      // Scan the Documents/Music folder where pickAndAddFiles() copies files.
+      
       final docs = _artCacheDir != null
           ? path.join(path.dirname(path.dirname(_artCacheDir!)), 'Music')
           : null;
@@ -308,7 +278,7 @@ class LocalMusicService extends ChangeNotifier {
         recursive: true,
         followLinks: false,
       )) {
-        // Skip excluded folders
+        
         if (excluded.any((ex) => entity.path.startsWith(ex))) {
           continue;
         }
@@ -325,14 +295,11 @@ class LocalMusicService extends ChangeNotifier {
     }
   }
 
-  /// Read audio metadata and produce a Song object.
-  /// Falls back to filename parsing when the tag library can't read the file.
   Future<Song> _processAudioFile(File file) async {
     final fileName = path.basenameWithoutExtension(file.path);
     final parentDir = path.basename(path.dirname(file.path));
     final grandParentDir = path.basename(path.dirname(path.dirname(file.path)));
 
-    // --- defaults (filename-based) ---
     String title = fileName;
     String? artist;
     String albumName = parentDir;
@@ -343,21 +310,20 @@ class LocalMusicService extends ChangeNotifier {
     int? bitRate;
     String? coverArtPath;
 
-    // --- try reading ID3 / Vorbis / ILST / RIFF tags ---
     try {
       final metadata = readMetadata(file, getImage: _artCacheDir != null);
 
       if (metadata.title?.isNotEmpty == true) title = metadata.title!.trim();
       if (metadata.artist?.isNotEmpty == true) artist = metadata.artist!.trim();
-      if (metadata.album?.isNotEmpty == true)
+      if (metadata.album?.isNotEmpty == true) {
         albumName = metadata.album!.trim();
+      }
       trackNumber = metadata.trackNumber;
       yearVal = metadata.year?.year != 0 ? metadata.year?.year : null;
       genre = metadata.genres.isNotEmpty ? metadata.genres.first : null;
       duration = metadata.duration?.inSeconds;
       bitRate = metadata.bitrate;
 
-      // Cover art – save once per album to avoid repeated file writes
       if (metadata.pictures.isNotEmpty && _artCacheDir != null) {
         final albumId = 'local_album_${albumName.hashCode.abs()}';
         if (_albumArtCache.containsKey(albumId)) {
@@ -376,23 +342,21 @@ class LocalMusicService extends ChangeNotifier {
         }
       }
     } catch (_) {
-      // Tag library can't read this file – fall back to filename parsing
+      
     }
 
-    // --- filename-based fallback for missing fields ---
     if (artist == null) {
       if (fileName.contains(' - ')) {
         final parts = fileName.split(' - ');
         if (parts.length >= 2) {
           final rawArtist = parts[0].trim();
-          // Strip leading track-number from artist candidate
+          
           final noNum = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(rawArtist);
           artist = noNum != null ? noNum.group(2)!.trim() : rawArtist;
           title = parts.sublist(1).join(' - ').trim();
         }
       }
 
-      // Still no artist? try grandparent directory
       if (artist == null &&
           grandParentDir.isNotEmpty &&
           !grandParentDir.toLowerCase().contains('music') &&
@@ -401,7 +365,6 @@ class LocalMusicService extends ChangeNotifier {
       }
     }
 
-    // Strip leading track-number from title if metadata didn't provide one
     if (trackNumber == null) {
       final trackMatch = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(title);
       if (trackMatch != null) {
@@ -410,7 +373,6 @@ class LocalMusicService extends ChangeNotifier {
       }
     }
 
-    // Clean up bracketed noise in title
     title = title
         .replaceAll(RegExp(r'\[.*?\]'), '')
         .replaceAll(RegExp(r'\(.*?\)'), '')
@@ -433,13 +395,12 @@ class LocalMusicService extends ChangeNotifier {
       genre: genre,
       duration: duration,
       bitRate: bitRate,
-      coverArt: coverArtPath, // absolute local path, or null
+      coverArt: coverArtPath, 
       path: file.path,
       isLocal: true,
     );
   }
 
-  /// Map MIME type to file extension for cover art files.
   String _mimeToExt(String? mime) {
     switch (mime) {
       case 'image/png':
@@ -456,16 +417,14 @@ class LocalMusicService extends ChangeNotifier {
     final artistMap = <String, List<Song>>{};
 
     for (final song in _songs) {
-      // Group by album
+      
       final albumKey = song.albumId ?? song.album ?? 'Unknown';
       albumMap.putIfAbsent(albumKey, () => []).add(song);
 
-      // Group by artist
       final artistKey = song.artistId ?? song.artist ?? 'Unknown';
       artistMap.putIfAbsent(artistKey, () => []).add(song);
     }
 
-    // Build albums
     for (final entry in albumMap.entries) {
       final songs = entry.value;
       final firstSong = songs.first;
@@ -482,7 +441,6 @@ class LocalMusicService extends ChangeNotifier {
       );
     }
 
-    // Build artists
     for (final entry in artistMap.entries) {
       final songs = entry.value;
       final firstSong = songs.first;
@@ -497,30 +455,25 @@ class LocalMusicService extends ChangeNotifier {
       );
     }
 
-    // Sort
     _songs.sort((a, b) => a.title.compareTo(b.title));
     _albums.sort((a, b) => a.name.compareTo(b.name));
     _artists.sort((a, b) => a.name.compareTo(b.name));
   }
 
-  /// Get songs by album
   List<Song> getSongsByAlbum(String albumId) {
     return _songs.where((s) => s.albumId == albumId).toList();
   }
 
-  /// Get songs by artist
   List<Song> getSongsByArtist(String artistId) {
     return _songs.where((s) => s.artistId == artistId).toList();
   }
 
-  /// Get albums by artist
   List<Album> getAlbumsByArtist(String artistId) {
     final artistSongs = getSongsByArtist(artistId);
     final albumIds = artistSongs.map((s) => s.albumId).toSet();
     return _albums.where((a) => albumIds.contains(a.id)).toList();
   }
 
-  /// Get file URL for local song
   String getStreamUrl(String songId) {
     final song = _songs.firstWhere(
       (s) => s.id == songId,
@@ -553,7 +506,7 @@ class LocalMusicService extends ChangeNotifier {
     try {
       final file = await _getCacheFile();
       if (!await file.exists()) {
-        return; // No cache – scan triggered by MainScreen on first launch
+        return; 
       }
 
       final content = await file.readAsString();
@@ -561,7 +514,7 @@ class LocalMusicService extends ChangeNotifier {
 
       final timestamp = data['timestamp'] as int? ?? 0;
       final age = DateTime.now().millisecondsSinceEpoch - timestamp;
-      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+      const maxAge = 7 * 24 * 60 * 60 * 1000; 
 
       final cachedSongs = (data['songs'] as List<dynamic>)
           .map((s) => Song.fromJson(s as Map<String, dynamic>))
@@ -569,9 +522,6 @@ class LocalMusicService extends ChangeNotifier {
 
       if (cachedSongs.isEmpty) return;
 
-      // iOS: remap song paths to the stable Documents/Music sandbox directory.
-      // The picker gives temporary paths that change every launch; the real
-      // files were copied into Documents/Music/ by pickAndAddFiles().
       if (Platform.isIOS) {
         final docsDir = await getApplicationDocumentsDirectory();
         final musicDirPath = '${docsDir.path}/Music';
@@ -582,7 +532,7 @@ class LocalMusicService extends ChangeNotifier {
           final filename = path.basename(song.path!);
           final sandboxPath = '$musicDirPath/$filename';
           if (await File(sandboxPath).exists()) {
-            // Rebuild song with corrected stable path & id
+            
             final fixedSong = song.copyWith(
               path: sandboxPath,
               id: 'local_${sandboxPath.hashCode.abs()}',
@@ -598,7 +548,7 @@ class LocalMusicService extends ChangeNotifier {
         _buildAlbumsAndArtists();
         notifyListeners();
         debugPrint('Loaded ${_songs.length} songs from local cache (iOS paths remapped).');
-        // Persist updated paths immediately
+        
         await _cacheLibrary();
         return;
       }
@@ -609,7 +559,6 @@ class LocalMusicService extends ChangeNotifier {
       notifyListeners();
       debugPrint('Loaded ${_songs.length} songs from local cache.');
 
-      // If cache is stale, trigger a background rescan
       if (age > maxAge) {
         debugPrint('Local music cache is stale, rescanning in background...');
         Future.delayed(const Duration(seconds: 3), () => scanForMusic());
@@ -623,7 +572,6 @@ class LocalMusicService extends ChangeNotifier {
     }
   }
 
-  /// Clear all local music data
   Future<void> clearLibrary() async {
     _songs.clear();
     _albums.clear();
@@ -636,7 +584,7 @@ class LocalMusicService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting local music cache: $e');
     }
-    // Delete cached cover-art images
+    
     if (_artCacheDir != null) {
       try {
         final dir = Directory(_artCacheDir!);

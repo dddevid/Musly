@@ -4,9 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
-import '../services/android_auto_service.dart';
 import '../services/local_music_service.dart';
-import '../services/offline_service.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
@@ -45,13 +43,12 @@ class LibraryProvider extends ChangeNotifier {
   LibraryProvider(this._subsonicService);
   SubsonicService get subsonicService => _subsonicService;
 
-  /// Call this to enable local-only mode backed by LocalMusicService
   void setLocalMusicService(LocalMusicService service) {
-    // Remove old listener if switching service
+    
     _localMusicService?.removeListener(_onLocalMusicServiceChanged);
     _localMusicService = service;
     _localOnlyMode = true;
-    _isInitialized = false; // Force re-init with new data
+    _isInitialized = false; 
     service.addListener(_onLocalMusicServiceChanged);
   }
 
@@ -59,7 +56,7 @@ class LibraryProvider extends ChangeNotifier {
     if (_localOnlyMode &&
         _localMusicService != null &&
         !_localMusicService!.isScanning) {
-      // Scan just finished – reload library data
+      
       _cachedAllSongs = List.from(_localMusicService!.songs);
       _cachedAllAlbums = List.from(_localMusicService!.albums);
       _artists = List.from(_localMusicService!.artists);
@@ -73,9 +70,7 @@ class LibraryProvider extends ChangeNotifier {
 
   void setLocalOnlyMode(bool enabled) {
     if (!enabled && _localOnlyMode) {
-      // Switching from local-only to server mode: disconnect the listener
-      // and wipe out any locally-loaded content so the server content is
-      // fetched fresh instead of the local files being shown.
+      
       _localMusicService?.removeListener(_onLocalMusicServiceChanged);
       _localMusicService = null;
       _cachedAllSongs = [];
@@ -128,7 +123,7 @@ class LibraryProvider extends ChangeNotifier {
 
     try {
       if (_localOnlyMode && _localMusicService != null) {
-        // Local-only: populate from LocalMusicService
+        
         _cachedAllSongs = List.from(_localMusicService!.songs);
         _cachedAllAlbums = List.from(_localMusicService!.albums);
         _artists = List.from(_localMusicService!.artists);
@@ -142,8 +137,6 @@ class LibraryProvider extends ChangeNotifier {
 
       await _loadCachedData(loadFullLibrary: true);
 
-      // Populate derived lists from cache so Android Auto and the UI have
-      // something to show even if the server is unreachable (offline mode).
       if (_recentAlbums.isEmpty && _cachedAllAlbums.isNotEmpty) {
         _recentAlbums = _cachedAllAlbums.take(20).toList();
       }
@@ -154,17 +147,12 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
       }
 
-      // Push whatever we already have cached so Android Auto shows content
-      // immediately, even before server calls complete (or if they fail).
-      // In server-offline mode, filter to only downloaded (playable) songs.
       if (_serverOfflineMode) {
         await _pushOfflineLibraryToAndroidAuto();
       } else {
         _pushLibraryToAndroidAuto();
       }
-      // Re-push after a short delay to handle the MusicService startup race:
-      // the service is started asynchronously and getInstance() may be null
-      // when the first push above happens, causing data to be silently dropped.
+      
       Future.delayed(const Duration(milliseconds: 800), () {
         if (_serverOfflineMode) {
           _pushOfflineLibraryToAndroidAuto();
@@ -190,8 +178,7 @@ class LibraryProvider extends ChangeNotifier {
             },
           );
         } catch (serverError) {
-          // Server not configured or error - that's ok for local mode.
-          // Android Auto already has cached data from the push above.
+          
           debugPrint('Server initialization skipped: $serverError');
         }
       }
@@ -210,7 +197,6 @@ class LibraryProvider extends ChangeNotifier {
   Future<void> ensureLibraryLoaded() async {
     if (_cachedAllSongs.isNotEmpty) return;
 
-    // In local-only mode, songs come from LocalMusicService, not Subsonic
     if (_localOnlyMode && _localMusicService != null) {
       _cachedAllSongs = List.from(_localMusicService!.songs);
       _cachedAllAlbums = List.from(_localMusicService!.albums);
@@ -238,7 +224,6 @@ class LibraryProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Always restore playlists from cache so offline mode can access them
       final playlistsJson = prefs.getString(_playlistsCacheKey);
       if (playlistsJson != null) {
         final List<dynamic> playlistsList = json.decode(playlistsJson);
@@ -248,7 +233,6 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
       }
 
-      // Always restore artists from cache
       final artistsJson = prefs.getString(_artistsCacheKey);
       if (artistsJson != null) {
         final List<dynamic> artistsList = json.decode(artistsJson);
@@ -285,7 +269,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void _scheduleBackgroundRefresh() {
-    // Only schedule if we already have data loaded, otherwise wait for explicit load
+    
     if (_cachedAllSongs.isEmpty) return;
 
     final shouldRefresh =
@@ -370,8 +354,6 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Push whatever library data is currently in memory to Android Auto.
-  /// Called both from cached data (offline) and after server loads succeed.
   void _pushLibraryToAndroidAuto() {
     if (_artists.isNotEmpty) {
       _androidAutoService.updateArtists(_artists);
@@ -387,21 +369,17 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Push only the downloaded/playable content to Android Auto in server-offline mode.
-  /// Filters songs, albums, and artists to those that have been downloaded so
-  /// the user only sees content they can actually play without a server connection.
   Future<void> _pushOfflineLibraryToAndroidAuto() async {
     final offlineService = OfflineService();
     await offlineService.initialize();
     final downloadedIds = offlineService.getDownloadedSongIds().toSet();
 
     if (downloadedIds.isEmpty) {
-      // No explicit downloads — show what we have cached (best-effort)
+      
       _pushLibraryToAndroidAuto();
       return;
     }
 
-    // Songs: only explicitly downloaded ones
     final offlineSongs = _cachedAllSongs
         .where((s) => downloadedIds.contains(s.id))
         .toList();
@@ -411,7 +389,6 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     }
 
-    // Albums: only those that have at least one downloaded song
     final albumIdsWithDownloads = offlineSongs
         .map((s) => s.albumId)
         .whereType<String>()
@@ -425,7 +402,6 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
     }
 
-    // Artists: only those with downloaded songs
     final artistIdsWithDownloads = offlineSongs
         .map((s) => s.artistId)
         .whereType<String>()
@@ -439,7 +415,6 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateArtists(_artists);
     }
 
-    // Playlists: serve cached playlists as-is (song IDs are stored)
     if (_playlists.isNotEmpty) {
       _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
     }
@@ -458,7 +433,9 @@ class LibraryProvider extends ChangeNotifier {
             if (url.isNotEmpty) {
               _subsonicService.getCoverArtUrl(album.coverArt, size: 300);
             }
-          } catch (e) {}
+          } catch (_) {
+            
+          }
         }
       }
     });
@@ -478,7 +455,7 @@ class LibraryProvider extends ChangeNotifier {
       _saveCachedData();
     } catch (e) {
       debugPrint('Error loading artists: $e');
-      // Push cached artists to Android Auto if server is unreachable
+      
       if (_artists.isNotEmpty) {
         _androidAutoService.updateArtists(_artists);
       }
@@ -543,8 +520,6 @@ class LibraryProvider extends ChangeNotifier {
     try {
       final newPlaylists = await _subsonicService.getPlaylists();
 
-      // Merge with cached playlists to preserve song data
-      // New playlists (metadata only) + Cached playlists (with songs)
       final List<Playlist> mergedPlaylists = [];
 
       for (final newPlaylist in newPlaylists) {
@@ -553,14 +528,9 @@ class LibraryProvider extends ChangeNotifier {
         );
         if (cachedIndex != -1) {
           final cachedFn = _cachedPlaylists[cachedIndex];
-          // If cached has songs and (timestamp matches or unchanged), keep songs
-          // Subsonic playlists usually have a 'changed' field.
-          // If available, check it. If not, we opt to keep cached songs to allow offline play
-          // unless the user explicitly refreshes deep (which we don't have a button for yet).
+          
           if (cachedFn.songs != null && cachedFn.songs!.isNotEmpty) {
-            // If the server says songCount is different, we might be stale.
-            // But for offline support, stale is better than empty.
-            // We reuse the cached songs until getPlaylist(id) is called again.
+            
             mergedPlaylists.add(newPlaylist.copyWith(songs: cachedFn.songs));
             continue;
           }
@@ -579,7 +549,7 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
         notifyListeners();
       }
-      // Push cached playlists to Android Auto even if server failed
+      
       if (_playlists.isNotEmpty) {
         _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
       }
@@ -594,7 +564,7 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     } catch (e) {
       debugPrint('Error loading random songs: $e');
-      // Push cached songs to Android Auto if server is unreachable
+      
       if (_randomSongs.isNotEmpty) {
         _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
       }
@@ -635,7 +605,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<List<Song>> getAlbumSongs(String albumId) async {
-    // Local-only mode
+    
     if (_localOnlyMode && _localMusicService != null) {
       return _localMusicService!.getSongsByAlbum(albumId);
     }
@@ -648,7 +618,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<Playlist> getPlaylist(String playlistId) async {
-    // In offline mode skip the server call and return the cached playlist.
+    
     if (_serverOfflineMode) {
       final cached = _playlists.firstWhere(
         (p) => p.id == playlistId,
@@ -663,7 +633,6 @@ class LibraryProvider extends ChangeNotifier {
     try {
       final playlist = await _subsonicService.getPlaylist(playlistId);
 
-      // Update cache with detailed playlist (including songs)
       final index = _playlists.indexWhere((p) => p.id == playlistId);
       if (index != -1) {
         _playlists[index] = playlist;
@@ -679,7 +648,6 @@ class LibraryProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error loading playlist details: $e');
 
-      // Try to find in cache
       final cachedPlaylist = _playlists.firstWhere(
         (p) => p.id == playlistId,
         orElse: () => throw e,

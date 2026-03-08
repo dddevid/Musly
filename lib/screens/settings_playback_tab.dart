@@ -34,8 +34,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   }
 
   Future<void> _loadSettings() async {
-    await _replayGainService.initialize();
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    await _replayGainService.initialize();
 
     setState(() {
       _replayGainMode = _replayGainService.getMode();
@@ -53,7 +53,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         _buildSection(
-          title: 'AUTO DJ',
+          title: AppLocalizations.of(context)!.sectionAutoDj,
           children: [
             _buildAutoDjModeSelector(),
             if (_autoDjMode != AutoDjMode.off) ...[
@@ -64,7 +64,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: 'VOLUME NORMALIZATION (REPLAYGAIN)',
+          title: AppLocalizations.of(context)!.sectionVolumeNormalization,
           children: [
             _buildReplayGainModeSelector(),
             if (_replayGainMode != ReplayGainMode.off) ...[
@@ -197,7 +197,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         ),
       ),
       title: Text(
-        'Songs to Add: $_autoDjSongsToAdd',
+        AppLocalizations.of(context)!.autoDjSongsToAdd(_autoDjSongsToAdd),
         style: const TextStyle(fontSize: 16),
       ),
       subtitle: Slider(
@@ -205,7 +205,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         min: 1,
         max: 20,
         divisions: 19,
-        activeColor: AppTheme.appleMusicRed,
+        activeColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) {
           final count = value.round();
           final playerProvider = Provider.of<PlayerProvider>(
@@ -237,7 +237,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           size: 18,
         ),
       ),
-      title: const Text('Mode', style: TextStyle(fontSize: 16)),
+      title: Text(AppLocalizations.of(context)!.replayGainMode, style: const TextStyle(fontSize: 16)),
       trailing: DropdownButton<ReplayGainMode>(
         value: _replayGainMode,
         underline: const SizedBox(),
@@ -255,13 +255,14 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   }
 
   String _getReplayGainModeLabel(ReplayGainMode mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case ReplayGainMode.off:
-        return 'Off';
+        return l10n.replayGainModeOff;
       case ReplayGainMode.track:
-        return 'Track';
+        return l10n.replayGainModeTrack;
       case ReplayGainMode.album:
-        return 'Album';
+        return l10n.replayGainModeAlbum;
     }
   }
 
@@ -273,13 +274,13 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildReplayGainPreampSlider() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text('Preamp: ${_replayGainPreamp.toStringAsFixed(1)} dB'),
+      title: Text(AppLocalizations.of(context)!.replayGainPreamp(_replayGainPreamp.toStringAsFixed(1))),
       subtitle: Slider(
         value: _replayGainPreamp,
         min: -12,
         max: 12,
         divisions: 24,
-        activeColor: AppTheme.appleMusicRed,
+        activeColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           await _replayGainService.setPreampGain(value);
           setState(() => _replayGainPreamp = value);
@@ -291,10 +292,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildReplayGainClippingToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: const Text('Prevent Clipping'),
+      title: Text(AppLocalizations.of(context)!.replayGainPreventClipping),
       trailing: CupertinoSwitch(
         value: _replayGainPreventClipping,
-        activeTrackColor: AppTheme.appleMusicRed,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           await _replayGainService.setPreventClipping(value);
           setState(() => _replayGainPreventClipping = value);
@@ -307,14 +308,14 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(
-        'Fallback Gain: ${_replayGainFallback.toStringAsFixed(1)} dB',
+        AppLocalizations.of(context)!.replayGainFallbackGain(_replayGainFallback.toStringAsFixed(1)),
       ),
       subtitle: Slider(
         value: _replayGainFallback,
         min: -12,
         max: 0,
         divisions: 12,
-        activeColor: AppTheme.appleMusicRed,
+        activeColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           await _replayGainService.setFallbackGain(value);
           setState(() => _replayGainFallback = value);
@@ -325,10 +326,46 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
   Widget _buildTranscodingSection() {
     return Consumer<TranscodingService>(
-      builder: (context, transcodingService, _) {
+      builder: (context, ts, _) {
+        final accent = Theme.of(context).colorScheme.primary;
+        final secondaryText =
+            _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+
+        Widget connectionBadge() {
+          final isWifi = ts.currentConnectionType == ConnectionType.wifi;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: (isWifi ? Colors.green : Colors.orange)
+                  .withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isWifi ? Icons.wifi_rounded : Icons.signal_cellular_alt,
+                  size: 12,
+                  color: isWifi ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isWifi ? 'WiFi' : 'Mobile',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isWifi ? Colors.green : Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return _buildSection(
-          title: 'STREAMING QUALITY',
+          title: AppLocalizations.of(context)!.sectionStreamingQuality,
           children: [
+            
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -349,87 +386,180 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   size: 18,
                 ),
               ),
-              title: const Text(
-                'Enable Transcoding',
-                style: TextStyle(fontSize: 16),
+              title: Text(
+                AppLocalizations.of(context)!.transcodingEnable,
+                style: const TextStyle(fontSize: 16),
               ),
               subtitle: Text(
-                'Reduce data usage with lower quality',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: _isDark
-                      ? AppTheme.darkSecondaryText
-                      : AppTheme.lightSecondaryText,
-                ),
+                AppLocalizations.of(context)!.transcodingEnableSubtitle,
+                style: TextStyle(fontSize: 13, color: secondaryText),
               ),
               trailing: CupertinoSwitch(
-                value: transcodingService.enabled,
-                activeTrackColor: AppTheme.appleMusicRed,
-                onChanged: (value) => transcodingService.setEnabled(value),
+                value: ts.enabled,
+                activeTrackColor: accent,
+                onChanged: (v) => ts.setEnabled(v),
               ),
             ),
-            if (transcodingService.enabled) ...[
+
+            if (ts.enabled) ...[
               _buildDivider(),
+
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,
                 ),
-                title: const Text('WiFi Quality'),
+                leading: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [accent, accent.withValues(alpha: 0.6)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.auto_fix_high_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.smartTranscoding,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.smartTranscodingSubtitle,
+                  style: TextStyle(fontSize: 13, color: secondaryText),
+                ),
+                trailing: CupertinoSwitch(
+                  value: ts.smartEnabled,
+                  activeTrackColor: accent,
+                  onChanged: (v) => ts.setSmartEnabled(v),
+                ),
+              ),
+
+              if (ts.smartEnabled)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          AppLocalizations.of(context)!.smartTranscodingDetectedNetwork,
+                          style: TextStyle(fontSize: 12, color: secondaryText),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      connectionBadge(),
+                      const Spacer(),
+                      Flexible(
+                        child: Text(
+                          AppLocalizations.of(context)!.smartTranscodingActiveBitrate(
+                            ts.getCurrentBitrate() != null
+                                ? '${ts.getCurrentBitrate()} kbps'
+                              : AppLocalizations.of(context)!.transcodingFormatOriginal,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: secondaryText,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              _buildDivider(),
+
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const Icon(Icons.wifi_rounded, size: 20),
+                title: Text(AppLocalizations.of(context)!.transcodingWifiQuality),
+                subtitle: Text(
+                  ts.smartEnabled
+                      ? AppLocalizations.of(context)!.transcodingWifiQualitySubtitleSmart
+                      : AppLocalizations.of(context)!.transcodingWifiQualitySubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
                 trailing: DropdownButton<int>(
-                  value: transcodingService.wifiBitrate,
+                  value: ts.wifiBitrate,
                   underline: const SizedBox(),
                   items: TranscodeBitrate.options.map((bitrate) {
-                    return DropdownMenuItem(
-                      value: bitrate,
-                      child: Text(TranscodeBitrate.getLabel(bitrate)),
-                    );
+                    final label = bitrate == TranscodeBitrate.original
+                        ? AppLocalizations.of(context)!.transcodingBitrateOriginal
+                        : '$bitrate kbps';
+                    return DropdownMenuItem(value: bitrate, child: Text(label));
                   }).toList(),
-                  onChanged: (value) {
-                    if (value != null) transcodingService.setWifiBitrate(value);
+                  onChanged: (v) {
+                    if (v != null) ts.setWifiBitrate(v);
                   },
                 ),
               ),
+
               _buildDivider(),
+
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,
                 ),
-                title: const Text('Mobile Quality'),
+                leading: const Icon(
+                  Icons.signal_cellular_alt_rounded,
+                  size: 20,
+                ),
+                title: Text(AppLocalizations.of(context)!.transcodingMobileQuality),
+                subtitle: Text(
+                  ts.smartEnabled
+                      ? AppLocalizations.of(context)!.transcodingMobileQualitySubtitleSmart
+                      : AppLocalizations.of(context)!.transcodingMobileQualitySubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
                 trailing: DropdownButton<int>(
-                  value: transcodingService.mobileBitrate,
+                  value: ts.mobileBitrate,
                   underline: const SizedBox(),
                   items: TranscodeBitrate.options.map((bitrate) {
-                    return DropdownMenuItem(
-                      value: bitrate,
-                      child: Text(TranscodeBitrate.getLabel(bitrate)),
-                    );
+                    final label = bitrate == TranscodeBitrate.original
+                        ? AppLocalizations.of(context)!.transcodingBitrateOriginal
+                        : '$bitrate kbps';
+                    return DropdownMenuItem(value: bitrate, child: Text(label));
                   }).toList(),
-                  onChanged: (value) {
-                    if (value != null)
-                      transcodingService.setMobileBitrate(value);
+                  onChanged: (v) {
+                    if (v != null) ts.setMobileBitrate(v);
                   },
                 ),
               ),
+
               _buildDivider(),
+
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,
                 ),
-                title: const Text('Format'),
+                leading: const Icon(Icons.audio_file_rounded, size: 20),
+                title: Text(AppLocalizations.of(context)!.transcodingFormat),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.transcodingFormatSubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
                 trailing: DropdownButton<String>(
-                  value: transcodingService.format,
+                  value: ts.format,
                   underline: const SizedBox(),
                   items: TranscodeFormat.options.map((format) {
-                    return DropdownMenuItem(
-                      value: format,
-                      child: Text(TranscodeFormat.getLabel(format)),
-                    );
+                    final label = format == TranscodeFormat.original
+                        ? AppLocalizations.of(context)!.transcodingFormatOriginal
+                        : format.toUpperCase();
+                    return DropdownMenuItem(value: format, child: Text(label));
                   }).toList(),
-                  onChanged: (value) {
-                    if (value != null) transcodingService.setFormat(value);
+                  onChanged: (v) {
+                    if (v != null) ts.setFormat(v);
                   },
                 ),
               ),

@@ -43,13 +43,13 @@ class _ArtistScreenState extends State<ArtistScreen> {
       List<Album> albums = [];
 
       if (libraryProvider.isLocalOnlyMode) {
-        // Local mode: look up data from cached library
+        
         artist = libraryProvider.artists.firstWhere(
           (a) => a.id == widget.artistId,
           orElse: () => Artist(id: widget.artistId, name: 'Unknown Artist'),
         );
         albums = await libraryProvider.getArtistAlbums(widget.artistId);
-        // Use all songs by the artist as "top songs"
+        
         topSongs = libraryProvider.cachedAllSongs
             .where((s) => s.artistId == widget.artistId)
             .toList();

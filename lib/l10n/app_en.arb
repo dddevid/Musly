@@ -1463,5 +1463,212 @@
   "@openOfflineMode": { "description": "Button to enter offline mode from the server-unreachable screen" },
 
   "disconnect": "Disconnect",
-  "@disconnect": { "description": "Button to clear server credentials and go back to login" }
+  "@disconnect": { "description": "Button to clear server credentials and go back to login" },
+
+  "retry": "Retry",
+  "@retry": { "description": "Button to retry a failed server connection" },
+
+  "appearanceSection": "Appearance",
+  "@appearanceSection": { "description": "Display settings section header for theme / appearance" },
+
+  "themeLabel": "Theme",
+  "@themeLabel": { "description": "Label for the theme mode selector (System / Light / Dark)" },
+
+  "accentColorLabel": "Accent color",
+  "@accentColorLabel": { "description": "Label for the accent color picker" },
+
+  "circularDesignLabel": "Circular Design",
+  "@circularDesignLabel": { "description": "Label for the Circular Design (glass-blur UI) toggle" },
+
+  "circularDesignSubtitle": "Floating, rounded UI with translucent panels and glass-blur effect on the player and navigation bar.",
+  "@circularDesignSubtitle": { "description": "Subtitle describing the Circular Design visual style" },
+
+  "themeModeSystem": "System",
+  "@themeModeSystem": { "description": "Theme mode option that follows the OS setting" },
+
+  "themeModeLight": "Light",
+  "@themeModeLight": { "description": "Light theme mode option" },
+
+  "themeModeDark": "Dark",
+  "@themeModeDark": { "description": "Dark theme mode option" },
+
+  "internetRadio": "Internet Radio",
+  "@internetRadio": { "description": "Subtitle shown in the mini player and player bar when a radio station is playing" },
+
+  "liveLabel": "LIVE",
+  "@liveLabel": { "description": "Badge shown next to a live radio stream" },
+
+  "discordStatusText": "Discord status text",
+  "@discordStatusText": { "description": "Settings label for the Discord Rich Presence second-line style" },
+
+  "discordStatusTextSubtitle": "Second line shown in Discord activity",
+  "@discordStatusTextSubtitle": { "description": "Subtitle for the Discord status text setting" },
+
+  "discordRpcStyleArtist": "Artist name",
+  "@discordRpcStyleArtist": { "description": "Discord RPC state style option: show artist name" },
+
+  "discordRpcStyleSong": "Song title",
+  "@discordRpcStyleSong": { "description": "Discord RPC state style option: show song title" },
+
+  "discordRpcStyleApp": "App name (Musly)",
+  "@discordRpcStyleApp": { "description": "Discord RPC state style option: show app name" },
+
+  "sectionAutoDj": "AUTO DJ",
+  "@sectionAutoDj": { "description": "Playback settings section header for Auto DJ" },
+
+  "sectionVolumeNormalization": "VOLUME NORMALIZATION (REPLAYGAIN)",
+  "@sectionVolumeNormalization": { "description": "Playback settings section header for ReplayGain" },
+
+  "sectionStreamingQuality": "STREAMING QUALITY",
+  "@sectionStreamingQuality": { "description": "Playback settings section header for transcoding / streaming quality" },
+
+  "replayGainMode": "Mode",
+  "@replayGainMode": { "description": "Label for the ReplayGain mode selector" },
+
+  "replayGainModeOff": "Off",
+  "@replayGainModeOff": { "description": "ReplayGain mode: disabled" },
+
+  "replayGainModeTrack": "Track",
+  "@replayGainModeTrack": { "description": "ReplayGain mode: per-track normalization" },
+
+  "replayGainModeAlbum": "Album",
+  "@replayGainModeAlbum": { "description": "ReplayGain mode: album-level normalization" },
+
+  "replayGainPreamp": "Preamp: {value} dB",
+  "@replayGainPreamp": {
+    "description": "ReplayGain preamp slider label",
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "replayGainPreventClipping": "Prevent Clipping",
+  "@replayGainPreventClipping": { "description": "Toggle label for ReplayGain prevent-clipping option" },
+
+  "replayGainFallbackGain": "Fallback Gain: {value} dB",
+  "@replayGainFallbackGain": {
+    "description": "ReplayGain fallback gain slider label",
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "autoDjSongsToAdd": "Songs to Add: {count}",
+  "@autoDjSongsToAdd": {
+    "description": "Auto DJ slider label showing how many songs to add",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "transcodingEnable": "Enable Transcoding",
+  "@transcodingEnable": { "description": "Toggle label to enable transcoding" },
+
+  "transcodingEnableSubtitle": "Reduce data usage with lower quality",
+  "@transcodingEnableSubtitle": { "description": "Subtitle for the enable transcoding toggle" },
+
+  "smartTranscoding": "Smart Transcoding",
+  "@smartTranscoding": { "description": "Toggle label for smart (auto) transcoding mode" },
+
+  "smartTranscodingSubtitle": "Automatically adjusts quality based on your connection (WiFi vs mobile data)",
+  "@smartTranscodingSubtitle": { "description": "Subtitle for the smart transcoding toggle" },
+
+  "smartTranscodingDetectedNetwork": "Detected network: ",
+  "@smartTranscodingDetectedNetwork": { "description": "Label shown before the live network type badge" },
+
+  "smartTranscodingActiveBitrate": "Active bitrate: {bitrate}",
+  "@smartTranscodingActiveBitrate": {
+    "description": "Shows the currently active transcoding bitrate",
+    "placeholders": { "bitrate": { "type": "String" } }
+  },
+
+  "transcodingWifiQuality": "WiFi Quality",
+  "@transcodingWifiQuality": { "description": "Label for WiFi bitrate selector" },
+
+  "transcodingWifiQualitySubtitleSmart": "Used automatically on WiFi",
+  "@transcodingWifiQualitySubtitleSmart": { "description": "WiFi quality subtitle when smart mode is on" },
+
+  "transcodingWifiQualitySubtitle": "Bitrate when on WiFi",
+  "@transcodingWifiQualitySubtitle": { "description": "WiFi quality subtitle when smart mode is off" },
+
+  "transcodingMobileQuality": "Mobile Quality",
+  "@transcodingMobileQuality": { "description": "Label for mobile data bitrate selector" },
+
+  "transcodingMobileQualitySubtitleSmart": "Used automatically on cellular data",
+  "@transcodingMobileQualitySubtitleSmart": { "description": "Mobile quality subtitle when smart mode is on" },
+
+  "transcodingMobileQualitySubtitle": "Bitrate when on mobile data",
+  "@transcodingMobileQualitySubtitle": { "description": "Mobile quality subtitle when smart mode is off" },
+
+  "transcodingFormat": "Format",
+  "@transcodingFormat": { "description": "Label for the transcoding format selector" },
+
+  "transcodingFormatSubtitle": "Audio codec used for streaming",
+  "@transcodingFormatSubtitle": { "description": "Subtitle for the transcoding format selector" },
+
+  "transcodingBitrateOriginal": "Original (No Transcoding)",
+  "@transcodingBitrateOriginal": { "description": "Transcoding bitrate option: no transcoding, use original" },
+
+  "transcodingFormatOriginal": "Original",
+  "@transcodingFormatOriginal": { "description": "Transcoding format option: original (no conversion)" },
+
+  "sectionCacheSettings": "CACHE SETTINGS",
+  "@sectionCacheSettings": { "description": "Storage settings section header" },
+
+  "sectionCacheCleanup": "CACHE CLEANUP",
+  "@sectionCacheCleanup": { "description": "Storage settings section header for cache cleanup" },
+
+  "sectionOfflineDownloads": "OFFLINE DOWNLOADS",
+  "@sectionOfflineDownloads": { "description": "Storage settings section header for offline downloads" },
+
+  "sectionBpmAnalysis": "BPM ANALYSIS",
+  "@sectionBpmAnalysis": { "description": "Storage settings section header for BPM analysis" },
+
+  "imageCacheTitle": "Image Cache",
+  "@imageCacheTitle": { "description": "Toggle title for image (album art) cache" },
+
+  "imageCacheSubtitle": "Save album covers locally",
+  "@imageCacheSubtitle": { "description": "Subtitle for image cache toggle" },
+
+  "musicCacheTitle": "Music Cache",
+  "@musicCacheTitle": { "description": "Toggle title for music metadata cache" },
+
+  "musicCacheSubtitle": "Save song metadata locally",
+  "@musicCacheSubtitle": { "description": "Subtitle for music cache toggle" },
+
+  "bpmCacheTitle": "BPM Cache",
+  "@bpmCacheTitle": { "description": "Toggle title for BPM analysis cache" },
+
+  "bpmCacheSubtitle": "Save BPM analysis locally",
+  "@bpmCacheSubtitle": { "description": "Subtitle for BPM cache toggle" },
+
+  "clearAllCache": "Clear All Cache",
+  "@clearAllCache": { "description": "Button to clear all cached data" },
+
+  "sectionAboutInformation": "INFORMATION",
+  "@sectionAboutInformation": { "description": "About screen section header" },
+
+  "sectionAboutDeveloper": "DEVELOPER",
+  "@sectionAboutDeveloper": { "description": "About screen developer section header" },
+
+  "sectionAboutLinks": "LINKS",
+  "@sectionAboutLinks": { "description": "About screen links section header" },
+
+  "aboutVersion": "Version",
+  "@aboutVersion": { "description": "About screen version row title" },
+
+  "aboutPlatform": "Platform",
+  "@aboutPlatform": { "description": "About screen platform row title" },
+
+  "aboutMadeBy": "Made by dddevid",
+  "@aboutMadeBy": { "description": "Developer credit text in the about tab" },
+
+  "aboutGitHub": "github.com/dddevid",
+  "@aboutGitHub": { "description": "Developer GitHub handle shown as subtitle" },
+
+  "aboutLinkGitHub": "GitHub Repository",
+  "@aboutLinkGitHub": { "description": "Link tile title for the GitHub repo" },
+
+  "aboutLinkChangelog": "Changelog",
+  "@aboutLinkChangelog": { "description": "Link tile title for the app changelog" },
+
+  "aboutLinkReportIssue": "Report Issue",
+  "@aboutLinkReportIssue": { "description": "Link tile title for reporting a bug" },
+
+  "aboutLinkDiscord": "Join Discord Community",
+  "@aboutLinkDiscord": { "description": "Link tile title for the Discord server" }
 }

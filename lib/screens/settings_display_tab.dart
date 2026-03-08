@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/recommendation_service.dart';
 import '../services/player_ui_settings_service.dart';
+import '../services/theme_service.dart';
 import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
@@ -28,6 +29,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   String _artworkShadowColor = 'black';
   bool _liveSearch = true;
 
+  ThemeMode _themeMode = ThemeMode.system;
+  AccentColor _accentColor = AccentColor.red;
+  bool _liquidGlass = false;
+
   bool get _isDesktop {
     if (kIsWeb) return false;
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -44,6 +49,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Future<void> _loadSettings() async {
     await _playerUiSettings.initialize();
 
+    if (!mounted) return;
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+
     setState(() {
       _showVolumeSlider = _playerUiSettings.getShowVolumeSlider();
       _showStarRatings = _playerUiSettings.getShowStarRatings();
@@ -52,6 +60,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _artworkShadow = _playerUiSettings.getArtworkShadow();
       _artworkShadowColor = _playerUiSettings.getArtworkShadowColor();
       _liveSearch = _playerUiSettings.getLiveSearch();
+      _themeMode = themeService.themeMode;
+      _accentColor = themeService.accentColor;
+      _liquidGlass = themeService.liquidGlass;
     });
   }
 
@@ -60,6 +71,11 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
+        _buildSection(
+          title: AppLocalizations.of(context)!.appearanceSection.toUpperCase(),
+          children: [_buildAppearanceEditor()],
+        ),
+        const SizedBox(height: 24),
         _buildSection(
           title: AppLocalizations.of(context)!.language.toUpperCase(),
           children: [
@@ -112,6 +128,86 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         const SizedBox(height: 40),
       ],
+    );
+  }
+
+  Widget _buildAppearanceEditor() {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+    final isDark = _isDark;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          
+          _buildEditorRow(
+            icon: CupertinoIcons.moon_stars_fill,
+            iconColor: const Color(0xFF5856D6),
+            label: AppLocalizations.of(context)!.themeLabel,
+            child: _ThemeModeSelector(
+              value: _themeMode,
+              isDark: isDark,
+              onChanged: (mode) async {
+                setState(() => _themeMode = mode);
+                await themeService.setThemeMode(mode);
+              },
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          _buildEditorRow(
+            icon: Icons.palette_rounded,
+            iconColor: const Color(0xFFFF9500),
+            label: AppLocalizations.of(context)!.accentColorLabel,
+            child: _AccentColorPicker(
+              selected: _accentColor,
+              onChanged: (color) async {
+                setState(() => _accentColor = color);
+                await themeService.setAccentColor(color);
+              },
+            ),
+          ),
+
+          ...[
+            const SizedBox(height: 20),
+            _buildEditorRow(
+              icon: CupertinoIcons.sparkles,
+              iconColor: const Color(0xFF64D2FF),
+              label: AppLocalizations.of(context)!.circularDesignLabel,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.circularDesignSubtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? AppTheme.darkSecondaryText
+                          : AppTheme.lightSecondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      CupertinoSwitch(
+                        value: _liquidGlass,
+                        activeTrackColor: const Color(0xFF64D2FF),
+                        onChanged: (value) async {
+                          setState(() => _liquidGlass = value);
+                          await themeService.setLiquidGlass(value);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -194,7 +290,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       ),
       trailing: CupertinoSwitch(
         value: _showVolumeSlider,
-        activeTrackColor: AppTheme.appleMusicRed,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           setState(() => _showVolumeSlider = value);
           await _playerUiSettings.setShowVolumeSlider(value);
@@ -236,7 +332,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       ),
       trailing: CupertinoSwitch(
         value: _showStarRatings,
-        activeTrackColor: AppTheme.appleMusicRed,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           setState(() => _showStarRatings = value);
           await _playerUiSettings.setShowStarRatings(value);
@@ -278,7 +374,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       ),
       trailing: CupertinoSwitch(
         value: _liveSearch,
-        activeTrackColor: AppTheme.appleMusicRed,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
         onChanged: (value) async {
           setState(() => _liveSearch = value);
           await _playerUiSettings.setLiveSearch(value);
@@ -286,8 +382,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       ),
     );
   }
-
-  // ── Artwork Style Editor ──────────────────────────────────────────────────
 
   double _artworkPreviewRadius() {
     if (_artworkShape == 'circle') return 9999.0;
@@ -299,7 +393,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     if (_artworkShadow == 'none') return null;
     const previewSize = 108.0;
     final Color color = _artworkShadowColor == 'accent'
-        ? AppTheme.appleMusicRed
+        ? Theme.of(context).colorScheme.primary
         : Colors.black;
     double opacity;
     double blur;
@@ -315,7 +409,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         blur = previewSize / 4;
         offset = Offset(0, previewSize / 12);
         break;
-      default: // soft
+      default: 
         opacity = _isDark ? 0.22 : 0.14;
         blur = previewSize / 10;
         offset = Offset(0, previewSize / 30);
@@ -339,7 +433,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Live preview ──────────────────────────────────────────────
+          
           Center(
             child: Column(
               children: [
@@ -361,10 +455,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                   width: previewSize,
                   height: previewSize,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFFA243C), Color(0xFFFC5C65)],
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.primary.withAlpha(180),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(
                       radius.clamp(0.0, previewSize / 2),
@@ -383,7 +480,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
           const SizedBox(height: 28),
 
-          // ── Shape ─────────────────────────────────────────────────────
           _buildEditorRow(
             icon: Icons.crop_square_rounded,
             iconColor: const Color(0xFF5856D6),
@@ -402,7 +498,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ),
           ),
 
-          // ── Corner radius (only when rounded) ─────────────────────────
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
@@ -421,17 +516,17 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.appleMusicRed,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: AppTheme.appleMusicRed,
+                            activeTrackColor: Theme.of(context).colorScheme.primary,
                             inactiveTrackColor: _isDark
                                 ? AppTheme.darkDivider
                                 : AppTheme.lightDivider,
-                            thumbColor: AppTheme.appleMusicRed,
-                            overlayColor: AppTheme.appleMusicRed.withValues(
+                            thumbColor: Theme.of(context).colorScheme.primary,
+                            overlayColor: Theme.of(context).colorScheme.primary.withValues(
                               alpha: 0.12,
                             ),
                             trackHeight: 3,
@@ -458,7 +553,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
           const SizedBox(height: 16),
 
-          // ── Shadow intensity ──────────────────────────────────────────
           _buildEditorRow(
             icon: Icons.blur_on_rounded,
             iconColor: const Color(0xFF34AADC),
@@ -478,7 +572,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ),
           ),
 
-          // ── Shadow color (only when shadow is active) ─────────────────
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
@@ -569,13 +662,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppTheme.appleMusicRed
+                  ? Theme.of(context).colorScheme.primary
                   : (_isDark
                         ? Colors.white.withValues(alpha: 0.08)
                         : Colors.black.withValues(alpha: 0.06)),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? AppTheme.appleMusicRed : Colors.transparent,
+                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
               ),
             ),
             child: Text(
@@ -632,7 +725,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           ),
           trailing: CupertinoSwitch(
             value: service.enabled,
-            activeTrackColor: AppTheme.appleMusicRed,
+            activeTrackColor: Theme.of(context).colorScheme.primary,
             onChanged: (value) => service.setEnabled(value),
           ),
         );
@@ -735,7 +828,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF5865F2), // Discord Blurple
+              color: const Color(0xFF5865F2), 
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -759,10 +852,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           ),
           trailing: CupertinoSwitch(
             value: player.discordRpcEnabled,
-            activeTrackColor: AppTheme.appleMusicRed,
+            activeTrackColor: Theme.of(context).colorScheme.primary,
             onChanged: (value) async {
               await player.setDiscordRpcEnabled(value);
-              // Force rebuild to update switch state since provider might not notify
+              
               setState(() {});
             },
           ),
@@ -771,12 +864,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     );
   }
 
-  // https://github.com/dddevid/Musly/issues/69
   Widget _buildDiscordRpcStateStyleSelector() {
-    const styles = [
-      ('artist', 'Artist name'),
-      ('song_title', 'Song title'),
-      ('app_name', 'App name (Musly)'),
+    final l10n = AppLocalizations.of(context)!;
+    final styles = [
+      ('artist', l10n.discordRpcStyleArtist),
+      ('song_title', l10n.discordRpcStyleSong),
+      ('app_name', l10n.discordRpcStyleApp),
     ];
     return Consumer<PlayerProvider>(
       builder: (context, player, _) {
@@ -798,9 +891,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               size: 18,
             ),
           ),
-          title: const Text('Discord status text', style: TextStyle(fontSize: 16)),
+          title: Text(l10n.discordStatusText, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
-            'Second line shown in Discord activity',
+            l10n.discordStatusTextSubtitle,
             style: TextStyle(
               fontSize: 13,
               color: _isDark
@@ -930,7 +1023,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         child: Column(
           children: [
-            // Handle bar
+            
             Container(
               margin: const EdgeInsets.only(top: 8, bottom: 4),
               width: 40,
@@ -940,7 +1033,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            // Header
+            
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -963,12 +1056,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               ),
             ),
             const Divider(height: 1),
-            // System default option
+            
             ListTile(
               leading: const Icon(CupertinoIcons.device_phone_portrait),
               title: Text(AppLocalizations.of(context)!.systemDefault),
               trailing: localeService.currentLocale == null
-                  ? const Icon(Icons.check, color: AppTheme.appleMusicRed)
+                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
               onTap: () {
                 localeService.setLocale(null);
@@ -976,7 +1069,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               },
             ),
             const Divider(height: 1),
-            // Language list
+            
             Expanded(
               child: ListView(
                 children: LocaleService.supportedLanguages.entries.map((entry) {
@@ -989,7 +1082,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                     ),
                     title: Text(entry.value),
                     trailing: isSelected
-                        ? const Icon(Icons.check, color: AppTheme.appleMusicRed)
+                        ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                         : null,
                     onTap: () {
                       localeService.setLocale(Locale(entry.key));
@@ -1033,5 +1126,124 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       'vi': '🇻🇳',
     };
     return flagMap[languageCode] ?? '🌐';
+  }
+}
+
+class _ThemeModeSelector extends StatelessWidget {
+  const _ThemeModeSelector({
+    required this.value,
+    required this.isDark,
+    required this.onChanged,
+  });
+
+  final ThemeMode value;
+  final bool isDark;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      (mode: ThemeMode.system, label: AppLocalizations.of(context)!.themeModeSystem, icon: CupertinoIcons.device_phone_portrait),
+      (mode: ThemeMode.light, label: AppLocalizations.of(context)!.themeModeLight, icon: CupertinoIcons.sun_max_fill),
+      (mode: ThemeMode.dark, label: AppLocalizations.of(context)!.themeModeDark, icon: CupertinoIcons.moon_fill),
+    ];
+
+    final accent = Theme.of(context).colorScheme.primary;
+
+    return Row(
+      children: options.map((opt) {
+        final selected = value == opt.mode;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => onChanged(opt.mode),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: selected
+                    ? accent
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.06)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    opt.icon,
+                    size: 18,
+                    color: selected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black54),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    opt.label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected
+                          ? Colors.white
+                          : (isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _AccentColorPicker extends StatelessWidget {
+  const _AccentColorPicker({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final AccentColor selected;
+  final ValueChanged<AccentColor> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: AccentColor.values.map((color) {
+        final isSelected = selected == color;
+        return GestureDetector(
+          onTap: () => onChanged(color),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.color,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Colors.white : Colors.transparent,
+                width: 2.5,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: color.color.withValues(alpha: 0.6),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 16)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
   }
 }

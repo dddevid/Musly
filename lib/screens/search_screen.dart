@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -275,7 +276,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 SliverToBoxAdapter(child: _buildBrowseCategories()),
             ],
           ),
-          // Autocomplete suggestions overlay
+          
           if (_showSuggestions && _searchController.text.isNotEmpty)
             Positioned(
               top: 120 + 56 + 8,
@@ -380,12 +381,13 @@ class _SearchScreenState extends State<SearchScreen> {
         [Colors.red, Colors.pink],
         () => NavigationHelper.push(context, const FavoritesScreen()),
       ),
-      _CategoryItem(
-        AppLocalizations.of(context)!.categoryRadio,
-        Icons.radio_rounded,
-        [Colors.blue, Colors.indigo],
-        () => NavigationHelper.push(context, const RadioScreen()),
-      ),
+      if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux)
+        _CategoryItem(
+          AppLocalizations.of(context)!.categoryRadio,
+          Icons.radio_rounded,
+          [Colors.blue, Colors.indigo],
+          () => NavigationHelper.push(context, const RadioScreen()),
+        ),
     ];
 
     return Column(
