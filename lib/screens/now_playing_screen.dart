@@ -107,7 +107,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     Duration animDuration,
     Curve animCurve,
   ) {
-    final artworkSize = (screenHeight * 0.75).clamp(200.0, screenWidth * 0.40);
+    final artworkLandMin = screenHeight < 280 ? 80.0 : 120.0;
+    final artworkLandMax = (screenWidth * 0.40).clamp(artworkLandMin, 500.0);
+    final artworkSize = (screenHeight * 0.75).clamp(artworkLandMin, artworkLandMax);
 
     return Row(
       children: [
@@ -323,13 +325,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                   );
                                 }
 
-                                final artworkSize = (screenWidth * 0.80).clamp(
-                                  200.0,
-                                  screenHeight * 0.38,
-                                );
+                                // Clamp artwork safely: ensure max >= min so
+                                // clamp() never throws on small screens
+                                // (e.g. Sony NW-A306 Walkman ~240x400 dp).
+                                final artworkMinSize = screenHeight < 400
+                                    ? 80.0
+                                    : 120.0;
+                                final artworkMaxSize = (screenHeight * 0.38)
+                                    .clamp(artworkMinSize, 400.0);
+                                final artworkSize = (screenWidth * 0.80)
+                                    .clamp(artworkMinSize, artworkMaxSize);
 
-                                const controlsHeight = 250.0;
-                                const headerHeight = 56.0;
+                                final controlsHeight =
+                                    screenHeight < 420 ? 180.0 : 250.0;
+                                final headerHeight =
+                                    screenHeight < 420 ? 44.0 : 56.0;
 
                                 final availableSpace =
                                     screenHeight -
