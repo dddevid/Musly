@@ -74,6 +74,48 @@ class _ArtistScreenState extends State<ArtistScreen> {
     }
   }
 
+  Future<void> _addArtistToQueue() async {
+    if (_albums.isEmpty) return;
+
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final subsonicService = libraryProvider.subsonicService;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final songsToQueue = <Song>[];
+      for (final album in _albums) {
+        final albumSongs = libraryProvider.isLocalOnlyMode
+            ? libraryProvider.cachedAllSongs
+                .where((s) => s.albumId == album.id)
+                .toList()
+            : await subsonicService.getAlbumSongs(album.id);
+
+        songsToQueue.addAll(albumSongs);
+      }
+
+      if (songsToQueue.isNotEmpty) {
+        playerProvider.addAllToQueue(songsToQueue);
+      }
+      // Show snackbar on success?
+
+      // messenger.showSnackBar( 
+      //   SnackBar(
+      //     content: Text(AppLocalizations.of(context)!.addToQueue),
+      //     duration: const Duration(seconds: 2),
+      //   ),
+      // );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Error adding to queue: $e'), //Add localization for this error msg?
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   void _playTopSongs({bool shuffle = false}) {
     if (_topSongs.isEmpty) return;
 
@@ -144,6 +186,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
                     ),
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.queue_music_rounded),
+                tooltip: AppLocalizations.of(context)!.addToQueue,
+                onPressed: _albums.isEmpty ? null : () => _addArtistToQueue(),
+              ),
               IconButton(
                 icon: const Icon(CupertinoIcons.play_circle_fill),
                 onPressed: () => _playTopSongs(),
