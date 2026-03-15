@@ -1255,6 +1255,11 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addAllToQueue(Iterable<Song> songs) {
+    _queue.addAll(songs);
+    notifyListeners();
+  }
+
   void removeFromQueue(int index) {
     if (index >= 0 && index < _queue.length) {
       _queue.removeAt(index);

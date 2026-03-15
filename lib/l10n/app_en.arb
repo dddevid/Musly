@@ -1251,6 +1251,12 @@
   "artistDataNotFound": "Artist not found",
   "@artistDataNotFound": { "description": "Error state on the artist screen when artist data fails to load" },
 
+  "addedArtistToQueue": "Added artist to Queue",
+  "@addedArtistToQueue": { "description": "Snackbar when user adds artist to queue" },
+
+  "addedArtistToQueueError": "Failed adding artist to Queue",
+  "@addedArtistToQueueError": { "description": "Error shown in snackbar when adding artist to queue fails" },
+
   "@_CAST_DLNA": {},
   "casting": "Casting",
   "@casting": { "description": "Title shown in the Chromecast control dialog when actively casting" },
