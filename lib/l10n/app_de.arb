@@ -1309,7 +1309,19 @@
     "description": "Empty state on the Albums tab of the genre screen"
   },
   "@_JUKEBOX": {},
+  "jukeboxMode": "Jukebox Modus",
+  "@jukeboxMode": {
+    "description": "Toggle label for enabling jukebox mode"
+  },
   "@_MUSIC_FOLDERS": {},
+  "artworkPreview": "Vorschau",
+  "@artworkPreview": {
+    "description": "Label shown above the live artwork style preview"
+  },
+  "serverUnreachableTitle": "Server nicht erreichbar",
+  "@serverUnreachableTitle": {
+    "description": "Title on the server-unreachable screen"
+  },
   "@internetRadio": {
     "description": "Subtitle shown in the mini player and player bar when a radio station is playing"
   },

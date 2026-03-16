@@ -29,7 +29,7 @@
   "@discoverMix": {
     "description": "Discover Mix section title"
   },
-  "recentlyPlayed": "Senast Spelat",
+  "recentlyPlayed": "Nyligen spelade",
   "@recentlyPlayed": {
     "description": "Recently played section title"
   },
@@ -41,7 +41,7 @@
   "@madeForYou": {
     "description": "Made for you section title"
   },
-  "topRated": "Högst Rankade",
+  "topRated": "Top Rated",
   "@topRated": {
     "description": "Top rated albums title"
   },
@@ -570,6 +570,9 @@
   "tryDifferentSearch": "Försök söka någonting annat",
   "noSuggestions": "Inga förslag",
   "browseCategories": "Bläddra Kategorier",
+  "liveSearchSection": "Sök",
+  "liveSearch": "Livesökning",
+  "liveSearchSubtitle": "Uppdatera resultat medan du skriver istället för att visa en lista",
   "categoryMadeForYou": "Skapad För Dig",
   "categoryNewReleases": "Nytt Släpp",
   "categoryTopRated": "Högst rankade",
@@ -1321,11 +1324,11 @@
     }
   },
   "@_JUKEBOX": {},
-  "sectionJukebox": "JUKEBOX LÄGE",
+  "sectionJukebox": "JUKEBOXLÄGE",
   "@sectionJukebox": {
     "description": "Section header for the jukebox settings in the Server tab"
   },
-  "jukeboxMode": "Jukebox Läge",
+  "jukeboxMode": "Jukeboxläge",
   "@jukeboxMode": {
     "description": "Toggle label for enabling jukebox mode"
   },
@@ -1333,7 +1336,7 @@
   "@jukeboxModeSubtitle": {
     "description": "Subtitle for the jukebox mode toggle"
   },
-  "openJukeboxController": "Öppna Jukebox Kontroll",
+  "openJukeboxController": "Öppna Jukeboxkontroll",
   "@openJukeboxController": {
     "description": "List tile label to navigate to the jukebox controller screen"
   },
@@ -1365,11 +1368,11 @@
   "@playOnJukebox": {
     "description": "Option to replace the jukebox queue with this song and start playback"
   },
-  "addToJukeboxQueue": "Lägg till i Jukebox-kön",
+  "addToJukeboxQueue": "Lägg till i Jukeboxkön",
   "@addToJukeboxQueue": {
     "description": "Option to append a song to the jukebox queue"
   },
-  "jukeboxNotSupported": "Jukebox-läget stöds inte av denna server. Aktivera det i din serverkonfiguration (t.ex. EnableJukebox = true in Navidrome).",
+  "jukeboxNotSupported": "Jukeboxläget stöds inte av denna server. Aktivera det i din serverkonfiguration (t.ex. EnableJukebox = true in Navidrome).",
   "@jukeboxNotSupported": {
     "description": "Error shown when the server returns 501 for jukebox API calls"
   },
@@ -1434,7 +1437,7 @@
   "@artworkShadowMedium": {
     "description": "Medium shadow option for artwork"
   },
-  "artworkShadowStrong": "Kraftig",
+  "artworkShadowStrong": "Stark",
   "@artworkShadowStrong": {
     "description": "Strong shadow option for artwork"
   },
@@ -1467,17 +1470,201 @@
   "@noArtwork": {
     "description": "Placeholder label shown in the player when a song has no cover art"
   },
+  "serverUnreachableTitle": "Kan inte nå servern",
+  "@serverUnreachableTitle": {
+    "description": "Title on the server-unreachable screen"
+  },
+  "serverUnreachableSubtitle": "Kontrollera din anslutning eller dina serverinställningar.",
+  "@serverUnreachableSubtitle": {
+    "description": "Subtitle on the server-unreachable screen"
+  },
+  "openOfflineMode": "Öppna i offline läge",
+  "@openOfflineMode": {
+    "description": "Button to enter offline mode from the server-unreachable screen"
+  },
+  "appearanceSection": "Utseende",
+  "@appearanceSection": {
+    "description": "Display settings section header for theme / appearance"
+  },
+  "themeLabel": "Tema",
+  "@themeLabel": {
+    "description": "Label for the theme mode selector (System / Light / Dark)"
+  },
+  "accentColorLabel": "Accentfärg",
+  "@accentColorLabel": {
+    "description": "Label for the accent color picker"
+  },
+  "circularDesignLabel": "Cirkulär Design",
+  "@circularDesignLabel": {
+    "description": "Label for the Circular Design (glass-blur UI) toggle"
+  },
+  "circularDesignSubtitle": "Flytande, avrundat UI med genomskinliga paneler och glass-blur effekt på spelaren och navigationsfältet.",
+  "@circularDesignSubtitle": {
+    "description": "Subtitle describing the Circular Design visual style"
+  },
+  "themeModeSystem": "System",
+  "@themeModeSystem": {
+    "description": "Theme mode option that follows the OS setting"
+  },
+  "themeModeLight": "Ljust",
+  "@themeModeLight": {
+    "description": "Light theme mode option"
+  },
+  "themeModeDark": "Mörkt",
+  "@themeModeDark": {
+    "description": "Dark theme mode option"
+  },
   "@internetRadio": {
     "description": "Subtitle shown in the mini player and player bar when a radio station is playing"
   },
+  "liveLabel": "LIVE",
+  "@liveLabel": {
+    "description": "Badge shown next to a live radio stream"
+  },
+  "discordStatusText": "Discord statustext",
+  "@discordStatusText": {
+    "description": "Settings label for the Discord Rich Presence second-line style"
+  },
+  "discordStatusTextSubtitle": "Andra raden visas i Discord-aktivitet",
+  "@discordStatusTextSubtitle": {
+    "description": "Subtitle for the Discord status text setting"
+  },
+  "discordRpcStyleArtist": "Artistnamn",
+  "@discordRpcStyleArtist": {
+    "description": "Discord RPC state style option: show artist name"
+  },
+  "discordRpcStyleSong": "Låttitel",
+  "@discordRpcStyleSong": {
+    "description": "Discord RPC state style option: show song title"
+  },
+  "discordRpcStyleApp": "Appnamn (Musly)",
+  "@discordRpcStyleApp": {
+    "description": "Discord RPC state style option: show app name"
+  },
   "@sectionAutoDj": {
     "description": "Playback settings section header for Auto DJ"
+  },
+  "sectionVolumeNormalization": "VOLYM NORMALISERING (REPLAYGAIN)",
+  "@sectionVolumeNormalization": {
+    "description": "Playback settings section header for ReplayGain"
   },
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
+  },
+  "replayGainModeOff": "Av",
+  "@replayGainModeOff": {
+    "description": "ReplayGain mode: disabled"
+  },
+  "replayGainModeTrack": "Låt",
+  "@replayGainModeTrack": {
+    "description": "ReplayGain mode: per-track normalization"
+  },
+  "replayGainModeAlbum": "Album",
+  "@replayGainModeAlbum": {
+    "description": "ReplayGain mode: album-level normalization"
+  },
+  "replayGainPreamp": "Preamp: {value} dB",
+  "@replayGainPreamp": {
+    "description": "ReplayGain preamp slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "replayGainPreventClipping": "Förhindra Ljudklippning",
+  "@replayGainPreventClipping": {
+    "description": "Toggle label for ReplayGain prevent-clipping option"
+  },
+  "replayGainFallbackGain": "Fallback Gain: {value} dB",
+  "@replayGainFallbackGain": {
+    "description": "ReplayGain fallback gain slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "autoDjSongsToAdd": "Låtar att tillägga: {count}",
+  "@autoDjSongsToAdd": {
+    "description": "Auto DJ slider label showing how many songs to add",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transcodingEnable": "Aktivera Transkodning",
+  "@transcodingEnable": {
+    "description": "Toggle label to enable transcoding"
+  },
+  "transcodingEnableSubtitle": "Minska dataanvändningen med lägre kvalitet",
+  "@transcodingEnableSubtitle": {
+    "description": "Subtitle for the enable transcoding toggle"
+  },
+  "smartTranscoding": "Smart Transkodning",
+  "@smartTranscoding": {
+    "description": "Toggle label for smart (auto) transcoding mode"
+  },
+  "smartTranscodingSubtitle": "Justerar kvaliteten automatiskt baserat på din anslutning (WiFi vs mobildata)",
+  "@smartTranscodingSubtitle": {
+    "description": "Subtitle for the smart transcoding toggle"
+  },
+  "smartTranscodingDetectedNetwork": "Upptäckt nätverk: ",
+  "@smartTranscodingDetectedNetwork": {
+    "description": "Label shown before the live network type badge"
+  },
+  "smartTranscodingActiveBitrate": "Aktiv bithastighet: {bitrate}",
+  "@smartTranscodingActiveBitrate": {
+    "description": "Shows the currently active transcoding bitrate",
+    "placeholders": {
+      "bitrate": {
+        "type": "String"
+      }
+    }
+  },
+  "transcodingWifiQuality": "WiFi Kvalité",
+  "@transcodingWifiQuality": {
+    "description": "Label for WiFi bitrate selector"
+  },
+  "transcodingWifiQualitySubtitleSmart": "Används automatiskt på WiFi",
+  "@transcodingWifiQualitySubtitleSmart": {
+    "description": "WiFi quality subtitle when smart mode is on"
+  },
+  "transcodingWifiQualitySubtitle": "Bithastighet vid användning av WiFi",
+  "@transcodingWifiQualitySubtitle": {
+    "description": "WiFi quality subtitle when smart mode is off"
+  },
+  "transcodingMobileQuality": "Mobildata Kvalité",
+  "@transcodingMobileQuality": {
+    "description": "Label for mobile data bitrate selector"
+  },
+  "transcodingMobileQualitySubtitleSmart": "Används automatiskt på mobildata",
+  "@transcodingMobileQualitySubtitleSmart": {
+    "description": "Mobile quality subtitle when smart mode is on"
+  },
+  "transcodingMobileQualitySubtitle": "Bithastighet vid användning av mobildata",
+  "@transcodingMobileQualitySubtitle": {
+    "description": "Mobile quality subtitle when smart mode is off"
+  },
+  "transcodingFormat": "Format",
+  "@transcodingFormat": {
+    "description": "Label for the transcoding format selector"
+  },
+  "transcodingFormatSubtitle": "Ljudkodek som används för streaming",
+  "@transcodingFormatSubtitle": {
+    "description": "Subtitle for the transcoding format selector"
+  },
+  "transcodingBitrateOriginal": "Original (Ingen Omkodning)",
+  "@transcodingBitrateOriginal": {
+    "description": "Transcoding bitrate option: no transcoding, use original"
+  },
+  "transcodingFormatOriginal": "Original",
+  "@transcodingFormatOriginal": {
+    "description": "Transcoding format option: original (no conversion)"
   },
   "@sectionCacheSettings": {
     "description": "Storage settings section header"
@@ -1491,7 +1678,75 @@
   "@sectionBpmAnalysis": {
     "description": "Storage settings section header for BPM analysis"
   },
+  "imageCacheTitle": "Bildcache",
+  "@imageCacheTitle": {
+    "description": "Toggle title for image (album art) cache"
+  },
+  "imageCacheSubtitle": "Spara albumomslag lokalt",
+  "@imageCacheSubtitle": {
+    "description": "Subtitle for image cache toggle"
+  },
+  "musicCacheTitle": "Musikcache",
+  "@musicCacheTitle": {
+    "description": "Toggle title for music metadata cache"
+  },
+  "musicCacheSubtitle": "Spara låt metadata lokalt",
+  "@musicCacheSubtitle": {
+    "description": "Subtitle for music cache toggle"
+  },
+  "bpmCacheTitle": "BPM-cache",
+  "@bpmCacheTitle": {
+    "description": "Toggle title for BPM analysis cache"
+  },
+  "bpmCacheSubtitle": "Spara BPM analys lokalt",
+  "@bpmCacheSubtitle": {
+    "description": "Subtitle for BPM cache toggle"
+  },
   "@clearAllCache": {
     "description": "Button to clear all cached data"
+  },
+  "sectionAboutInformation": "INFORMATION",
+  "@sectionAboutInformation": {
+    "description": "About screen section header"
+  },
+  "sectionAboutDeveloper": "UTVECKLARE",
+  "@sectionAboutDeveloper": {
+    "description": "About screen developer section header"
+  },
+  "sectionAboutLinks": "LÄNKAR",
+  "@sectionAboutLinks": {
+    "description": "About screen links section header"
+  },
+  "aboutVersion": "Version",
+  "@aboutVersion": {
+    "description": "About screen version row title"
+  },
+  "aboutPlatform": "Plattform",
+  "@aboutPlatform": {
+    "description": "About screen platform row title"
+  },
+  "aboutMadeBy": "Gjord av dddevid",
+  "@aboutMadeBy": {
+    "description": "Developer credit text in the about tab"
+  },
+  "aboutGitHub": "github.com/dddevid",
+  "@aboutGitHub": {
+    "description": "Developer GitHub handle shown as subtitle"
+  },
+  "aboutLinkGitHub": "GitHub Repository",
+  "@aboutLinkGitHub": {
+    "description": "Link tile title for the GitHub repo"
+  },
+  "aboutLinkChangelog": "Ändringshistorik",
+  "@aboutLinkChangelog": {
+    "description": "Link tile title for the app changelog"
+  },
+  "aboutLinkReportIssue": "Rapportera Problem",
+  "@aboutLinkReportIssue": {
+    "description": "Link tile title for reporting a bug"
+  },
+  "aboutLinkDiscord": "Gå med Discord-communityn",
+  "@aboutLinkDiscord": {
+    "description": "Link tile title for the Discord server"
   }
 }

@@ -218,7 +218,7 @@
   "@cancel": {
     "description": "Cancel button label"
   },
-  "ok": "Në rregull.",
+  "ok": "Në rregull",
   "@ok": {
     "description": "OK button label"
   },
