@@ -183,6 +183,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     ));
 
     void listener() {
+      if (!mounted) return;
       setState(() {
         _horizontalDragOffset = animation.value;
       });
@@ -192,6 +193,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
     _swipeAnimationController.forward().then((_) {
       animation.removeListener(listener);
+      if (!mounted) return;
       setState(() {
         _horizontalDragOffset = 0.0;
         _previewSong = null;
@@ -224,6 +226,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     ));
 
     void listener() {
+      if (!mounted) return;
       setState(() {
         _horizontalDragOffset = animation.value;
       });
@@ -233,6 +236,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
     _swipeAnimationController.forward().then((_) {
       animation.removeListener(listener);
+      if (!mounted) return;
       setState(() {
         _previewSong = null;
         _isSwipeAnimating = false;
