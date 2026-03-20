@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:flutter/cupertino.dart' hide RepeatMode;
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
@@ -24,6 +25,8 @@ import 'artist_screen.dart';
 import '../widgets/cast_button.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
 
+const _kCarouselGap = 40.0;
+
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
 
@@ -32,7 +35,7 @@ class NowPlayingScreen extends StatefulWidget {
 }
 
 class _NowPlayingScreenState extends State<NowPlayingScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   String? _cachedImageUrl;
   String? _cachedThumbnailUrl;
   String? _cachedCoverArtId;
@@ -46,8 +49,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
   double get _morphProgress => (_dragOffset / _maxDragDistance).clamp(0.0, 1.0);
 
-  double get _scale => 1.0 - (_morphProgress * 0.15); 
-  double get _borderRadius => _morphProgress * 32.0; 
+  double get _scale => 1.0 - (_morphProgress * 0.15);
+  double get _borderRadius => _morphProgress * 32.0;
+
+  double _horizontalDragOffset = 0.0;
+  bool _isHorizontalDragging = false;
+  Song? _previewSong;
+  bool _isSwipeAnimating = false;
+  bool _hasTriggeredHaptic = false;
+  double _currentArtworkSize = 0.0;
+  late AnimationController _swipeAnimationController;
+  static const double _swipeThreshold = 80.0;
+  static const double _swipeVelocityThreshold = 600.0;
+
+  double get _swipeProgress =>
+      (_horizontalDragOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
 
   @override
   void initState() {
@@ -56,11 +72,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
+    _swipeAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
   void dispose() {
     _bgAnimationController.dispose();
+    _swipeAnimationController.dispose();
     super.dispose();
   }
 
@@ -71,7 +92,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
     setState(() {
-      
       _dragOffset = (_dragOffset + details.delta.dy).clamp(
         0.0,
         double.infinity,
@@ -87,11 +107,168 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     if (_dragOffset > _dismissThreshold || velocity > 800) {
       Navigator.pop(context);
     } else {
-      
       setState(() {
         _dragOffset = 0.0;
       });
     }
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    if (_showLyrics || _isSwipeAnimating) return;
+    _isHorizontalDragging = true;
+    _hasTriggeredHaptic = false;
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (!_isHorizontalDragging || _showLyrics) return;
+    setState(() {
+      _horizontalDragOffset += details.delta.dx;
+      _updatePreviewSong();
+    });
+    if (_previewSong != null && _swipeProgress >= 1.0 && !_hasTriggeredHaptic) {
+      _hasTriggeredHaptic = true;
+      HapticFeedback.lightImpact();
+    }
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (!_isHorizontalDragging) return;
+    _isHorizontalDragging = false;
+
+    final velocity = details.primaryVelocity ?? 0;
+    final provider = context.read<PlayerProvider>();
+
+    final shouldSkipNext =
+        (_horizontalDragOffset < -_swipeThreshold ||
+            velocity < -_swipeVelocityThreshold) &&
+        provider.hasNext;
+    final shouldSkipPrevious =
+        (_horizontalDragOffset > _swipeThreshold ||
+            velocity > _swipeVelocityThreshold) &&
+        provider.hasPrevious;
+
+    if (shouldSkipNext || shouldSkipPrevious) {
+      final targetIndex = shouldSkipNext
+          ? provider.currentIndex + 1
+          : provider.currentIndex - 1;
+      _animateSwipeCompletion(
+        goNext: shouldSkipNext,
+        targetIndex: targetIndex,
+        provider: provider,
+        flingVelocity: velocity.abs(),
+      );
+    } else {
+      _animateSwipeSpringBack();
+    }
+  }
+
+  void _animateSwipeCompletion({
+    required bool goNext,
+    required int targetIndex,
+    required PlayerProvider provider,
+    required double flingVelocity,
+  }) {
+    _isSwipeAnimating = true;
+    final startOffset = _horizontalDragOffset;
+    // Animate exactly so preview lands at center (size + gap)
+    final targetDistance = _currentArtworkSize + _kCarouselGap;
+    final endOffset = goNext ? -targetDistance : targetDistance;
+    final distance = (endOffset - startOffset).abs();
+
+    // Match fling velocity: duration = distance / velocity, clamped
+    final speed = flingVelocity.clamp(600.0, 3000.0);
+    final durationMs = (distance / speed * 1000).round().clamp(120, 350);
+
+    _swipeAnimationController.duration = Duration(milliseconds: durationMs);
+    _swipeAnimationController.reset();
+    final animation = Tween<double>(begin: startOffset, end: endOffset).animate(
+      CurvedAnimation(parent: _swipeAnimationController, curve: Curves.easeOut),
+    );
+
+    void listener() {
+      if (!mounted) return;
+      setState(() {
+        _horizontalDragOffset = animation.value;
+      });
+    }
+
+    animation.addListener(listener);
+
+    _swipeAnimationController.forward().then((_) {
+      animation.removeListener(listener);
+      if (!mounted) return;
+      setState(() {
+        _horizontalDragOffset = 0.0;
+        _previewSong = null;
+        _isSwipeAnimating = false;
+      });
+      provider.skipToIndex(targetIndex);
+    });
+  }
+
+  void _animateSwipeSpringBack() {
+    _isSwipeAnimating = true;
+    final startOffset = _horizontalDragOffset;
+    final distance = startOffset.abs();
+
+    // Proportional duration: short snap-back for small drags
+    final durationMs = (distance / 400 * 250).round().clamp(120, 300);
+
+    _swipeAnimationController.duration = Duration(milliseconds: durationMs);
+    _swipeAnimationController.reset();
+    final animation = Tween<double>(begin: startOffset, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _swipeAnimationController,
+        curve: Curves.easeOutQuad,
+      ),
+    );
+
+    void listener() {
+      if (!mounted) return;
+      setState(() {
+        _horizontalDragOffset = animation.value;
+      });
+    }
+
+    animation.addListener(listener);
+
+    _swipeAnimationController.forward().then((_) {
+      animation.removeListener(listener);
+      if (!mounted) return;
+      setState(() {
+        _previewSong = null;
+        _isSwipeAnimating = false;
+      });
+    });
+  }
+
+  void _updatePreviewSong() {
+    final provider = context.read<PlayerProvider>();
+    final queue = provider.queue;
+    final currentIndex = provider.currentIndex;
+
+    if (_horizontalDragOffset > 0 && currentIndex > 0) {
+      _previewSong = queue[currentIndex - 1];
+    } else if (_horizontalDragOffset < 0 && currentIndex < queue.length - 1) {
+      _previewSong = queue[currentIndex + 1];
+    } else {
+      _previewSong = null;
+    }
+  }
+
+  String? _getPreviewArtworkUrl(Song? song) {
+    if (song == null) return null;
+    if (song.coverArt == null) return null;
+
+    if (isLocalFilePath(song.coverArt)) {
+      return song.coverArt;
+    }
+
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
+    return subsonicService.getCoverArtUrl(song.coverArt!, size: 600);
   }
 
   String _formatDuration(Duration duration) {
@@ -110,11 +287,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   ) {
     final artworkLandMin = screenHeight < 280 ? 80.0 : 120.0;
     final artworkLandMax = (screenWidth * 0.40).clamp(artworkLandMin, 500.0);
-    final artworkSize = (screenHeight * 0.75).clamp(artworkLandMin, artworkLandMax);
+    final artworkSize = (screenHeight * 0.75).clamp(
+      artworkLandMin,
+      artworkLandMax,
+    );
+    _currentArtworkSize = artworkSize;
 
     return Row(
       children: [
-        
         Expanded(
           flex: 4,
           child: Center(
@@ -123,12 +303,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               curve: animCurve,
               transform: Matrix4.identity()
                 ..setTranslationRaw(0.0, -_morphProgress * 10, 0.0)
-                ..scaleByDouble(1.0 + _morphProgress * 0.03, 1.0 + _morphProgress * 0.03, 1.0, 1.0),
+                ..scaleByDouble(
+                  1.0 + _morphProgress * 0.03,
+                  1.0 + _morphProgress * 0.03,
+                  1.0,
+                  1.0,
+                ),
               transformAlignment: Alignment.center,
-              child: _AlbumArtworkSection(
-                imageUrl: _cachedImageUrl ?? '',
-                thumbnailUrl: _cachedThumbnailUrl,
+              child: _SwipeableAlbumArtwork(
+                currentImageUrl: _cachedImageUrl ?? '',
+                currentThumbnailUrl: _cachedThumbnailUrl,
+                previewImageUrl: _getPreviewArtworkUrl(_previewSong),
+                hasPreviewSong: _previewSong != null,
                 size: artworkSize,
+                swipeProgress: _swipeProgress,
+                horizontalDragOffset: _horizontalDragOffset,
               ),
             ),
           ),
@@ -137,10 +326,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         Expanded(
           flex: 5,
           child: _showLyrics
-              ? 
-                Column(
+              ? Column(
                   children: [
-                    
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -171,8 +358,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     ),
                   ],
                 )
-              : 
-                SingleChildScrollView(
+              : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
@@ -181,7 +367,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      
                       AnimatedOpacity(
                         duration: animDuration,
                         opacity: (1.0 - _morphProgress * 1.5).clamp(0.0, 1.0),
@@ -276,12 +461,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           onVerticalDragStart: _showLyrics ? null : _onVerticalDragStart,
           onVerticalDragUpdate: _showLyrics ? null : _onVerticalDragUpdate,
           onVerticalDragEnd: _showLyrics ? null : _onVerticalDragEnd,
+          onHorizontalDragStart: _showLyrics ? null : _onHorizontalDragStart,
+          onHorizontalDragUpdate: _showLyrics ? null : _onHorizontalDragUpdate,
+          onHorizontalDragEnd: _showLyrics ? null : _onHorizontalDragEnd,
           child: Material(
             color: Colors.transparent,
             child: Stack(
               fit: StackFit.expand,
               children: [
-                
                 AnimatedContainer(
                   duration: animDuration,
                   curve: animCurve,
@@ -315,7 +502,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 final isLandscape = screenWidth > screenHeight;
 
                                 if (isLandscape) {
-                                  
                                   return _buildLandscapeLayout(
                                     context,
                                     song,
@@ -334,13 +520,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                     : 120.0;
                                 final artworkMaxSize = (screenHeight * 0.38)
                                     .clamp(artworkMinSize, 400.0);
-                                final artworkSize = (screenWidth * 0.80)
-                                    .clamp(artworkMinSize, artworkMaxSize);
+                                final artworkSize = (screenWidth * 0.80).clamp(
+                                  artworkMinSize,
+                                  artworkMaxSize,
+                                );
+                                _currentArtworkSize = artworkSize;
 
-                                final controlsHeight =
-                                    screenHeight < 420 ? 180.0 : 250.0;
-                                final headerHeight =
-                                    screenHeight < 420 ? 44.0 : 56.0;
+                                final controlsHeight = screenHeight < 420
+                                    ? 180.0
+                                    : 250.0;
+                                final headerHeight = screenHeight < 420
+                                    ? 44.0
+                                    : 56.0;
 
                                 final availableSpace =
                                     screenHeight -
@@ -365,7 +556,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        
                                         AnimatedOpacity(
                                           duration: animDuration,
                                           opacity: (1.0 - _morphProgress * 1.5)
@@ -403,10 +593,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                               1.0,
                                             ),
                                           transformAlignment: Alignment.center,
-                                          child: _AlbumArtworkSection(
-                                            imageUrl: _cachedImageUrl ?? '',
-                                            thumbnailUrl: _cachedThumbnailUrl,
+                                          child: _SwipeableAlbumArtwork(
+                                            currentImageUrl:
+                                                _cachedImageUrl ?? '',
+                                            currentThumbnailUrl:
+                                                _cachedThumbnailUrl,
+                                            previewImageUrl:
+                                                _getPreviewArtworkUrl(
+                                                  _previewSong,
+                                                ),
+                                            hasPreviewSong:
+                                                _previewSong != null,
                                             size: artworkSize,
+                                            swipeProgress: _swipeProgress,
+                                            horizontalDragOffset:
+                                                _horizontalDragOffset,
                                           ),
                                         ),
 
@@ -477,7 +678,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 
   Widget _buildRadioPlayer(BuildContext context, RadioStation station) {
-    final animDuration = _isDragging
+    final animDuration =
+        (_isDragging || _isHorizontalDragging || _isSwipeAnimating)
         ? Duration.zero
         : const Duration(milliseconds: 300);
     final animCurve = Curves.easeOutCubic;
@@ -521,7 +723,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     child: SafeArea(
                       child: Column(
                         children: [
-                          
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Row(
@@ -567,7 +768,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                     ),
                                   ],
                                 ),
-                                const SizedBox(width: 48), 
+                                const SizedBox(width: 48),
                               ],
                             ),
                           ),
@@ -631,7 +832,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppTheme.appleMusicRed.withValues(alpha: 0.5),
+                                      color: AppTheme.appleMusicRed.withValues(
+                                        alpha: 0.5,
+                                      ),
                                       blurRadius: 8,
                                       spreadRadius: 2,
                                     ),
@@ -773,7 +976,6 @@ class _DynamicBackground extends StatelessWidget {
             AnimatedBuilder(
               animation: animation,
               builder: (context, _) {
-                
                 final t = animation.value;
                 return Container(
                   decoration: BoxDecoration(
@@ -922,7 +1124,7 @@ class _PlayerHeader extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-              
+
               Selector<PlayerProvider, bool>(
                 selector: (_, p) => p.hasSleepTimer,
                 builder: (context, hasTimer, _) => IconButton(
@@ -1097,15 +1299,15 @@ class _AlbumArtworkSection extends StatelessWidget {
                             fadeOutDuration: Duration.zero,
                             placeholder: (_, _) =>
                                 thumbnailUrl != null && thumbnailUrl!.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl: thumbnailUrl!,
-                                        fit: BoxFit.contain,
-                                        memCacheWidth: 200,
-                                        fadeInDuration: Duration.zero,
-                                        errorWidget: (_, _, _) =>
-                                            _buildLoadingPlaceholder(),
-                                      )
-                                    : _buildLoadingPlaceholder(),
+                                ? CachedNetworkImage(
+                                    imageUrl: thumbnailUrl!,
+                                    fit: BoxFit.contain,
+                                    memCacheWidth: 200,
+                                    fadeInDuration: Duration.zero,
+                                    errorWidget: (_, _, _) =>
+                                        _buildLoadingPlaceholder(),
+                                  )
+                                : _buildLoadingPlaceholder(),
                             errorWidget: (ctx, e, _) =>
                                 _buildNoArtPlaceholder(ctx),
                           )
@@ -1159,6 +1361,155 @@ class _AlbumArtworkSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SwipeableAlbumArtwork extends StatelessWidget {
+  final String currentImageUrl;
+  final String? currentThumbnailUrl;
+  final String? previewImageUrl;
+  final bool hasPreviewSong;
+  final double size;
+  final double swipeProgress;
+  final double horizontalDragOffset;
+
+  const _SwipeableAlbumArtwork({
+    required this.currentImageUrl,
+    this.currentThumbnailUrl,
+    this.previewImageUrl,
+    this.hasPreviewSong = false,
+    required this.size,
+    required this.swipeProgress,
+    required this.horizontalDragOffset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPreview = hasPreviewSong && horizontalDragOffset != 0;
+
+    final isSwipingRight = horizontalDragOffset > 0;
+    final previewStart = isSwipingRight
+        ? -size - _kCarouselGap
+        : size + _kCarouselGap;
+    final previewOffset = previewStart + horizontalDragOffset;
+
+    if (!hasPreview) {
+      return _AlbumArtworkSection(
+        imageUrl: currentImageUrl,
+        thumbnailUrl: currentThumbnailUrl,
+        size: size,
+      );
+    }
+
+    // Fade based on distance from center
+    final totalDistance = size + _kCarouselGap;
+    final progress = (horizontalDragOffset.abs() / totalDistance).clamp(
+      0.0,
+      1.0,
+    );
+    final currentOpacity = (1.0 - progress * 0.5).clamp(0.5, 1.0);
+    final previewOpacity = (progress * 0.5 + 0.5).clamp(0.5, 1.0);
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        Transform.translate(
+          offset: Offset(previewOffset, 0),
+          child: Opacity(
+            opacity: previewOpacity,
+            child: _buildPreviewArtwork(context),
+          ),
+        ),
+        Transform.translate(
+          offset: Offset(horizontalDragOffset, 0),
+          child: Opacity(
+            opacity: currentOpacity,
+            child: _AlbumArtworkSection(
+              imageUrl: currentImageUrl,
+              thumbnailUrl: currentThumbnailUrl,
+              size: size,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPreviewArtwork(BuildContext context) {
+    final hasArtwork = previewImageUrl != null && previewImageUrl!.isNotEmpty;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3 + swipeProgress * 0.2),
+            blurRadius: 30 + swipeProgress * 20,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: !hasArtwork
+            ? _buildNoArtPlaceholder(context)
+            : isLocalFilePath(previewImageUrl)
+            ? Image.file(
+                File(previewImageUrl!),
+                key: ValueKey(previewImageUrl),
+                fit: BoxFit.contain,
+                cacheWidth: 600,
+                errorBuilder: (ctx, e, _) => _buildNoArtPlaceholder(ctx),
+              )
+            : CachedNetworkImage(
+                key: ValueKey(previewImageUrl),
+                imageUrl: previewImageUrl!,
+                fit: BoxFit.contain,
+                memCacheWidth: 600,
+                maxWidthDiskCache: 600,
+                maxHeightDiskCache: 600,
+                useOldImageOnUrlChange: true,
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+                placeholder: (_, _) => _buildPlaceholder(),
+                errorWidget: (_, _, _) => _buildNoArtPlaceholder(context),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFF2A2A2A),
+      highlightColor: const Color(0xFF3A3A3A),
+      child: Container(
+        width: size,
+        height: size,
+        color: const Color(0xFF2A2A2A),
+      ),
+    );
+  }
+
+  Widget _buildNoArtPlaceholder(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2C2C2E), Color(0xFF1C1C1E)],
+        ),
+      ),
+      child: Icon(
+        Icons.music_note_rounded,
+        size: (size * 0.28).clamp(40.0, 100.0),
+        color: Colors.white.withValues(alpha: 0.15),
       ),
     );
   }
@@ -1242,8 +1593,10 @@ class _PlayerControlsState extends State<_PlayerControls> {
                 builder: (context, snapshot) {
                   final pos = snapshot.data ?? Duration.zero;
                   final progress = duration.inMilliseconds > 0
-                      ? (pos.inMilliseconds / duration.inMilliseconds)
-                          .clamp(0.0, 1.0)
+                      ? (pos.inMilliseconds / duration.inMilliseconds).clamp(
+                          0.0,
+                          1.0,
+                        )
                       : 0.0;
                   return _ProgressBar(
                     progress: progress,
@@ -1306,10 +1659,8 @@ class _SongInfoState extends State<_SongInfo> {
 
     final slashParts = artistName.split('/');
     for (final part in slashParts) {
-      
       final ampParts = part.split('&');
       for (final ampPart in ampParts) {
-        
         String remaining = ampPart;
         final featPatterns = [
           ' feat. ',
@@ -1339,14 +1690,11 @@ class _SongInfoState extends State<_SongInfo> {
     artists = artists.where((a) => a.isNotEmpty).toSet().toList();
 
     if (artists.length > 1) {
-      
       _showArtistSelectionDialog(context, artists);
     } else if (artistId != null) {
-      
       Navigator.pop(context);
       NavigationHelper.push(context, ArtistScreen(artistId: artistId));
     } else if (artists.isNotEmpty) {
-      
       _searchAndNavigateToArtist(context, artists.first);
     }
   }
@@ -1369,7 +1717,6 @@ class _SongInfoState extends State<_SongInfo> {
       );
 
       if (result.artists.isNotEmpty) {
-        
         final matchedArtist = result.artists.firstWhere(
           (a) => a.name.toLowerCase() == artistName.toLowerCase(),
           orElse: () => result.artists.first,
@@ -1454,7 +1801,7 @@ class _SongInfoState extends State<_SongInfo> {
                   leading: const CircleAvatar(child: Icon(Icons.person)),
                   title: Text(artistName),
                   onTap: () async {
-                    Navigator.pop(ctx); 
+                    Navigator.pop(ctx);
 
                     try {
                       final result = await subsonicService.search(
@@ -1465,7 +1812,6 @@ class _SongInfoState extends State<_SongInfo> {
                       );
 
                       if (result.artists.isNotEmpty) {
-                        
                         final matchedArtist = result.artists.firstWhere(
                           (a) =>
                               a.name.toLowerCase() == artistName.toLowerCase(),
@@ -1473,7 +1819,7 @@ class _SongInfoState extends State<_SongInfo> {
                         );
 
                         if (context.mounted) {
-                          Navigator.pop(context); 
+                          Navigator.pop(context);
                           NavigationHelper.push(
                             context,
                             ArtistScreen(artistId: matchedArtist.id),
