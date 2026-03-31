@@ -419,6 +419,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       final libraryProvider = context.read<LibraryProvider>();
       final subsonicService = context.read<SubsonicService>();
 
+      await libraryProvider.ensureLibraryLoaded();
+
       final allSongs = libraryProvider.cachedAllSongs;
 
       if (allSongs.isEmpty) {
