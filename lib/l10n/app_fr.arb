@@ -1210,6 +1210,14 @@
   "@artistDataNotFound": {
     "description": "Error state on the artist screen when artist data fails to load"
   },
+  "addedArtistToQueue": "Artiste ajouté à la file d'attente",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "Échec de l'ajout de l'artiste à la file d'attente",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
+  },
   "@_CAST_DLNA": {},
   "casting": "Diffusion",
   "@casting": {
