@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../models/artist_ref.dart';
 import '../models/song.dart';
+import '../utils/navigation_helper.dart';
 import '../providers/player_provider.dart';
 import '../providers/library_provider.dart';
 import '../services/jukebox_service.dart';
@@ -13,6 +15,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'album_artwork.dart';
 import 'animated_equalizer.dart';
+import 'multi_artist_widget.dart';
 import '../screens/album_screen.dart';
 import '../screens/artist_screen.dart';
 
@@ -67,12 +70,7 @@ class SongTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: showArtist || showAlbum
-              ? Text(
-                  _buildSubtitle(),
-                  style: theme.textTheme.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
+              ? _buildSubtitleWidget(theme)
               : null,
           trailing: _buildTrailing(context),
           onTap: onTap ?? () => _playSong(context),
@@ -139,15 +137,48 @@ class SongTile extends StatelessWidget {
     return null;
   }
 
-  String _buildSubtitle() {
-    final parts = <String>[];
-    if (showArtist && song.artist != null) {
-      parts.add(song.artist!);
+  Widget _buildSubtitleWidget(ThemeData theme) {
+    if (showArtist) {
+      if (showAlbum && song.album != null) {
+        return Row(
+          children: [
+            Flexible(
+              flex: 3,
+              fit: FlexFit.loose,
+              child: MultiArtistWidget(
+                artists: song.artistParticipants,
+                artistFallback: song.artist,
+                artistIdFallback: song.artistId,
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+            Flexible(
+              flex: 1,
+              fit: FlexFit.loose,
+              child: Text(
+                ' \u2022 ${song.album}',
+                style: theme.textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        );
+      }
+      return MultiArtistWidget(
+        artists: song.artistParticipants,
+        artistFallback: song.artist,
+        artistIdFallback: song.artistId,
+        style: theme.textTheme.bodySmall,
+      );
     }
-    if (showAlbum && song.album != null) {
-      parts.add(song.album!);
-    }
-    return parts.join(' • ');
+
+    return Text(
+      song.album ?? '',
+      style: theme.textTheme.bodySmall,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   Widget _buildTrailing(BuildContext context) {
@@ -380,16 +411,9 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                       icon: Icons.person_rounded,
                       title: 'Go to Artist',
                       onTap: () {
-                        Navigator.pop(context);
-                        if (widget.song.artistId != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ArtistScreen(artistId: widget.song.artistId!),
-                            ),
-                          );
-                        }
+                        final nav = Navigator.of(context);
+                        nav.pop();
+                        _navigateToArtist(nav);
                       },
                     ),
                     _buildRatingTile(context),
@@ -698,6 +722,48 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
           ),
         );
       }
+    }
+  }
+
+  void _navigateToArtist(NavigatorState nav) {
+    final participants = widget.song.artistParticipants;
+
+    if (participants != null && participants.length > 1) {
+      final ctx = NavigationHelper.navigatorKey.currentContext;
+      if (ctx == null) return;
+      showModalBottomSheet(
+        context: ctx,
+        backgroundColor: Colors.transparent,
+        builder: (sheetCtx) => ArtistsBottomSheet(
+          artists: participants,
+          onArtistTap: (artist) {
+            Navigator.pop(sheetCtx);
+            _pushArtist(nav, artist);
+          },
+        ),
+      );
+      return;
+    }
+
+    final single = participants?.firstOrNull;
+    if (single != null) {
+      _pushArtist(nav, single);
+      return;
+    }
+
+    final artistId = widget.song.artistId;
+    if (artistId != null && artistId.isNotEmpty) {
+      nav.push(MaterialPageRoute(
+        builder: (_) => ArtistScreen(artistId: artistId),
+      ));
+    }
+  }
+
+  void _pushArtist(NavigatorState nav, ArtistRef artist) {
+    if (artist.id.isNotEmpty) {
+      nav.push(MaterialPageRoute(
+        builder: (_) => ArtistScreen(artistId: artist.id),
+      ));
     }
   }
 

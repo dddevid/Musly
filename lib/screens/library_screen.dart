@@ -241,7 +241,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             type: 'Album',
             id: a.id,
             name: a.name,
-            subtitle: a.artist ?? '',
+            subtitle: a.artistParticipants != null &&
+                    a.artistParticipants!.isNotEmpty
+                ? a.artistParticipants!.map((r) => r.name).join(', ')
+                : (a.artist ?? ''),
             coverArt: a.coverArt,
           ),
         ),

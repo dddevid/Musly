@@ -23,6 +23,7 @@ import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import '../widgets/cast_button.dart';
+import '../widgets/multi_artist_widget.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
 
 const _kCarouselGap = 40.0;
@@ -1649,237 +1650,9 @@ class _SongInfoState extends State<_SongInfo> {
     }
   }
 
-  void _navigateToArtist(BuildContext context) {
-    final artistName = widget.song?.artist;
-    final artistId = widget.song?.artistId;
-
-    if (artistName == null) return;
-
-    List<String> artists = [];
-
-    final slashParts = artistName.split('/');
-    for (final part in slashParts) {
-      final ampParts = part.split('&');
-      for (final ampPart in ampParts) {
-        String remaining = ampPart;
-        final featPatterns = [
-          ' feat. ',
-          ' feat ',
-          ' ft. ',
-          ' ft ',
-          ' featuring ',
-        ];
-        for (final pattern in featPatterns) {
-          if (remaining.toLowerCase().contains(pattern.toLowerCase())) {
-            final parts = remaining.split(
-              RegExp(pattern, caseSensitive: false),
-            );
-            artists.addAll(
-              parts.map((a) => a.trim()).where((a) => a.isNotEmpty),
-            );
-            remaining = '';
-            break;
-          }
-        }
-        if (remaining.isNotEmpty) {
-          artists.add(remaining.trim());
-        }
-      }
-    }
-
-    artists = artists.where((a) => a.isNotEmpty).toSet().toList();
-
-    if (artists.length > 1) {
-      _showArtistSelectionDialog(context, artists);
-    } else if (artistId != null) {
-      Navigator.pop(context);
-      NavigationHelper.push(context, ArtistScreen(artistId: artistId));
-    } else if (artists.isNotEmpty) {
-      _searchAndNavigateToArtist(context, artists.first);
-    }
-  }
-
-  Future<void> _searchAndNavigateToArtist(
-    BuildContext context,
-    String artistName,
-  ) async {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    try {
-      final result = await subsonicService.search(
-        artistName,
-        artistCount: 5,
-        albumCount: 0,
-        songCount: 0,
-      );
-
-      if (result.artists.isNotEmpty) {
-        final matchedArtist = result.artists.firstWhere(
-          (a) => a.name.toLowerCase() == artistName.toLowerCase(),
-          orElse: () => result.artists.first,
-        );
-
-        if (context.mounted) {
-          Navigator.pop(context);
-          NavigationHelper.push(
-            context,
-            ArtistScreen(artistId: matchedArtist.id),
-          );
-        }
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                AppLocalizations.of(context)!.artistNotFound(artistName),
-              ),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.errorSearchingArtist(e),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _showArtistSelectionDialog(
-    BuildContext context,
-    List<String> artists,
-  ) async {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(ctx).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Select Artist',
-                  style: Theme.of(
-                    ctx,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...artists.map(
-                (artistName) => ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(artistName),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-
-                    try {
-                      final result = await subsonicService.search(
-                        artistName,
-                        artistCount: 5,
-                        albumCount: 0,
-                        songCount: 0,
-                      );
-
-                      if (result.artists.isNotEmpty) {
-                        final matchedArtist = result.artists.firstWhere(
-                          (a) =>
-                              a.name.toLowerCase() == artistName.toLowerCase(),
-                          orElse: () => result.artists.first,
-                        );
-
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          NavigationHelper.push(
-                            context,
-                            ArtistScreen(artistId: matchedArtist.id),
-                          );
-                        }
-                      } else {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.artistNotFound(artistName),
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.errorSearchingArtist(e),
-                            ),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.song == null) return const SizedBox.shrink();
-
-    final artistName = widget.song!.artist;
-    final hasMultipleArtists =
-        artistName != null &&
-        (artistName.contains('/') ||
-            artistName.contains('&') ||
-            artistName.toLowerCase().contains(' feat.') ||
-            artistName.toLowerCase().contains(' feat ') ||
-            artistName.toLowerCase().contains(' ft.') ||
-            artistName.toLowerCase().contains(' ft ') ||
-            artistName.toLowerCase().contains(' featuring '));
-    final isArtistClickable =
-        widget.song!.artistId != null || hasMultipleArtists;
 
     return Row(
       children: [
@@ -1898,26 +1671,17 @@ class _SongInfoState extends State<_SongInfo> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-              GestureDetector(
-                onTap: isArtistClickable
-                    ? () => _navigateToArtist(context)
-                    : null,
-                child: Text(
-                  (widget.song!.artist ?? 'Unknown Artist').replaceAll(
-                    '/',
-                    ' / ',
-                  ),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 18,
-                    decoration: isArtistClickable
-                        ? TextDecoration.underline
-                        : null,
-                    decorationColor: Colors.white.withValues(alpha: 0.4),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              MultiArtistWidget(
+                artists: widget.song!.artistParticipants,
+                artistFallback: widget.song!.artist,
+                artistIdFallback: widget.song!.artistId,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 18,
                 ),
+                onBeforeNavigate: () {
+                  if (Navigator.canPop(context)) Navigator.pop(context);
+                },
               ),
             ],
           ),

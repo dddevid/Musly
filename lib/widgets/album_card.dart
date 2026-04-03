@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/album.dart';
 import '../theme/app_theme.dart';
 import 'album_artwork.dart';
+import 'multi_artist_widget.dart';
 
 class AlbumCard extends StatelessWidget {
   final Album album;
@@ -38,14 +39,14 @@ class AlbumCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            if (album.artist != null)
-              Text(
-                album.artist!,
+            if (album.artist != null || album.artistParticipants != null)
+              MultiArtistWidget(
+                artists: album.artistParticipants,
+                artistFallback: album.artist,
+                artistIdFallback: album.artistId,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: AppTheme.lightSecondaryText,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
           ],
         ),
@@ -117,14 +118,14 @@ class AlbumCardWide extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (album.artist != null)
-                    Text(
-                      album.artist!,
+                  if (album.artist != null || album.artistParticipants != null)
+                    MultiArtistWidget(
+                      artists: album.artistParticipants,
+                      artistFallback: album.artist,
+                      artistIdFallback: album.artistId,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                 ],
               ),

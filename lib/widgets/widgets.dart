@@ -4,6 +4,7 @@ export 'artist_card.dart';
 export 'song_tile.dart';
 export 'animated_equalizer.dart';
 export 'mini_player.dart';
+export 'multi_artist_widget.dart';
 export 'section_header.dart';
 export 'shimmer_loading.dart';
 export 'desktop_player_bar.dart';

@@ -45,7 +45,10 @@ class MiniPlayer extends StatelessWidget {
               null; 
         } else if (currentSong != null) {
           title = currentSong.title;
-          subtitle = currentSong.artist;
+          subtitle = currentSong.artistParticipants != null &&
+                  currentSong.artistParticipants!.isNotEmpty
+              ? currentSong.artistParticipants!.map((a) => a.name).join(', ')
+              : currentSong.artist;
           coverArt = currentSong.coverArt;
         } else {
           return const SizedBox.shrink();

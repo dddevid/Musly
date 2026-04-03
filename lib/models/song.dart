@@ -1,3 +1,5 @@
+import 'artist_ref.dart';
+
 class Song {
   final String id;
   final String title;
@@ -22,6 +24,7 @@ class Song {
   final double? replayGainAlbumGain;
   final double? replayGainTrackPeak;
   final double? replayGainAlbumPeak;
+  final List<ArtistRef>? artistParticipants;
 
   Song({
     required this.id,
@@ -47,10 +50,10 @@ class Song {
     this.replayGainAlbumGain,
     this.replayGainTrackPeak,
     this.replayGainAlbumPeak,
+    this.artistParticipants,
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
-    
     final replayGain = json['replayGain'] as Map<String, dynamic>?;
 
     return Song(
@@ -77,6 +80,7 @@ class Song {
       replayGainAlbumGain: (replayGain?['albumGain'] as num?)?.toDouble(),
       replayGainTrackPeak: (replayGain?['trackPeak'] as num?)?.toDouble(),
       replayGainAlbumPeak: (replayGain?['albumPeak'] as num?)?.toDouble(),
+      artistParticipants: ArtistRef.parseList(json['artists']),
     );
   }
 
@@ -105,6 +109,8 @@ class Song {
         if (replayGainTrackPeak != null) 'trackPeak': replayGainTrackPeak,
         if (replayGainAlbumPeak != null) 'albumPeak': replayGainAlbumPeak,
       },
+      if (artistParticipants != null)
+        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
     };
   }
 
@@ -139,6 +145,7 @@ class Song {
     double? replayGainAlbumGain,
     double? replayGainTrackPeak,
     double? replayGainAlbumPeak,
+    List<ArtistRef>? artistParticipants,
   }) {
     return Song(
       id: id ?? this.id,
@@ -164,6 +171,7 @@ class Song {
       replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
       replayGainTrackPeak: replayGainTrackPeak ?? this.replayGainTrackPeak,
       replayGainAlbumPeak: replayGainAlbumPeak ?? this.replayGainAlbumPeak,
+      artistParticipants: artistParticipants ?? this.artistParticipants,
     );
   }
 }

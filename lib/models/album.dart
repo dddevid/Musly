@@ -1,3 +1,5 @@
+import 'artist_ref.dart';
+
 class Album {
   final String id;
   final String name;
@@ -10,6 +12,7 @@ class Album {
   final String? genre;
   final DateTime? created;
   final bool isLocal;
+  final List<ArtistRef>? artistParticipants;
 
   Album({
     required this.id,
@@ -23,6 +26,7 @@ class Album {
     this.genre,
     this.created,
     this.isLocal = false,
+    this.artistParticipants,
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {
@@ -39,6 +43,7 @@ class Album {
       created: json['created'] != null
           ? DateTime.tryParse(json['created'].toString())
           : null,
+      artistParticipants: ArtistRef.parseList(json['artists']),
     );
   }
 
@@ -54,6 +59,8 @@ class Album {
       'year': year,
       'genre': genre,
       'created': created?.toIso8601String(),
+      if (artistParticipants != null)
+        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
     };
   }
 

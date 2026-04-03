@@ -7,7 +7,6 @@ import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
-import 'artist_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
 
@@ -274,25 +273,13 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 4),
-                      GestureDetector(
-                        onTap: () {
-                          if (_album!.artistId != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ArtistScreen(artistId: _album!.artistId!),
-                              ),
-                            );
-                          }
-                        },
-                        child: Text(
-                          _album!.artist ??
-                              AppLocalizations.of(context)!.unknownArtist,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: AppTheme.appleMusicRed,
-                          ),
-                          textAlign: TextAlign.center,
+                      MultiArtistWidget(
+                        artists: _album!.artistParticipants,
+                        artistFallback: _album!.artist ??
+                            AppLocalizations.of(context)!.unknownArtist,
+                        artistIdFallback: _album!.artistId,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: AppTheme.appleMusicRed,
                         ),
                       ),
                       const SizedBox(height: 4),
