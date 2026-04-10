@@ -170,7 +170,7 @@
   "@next": {
     "description": "Next button label"
   },
-  "previous": "Предыдущ.",
+  "previous": "Предыдущий",
   "@previous": {
     "description": "Previous button label"
   },
@@ -194,7 +194,7 @@
   "@addToPlaylist": {
     "description": "Add to playlist option"
   },
-  "removeFromPlaylist": "Удалить из плейлиста",
+  "removeFromPlaylist": "Удалить трек из плейлиста",
   "@removeFromPlaylist": {
     "description": "Remove from playlist option"
   },
@@ -568,17 +568,20 @@
   "searchTitle": "Поиск",
   "searchPlaceholder": "Исполнители, Песни, Альбомы",
   "tryDifferentSearch": "Попробуйте другой поисковый запрос",
-  "noSuggestions": "Нет предложений",
+  "noSuggestions": "Нет подходящих вариантов",
   "browseCategories": "Просмотреть категории",
-  "categoryMadeForYou": "Сделано для вас",
+  "liveSearchSection": "Поиск",
+  "liveSearch": "Мгновенный поиск",
+  "liveSearchSubtitle": "Сразу показывать результаты при вводе текста",
+  "categoryMadeForYou": "Подборка для вас",
   "categoryNewReleases": "Новые выпуски",
-  "categoryTopRated": "Высоко оценённые",
+  "categoryTopRated": "С лучшим рейтингом",
   "categoryGenres": "Жанры",
   "categoryFavorites": "Избранное",
   "categoryRadio": "Радио",
   "@_SETTINGS_GENERAL": {},
   "settingsTitle": "Настройки",
-  "tabPlayback": "Проигрывание",
+  "tabPlayback": "Воспроизведение",
   "tabStorage": "Хранилище",
   "tabServer": "Сервер",
   "tabDisplay": "Дисплей",
@@ -623,11 +626,11 @@
   "modeTrack": "Трек",
   "modeAlbum": "Альбом",
   "@_SETTINGS_SERVER": {},
-  "sectionServerConnection": "ПОДКЛЮЧЕНИЕ СЕРВЕРА",
+  "sectionServerConnection": "ПОДКЛЮЧЕНИЕ К СЕРВЕРУ",
   "serverType": "Тип сервера",
-  "notConnected": "Не подключено",
+  "notConnected": "Нет подключения",
   "unknown": "Неизвестно",
-  "sectionMusicFolders": "ПАПКИ С МУЗЫКОЙ",
+  "sectionMusicFolders": "КАТАЛОГИ МУЗЫКИ",
   "musicFolders": "Папки с музыкой",
   "noMusicFolders": "Папки с музыкой не найдены",
   "sectionAccount": "АККАУНТ",
@@ -644,7 +647,7 @@
   "clearAllCache": "Очистить весь кэш",
   "allCacheCleared": "Весь кэш очищен",
   "sectionOfflineDownloads": "АВТОНОМНЫЕ ЗАГРУЗКИ",
-  "downloadedSongs": "Загруженные песни",
+  "downloadedSongs": "Загруженные треки",
   "downloadingLibrary": "Загрузка библиотеки... {progress}/{total}",
   "@downloadingLibrary": {
     "placeholders": {
@@ -668,7 +671,7 @@
   "libraryDownloadStarted": "Загрузка библиотеки началась",
   "deleteDownloads": "Удалить все загрузки",
   "downloadsDeleted": "Все загрузки удалены",
-  "noSongsAvailable": "Нет доступных песен. Пожалуйста, загрузите сначала вашу библиотеку.",
+  "noSongsAvailable": "Нет доступных треков. Пожалуйста, сначала добавьте файлы в библиотеку.",
   "sectionBpmAnalysis": "ОПРЕДЕЛЕНИЕ BPM",
   "cachedBpms": "Кэшированные BPM",
   "cacheAllBpms": "Кэшировать все BPM",
@@ -832,7 +835,7 @@
     "description": "Server connection status — connected"
   },
   "@_PLAYER_SCREENS": {},
-  "noSongPlaying": "Ничего не играет",
+  "noSongPlaying": "Трек не воспроизводится",
   "@noSongPlaying": {
     "description": "Placeholder when no song is loaded in the player"
   },
@@ -988,7 +991,7 @@
   "@pleaseEnterPassword": {
     "description": "Validation message when password is empty"
   },
-  "legacyAuthentication": "Устаревшая аутентификация",
+  "legacyAuthentication": "Устаревший метод аутентификации",
   "@legacyAuthentication": {
     "description": "Toggle label for legacy Subsonic authentication"
   },
@@ -1206,6 +1209,14 @@
   "artistDataNotFound": "Исполнитель не найден",
   "@artistDataNotFound": {
     "description": "Error state on the artist screen when artist data fails to load"
+  },
+  "addedArtistToQueue": "Исполнитель добавлен в очередь",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "Не удалось добавить исполнителя в очередь",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
   },
   "@_CAST_DLNA": {},
   "casting": "Трансляция",
@@ -1467,17 +1478,201 @@
   "@noArtwork": {
     "description": "Placeholder label shown in the player when a song has no cover art"
   },
+  "serverUnreachableTitle": "Не удаётся подключиться к серверу",
+  "@serverUnreachableTitle": {
+    "description": "Title on the server-unreachable screen"
+  },
+  "serverUnreachableSubtitle": "Проверьте подключение или настройки сервера.",
+  "@serverUnreachableSubtitle": {
+    "description": "Subtitle on the server-unreachable screen"
+  },
+  "openOfflineMode": "Открыть в автономном режиме",
+  "@openOfflineMode": {
+    "description": "Button to enter offline mode from the server-unreachable screen"
+  },
+  "appearanceSection": "Оформление",
+  "@appearanceSection": {
+    "description": "Display settings section header for theme / appearance"
+  },
+  "themeLabel": "Тема оформления",
+  "@themeLabel": {
+    "description": "Label for the theme mode selector (System / Light / Dark)"
+  },
+  "accentColorLabel": "Основной цвет",
+  "@accentColorLabel": {
+    "description": "Label for the accent color picker"
+  },
+  "circularDesignLabel": "Дизайн с круглыми элементами",
+  "@circularDesignLabel": {
+    "description": "Label for the Circular Design (glass-blur UI) toggle"
+  },
+  "circularDesignSubtitle": "Интерфейс с плавающими, округлыми элементами и стеклянным размытием на плеере и панели.",
+  "@circularDesignSubtitle": {
+    "description": "Subtitle describing the Circular Design visual style"
+  },
+  "themeModeSystem": "Системная",
+  "@themeModeSystem": {
+    "description": "Theme mode option that follows the OS setting"
+  },
+  "themeModeLight": "Светлая",
+  "@themeModeLight": {
+    "description": "Light theme mode option"
+  },
+  "themeModeDark": "Тёмная",
+  "@themeModeDark": {
+    "description": "Dark theme mode option"
+  },
   "@internetRadio": {
     "description": "Subtitle shown in the mini player and player bar when a radio station is playing"
   },
+  "liveLabel": "В ЭФИРЕ",
+  "@liveLabel": {
+    "description": "Badge shown next to a live radio stream"
+  },
+  "discordStatusText": "Текст статуса Discord",
+  "@discordStatusText": {
+    "description": "Settings label for the Discord Rich Presence second-line style"
+  },
+  "discordStatusTextSubtitle": "Вторая строка, отображаемая в активности Discord",
+  "@discordStatusTextSubtitle": {
+    "description": "Subtitle for the Discord status text setting"
+  },
+  "discordRpcStyleArtist": "Имя исполнителя",
+  "@discordRpcStyleArtist": {
+    "description": "Discord RPC state style option: show artist name"
+  },
+  "discordRpcStyleSong": "Название песни",
+  "@discordRpcStyleSong": {
+    "description": "Discord RPC state style option: show song title"
+  },
+  "discordRpcStyleApp": "Название приложения (Musly)",
+  "@discordRpcStyleApp": {
+    "description": "Discord RPC state style option: show app name"
+  },
   "@sectionAutoDj": {
     "description": "Playback settings section header for Auto DJ"
+  },
+  "sectionVolumeNormalization": "ВЫРАВНИВАНИЕ ГРОМКОСТИ (REPLAYGAIN)",
+  "@sectionVolumeNormalization": {
+    "description": "Playback settings section header for ReplayGain"
   },
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
+  },
+  "replayGainModeOff": "Выкл",
+  "@replayGainModeOff": {
+    "description": "ReplayGain mode: disabled"
+  },
+  "replayGainModeTrack": "Трек",
+  "@replayGainModeTrack": {
+    "description": "ReplayGain mode: per-track normalization"
+  },
+  "replayGainModeAlbum": "Альбом",
+  "@replayGainModeAlbum": {
+    "description": "ReplayGain mode: album-level normalization"
+  },
+  "replayGainPreamp": "Предварительное усиление: {value} дБ",
+  "@replayGainPreamp": {
+    "description": "ReplayGain preamp slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "replayGainPreventClipping": "Предотвращать искажения звука",
+  "@replayGainPreventClipping": {
+    "description": "Toggle label for ReplayGain prevent-clipping option"
+  },
+  "replayGainFallbackGain": "Усиление по умолчанию: {value} дБ",
+  "@replayGainFallbackGain": {
+    "description": "ReplayGain fallback gain slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "autoDjSongsToAdd": "Треков для добавления: {count}",
+  "@autoDjSongsToAdd": {
+    "description": "Auto DJ slider label showing how many songs to add",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transcodingEnable": "Использовать перекодирование",
+  "@transcodingEnable": {
+    "description": "Toggle label to enable transcoding"
+  },
+  "transcodingEnableSubtitle": "Экономия трафика за счёт снижения качества",
+  "@transcodingEnableSubtitle": {
+    "description": "Subtitle for the enable transcoding toggle"
+  },
+  "smartTranscoding": "Умное перекодирование",
+  "@smartTranscoding": {
+    "description": "Toggle label for smart (auto) transcoding mode"
+  },
+  "smartTranscodingSubtitle": "Автоподбор качества по типу сети (Wi-Fi / мобильные данные)",
+  "@smartTranscodingSubtitle": {
+    "description": "Subtitle for the smart transcoding toggle"
+  },
+  "smartTranscodingDetectedNetwork": "Сеть обнаружена: ",
+  "@smartTranscodingDetectedNetwork": {
+    "description": "Label shown before the live network type badge"
+  },
+  "smartTranscodingActiveBitrate": "Текущий битрейт: {bitrate}",
+  "@smartTranscodingActiveBitrate": {
+    "description": "Shows the currently active transcoding bitrate",
+    "placeholders": {
+      "bitrate": {
+        "type": "String"
+      }
+    }
+  },
+  "transcodingWifiQuality": "Качество Wi-Fi",
+  "@transcodingWifiQuality": {
+    "description": "Label for WiFi bitrate selector"
+  },
+  "transcodingWifiQualitySubtitleSmart": "Автоматически используется в Wi-Fi сети",
+  "@transcodingWifiQualitySubtitleSmart": {
+    "description": "WiFi quality subtitle when smart mode is on"
+  },
+  "transcodingWifiQualitySubtitle": "Битрейт в сети Wi-Fi",
+  "@transcodingWifiQualitySubtitle": {
+    "description": "WiFi quality subtitle when smart mode is off"
+  },
+  "transcodingMobileQuality": "Качество при мобильной сети",
+  "@transcodingMobileQuality": {
+    "description": "Label for mobile data bitrate selector"
+  },
+  "transcodingMobileQualitySubtitleSmart": "Автоматически используется в мобильной сети",
+  "@transcodingMobileQualitySubtitleSmart": {
+    "description": "Mobile quality subtitle when smart mode is on"
+  },
+  "transcodingMobileQualitySubtitle": "Битрейт при использовании мобильных данных",
+  "@transcodingMobileQualitySubtitle": {
+    "description": "Mobile quality subtitle when smart mode is off"
+  },
+  "transcodingFormat": "Формат",
+  "@transcodingFormat": {
+    "description": "Label for the transcoding format selector"
+  },
+  "transcodingFormatSubtitle": "Аудиокодек используется для вещания",
+  "@transcodingFormatSubtitle": {
+    "description": "Subtitle for the transcoding format selector"
+  },
+  "transcodingBitrateOriginal": "Оригинал (без перекодирования)",
+  "@transcodingBitrateOriginal": {
+    "description": "Transcoding bitrate option: no transcoding, use original"
+  },
+  "transcodingFormatOriginal": "Оригинал",
+  "@transcodingFormatOriginal": {
+    "description": "Transcoding format option: original (no conversion)"
   },
   "@sectionCacheSettings": {
     "description": "Storage settings section header"
@@ -1491,7 +1686,75 @@
   "@sectionBpmAnalysis": {
     "description": "Storage settings section header for BPM analysis"
   },
+  "imageCacheTitle": "Кэш изображений",
+  "@imageCacheTitle": {
+    "description": "Toggle title for image (album art) cache"
+  },
+  "imageCacheSubtitle": "Сохранить обложки альбома локально",
+  "@imageCacheSubtitle": {
+    "description": "Subtitle for image cache toggle"
+  },
+  "musicCacheTitle": "Кэш аудиозаписей",
+  "@musicCacheTitle": {
+    "description": "Toggle title for music metadata cache"
+  },
+  "musicCacheSubtitle": "Сохранить метаданные трека локально",
+  "@musicCacheSubtitle": {
+    "description": "Subtitle for music cache toggle"
+  },
+  "bpmCacheTitle": "Кэш BPM",
+  "@bpmCacheTitle": {
+    "description": "Toggle title for BPM analysis cache"
+  },
+  "bpmCacheSubtitle": "Хранить локально данные анализа BPM",
+  "@bpmCacheSubtitle": {
+    "description": "Subtitle for BPM cache toggle"
+  },
   "@clearAllCache": {
     "description": "Button to clear all cached data"
+  },
+  "sectionAboutInformation": "ИНФОРМАЦИЯ",
+  "@sectionAboutInformation": {
+    "description": "About screen section header"
+  },
+  "sectionAboutDeveloper": "РАЗРАБОТЧИК",
+  "@sectionAboutDeveloper": {
+    "description": "About screen developer section header"
+  },
+  "sectionAboutLinks": "ССЫЛКИ",
+  "@sectionAboutLinks": {
+    "description": "About screen links section header"
+  },
+  "aboutVersion": "Версия",
+  "@aboutVersion": {
+    "description": "About screen version row title"
+  },
+  "aboutPlatform": "Платформа",
+  "@aboutPlatform": {
+    "description": "About screen platform row title"
+  },
+  "aboutMadeBy": "Сделано dddevid",
+  "@aboutMadeBy": {
+    "description": "Developer credit text in the about tab"
+  },
+  "aboutGitHub": "github.com/dddevid",
+  "@aboutGitHub": {
+    "description": "Developer GitHub handle shown as subtitle"
+  },
+  "aboutLinkGitHub": "GitHub репозиторий",
+  "@aboutLinkGitHub": {
+    "description": "Link tile title for the GitHub repo"
+  },
+  "aboutLinkChangelog": "Список изменений",
+  "@aboutLinkChangelog": {
+    "description": "Link tile title for the app changelog"
+  },
+  "aboutLinkReportIssue": "Сообщить о проблеме",
+  "@aboutLinkReportIssue": {
+    "description": "Link tile title for reporting a bug"
+  },
+  "aboutLinkDiscord": "Присоединяйтесь к Discord сообществу",
+  "@aboutLinkDiscord": {
+    "description": "Link tile title for the Discord server"
   }
 }
