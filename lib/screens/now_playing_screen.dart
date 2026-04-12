@@ -311,14 +311,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   1.0,
                 ),
               transformAlignment: Alignment.center,
-              child: _SwipeableAlbumArtwork(
-                currentImageUrl: _cachedImageUrl ?? '',
-                currentThumbnailUrl: _cachedThumbnailUrl,
-                previewImageUrl: _getPreviewArtworkUrl(_previewSong),
-                hasPreviewSong: _previewSong != null,
-                size: artworkSize,
-                swipeProgress: _swipeProgress,
-                horizontalDragOffset: _horizontalDragOffset,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showLyrics = true;
+                  });
+                },
+                child: _SwipeableAlbumArtwork(
+                  currentImageUrl: _cachedImageUrl ?? '',
+                  currentThumbnailUrl: _cachedThumbnailUrl,
+                  previewImageUrl: _getPreviewArtworkUrl(_previewSong),
+                  hasPreviewSong: _previewSong != null,
+                  size: artworkSize,
+                  swipeProgress: _swipeProgress,
+                  horizontalDragOffset: _horizontalDragOffset,
+                ),
               ),
             ),
           ),
@@ -594,21 +601,28 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                               1.0,
                                             ),
                                           transformAlignment: Alignment.center,
-                                          child: _SwipeableAlbumArtwork(
-                                            currentImageUrl:
-                                                _cachedImageUrl ?? '',
-                                            currentThumbnailUrl:
-                                                _cachedThumbnailUrl,
-                                            previewImageUrl:
-                                                _getPreviewArtworkUrl(
-                                                  _previewSong,
-                                                ),
-                                            hasPreviewSong:
-                                                _previewSong != null,
-                                            size: artworkSize,
-                                            swipeProgress: _swipeProgress,
-                                            horizontalDragOffset:
-                                                _horizontalDragOffset,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _showLyrics = true;
+                                              });
+                                            },
+                                            child: _SwipeableAlbumArtwork(
+                                              currentImageUrl:
+                                                  _cachedImageUrl ?? '',
+                                              currentThumbnailUrl:
+                                                  _cachedThumbnailUrl,
+                                              previewImageUrl:
+                                                  _getPreviewArtworkUrl(
+                                                    _previewSong,
+                                                  ),
+                                              hasPreviewSong:
+                                                  _previewSong != null,
+                                              size: artworkSize,
+                                              swipeProgress: _swipeProgress,
+                                              horizontalDragOffset:
+                                                  _horizontalDragOffset,
+                                            ),
                                           ),
                                         ),
 
