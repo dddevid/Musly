@@ -134,11 +134,43 @@ class AuthProvider extends ChangeNotifier {
     String? clientCertificatePath,
     String? clientCertificatePassword,
     String? profileName,
+    String serverFamily = 'subsonic',
   }) async {
-    debugPrint('[Auth] login: user=$username server=$serverUrl legacy=$useLegacyAuth selfSigned=$allowSelfSignedCertificates');
+    debugPrint('[Auth] login: user=$username server=$serverUrl family=$serverFamily');
     _state = AuthState.authenticating;
     _error = null;
     notifyListeners();
+
+    final isJellyfin = serverFamily == 'jellyfin';
+    String? jellyfinToken;
+    String? jellyfinUserId;
+
+    if (isJellyfin) {
+      final tmpConfig = ServerConfig(
+        serverUrl: serverUrl,
+        username: username,
+        password: password,
+        allowSelfSignedCertificates: allowSelfSignedCertificates,
+        serverFamily: 'jellyfin',
+      );
+      final jf = JellyfinService()..configure(tmpConfig);
+      final authResp = await jf.authenticate(username, password);
+      if (authResp == null) {
+        _error = 'Jellyfin authentication failed. Check your credentials.';
+        _state = AuthState.error;
+        notifyListeners();
+        return false;
+      }
+      jellyfinToken = authResp['AccessToken'] as String?;
+      final user = authResp['User'] as Map<String, dynamic>?;
+      jellyfinUserId = user?['Id'] as String?;
+      if (jellyfinToken == null || jellyfinUserId == null) {
+        _error = 'Jellyfin returned an unexpected response.';
+        _state = AuthState.error;
+        notifyListeners();
+        return false;
+      }
+    }
 
     final config = ServerConfig(
       serverUrl: serverUrl,
@@ -150,6 +182,9 @@ class AuthProvider extends ChangeNotifier {
       clientCertificatePath: clientCertificatePath,
       clientCertificatePassword: clientCertificatePassword,
       name: profileName,
+      serverFamily: serverFamily,
+      apiToken: jellyfinToken,
+      userId: jellyfinUserId,
     );
 
     _subsonicService.configure(config);

@@ -14,6 +14,9 @@ class ServerConfig {
   final String?
   clientCertificatePassword;
   final String? name;
+  final String serverFamily;
+  final String? apiToken;
+  final String? userId;
 
   ServerConfig({
     required this.serverUrl,
@@ -28,7 +31,12 @@ class ServerConfig {
     this.clientCertificatePath,
     this.clientCertificatePassword,
     this.name,
+    this.serverFamily = 'subsonic',
+    this.apiToken,
+    this.userId,
   });
+
+  bool get isJellyfin => serverFamily == 'jellyfin';
 
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
     return ServerConfig(
@@ -48,6 +56,9 @@ class ServerConfig {
       clientCertificatePath: json['clientCertificatePath'],
       clientCertificatePassword: json['clientCertificatePassword'],
       name: json['name'] as String?,
+      serverFamily: json['serverFamily'] as String? ?? 'subsonic',
+      apiToken: json['apiToken'] as String?,
+      userId: json['userId'] as String?,
     );
   }
 
@@ -65,6 +76,9 @@ class ServerConfig {
       'clientCertificatePath': clientCertificatePath,
       'clientCertificatePassword': clientCertificatePassword,
       'name': name,
+      'serverFamily': serverFamily,
+      'apiToken': apiToken,
+      'userId': userId,
     };
   }
 
@@ -81,6 +95,9 @@ class ServerConfig {
     String? clientCertificatePath,
     String? clientCertificatePassword,
     String? name,
+    String? serverFamily,
+    String? apiToken,
+    String? userId,
   }) {
     return ServerConfig(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -100,6 +117,9 @@ class ServerConfig {
       clientCertificatePassword:
           clientCertificatePassword ?? this.clientCertificatePassword,
       name: name ?? this.name,
+      serverFamily: serverFamily ?? this.serverFamily,
+      apiToken: apiToken ?? this.apiToken,
+      userId: userId ?? this.userId,
     );
   }
 

@@ -39,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _allowSelfSignedCertificates = false;
   bool _obscurePassword = true;
   bool _showAdvancedOptions = false;
+  bool _serverFamilyIsJellyfin = false;
   String? _customCertificatePath;
   String? _customCertificateName;
   final _profileNameController = TextEditingController();
@@ -342,6 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ? null
           : _clientCertPasswordController.text,
       profileName: profileName.isEmpty ? null : profileName,
+      serverFamily: _serverFamilyIsJellyfin ? 'jellyfin' : 'subsonic',
     );
 
     if (!success && mounted) {
@@ -533,7 +535,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  _ServerFamilyToggle(
+                    isJellyfin: _serverFamilyIsJellyfin,
+                    onChanged: (v) => setState(() {
+                      _serverFamilyIsJellyfin = v;
+                      _useLegacyAuth = false;
+                    }),
+                  ),
+                  const SizedBox(height: 16),
 
                   TextFormField(
                     controller: _serverController,
@@ -1142,6 +1152,80 @@ class _SavedProfilesSwitcherState extends State<_SavedProfilesSwitcher> {
           ],
         );
       },
+    );
+  }
+}
+
+class _ServerFamilyToggle extends StatelessWidget {
+  final bool isJellyfin;
+  final ValueChanged<bool> onChanged;
+
+  const _ServerFamilyToggle({
+    required this.isJellyfin,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white70 : Colors.black87;
+    final activeColor = const Color(0xFF6366F1);
+
+    Widget chip(String label, bool selected, IconData icon, bool value) {
+      return GestureDetector(
+        onTap: () => onChanged(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected
+                ? activeColor.withAlpha(30)
+                : Colors.transparent,
+            border: Border.all(
+              color: selected ? activeColor : (isDark ? Colors.white24 : Colors.black26),
+              width: selected ? 1.5 : 1,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: selected ? activeColor : labelColor),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  color: selected ? activeColor : labelColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Server Type',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white54 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [
+            chip('Subsonic / Navidrome', !isJellyfin, CupertinoIcons.music_note, false),
+            chip('Emby / Jellyfin', isJellyfin, CupertinoIcons.tv, true),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
+import 'jellyfin_service.dart';
 
 class PingResult {
   final bool success;
@@ -24,6 +25,7 @@ class PingResult {
 class SubsonicService {
   Dio _dio;
   ServerConfig? _config;
+  JellyfinService? _jellyfin;
 
   static const String _clientName = 'Musly';
   static const String _apiVersion = '1.16.1';
@@ -79,12 +81,18 @@ class SubsonicService {
 
   void configure(ServerConfig config) {
     _config = config;
-    _configureCertificateValidation(
-      config.allowSelfSignedCertificates,
-      customCertPath: config.customCertificatePath,
-      clientCertPath: config.clientCertificatePath,
-      clientCertPassword: config.clientCertificatePassword,
-    );
+    if (config.isJellyfin) {
+      _jellyfin ??= JellyfinService();
+      _jellyfin!.configure(config);
+    } else {
+      _jellyfin = null;
+      _configureCertificateValidation(
+        config.allowSelfSignedCertificates,
+        customCertPath: config.customCertificatePath,
+        clientCertPath: config.clientCertificatePath,
+        clientCertPassword: config.clientCertificatePassword,
+      );
+    }
   }
 
   void _configureCertificateValidation(
@@ -293,6 +301,7 @@ class SubsonicService {
   }
 
   Future<PingResult> pingWithError() async {
+    if (_jellyfin != null) return _jellyfin!.pingWithError();
     try {
       final response = await _request('ping');
       return PingResult(
@@ -326,6 +335,7 @@ class SubsonicService {
   }
 
   String getCoverArtUrl(String? coverArt, {int size = 300}) {
+    if (_jellyfin != null) return _jellyfin!.getCoverArtUrl(coverArt, size: size);
     if (coverArt == null || _config == null) {
       return '';
     }
@@ -354,6 +364,7 @@ class SubsonicService {
   }
 
   String getStreamUrl(String songId, {int? maxBitRate, String? format}) {
+    if (_jellyfin != null) return _jellyfin!.getStreamUrl(songId, maxBitRate: maxBitRate, format: format);
     final params = <String, String>{'id': songId};
     if (maxBitRate != null) {
       params['maxBitRate'] = maxBitRate.toString();
@@ -365,6 +376,7 @@ class SubsonicService {
   }
 
   Future<List<Artist>> getArtists() async {
+    if (_jellyfin != null) return _jellyfin!.getArtists();
     final response = await _request('getArtists');
     final artists = <Artist>[];
 
@@ -393,6 +405,7 @@ class SubsonicService {
     int size = 20,
     int offset = 0,
   }) async {
+    if (_jellyfin != null) return _jellyfin!.getAlbumList(type: type, size: size, offset: offset);
     final response = await _request('getAlbumList2', {
       'type': type,
       'size': size.toString(),
@@ -410,11 +423,13 @@ class SubsonicService {
   }
 
   Future<Album> getAlbum(String id) async {
+    if (_jellyfin != null) return _jellyfin!.getAlbum(id);
     final response = await _request('getAlbum', {'id': id});
     return Album.fromJson(response['album'] as Map<String, dynamic>);
   }
 
   Future<List<Song>> getAlbumSongs(String albumId) async {
+    if (_jellyfin != null) return _jellyfin!.getAlbumSongs(albumId);
     final response = await _request('getAlbum', {'id': albumId});
     final songsData = response['album']?['song'];
     if (songsData is List) {
@@ -426,6 +441,7 @@ class SubsonicService {
   }
 
   Future<List<Album>> getArtistAlbums(String artistId) async {
+    if (_jellyfin != null) return _jellyfin!.getArtistAlbums(artistId);
     final response = await _request('getArtist', {'id': artistId});
     final albumsData = response['artist']?['album'];
     if (albumsData is List) {
@@ -437,6 +453,7 @@ class SubsonicService {
   }
 
   Future<List<Playlist>> getPlaylists() async {
+    if (_jellyfin != null) return _jellyfin!.getPlaylists();
     final response = await _request('getPlaylists');
     final playlistsData = response['playlists']?['playlist'];
     if (playlistsData is List) {
@@ -448,14 +465,20 @@ class SubsonicService {
   }
 
   Future<Playlist> getPlaylist(String id) async {
+    if (_jellyfin != null) return _jellyfin!.getPlaylist(id);
     final response = await _request('getPlaylist', {'id': id});
     return Playlist.fromJson(response['playlist'] as Map<String, dynamic>);
   }
 
   Future<void> createPlaylist({
     required String name,
+    String? comment,
     List<String>? songIds,
   }) async {
+    if (_jellyfin != null) {
+      await _jellyfin!.createPlaylist(name: name, comment: comment, songIds: songIds);
+      return;
+    }
     // songId must be appended directly, using it as a map key would produce
     // songId[i]=x which Navidrome doesn't recognize
     String url = _buildUrl('createPlaylist', {'name': name});
@@ -535,6 +558,7 @@ class SubsonicService {
   }
 
   Future<void> deletePlaylist(String id) async {
+    if (_jellyfin != null) { await _jellyfin!.deletePlaylist(id); return; }
     await _request('deletePlaylist', {'id': id});
   }
 
@@ -544,6 +568,7 @@ class SubsonicService {
     int albumCount = 20,
     int songCount = 20,
   }) async {
+    if (_jellyfin != null) return _jellyfin!.search(query, songCount: songCount, albumCount: albumCount, artistCount: artistCount);
     final response = await _request('search3', {
       'query': query,
       'artistCount': artistCount.toString(),
@@ -575,6 +600,7 @@ class SubsonicService {
   }
 
   Future<List<Song>> getRandomSongs({int size = 20, String? genre}) async {
+    if (_jellyfin != null) return _jellyfin!.getRandomSongs(size: size, genre: genre);
     final params = <String, String>{'size': size.toString()};
     if (genre != null) params['genre'] = genre;
 
@@ -589,6 +615,7 @@ class SubsonicService {
   }
 
   Future<void> star({String? id, String? albumId, String? artistId}) async {
+    if (_jellyfin != null) { await _jellyfin!.star(id: id, albumId: albumId, artistId: artistId); return; }
     final params = <String, String>{};
     if (id != null) params['id'] = id;
     if (albumId != null) params['albumId'] = albumId;
@@ -597,6 +624,7 @@ class SubsonicService {
   }
 
   Future<void> unstar({String? id, String? albumId, String? artistId}) async {
+    if (_jellyfin != null) { await _jellyfin!.unstar(id: id, albumId: albumId, artistId: artistId); return; }
     final params = <String, String>{};
     if (id != null) params['id'] = id;
     if (albumId != null) params['albumId'] = albumId;
@@ -612,6 +640,7 @@ class SubsonicService {
   }
 
   Future<SearchResult> getStarred() async {
+    if (_jellyfin != null) return _jellyfin!.getStarred();
     final response = await _request('getStarred2');
     final starred = response['starred2'];
 
@@ -637,6 +666,7 @@ class SubsonicService {
   }
 
   Future<void> scrobble(String id, {bool submission = true}) async {
+    if (_jellyfin != null) { await _jellyfin!.scrobble(id, submission: submission); return; }
     await _request('scrobble', {'id': id, 'submission': submission.toString()});
   }
 
@@ -666,6 +696,7 @@ class SubsonicService {
   }
 
   Future<List<Genre>> getGenres() async {
+    if (_jellyfin != null) return _jellyfin!.getGenres();
     final response = await _request('getGenres');
     final genresData = response['genres']?['genre'];
     if (genresData is List) {
@@ -683,6 +714,7 @@ class SubsonicService {
     int count = 50,
     int offset = 0,
   }) async {
+    if (_jellyfin != null) return _jellyfin!.getSongsByGenre(genre, size: count, offset: offset);
     final response = await _request('getSongsByGenre', {
       'genre': genre,
       'count': count.toString(),
@@ -702,6 +734,7 @@ class SubsonicService {
     int size = 50,
     int offset = 0,
   }) async {
+    if (_jellyfin != null) return _jellyfin!.getAlbumsByGenre(genre, size: size, offset: offset);
     try {
       final response = await _request('getAlbumList2', {
         'type': 'byGenre',
@@ -827,6 +860,7 @@ class SubsonicService {
   }
 
   Future<List<Song>> getSimilarSongs(String id, {int count = 50}) async {
+    if (_jellyfin != null) return _jellyfin!.getSimilarSongs(id, count: count);
     try {
       final response = await _request('getSimilarSongs2', {
         'id': id,
@@ -861,6 +895,7 @@ class SubsonicService {
     String artistId, {
     int count = 50,
   }) async {
+    if (_jellyfin != null) return _jellyfin!.getArtistTopSongs(artistId, count: count);
     try {
       
       final artist = await getArtist(artistId);
