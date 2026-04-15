@@ -2599,11 +2599,6 @@ class _VolumeSliderState extends State<_VolumeSlider> {
   StreamSubscription<double>? _volumeSubscription;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  @override
   void initState() {
     super.initState();
     _initVolumeController();
@@ -2630,149 +2625,166 @@ class _VolumeSliderState extends State<_VolumeSlider> {
     super.dispose();
   }
 
-  void _updateVolumeFromPosition(Offset localPosition, double width) {
-    final newVolume = (localPosition.dx / width).clamp(0.0, 1.0);
+  void _applyVolume(double newVolume, PlayerProvider provider, bool isRemote) {
     setState(() {
       _dragValue = newVolume;
-      _systemVolume = newVolume;
+      if (!isRemote) _systemVolume = newVolume;
     });
-    VolumeController.instance.setVolume(newVolume);
+    if (isRemote) {
+      provider.setVolume(newVolume);
+    } else {
+      VolumeController.instance.setVolume(newVolume);
+    }
+  }
+
+  void _updateVolumeFromPosition(
+    Offset localPosition,
+    double width,
+    PlayerProvider provider,
+    bool isRemote,
+  ) {
+    final newVolume = (localPosition.dx / width).clamp(0.0, 1.0);
+    _applyVolume(newVolume, provider, isRemote);
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayVolume = _isDragging ? _dragValue : _systemVolume;
+    // Consumer so the slider re-reads provider.volume on each UPnP poll tick.
+    return Consumer<PlayerProvider>(
+      builder: (context, provider, _) {
+        final isRemote = provider.isRemotePlayback;
+        final currentVolume = isRemote ? provider.volume : _systemVolume;
+        final displayVolume = _isDragging ? _dragValue : currentVolume;
 
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () {
-            setState(() => _systemVolume = 0.0);
-            VolumeController.instance.setVolume(0.0);
-          },
-          child: Icon(
-            displayVolume <= 0.01
-                ? CupertinoIcons.speaker_slash_fill
-                : CupertinoIcons.speaker_1_fill,
-            color: Colors.white.withValues(alpha: 0.7),
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final trackWidth = constraints.maxWidth;
+        return Row(
+          children: [
+            GestureDetector(
+              onTap: () => _applyVolume(0.0, provider, isRemote),
+              child: Icon(
+                displayVolume <= 0.01
+                    ? CupertinoIcons.speaker_slash_fill
+                    : CupertinoIcons.speaker_1_fill,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final trackWidth = constraints.maxWidth;
 
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragStart: (details) {
-                  setState(() {
-                    _isDragging = true;
-                    _dragValue = _systemVolume;
-                  });
-                  _updateVolumeFromPosition(details.localPosition, trackWidth);
-                },
-                onHorizontalDragUpdate: (details) {
-                  _updateVolumeFromPosition(details.localPosition, trackWidth);
-                },
-                onHorizontalDragEnd: (details) {
-                  setState(() => _isDragging = false);
-                },
-                onTapDown: (details) {
-                  _updateVolumeFromPosition(details.localPosition, trackWidth);
-                },
-                child: SizedBox(
-                  height: 40,
-                  child: Center(
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          curve: Curves.easeOut,
-                          height: _isDragging ? 6 : 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(
-                              _isDragging ? 3 : 2,
-                            ),
-                          ),
-                        ),
-
-                        FractionallySizedBox(
-                          widthFactor: displayVolume.clamp(0.0, 1.0),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 120),
-                            curve: Curves.easeOut,
-                            height: _isDragging ? 6 : 4,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(
-                                _isDragging ? 3 : 2,
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragStart: (details) {
+                      setState(() {
+                        _isDragging = true;
+                        _dragValue = currentVolume;
+                      });
+                      _updateVolumeFromPosition(
+                          details.localPosition, trackWidth, provider, isRemote);
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      _updateVolumeFromPosition(
+                          details.localPosition, trackWidth, provider, isRemote);
+                    },
+                    onHorizontalDragEnd: (details) {
+                      setState(() => _isDragging = false);
+                    },
+                    onTapDown: (details) {
+                      _updateVolumeFromPosition(
+                          details.localPosition, trackWidth, provider, isRemote);
+                    },
+                    child: SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.centerLeft,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              curve: Curves.easeOut,
+                              height: _isDragging ? 6 : 4,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(
+                                  _isDragging ? 3 : 2,
+                                ),
                               ),
                             ),
-                          ),
-                        ),
 
-                        Positioned(
-                          left:
-                              ((trackWidth * displayVolume.clamp(0.0, 1.0)) -
-                                      (_isDragging ? 10 : 6))
-                                  .clamp(
-                                    0.0,
-                                    trackWidth - (_isDragging ? 20 : 12),
+                            FractionallySizedBox(
+                              widthFactor: displayVolume.clamp(0.0, 1.0),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 120),
+                                curve: Curves.easeOut,
+                                height: _isDragging ? 6 : 4,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(
+                                    _isDragging ? 3 : 2,
                                   ),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 120),
-                            curve: Curves.easeOut,
-                            width: _isDragging ? 20 : 12,
-                            height: _isDragging ? 20 : 12,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: _isDragging
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        blurRadius: 8,
-                                        spreadRadius: 1,
-                                      ),
-                                    ]
-                                  : [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                        blurRadius: 3,
-                                      ),
-                                    ],
+                                ),
+                              ),
                             ),
-                          ),
+
+                            Positioned(
+                              left:
+                                  ((trackWidth * displayVolume.clamp(0.0, 1.0)) -
+                                          (_isDragging ? 10 : 6))
+                                      .clamp(
+                                        0.0,
+                                        trackWidth - (_isDragging ? 20 : 12),
+                                      ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 120),
+                                curve: Curves.easeOut,
+                                width: _isDragging ? 20 : 12,
+                                height: _isDragging ? 20 : 12,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: _isDragging
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            blurRadius: 3,
+                                          ),
+                                        ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () {
-            setState(() => _systemVolume = 1.0);
-            VolumeController.instance.setVolume(1.0);
-          },
-          child: Icon(
-            CupertinoIcons.speaker_3_fill,
-            color: Colors.white.withValues(alpha: 0.7),
-            size: 20,
-          ),
-        ),
-      ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => _applyVolume(1.0, provider, isRemote),
+              child: Icon(
+                CupertinoIcons.speaker_3_fill,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: 20,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

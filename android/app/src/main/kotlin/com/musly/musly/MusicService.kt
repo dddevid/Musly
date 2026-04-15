@@ -697,7 +697,13 @@ class MusicService : MediaBrowserServiceCompat() {
                 }
 
                 override fun onAdjustVolume(direction: Int) {
-                    val newVolume = (currentVolume + direction * 5).coerceIn(0, 100)
+                    // Use getCurrentVolume() (the live VolumeProviderCompat
+                    // property) not the captured constructor param.  The param
+                    // is a val fixed at connection time, so every relative
+                    // adjustment would always compute from the same baseline,
+                    // causing the volume to snap back to initialVolume±5 no
+                    // matter how many times the user presses the button.
+                    val newVolume = (getCurrentVolume() + direction * 5).coerceIn(0, 100)
                     setCurrentVolume(newVolume)
                     AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to newVolume))
                 }
