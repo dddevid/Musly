@@ -58,7 +58,8 @@ class UpnpService extends ChangeNotifier {
   Duration get rendererDuration => _rendererDuration;
   String get rendererState => _rendererState;
   bool get isRendererPlaying => _rendererState == 'PLAYING';
-  int get volume => _volume; 
+  int get volume => _volume;
+  int get consecutivePollErrors => _consecutivePollErrors;
 
   List<UpnpDevice> get devices => List.unmodifiable(_devices);
   UpnpDevice? get connectedDevice => _connectedDevice;
@@ -71,8 +72,15 @@ class UpnpService extends ChangeNotifier {
 
   final _dio = Dio(
     BaseOptions(
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 3),
+      receiveTimeout: const Duration(seconds: 3),
+      // Force a fresh TCP connection for every SOAP request.  Many UPnP
+      // renderer HTTP servers (upmpdcli, BubbleUPnP Server, etc.) close
+      // their end of the TCP socket after a short keepalive timeout (~5–10 s).
+      // Without this header Dio's connection pool reuses the dead socket, the
+      // next write throws a SocketException, getPlaybackState() swallows it
+      // silently, and the progress bar freezes for the rest of the song.
+      headers: {'Connection': 'close'},
     ),
   );
 
@@ -276,9 +284,10 @@ class UpnpService extends ChangeNotifier {
 
   bool _isPolling = false;
   int _pollCount = 0;
+  int _consecutivePollErrors = 0;
 
   Future<void> _poll() async {
-    if (_isPolling) return; 
+    if (_isPolling) return;
     final device = _connectedDevice;
     if (device == null) return;
     _isPolling = true;
@@ -286,7 +295,20 @@ class UpnpService extends ChangeNotifier {
 
     try {
       final state = await getPlaybackState();
-      if (state == null) return;
+      if (state == null) {
+        // getPlaybackState() caught an exception internally and returned null.
+        // Count consecutive failures so callers can detect a dead renderer.
+        _consecutivePollErrors++;
+        if (_consecutivePollErrors == 1 || _consecutivePollErrors % 5 == 0) {
+          debugPrint(
+            'UPnP: poll failed $_consecutivePollErrors time(s) in a row '
+            '— renderer may be unreachable',
+          );
+        }
+        return;
+      }
+
+      _consecutivePollErrors = 0;
 
       bool changed = false;
       if (state.transportState != _rendererState) {
@@ -314,6 +336,7 @@ class UpnpService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      _consecutivePollErrors++;
       debugPrint('UPnP: poll error: $e');
     } finally {
       _isPolling = false;
@@ -360,6 +383,7 @@ class UpnpService extends ChangeNotifier {
     String? album,
     String? albumArtUrl,
     int? durationSecs,
+    String? contentType,
   }) async {
     final device = _connectedDevice;
     if (device == null) {
@@ -385,6 +409,7 @@ class UpnpService extends ChangeNotifier {
       album: album,
       albumArtUrl: albumArtUrl,
       durationSecs: durationSecs,
+      contentType: contentType,
     );
     debugPrint('UPnP: SetAVTransportURI…');
     await _soap(
@@ -676,6 +701,35 @@ class UpnpService extends ChangeNotifier {
     }
   }
 
+  /// Returns a MIME type string for [suffix] (e.g. 'mp3' → 'audio/mpeg').
+  /// Returns null when the suffix is unknown so callers can fall back to '*'.
+  static String? mimeTypeFromSuffix(String? suffix) {
+    switch (suffix?.toLowerCase()) {
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'flac':
+        return 'audio/flac';
+      case 'ogg':
+      case 'oga':
+        return 'audio/ogg';
+      case 'opus':
+        return 'audio/opus';
+      case 'aac':
+        return 'audio/aac';
+      case 'm4a':
+        return 'audio/mp4';
+      case 'wav':
+        return 'audio/wav';
+      case 'wma':
+        return 'audio/x-ms-wma';
+      case 'aiff':
+      case 'aif':
+        return 'audio/aiff';
+      default:
+        return null;
+    }
+  }
+
   static String _didl({
     required String title,
     required String artist,
@@ -683,6 +737,7 @@ class UpnpService extends ChangeNotifier {
     String? album,
     String? albumArtUrl,
     int? durationSecs,
+    String? contentType,
   }) {
     String esc(String s) => s
         .replaceAll('&', '&amp;')
@@ -690,7 +745,10 @@ class UpnpService extends ChangeNotifier {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;');
 
-    const protocol = 'http-get:*:*:*';
+    // Use the provided MIME type; fall back to wildcard so strict renderers
+    // (e.g. moode / upmpdcli with "check metadata" enabled) can validate.
+    final mimeType = contentType ?? '*';
+    final protocol = 'http-get:*:$mimeType:*';
 
     final durationAttr = durationSecs != null
         ? ' duration="${_formatTimeSecs(durationSecs)}"'
