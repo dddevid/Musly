@@ -457,7 +457,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
       if (confirm != true || !mounted) return;
 
-      await _offlineService.startBackgroundDownload(allSongs, subsonicService);
+      // Fire-and-forget: progress is tracked via downloadState ValueNotifier
+      _offlineService.startBackgroundDownload(allSongs, subsonicService).whenComplete(() {
+        if (mounted) _loadOfflineInfo();
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -466,7 +469,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             duration: const Duration(seconds: 2),
           ),
         );
-        await _loadOfflineInfo();
       }
     } catch (e) {
       if (mounted) {

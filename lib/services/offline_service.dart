@@ -109,7 +109,13 @@ class OfflineService {
   bool isSongDownloaded(String songId) {
     if (_offlineDir == null) return false;
     final file = File(_getSongPath(songId));
-    return file.existsSync();
+    if (!file.existsSync()) return false;
+    // Treat files under 64 KB as corrupt/partial downloads
+    try {
+      return file.lengthSync() >= 65536;
+    } catch (_) {
+      return false;
+    }
   }
 
   List<String> getDownloadedSongIds() {
@@ -151,9 +157,9 @@ class OfflineService {
   }) async {
     if (_offlineDir == null) await initialize();
 
+    final filePath = _getSongPath(song.id);
     try {
       final url = subsonicService.getStreamUrl(song.id);
-      final filePath = _getSongPath(song.id);
 
       final dio = Dio();
       await dio.download(
@@ -200,6 +206,11 @@ class OfflineService {
       return true;
     } catch (e) {
       debugPrint('Error downloading song: $e');
+      // Remove partial file so isSongDownloaded() doesn't treat it as complete
+      try {
+        final partial = File(filePath);
+        if (partial.existsSync()) await partial.delete();
+      } catch (_) {}
       return false;
     }
   }
