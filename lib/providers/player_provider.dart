@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' show Random;
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -676,8 +677,14 @@ class PlayerProvider extends ChangeNotifier {
   Duration get position => _position;
   Duration get duration => _duration;
   Song? get currentSong => _currentSong;
-  bool get hasNext => _currentIndex < _queue.length - 1;
-  bool get hasPrevious => _currentIndex > 0;
+  bool get hasNext =>
+      _currentIndex < _queue.length - 1 ||
+      _repeatMode == RepeatMode.all ||
+      (_shuffleEnabled && _queue.length > 1);
+  bool get hasPrevious =>
+      _currentIndex > 0 ||
+      _repeatMode == RepeatMode.all ||
+      (_shuffleEnabled && _queue.length > 1);
   double get volume => _volume;
 
   RadioStation? get currentRadioStation => _currentRadioStation;
@@ -770,10 +777,19 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _initializePlayer() {
-    
     _storageService.getVolume().then((savedVolume) {
       _volume = savedVolume;
       _audioPlayer.setVolume(_volume);
+      notifyListeners();
+    });
+
+    _storageService.getShuffleMode().then((saved) {
+      _shuffleEnabled = saved;
+      notifyListeners();
+    });
+
+    _storageService.getRepeatMode().then((saved) {
+      _repeatMode = RepeatMode.values[saved.clamp(0, RepeatMode.values.length - 1)];
       notifyListeners();
     });
 
@@ -927,6 +943,13 @@ class PlayerProvider extends ChangeNotifier {
         _currentIndex =
             startIndex ?? playlist.indexWhere((s) => s.id == song.id);
         if (_currentIndex == -1) _currentIndex = 0;
+        // Apply shuffle to the new queue, keeping the chosen song at front
+        if (_shuffleEnabled && _queue.length > 1) {
+          _queue.shuffle();
+          _queue.remove(song);
+          _queue.insert(0, song);
+          _currentIndex = 0;
+        }
       } else if (_queue.isEmpty || !_queue.any((s) => s.id == song.id)) {
         _queue = [song];
         _currentIndex = 0;
@@ -1239,6 +1262,14 @@ class PlayerProvider extends ChangeNotifier {
 
     if (_currentIndex < _queue.length - 1) {
       await skipToIndex(_currentIndex + 1);
+    } else if (_repeatMode == RepeatMode.all) {
+      await skipToIndex(0);
+    } else if (_shuffleEnabled && _queue.length > 1) {
+      int next;
+      do {
+        next = Random().nextInt(_queue.length);
+      } while (next == _currentIndex);
+      await skipToIndex(next);
     }
   }
 
@@ -1267,6 +1298,14 @@ class PlayerProvider extends ChangeNotifier {
       await seek(Duration.zero);
     } else if (_currentIndex > 0) {
       await skipToIndex(_currentIndex - 1);
+    } else if (_repeatMode == RepeatMode.all && _queue.isNotEmpty) {
+      await skipToIndex(_queue.length - 1);
+    } else if (_shuffleEnabled && _queue.length > 1) {
+      int prev;
+      do {
+        prev = Random().nextInt(_queue.length);
+      } while (prev == _currentIndex);
+      await skipToIndex(prev);
     } else {
       await seek(Duration.zero);
     }
@@ -1287,6 +1326,7 @@ class PlayerProvider extends ChangeNotifier {
       _queue.insert(0, currentSong);
       _currentIndex = 0;
     }
+    _storageService.saveShuffleMode(_shuffleEnabled);
     notifyListeners();
   }
 
@@ -1302,6 +1342,7 @@ class PlayerProvider extends ChangeNotifier {
         _repeatMode = RepeatMode.off;
         break;
     }
+    _storageService.saveRepeatMode(_repeatMode.index);
     notifyListeners();
   }
 
