@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'playlist_screen.dart';
@@ -210,10 +211,26 @@ class _PlaylistTile extends StatelessWidget {
         '${playlist.songCount ?? 0} songs',
         style: theme.textTheme.bodySmall,
       ),
-      trailing: const Icon(
-        CupertinoIcons.chevron_right,
-        size: 18,
-        color: AppTheme.lightSecondaryText,
+      trailing: ValueListenableBuilder<Set<String>>(
+        valueListenable: OfflineService().downloadedSongIds,
+        builder: (context, ids, _) {
+          final songs = playlist.songs;
+          final allDownloaded = songs != null &&
+              songs.isNotEmpty &&
+              songs.every((s) => ids.contains(s.id));
+          if (allDownloaded) {
+            return const Icon(
+              Icons.check_circle,
+              size: 20,
+              color: Colors.green,
+            );
+          }
+          return const Icon(
+            CupertinoIcons.chevron_right,
+            size: 18,
+            color: AppTheme.lightSecondaryText,
+          );
+        },
       ),
       onTap: onTap,
       onLongPress: onLongPress,

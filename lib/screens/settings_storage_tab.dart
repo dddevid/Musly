@@ -10,6 +10,7 @@ import '../services/cache_settings_service.dart';
 import '../services/local_music_service.dart';
 import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
+import 'download_playlist_status_screen.dart';
 
 class SettingsStorageTab extends StatefulWidget {
   const SettingsStorageTab({super.key});
@@ -744,8 +745,11 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             ),
           ),
           trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
-          // Navigation wired up in feature/download-detail-screens
-          onTap: null,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const DownloadPlaylistStatusScreen(),
+            ),
+          ),
         );
       },
     );
