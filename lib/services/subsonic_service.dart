@@ -353,6 +353,12 @@ class SubsonicService {
     return '${_config!.normalizedUrl}/rest/getCoverArt?$queryString';
   }
 
+  /// Returns the /download URL for a song — always original file, no transcoding.
+  /// Use this for offline downloads so file size matches song.size exactly.
+  String getDownloadUrl(String songId) {
+    return _buildUrl('download', {'id': songId});
+  }
+
   String getStreamUrl(String songId, {int? maxBitRate, String? format}) {
     final params = <String, String>{'id': songId};
     if (maxBitRate != null) {
