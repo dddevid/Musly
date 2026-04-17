@@ -1124,6 +1124,12 @@ class PlayerProvider extends ChangeNotifier {
       notifyListeners();
     });
 
+    // Resume any playlists that were queued for download but interrupted
+    _offlineService.initialize().then((_) {
+      _offlineService.resumeIncompleteDownloads(_subsonicService);
+    });
+
+
     _storageService.getRepeatMode().then((saved) {
       _repeatMode =
           RepeatMode.values[saved.clamp(0, RepeatMode.values.length - 1)];
