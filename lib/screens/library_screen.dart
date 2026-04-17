@@ -17,6 +17,7 @@ import 'library_search_delegate.dart';
 import 'artist_screen.dart';
 import 'radio_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../services/offline_service.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
 
 class LibraryScreen extends StatefulWidget {
@@ -431,6 +432,42 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ],
               ),
             ),
+            if (item.type == 'Playlist')
+              ValueListenableBuilder<Set<String>>(
+                valueListenable: OfflineService().downloadedSongIds,
+                builder: (context, ids, _) {
+                  return ValueListenableBuilder<Set<String>>(
+                    valueListenable: OfflineService().queuedPlaylistIds,
+                    builder: (context, queued, _) {
+                      final playlists = Provider.of<LibraryProvider>(
+                        context,
+                        listen: false,
+                      ).playlists;
+                      final playlist = playlists.cast().firstWhere(
+                        (p) => p.id == item.id,
+                        orElse: () => null,
+                      );
+                      final songs = playlist?.songs;
+                      final allDownloaded = songs != null &&
+                          songs.isNotEmpty &&
+                          songs.every((s) => ids.contains(s.id));
+                      if (allDownloaded) {
+                        return const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(Icons.check_circle, color: Colors.green, size: 18),
+                        );
+                      }
+                      if (queued.contains(item.id)) {
+                        return const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(Icons.check_circle_outline, color: Colors.green, size: 18),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  );
+                },
+              ),
           ],
         ),
       ),

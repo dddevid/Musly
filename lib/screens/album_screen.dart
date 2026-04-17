@@ -86,34 +86,21 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (_songs.isEmpty) return;
 
     final offlineService = OfflineService();
-    if (offlineService.isBackgroundDownloadActive) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('A download is already in progress'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-      return;
-    }
-
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
+    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
 
     setState(() => _isDownloading = true);
 
-    offlineService.startBackgroundDownload(_songs, subsonicService).whenComplete(() {
+    offlineService
+        .queuePlaylistDownload(_album!.id, _songs, subsonicService)
+        .whenComplete(() {
       if (mounted) setState(() => _isDownloading = false);
     });
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Downloading ${_songs.length} songs from ${_album!.name} in background…'),
+          content: Text('Queued ${_songs.length} songs from ${_album!.name} for download…'),
           duration: const Duration(seconds: 2),
         ),
       );

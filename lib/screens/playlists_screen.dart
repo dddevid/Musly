@@ -213,21 +213,25 @@ class _PlaylistTile extends StatelessWidget {
       trailing: ValueListenableBuilder<Set<String>>(
         valueListenable: OfflineService().downloadedSongIds,
         builder: (context, ids, _) {
-          final songs = playlist.songs;
-          final allDownloaded = songs != null &&
-              songs.isNotEmpty &&
-              songs.every((s) => ids.contains(s.id));
-          if (allDownloaded) {
-            return const Icon(
-              Icons.check_circle,
-              size: 20,
-              color: Colors.green,
-            );
-          }
-          return const Icon(
-            CupertinoIcons.chevron_right,
-            size: 18,
-            color: AppTheme.lightSecondaryText,
+          return ValueListenableBuilder<Set<String>>(
+            valueListenable: OfflineService().queuedPlaylistIds,
+            builder: (context, queued, _) {
+              final songs = playlist.songs;
+              final allDownloaded = songs != null &&
+                  songs.isNotEmpty &&
+                  songs.every((s) => ids.contains(s.id));
+              if (allDownloaded) {
+                return const Icon(Icons.check_circle, size: 20, color: Colors.green);
+              }
+              if (queued.contains(playlist.id)) {
+                return const Icon(Icons.check_circle_outline, size: 20, color: Colors.green);
+              }
+              return const Icon(
+                CupertinoIcons.chevron_right,
+                size: 18,
+                color: AppTheme.lightSecondaryText,
+              );
+            },
           );
         },
       ),
