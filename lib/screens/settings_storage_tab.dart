@@ -137,6 +137,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             _buildDivider(),
             _buildOfflineInfo(),
             _buildDivider(),
+            _buildActiveDownloadsRow(),
+            _buildDivider(),
+            _buildPlaylistStatusRow(),
+            _buildDivider(),
             _buildDownloadAllLibraryButton(),
             _buildDivider(),
             _buildDeleteDownloadsButton(),
@@ -659,6 +663,91 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               : AppTheme.lightSecondaryText,
         ),
       ),
+    );
+  }
+
+  Widget _buildActiveDownloadsRow() {
+    return ValueListenableBuilder<DownloadState>(
+      valueListenable: _offlineService.downloadState,
+      builder: (context, state, _) {
+        final subtitle = state.isDownloading && state.currentSong != null
+            ? '${state.currentSong!.artist ?? ''} – ${state.currentSong!.title}  (${state.currentProgress}/${state.totalCount})'
+            : state.isDownloading
+                ? '${state.currentProgress}/${state.totalCount}'
+                : 'No downloads in progress';
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: state.isDownloading
+                    ? const [Color(0xFF34C759), Color(0xFF30D158)]
+                    : const [Color(0xFF8E8E93), Color(0xFFAEAEB2)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              state.isDownloading
+                  ? CupertinoIcons.arrow_down_circle_fill
+                  : CupertinoIcons.arrow_down_circle,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: const Text('Active Downloads', style: TextStyle(fontSize: 16)),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 12,
+              color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
+          // Navigation wired up in feature/download-detail-screens
+          onTap: null,
+        );
+      },
+    );
+  }
+
+  Widget _buildPlaylistStatusRow() {
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: _offlineService.downloadedSongIds,
+      builder: (context, ids, _) {
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.music_note_list,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: const Text('Playlist Downloads', style: TextStyle(fontSize: 16)),
+          subtitle: Text(
+            '${ids.length} songs downloaded',
+            style: TextStyle(
+              fontSize: 12,
+              color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+          ),
+          trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
+          // Navigation wired up in feature/download-detail-screens
+          onTap: null,
+        );
+      },
     );
   }
 

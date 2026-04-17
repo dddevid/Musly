@@ -1,0 +1,64 @@
+# syntax=docker/dockerfile:1
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    FLUTTER_SUPPRESS_ANALYTICS=1 \
+    PUB_CACHE=/opt/pub-cache \
+    GRADLE_USER_HOME=/opt/gradle-cache
+
+# ── System deps ────────────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openjdk-17-jdk-headless \
+        wget curl git unzip xz-utils zip \
+        libglu1-mesa ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
+    PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+
+# ── Android SDK (including cmake so Gradle never tries to auto-install it) ─────
+ENV ANDROID_SDK_ROOT=/opt/android-sdk \
+    ANDROID_HOME=/opt/android-sdk
+RUN mkdir -p /opt/android-sdk/cmdline-tools \
+    && wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+             -O /tmp/cmdline-tools.zip \
+    && unzip -q /tmp/cmdline-tools.zip -d /opt/android-sdk/cmdline-tools \
+    && mv /opt/android-sdk/cmdline-tools/cmdline-tools \
+          /opt/android-sdk/cmdline-tools/latest \
+    && rm /tmp/cmdline-tools.zip
+
+ENV PATH=/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:$PATH
+
+RUN yes | sdkmanager --licenses > /dev/null 2>&1 || true \
+    && sdkmanager \
+        "platform-tools" \
+        "platforms;android-35" \
+        "build-tools;35.0.0" \
+        "ndk;27.0.12077973" \
+        "cmake;3.22.1"
+
+# ── Flutter SDK ────────────────────────────────────────────────────────────────
+RUN git clone --depth 1 --branch stable \
+        https://github.com/flutter/flutter.git /opt/flutter \
+    && git config --global --add safe.directory /opt/flutter
+
+ENV PATH=/opt/flutter/bin:$PATH
+
+RUN flutter --version
+RUN yes | flutter doctor --android-licenses > /dev/null 2>&1 || true
+
+# ── App source & build ─────────────────────────────────────────────────────────
+WORKDIR /app
+COPY . .
+
+# Cache mounts keep Gradle + pub downloads outside the overlay layer,
+# preventing "No space left on device" errors on large Gradle transform sets.
+RUN --mount=type=cache,target=/opt/gradle-cache \
+    --mount=type=cache,target=/opt/pub-cache \
+    flutter pub get
+
+RUN --mount=type=cache,target=/opt/gradle-cache \
+    --mount=type=cache,target=/opt/pub-cache \
+    flutter build apk --release
+
+# Output: /app/build/app/outputs/flutter-apk/app-release.apk

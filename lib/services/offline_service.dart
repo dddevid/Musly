@@ -9,17 +9,31 @@ import '../models/song.dart';
 import '../models/playlist.dart';
 import 'subsonic_service.dart';
 
+enum DownloadStatus { queued, downloading, done, failed }
+
+class DownloadLogEntry {
+  final Song song;
+  final DownloadStatus status;
+  const DownloadLogEntry(this.song, this.status);
+  DownloadLogEntry copyWith({DownloadStatus? status}) =>
+      DownloadLogEntry(song, status ?? this.status);
+}
+
 class DownloadState {
   final bool isDownloading;
   final int currentProgress;
   final int totalCount;
   final int downloadedCount;
+  final Song? currentSong;
+  final List<Song> failedSongs;
 
   DownloadState({
     this.isDownloading = false,
     this.currentProgress = 0,
     this.totalCount = 0,
     this.downloadedCount = 0,
+    this.currentSong,
+    this.failedSongs = const [],
   });
 
   DownloadState copyWith({
@@ -27,12 +41,16 @@ class DownloadState {
     int? currentProgress,
     int? totalCount,
     int? downloadedCount,
+    Song? currentSong,
+    List<Song>? failedSongs,
   }) {
     return DownloadState(
       isDownloading: isDownloading ?? this.isDownloading,
       currentProgress: currentProgress ?? this.currentProgress,
       totalCount: totalCount ?? this.totalCount,
       downloadedCount: downloadedCount ?? this.downloadedCount,
+      currentSong: currentSong ?? this.currentSong,
+      failedSongs: failedSongs ?? this.failedSongs,
     );
   }
 }
@@ -52,6 +70,15 @@ class OfflineService {
   final ValueNotifier<DownloadState> downloadState = ValueNotifier(
     DownloadState(),
   );
+
+  /// Reactive set of song IDs that are confirmed downloaded on disk.
+  /// Widgets can listen to this to show/hide the green checkmark badge.
+  final ValueNotifier<Set<String>> downloadedSongIds = ValueNotifier({});
+
+  /// Per-batch download log, cleared at the start of each batch.
+  /// Used by the Active Downloads detail screen.
+  final ValueNotifier<List<DownloadLogEntry>> downloadLog = ValueNotifier([]);
+
   bool _isBackgroundDownloadActive = false;
 
   static const String _keyDownloadedSongs = 'offline_downloaded_songs';
@@ -71,6 +98,10 @@ class OfflineService {
     if (!await offlineDirectory.exists()) {
       await offlineDirectory.create(recursive: true);
     }
+
+    // Seed the reactive set from SharedPrefs so existing downloads are visible
+    // immediately without waiting for a background download to run.
+    downloadedSongIds.value = getDownloadedSongIds().toSet();
   }
 
   String _getSongPath(String songId) {
@@ -150,6 +181,14 @@ class OfflineService {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
+  /// Returns (downloaded, total) for a list of songs — used by the
+  /// Playlist Status settings panel.
+  (int, int) getPlaylistDownloadStatus(List<Song> songs) {
+    final ids = downloadedSongIds.value;
+    final downloaded = songs.where((s) => ids.contains(s.id)).length;
+    return (downloaded, songs.length);
+  }
+
   Future<bool> downloadSong(
     Song song,
     SubsonicService subsonicService, {
@@ -177,6 +216,8 @@ class OfflineService {
         downloadedIds.add(song.id);
         await _prefs?.setStringList(_keyDownloadedSongs, downloadedIds);
       }
+      // Notify reactive listeners (SongTile badges, playlist checkmarks)
+      downloadedSongIds.value = {...downloadedSongIds.value, song.id};
 
       try {
         if (song.coverArt != null) {
@@ -282,11 +323,17 @@ class OfflineService {
       }
     }
 
+    // Reset the per-batch log and seed it with queued entries
+    downloadLog.value = songs
+        .map((s) => DownloadLogEntry(s, DownloadStatus.queued))
+        .toList();
+
     downloadState.value = DownloadState(
       isDownloading: true,
       currentProgress: 0,
       totalCount: songs.length,
       downloadedCount: alreadyDownloadedCount,
+      failedSongs: [],
     );
 
     if (_offlineDir == null) await initialize();
@@ -305,23 +352,35 @@ class OfflineService {
         final batch = pendingSongs.skip(i).take(concurrentDownloads).toList();
 
         // Download all songs in the batch concurrently
-        final downloadFutures = batch.map((song) async {
+        final downloadFutures = batch.asMap().entries.map((entry) async {
+          final batchIdx = entry.key;
+          final song = entry.value;
           if (!_isBackgroundDownloadActive) return false;
+
+          final logIdx = i + batchIdx;
+          _updateLogEntry(logIdx, DownloadStatus.downloading);
 
           final success = await downloadSong(song, subsonicService);
           completedCount++;
 
+          _updateLogEntry(logIdx, success ? DownloadStatus.done : DownloadStatus.failed);
+
           final newDownloadedCount = getDownloadedCount();
+          final newFailed = success
+              ? downloadState.value.failedSongs
+              : [...downloadState.value.failedSongs, song];
+
           downloadState.value = downloadState.value.copyWith(
             currentProgress: completedCount,
             downloadedCount: newDownloadedCount,
+            failedSongs: newFailed,
           );
 
           if (!success) {
             debugPrint('Failed to download song: ${song.title}');
           }
           return success;
-        });
+        }).toList();
 
         // Wait for all downloads in the batch to complete
         await Future.wait(downloadFutures);
@@ -330,7 +389,10 @@ class OfflineService {
       debugPrint('Error during background download: $e');
     } finally {
       _isBackgroundDownloadActive = false;
-      downloadState.value = downloadState.value.copyWith(isDownloading: false);
+      downloadState.value = downloadState.value.copyWith(
+        isDownloading: false,
+        currentSong: null,
+      );
 
       // Always disable wake lock when download finishes or fails
       if (!kIsWeb) {
@@ -344,9 +406,20 @@ class OfflineService {
     }
   }
 
+  void _updateLogEntry(int index, DownloadStatus status) {
+    final log = List<DownloadLogEntry>.from(downloadLog.value);
+    if (index < log.length) {
+      log[index] = log[index].copyWith(status: status);
+      downloadLog.value = log;
+    }
+  }
+
   void cancelBackgroundDownload() {
     _isBackgroundDownloadActive = false;
-    downloadState.value = downloadState.value.copyWith(isDownloading: false);
+    downloadState.value = downloadState.value.copyWith(
+      isDownloading: false,
+      currentSong: null,
+    );
   }
 
   bool get isBackgroundDownloadActive => _isBackgroundDownloadActive;
@@ -386,6 +459,7 @@ class OfflineService {
       final downloadedIds = getDownloadedSongIds();
       downloadedIds.remove(songId);
       await _prefs?.setStringList(_keyDownloadedSongs, downloadedIds);
+      downloadedSongIds.value = {...downloadedSongIds.value}..remove(songId);
 
       return true;
     } catch (e) {
@@ -408,6 +482,7 @@ class OfflineService {
       }
 
       await _prefs?.setStringList(_keyDownloadedSongs, []);
+      downloadedSongIds.value = {};
     } catch (e) {
       debugPrint('Error deleting all downloads: $e');
     }
@@ -476,7 +551,6 @@ class OfflineService {
   }
 
   String getPlayableUrl(Song song, SubsonicService subsonicService) {
-    
     if (song.isLocal == true && song.path != null) {
       return 'file://${song.path}';
     }
