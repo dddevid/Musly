@@ -887,7 +887,11 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    if (_repeatMode == RepeatMode.one) {
+    // Repeat-one, or repeat-all with a single-song queue: seek and replay
+    // (skipNext would call playSong with the same song, triggering the
+    // "same song = togglePlayPause" guard and pausing instead of replaying)
+    if (_repeatMode == RepeatMode.one ||
+        (_repeatMode == RepeatMode.all && _queue.length == 1)) {
       seek(Duration.zero);
       play();
     } else if (_currentIndex < _queue.length - 1 ||
