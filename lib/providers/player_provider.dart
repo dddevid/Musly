@@ -887,26 +887,15 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    switch (_repeatMode) {
-      case RepeatMode.one:
-        seek(Duration.zero);
-        play();
-        break;
-      case RepeatMode.all:
-        if (_currentIndex >= _queue.length - 1) {
-          skipToIndex(0);
-        } else {
-          skipNext();
-        }
-        break;
-      case RepeatMode.off:
-        if (_currentIndex < _queue.length - 1) {
-          skipNext();
-        } else {
-          
-          _handleEndOfQueue();
-        }
-        break;
+    if (_repeatMode == RepeatMode.one) {
+      seek(Duration.zero);
+      play();
+    } else if (_currentIndex < _queue.length - 1 ||
+        _repeatMode == RepeatMode.all ||
+        _shuffleEnabled) {
+      skipNext();
+    } else {
+      _handleEndOfQueue();
     }
   }
 
@@ -943,13 +932,6 @@ class PlayerProvider extends ChangeNotifier {
         _currentIndex =
             startIndex ?? playlist.indexWhere((s) => s.id == song.id);
         if (_currentIndex == -1) _currentIndex = 0;
-        // Apply shuffle to the new queue, keeping the chosen song at front
-        if (_shuffleEnabled && _queue.length > 1) {
-          _queue.shuffle();
-          _queue.remove(song);
-          _queue.insert(0, song);
-          _currentIndex = 0;
-        }
       } else if (_queue.isEmpty || !_queue.any((s) => s.id == song.id)) {
         _queue = [song];
         _currentIndex = 0;
@@ -1260,16 +1242,16 @@ class PlayerProvider extends ChangeNotifier {
       await _addAutoDjSongs();
     }
 
-    if (_currentIndex < _queue.length - 1) {
-      await skipToIndex(_currentIndex + 1);
-    } else if (_repeatMode == RepeatMode.all) {
-      await skipToIndex(0);
-    } else if (_shuffleEnabled && _queue.length > 1) {
+    if (_shuffleEnabled && _queue.length > 1) {
       int next;
       do {
         next = Random().nextInt(_queue.length);
       } while (next == _currentIndex);
       await skipToIndex(next);
+    } else if (_currentIndex < _queue.length - 1) {
+      await skipToIndex(_currentIndex + 1);
+    } else if (_repeatMode == RepeatMode.all) {
+      await skipToIndex(0);
     }
   }
 
