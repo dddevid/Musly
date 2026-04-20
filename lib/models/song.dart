@@ -25,6 +25,7 @@ class Song {
   final double? replayGainTrackPeak;
   final double? replayGainAlbumPeak;
   final List<ArtistRef>? artistParticipants;
+  final DateTime? created;
 
   Song({
     required this.id,
@@ -51,6 +52,7 @@ class Song {
     this.replayGainTrackPeak,
     this.replayGainAlbumPeak,
     this.artistParticipants,
+    this.created,
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
@@ -81,6 +83,9 @@ class Song {
       replayGainTrackPeak: (replayGain?['trackPeak'] as num?)?.toDouble(),
       replayGainAlbumPeak: (replayGain?['albumPeak'] as num?)?.toDouble(),
       artistParticipants: ArtistRef.parseList(json['artists']),
+      created: json['created'] != null
+          ? DateTime.tryParse(json['created'].toString())
+          : null,
     );
   }
 
@@ -111,6 +116,7 @@ class Song {
       },
       if (artistParticipants != null)
         'artists': artistParticipants!.map((a) => a.toJson()).toList(),
+      'created': created?.toIso8601String(),
     };
   }
 
@@ -146,6 +152,7 @@ class Song {
     double? replayGainTrackPeak,
     double? replayGainAlbumPeak,
     List<ArtistRef>? artistParticipants,
+    DateTime? created,
   }) {
     return Song(
       id: id ?? this.id,
@@ -172,6 +179,7 @@ class Song {
       replayGainTrackPeak: replayGainTrackPeak ?? this.replayGainTrackPeak,
       replayGainAlbumPeak: replayGainAlbumPeak ?? this.replayGainAlbumPeak,
       artistParticipants: artistParticipants ?? this.artistParticipants,
+      created: created ?? this.created,
     );
   }
 }

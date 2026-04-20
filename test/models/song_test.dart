@@ -33,6 +33,22 @@ void main() {
       expect(song.album, isNull);
       expect(song.artist, isNull);
       expect(song.duration, isNull);
+      expect(song.created, isNull);
+    });
+
+    test('should parse created field from JSON', () {
+      final json = {
+        'id': '123',
+        'title': 'Test Song',
+        'created': '2026-03-18T13:37:27.257653751Z',
+      };
+
+      final song = Song.fromJson(json);
+
+      expect(song.created, isNotNull);
+      expect(song.created!.year, 2026);
+      expect(song.created!.month, 3);
+      expect(song.created!.day, 18);
     });
 
     test('should convert Song to JSON', () {

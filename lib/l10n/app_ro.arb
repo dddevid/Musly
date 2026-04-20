@@ -1,8 +1,381 @@
 {
   "@@locale": "ro",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "goodMorning": "Bună dimineața",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Bună ziua",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Bună seara",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Pentru Tine",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Alegeri rapide",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Descoperă Mixul",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Redate recent",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Playlisturile tale",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "madeForYou": "Creat pentru tine",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Cele mai evaluate",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Niciun conținut disponibil",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Încercați să reîmprospătați sau să verificați conexiunea la server",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Reîncarcă",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Eroare la încărcarea melodiilor",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Nu există melodii în acest gen",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Eroare la încărcarea albumelor",
+  "@errorLoadingAlbums": {
+    "description": "Error message when albums fail to load"
+  },
+  "noTopRatedAlbums": "Niciun album evaluat de top",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Conectează-te",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "URL server",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Nume utilizator",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Parolă",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "Selectați certificatul TLS/SSL",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Nu s-a putut selecta certificatul: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "URL-ul serverului trebuie să înceapă cu http:// sau https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Nu s-a putut conecta",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Bibliotecă",
+  "@library": {
+    "description": "Library tab label"
+  },
+  "search": "Caută",
+  "@search": {
+    "description": "Search tab label"
+  },
+  "settings": "Setări",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "albums": "Albume",
+  "@albums": {
+    "description": "Albums section label"
+  },
+  "artists": "Artiști",
+  "@artists": {
+    "description": "Artists section label"
+  },
+  "songs": "Melodii",
+  "@songs": {
+    "description": "Songs section label"
+  },
+  "playlists": "Playlist-uri",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+  "genres": "Genuri",
+  "@genres": {
+    "description": "Genres section label"
+  },
+  "favorites": "Favorite",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+  "nowPlaying": "Se redă acum",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+  "queue": "Coadă",
+  "@queue": {
+    "description": "Queue section label"
+  },
+  "lyrics": "Versuri",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+  "play": "Redă",
+  "@play": {
+    "description": "Play button label"
+  },
+  "pause": "Pauză",
+  "@pause": {
+    "description": "Pause button label"
+  },
+  "next": "Următorul",
+  "@next": {
+    "description": "Next button label"
+  },
+  "previous": "Înapoi",
+  "@previous": {
+    "description": "Previous button label"
+  },
+  "shuffle": "Amestecă",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+  "repeat": "Repetă",
+  "@repeat": {
+    "description": "Repeat button label"
+  },
+  "repeatOne": "Repetă una",
+  "@repeatOne": {
+    "description": "Repeat one button label"
+  },
+  "repeatOff": "Nu repeta",
+  "@repeatOff": {
+    "description": "Repeat off button label"
+  },
+  "addToPlaylist": "Adaugă în Playlist",
+  "@addToPlaylist": {
+    "description": "Add to playlist option"
+  },
+  "removeFromPlaylist": "Elimină din Playlist",
+  "@removeFromPlaylist": {
+    "description": "Remove from playlist option"
+  },
+  "addToFavorites": "Adaugă la Favorite",
+  "@addToFavorites": {
+    "description": "Add to favorites option"
+  },
+  "removeFromFavorites": "Șterge de la Favorite",
+  "@removeFromFavorites": {
+    "description": "Remove from favorites option"
+  },
+  "delete": "Șterge",
+  "@delete": {
+    "description": "Delete button label"
+  },
+  "cancel": "Anulare",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "ok": "Ok",
+  "@ok": {
+    "description": "OK button label"
+  },
+  "save": "Salvați",
+  "@save": {
+    "description": "Save button label"
+  },
+  "close": "Închide",
+  "@close": {
+    "description": "Close button label"
+  },
+  "general": "General",
+  "@general": {
+    "description": "General settings section"
+  },
+  "appearance": "Aspect",
+  "@appearance": {
+    "description": "Appearance settings section"
+  },
+  "playback": "Redare",
+  "@playback": {
+    "description": "Playback settings section"
+  },
+  "storage": "Stocare",
+  "@storage": {
+    "description": "Storage settings section"
+  },
+  "about": "Despre",
+  "@about": {
+    "description": "About settings section"
+  },
+  "darkMode": "Mod întunecat",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+  "language": "Limba",
+  "@language": {
+    "description": "Language setting"
+  },
+  "version": "Versiune",
+  "@version": {
+    "description": "Version info label"
+  },
+  "madeBy": "Creat de ddddevid",
+  "@madeBy": {
+    "description": "Developer credit"
+  },
+  "githubRepository": "Repozitoriu GitHub",
+  "@githubRepository": {
+    "description": "GitHub repository link label"
+  },
+  "reportIssue": "Raportează o problemă",
+  "@reportIssue": {
+    "description": "Report issue link label"
+  },
+  "joinDiscord": "Alătură-te comunității Discord",
+  "@joinDiscord": {
+    "description": "Discord community link label"
+  },
+  "unknownArtist": "Artist Necunoscut",
+  "@unknownArtist": {
+    "description": "Placeholder for unknown artist"
+  },
+  "unknownAlbum": "Album Necunoscut",
+  "@unknownAlbum": {
+    "description": "Placeholder for unknown album"
+  },
+  "playAll": "Redaţi tot",
+  "@playAll": {
+    "description": "Play all button label"
+  },
+  "shuffleAll": "Amestecă toate",
+  "@shuffleAll": {
+    "description": "Shuffle all button label"
+  },
+  "sortBy": "Sortează după",
+  "@sortBy": {
+    "description": "Sort by label"
+  },
+  "sortByName": "Nume",
+  "@sortByName": {
+    "description": "Sort by name option"
+  },
+  "sortByArtist": "Artist",
+  "@sortByArtist": {
+    "description": "Sort by artist option"
+  },
+  "sortByAlbum": "Album",
+  "@sortByAlbum": {
+    "description": "Sort by album option"
+  },
+  "sortByDate": "Dată",
+  "@sortByDate": {
+    "description": "Sort by date option"
+  },
+  "sortByDuration": "Durată",
+  "@sortByDuration": {
+    "description": "Sort by duration option"
+  },
+  "ascending": "Crescător",
+  "@ascending": {
+    "description": "Ascending sort order"
+  },
+  "descending": "Descrescător",
+  "@descending": {
+    "description": "Descending sort order"
+  },
+  "noLyricsAvailable": "Nu există versuri disponibile",
+  "@noLyricsAvailable": {
+    "description": "Message when lyrics are not available"
+  },
+  "loading": "Se încarcă...",
+  "@loading": {
+    "description": "Loading message"
+  },
+  "error": "Eroare",
+  "@error": {
+    "description": "Generic error label"
+  },
+  "retry": "Reîncercați",
+  "@retry": {
+    "description": "Button to retry a failed server connection"
+  },
+  "noResults": "Nici un rezultat",
+  "@noResults": {
+    "description": "No search results message"
+  },
+  "searchHint": "Caută melodii, albume, artiști...",
+  "@searchHint": {
+    "description": "Search field hint text"
+  },
+  "allSongs": "Toate melodiile",
+  "@allSongs": {
+    "description": "All songs title"
+  },
+  "allAlbums": "Toate albumele",
+  "@allAlbums": {
+    "description": "All albums title"
+  },
   "@_LIBRARY": {},
+  "errorDeletingPlaylist": "Eroare la ștergerea playlist-ului: {error}",
+  "@errorDeletingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "playlistCreated": "Playlist \"{name}\" creat",
+  "@playlistCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_SEARCH": {},
+  "searchTitle": "Caută",
+  "searchPlaceholder": "Artiști, melodii, albume",
+  "tryDifferentSearch": "Încearcă o altă căutare",
+  "noSuggestions": "Nicio sugestie",
   "@_SETTINGS_GENERAL": {},
   "@_SETTINGS_PLAYBACK": {},
   "@_SETTINGS_SERVER": {},

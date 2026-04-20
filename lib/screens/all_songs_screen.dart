@@ -105,8 +105,14 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
         );
         break;
       case SongSortOption.recentlyAdded:
-        
-        _sortedSongs = List.from(_songs.reversed);
+        _sortedSongs.sort((a, b) {
+          final aCreated = a.created;
+          final bCreated = b.created;
+          if (aCreated == null && bCreated == null) return 0;
+          if (aCreated == null) return 1;
+          if (bCreated == null) return -1;
+          return bCreated.compareTo(aCreated);
+        });
         break;
     }
   }
