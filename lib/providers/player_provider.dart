@@ -89,6 +89,7 @@ class PlayerProvider extends ChangeNotifier {
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
     _upnpService.addListener(_onUpnpStateChanged);
+    _upnpService.onRendererLost = _onUpnpRendererLost;
     _initializePlayer();
     _initializeAndroidAuto();
     _initializeSystemServices();
@@ -188,10 +189,21 @@ class PlayerProvider extends ChangeNotifier {
     _bluetoothService.onSeekTo = seek;
     _bluetoothService.onDeviceConnected = (device) {
       debugPrint('Bluetooth device connected: ${device.name}');
+      // AVRCP support means the device can handle audio controls, which is
+      // a reliable proxy for A2DP audio output (watches/controllers don't
+      // advertise AVRCP). Re-query isA2dpConnected for ground truth.
+      _bluetoothService.isA2dpConnected().then((active) {
+        _isA2dpAudioActive = active;
+        debugPrint('Bluetooth A2DP audio active: $_isA2dpAudioActive');
+      });
       _updateAllServices();
     };
     _bluetoothService.onDeviceDisconnected = (device) {
       debugPrint('Bluetooth device disconnected: ${device.name}');
+      _bluetoothService.isA2dpConnected().then((active) {
+        _isA2dpAudioActive = active;
+        debugPrint('Bluetooth A2DP audio active: $_isA2dpAudioActive');
+      });
     };
     
     _bluetoothService.registerAbsoluteVolumeControl();
@@ -1652,6 +1664,9 @@ class PlayerProvider extends ChangeNotifier {
 
   bool _upnpWasConnected = false;
   bool _upnpWasPlaying = false;
+  // True when an A2DP audio-output device (car, speaker) is connected.
+  // Control-only devices (Garmin watch, etc.) don't set this flag.
+  bool _isA2dpAudioActive = false;
 
   void _onUpnpStateChanged() {
     final connected = _upnpService.isConnected;
@@ -1681,8 +1696,7 @@ class PlayerProvider extends ChangeNotifier {
       _upnpWasPlaying = false;
       _isRenderingRemotely = false;
       _isPlaying = false;
-      _position = Duration.zero;
-      _duration = Duration.zero;
+      // Preserve _position and _duration so the UI shows where we were.
       _androidSystemService.setRemotePlayback(isRemote: false);
       notifyListeners();
       _updateAndroidAuto();
@@ -1745,5 +1759,33 @@ class PlayerProvider extends ChangeNotifier {
       notifyListeners();
       _updateAndroidAuto();
     }
+  }
+
+  /// Called by [UpnpService] after 30 consecutive poll failures (~30 s).
+  /// [_onUpnpStateChanged] has already switched us off remote playback and
+  /// preserved [_position]. Load the song into the local player at the last
+  /// known position, paused, so the user can resume wherever they want.
+  /// Android routes audio to a connected A2DP device automatically.
+  void _onUpnpRendererLost() {
+    final lastPosition = _position;
+    final lastSong = _currentSong;
+
+    debugPrint(
+      'UPnP: renderer lost — A2DP audio active: $_isA2dpAudioActive, '
+      'last position: ${lastPosition.inSeconds}s, song: "${lastSong?.title}"',
+    );
+
+    if (lastSong == null) return;
+
+    final playUrl = lastSong.isLocal == true && lastSong.path != null
+        ? Uri.file(lastSong.path!).toString()
+        : _offlineService.getPlayableUrl(lastSong, _subsonicService);
+
+    _audioPlayer.setUrl(playUrl).then((_) async {
+      await _audioPlayer.seek(lastPosition);
+      // Leave paused — let the user consciously resume on their new output.
+    }).catchError((e) {
+      debugPrint('UPnP fallback: failed to reload local player: $e');
+    });
   }
 }

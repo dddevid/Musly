@@ -61,6 +61,10 @@ class UpnpService extends ChangeNotifier {
   int get volume => _volume;
   int get consecutivePollErrors => _consecutivePollErrors;
 
+  /// Called when the renderer becomes unreachable after 30 consecutive poll
+  /// failures (~30 s). The service has already called disconnect() internally.
+  VoidCallback? onRendererLost;
+
   List<UpnpDevice> get devices => List.unmodifiable(_devices);
   UpnpDevice? get connectedDevice => _connectedDevice;
   bool get isConnected => _connectedDevice != null;
@@ -297,7 +301,6 @@ class UpnpService extends ChangeNotifier {
       final state = await getPlaybackState();
       if (state == null) {
         // getPlaybackState() caught an exception internally and returned null.
-        // Count consecutive failures so callers can detect a dead renderer.
         _consecutivePollErrors++;
         notifyListeners();
         if (_consecutivePollErrors == 1 || _consecutivePollErrors % 5 == 0) {
@@ -305,6 +308,14 @@ class UpnpService extends ChangeNotifier {
             'UPnP: poll failed $_consecutivePollErrors time(s) in a row '
             '— renderer may be unreachable',
           );
+        }
+        // 30 consecutive failures (~30 s) — treat the renderer as gone.
+        // Network hiccups and AP roaming typically resolve within 10–15 s,
+        // so 30 s gives enough headroom without leaving the user stuck.
+        if (_consecutivePollErrors >= 30) {
+          debugPrint('UPnP: 30 consecutive poll failures — auto-disconnecting renderer');
+          disconnect();
+          onRendererLost?.call();
         }
         return;
       }
