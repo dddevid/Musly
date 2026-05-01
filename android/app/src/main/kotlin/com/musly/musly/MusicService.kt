@@ -23,6 +23,7 @@ import android.util.Log
 import androidx.media.VolumeProviderCompat
 import kotlinx.coroutines.*
 import java.net.URL
+import kotlin.math.roundToInt
 
 class MusicService : MediaBrowserServiceCompat() {
 
@@ -60,6 +61,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private var currentPosition: Long = 0
     private var isPlaying: Boolean = false
     private var volumeProvider: VolumeProviderCompat? = null
+    private var upnpExpectedVolume = 0
 
     private val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val recentSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -688,24 +690,25 @@ class MusicService : MediaBrowserServiceCompat() {
 
     fun setRemoteVolume(isRemote: Boolean, currentVolume: Int) {
         if (isRemote) {
+            // Provider scale 0-20 (1 unit = 5% UPnP). Android's mOptimisticVolume always
+            // steps by ±1, so this aligns the optimistic value with our actual target and
+            // eliminates the 1-second visual jump on hardware volume button presses.
+            val initialProviderVolume = (currentVolume / 5.0).roundToInt().coerceIn(0, 20)
+            upnpExpectedVolume = initialProviderVolume
             volumeProvider = object : VolumeProviderCompat(
-                VOLUME_CONTROL_ABSOLUTE, 100, currentVolume
+                VOLUME_CONTROL_ABSOLUTE, 20, initialProviderVolume
             ) {
                 override fun onSetVolumeTo(volume: Int) {
+                    upnpExpectedVolume = volume
                     setCurrentVolume(volume)
-                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to volume))
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to volume * 5))
                 }
 
                 override fun onAdjustVolume(direction: Int) {
-                    // Use getCurrentVolume() (the live VolumeProviderCompat
-                    // property) not the captured constructor param.  The param
-                    // is a val fixed at connection time, so every relative
-                    // adjustment would always compute from the same baseline,
-                    // causing the volume to snap back to initialVolume±5 no
-                    // matter how many times the user presses the button.
-                    val newVolume = (getCurrentVolume() + direction * 5).coerceIn(0, 100)
-                    setCurrentVolume(newVolume)
-                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to newVolume))
+                    if (direction == 0) return  // ADJUST_SAME on key-up; no change needed
+                    upnpExpectedVolume = (upnpExpectedVolume + direction).coerceIn(0, 20)
+                    setCurrentVolume(upnpExpectedVolume)
+                    AndroidAutoPlugin.sendCommand("setVolume", mapOf("volume" to upnpExpectedVolume * 5))
                 }
             }
             mediaSession.setPlaybackToRemote(volumeProvider!!)
@@ -718,7 +721,10 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     fun updateRemoteVolume(volume: Int) {
-        volumeProvider?.currentVolume = volume
+        // volume is SOAP scale 0-100; convert to provider scale 0-20
+        val providerVolume = (volume / 5.0).roundToInt().coerceIn(0, 20)
+        upnpExpectedVolume = providerVolume
+        volumeProvider?.currentVolume = providerVolume
     }
 
     override fun onDestroy() {
