@@ -9,7 +9,7 @@ on:
         type: string
 
 env:
-  FLUTTER_VERSION: '3.29.3'
+  FLUTTER_VERSION: '3.41.7'
 
 jobs:
   # Validate secrets exist
@@ -267,48 +267,6 @@ jobs:
         with:
           name: macos-build
           path: build/macos/Build/Products/Release/
-
-  # Web Build
-  build-web:
-    runs-on: ubuntu-latest
-    needs: check-secrets
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-      
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: 'stable'
-      
-      - name: Verify Dart SDK Version
-        run: |
-          DART_VERSION=$(dart --version | grep -oP 'Dart SDK version: \K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-          echo "✅ Dart SDK version: $DART_VERSION"
-      
-      - name: Install dependencies
-        run: flutter pub get
-      
-      - name: Build Web
-        env:
-          COUNTLY_SERVER_URL: ${{ secrets.COUNTLY_SERVER_URL }}
-          COUNTLY_APP_KEY: ${{ secrets.COUNTLY_APP_KEY }}
-        run: |
-          echo "::add-mask::$COUNTLY_APP_KEY"
-          flutter build web --release \
-            --dart-define=COUNTLY_SERVER_URL="$COUNTLY_SERVER_URL" \
-            --dart-define=COUNTLY_APP_KEY="$COUNTLY_APP_KEY" 2>&1 | grep -v "$COUNTLY_APP_KEY" || true
-      
-      - name: Upload Web Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: build/web/
 
   # Create Release with all artifacts
   release:
