@@ -1230,6 +1230,7 @@ class _PlayerHeader extends StatelessWidget {
               const SizedBox(height: 8),
               ...speeds.map(
                 (s) => ListTile(
+                  dense: true,
                   title: Text(
                     s == 1.0 ? 'Normal (1×)' : '$s×',
                     style: TextStyle(
@@ -1254,7 +1255,7 @@ class _PlayerHeader extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
             ],
           ),
         ),
