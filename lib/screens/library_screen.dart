@@ -873,6 +873,10 @@ class _SettingsSheet extends StatelessWidget {
                 ),
                 title: Text(AppLocalizations.of(context)!.logout),
                 onTap: () async {
+                  final playerProvider = Provider.of<PlayerProvider>(
+                    context,
+                    listen: false,
+                  );
                   Navigator.pop(context);
                   final confirmed = await showDialog<bool>(
                     context: context,
@@ -897,10 +901,7 @@ class _SettingsSheet extends StatelessWidget {
                     ),
                   );
                   if (confirmed == true) {
-                    await Provider.of<PlayerProvider>(
-                      context,
-                      listen: false,
-                    ).stop();
+                    await playerProvider.stop();
                     await authProvider.logout();
                   }
                 },
