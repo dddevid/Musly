@@ -577,6 +577,8 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     private fun updateMediaSessionMetadata() {
+        Log.d(TAG, "updateMediaSessionMetadata: song=$currentTitle, artworkUrl=$currentArtworkUrl")
+        
         val metadataBuilder = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
@@ -596,7 +598,9 @@ class MusicService : MediaBrowserServiceCompat() {
 
         // Avoid clearing existing album art while loading a new one to prevent flicker in Android Auto.
         if (url.isNullOrEmpty()) {
+            Log.w(TAG, "updateMediaSessionMetadata: No artwork URL provided")
             if (currentArtworkBitmap != null) {
+                Log.d(TAG, "updateMediaSessionMetadata: Using cached bitmap")
                 val updatedMetadata = MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
@@ -615,6 +619,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     .build()
                 mediaSession.setMetadata(updatedMetadata)
             } else {
+                Log.d(TAG, "updateMediaSessionMetadata: No cached bitmap, setting metadata without artwork")
                 mediaSession.setMetadata(metadataBuilder.build())
             }
             return
@@ -627,9 +632,22 @@ class MusicService : MediaBrowserServiceCompat() {
         // Load new artwork asynchronously with fade transition
         serviceScope.launch(Dispatchers.IO) {
             try {
+                Log.d(TAG, "updateMediaSessionMetadata: Loading artwork from URL: $url")
                 val bitmap = BitmapFactory.decodeStream(URL(url).openStream())
+                
+                if (bitmap == null) {
+                    Log.e(TAG, "updateMediaSessionMetadata: Failed to decode bitmap from URL: $url")
+                    isLoadingArtwork = false
+                    withContext(Dispatchers.Main) {
+                        setBufferingState(false)
+                    }
+                    return@launch
+                }
+                
                 currentArtworkBitmap = bitmap
                 isLoadingArtwork = false
+                
+                Log.d(TAG, "updateMediaSessionMetadata: Artwork loaded successfully: ${bitmap.width}x${bitmap.height}")
                 
                 withContext(Dispatchers.Main) {
                     // Build rich metadata with artwork
@@ -664,6 +682,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     mediaSession.setExtras(artworkExtras)
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "updateMediaSessionMetadata: Error loading artwork: ${e.message}", e)
                 isLoadingArtwork = false
                 withContext(Dispatchers.Main) {
                     setBufferingState(false)
