@@ -1,5 +1,5 @@
 {
-  "@@locale": "pt",
+  "@@locale": "pt-PT",
   "@@last_modified": "2026-02-07T16:10:00Z",
   "appName": "Musly",
   "@appName": {
@@ -1757,20 +1757,42 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
-
-  "lyricsSection": "LYRICS",
-  "wordByWordSync": "Word-by-Word Sync",
-  "wordByWordSyncSubtitle": "Analyzes audio locally with Whisper AI for precise word highlighting",
-  "whisperModel": "Whisper Model",
-  "whisperModelSubtitle": "Download a model for on-device speech recognition",
-  "whisperModelTiny": "Tiny (~40 MB) — Fast",
-  "whisperModelBase": "Base (~140 MB) — Balanced",
-  "whisperModelSmall": "Small (~470 MB) — Accurate",
-  "downloadModel": "Download",
-  "downloadingModel": "Downloading…",
-  "modelReady": "Ready",
-  "wordSyncProcessing": "Syncing words…",
-  "wordSyncClearCache": "Clear Word Sync Cache",
-  "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform"
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Dados e Privacidade",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Dados Anônimos",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Ajude a melhorar o Musly com relatórios anônimos de falhas e estatísticas de uso",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "ID do dispositivo",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "ID anônimo: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Ative a coleta de dados para ver seu ID anônimo do dispositivo",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Sobre o ID do dispositivo",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "Este é um identificador anônimo gerado pelo aplicativo. Ele não pode ser vinculado à sua identidade pessoal e é usado apenas para coleta de dados.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  }
 }
