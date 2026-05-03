@@ -343,7 +343,8 @@ class _MainScreenState extends State<MainScreen> {
       
       if (!mounted) return;
       if (Platform.isIOS) {
-        await Future.delayed(const Duration(milliseconds: 50));
+        // Wait longer for the transition to complete and audio session to stabilize
+        await Future.delayed(const Duration(milliseconds: 300));
         if (!mounted) return;
         Provider.of<PlayerProvider>(context, listen: false)
             .reactivateAudioSession();

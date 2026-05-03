@@ -1764,12 +1764,21 @@ class PlayerProvider extends ChangeNotifier {
         final session = await AudioSession.instance;
         await session.setActive(true);
 
-        // If audio was supposed to be playing but got interrupted, resume it
-        if (_isPlaying && !_audioPlayer.playing) {
-          debugPrint('[Player] iOS: Resuming playback after audio session reactivation');
+        // Wait a bit for the audio session to stabilize
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // If there's a current song and audio is not playing, resume it
+        // This handles the case where iOS pauses audio when dismissing the player
+        if (_currentSong != null && !_audioPlayer.playing) {
+          debugPrint('[Player] iOS: Resuming playback after audio session reactivation (song: ${_currentSong!.title})');
           await _audioPlayer.play();
+          _isPlaying = true;
+          notifyListeners();
+          _updateAllServices();
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[Player] iOS: Error reactivating audio session: $e');
+      }
     }
   }
 
