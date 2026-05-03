@@ -2895,29 +2895,38 @@ class _QueueSheet extends StatelessWidget {
       maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppTheme.darkSurface
-                : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: const BoxDecoration(
+            color: AppTheme.darkSurface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Column(
             children: [
               const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppTheme.darkDivider,
-                  borderRadius: BorderRadius.circular(2.5),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppTheme.darkDivider,
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Playing Next',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Playing Next',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 16),
               Expanded(
                 child: Selector<PlayerProvider, (List<Song>, int)>(
                   selector: (_, p) => (p.queue, p.currentIndex),
@@ -2949,7 +2958,7 @@ class _QueueSheet extends StatelessWidget {
                           title: Text(
                             song.title,
                             style: TextStyle(
-                              color: isPlaying ? AppTheme.appleMusicRed : null,
+                              color: isPlaying ? AppTheme.appleMusicRed : Colors.white,
                               fontWeight: isPlaying ? FontWeight.w600 : null,
                             ),
                             maxLines: 1,
@@ -2957,11 +2966,14 @@ class _QueueSheet extends StatelessWidget {
                           ),
                           subtitle: Text(
                             song.artist ?? '',
+                            style: const TextStyle(
+                              color: AppTheme.lightSecondaryText,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                            icon: const Icon(Icons.remove_circle_outline, color: Colors.white70),
                             onPressed: () => provider.removeFromQueue(index),
                           ),
                           onTap: () => provider.skipToIndex(index),
