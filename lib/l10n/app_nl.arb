@@ -1,0 +1,11 @@
+{
+  "@@locale": "nl",
+  "appTitle": "Musly",
+  "@appTitle": {
+    "description": "The app title"
+  },
+  "welcome": "Welkom",
+  "@welcome": {
+    "description": "Welcome message"
+  }
+}
