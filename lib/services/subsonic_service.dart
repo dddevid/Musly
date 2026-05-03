@@ -622,25 +622,43 @@ class SubsonicService {
     });
 
     final searchResult = response['searchResult3'];
+    debugPrint('SubsonicService: search3 response: searchResult=$searchResult');
+
+    // Handle both single item and list responses
+    var artistList = searchResult?['artist'];
+    var albumList = searchResult?['album'];
+    var songList = searchResult?['song'];
+
+    // Normalize to lists
+    if (artistList != null && artistList is! List) {
+      artistList = [artistList];
+    }
+    if (albumList != null && albumList is! List) {
+      albumList = [albumList];
+    }
+    if (songList != null && songList is! List) {
+      songList = [songList];
+    }
 
     final artists =
-        (searchResult?['artist'] as List?)
+        (artistList as List?)
             ?.map((a) => Artist.fromJson(a as Map<String, dynamic>))
             .toList() ??
         [];
 
     final albums =
-        (searchResult?['album'] as List?)
+        (albumList as List?)
             ?.map((a) => Album.fromJson(a as Map<String, dynamic>))
             .toList() ??
         [];
 
     final songs =
-        (searchResult?['song'] as List?)
+        (songList as List?)
             ?.map((s) => Song.fromJson(s as Map<String, dynamic>))
             .toList() ??
         [];
 
+    debugPrint('SubsonicService: search3 parsed: ${artists.length} artists, ${albums.length} albums, ${songs.length} songs');
     return SearchResult(artists: artists, albums: albums, songs: songs);
   }
 

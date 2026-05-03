@@ -128,6 +128,7 @@ class AndroidAutoService {
         break;
       case 'search':
         final query = event['query'] as String?;
+        debugPrint('AndroidAuto: Search command received, query="$query", onSearch=${onSearch != null}');
         if (query != null) {
           _handleSearch(query);
         }
@@ -190,15 +191,23 @@ class AndroidAutoService {
   }
 
   Future<void> _handleSearch(String query) async {
-    if (onSearch == null) return;
+    debugPrint('AndroidAuto: _handleSearch called with query="$query"');
+    if (onSearch == null) {
+      debugPrint('AndroidAuto: onSearch callback is null, cannot search');
+      return;
+    }
     try {
+      debugPrint('AndroidAuto: Executing search...');
       final songs = await onSearch!(query);
+      debugPrint('AndroidAuto: Search returned ${songs.length} songs');
       await _methodChannel.invokeMethod('updateSearchResults', {
         'query': query,
         'songs': songs,
       });
-    } catch (e) {
-      debugPrint('Error handling Android Auto search: $e');
+      debugPrint('AndroidAuto: Search results sent to native');
+    } catch (e, stackTrace) {
+      debugPrint('AndroidAuto: Error handling search: $e');
+      debugPrint('AndroidAuto: Stack trace: $stackTrace');
       await _methodChannel.invokeMethod('updateSearchResults', {
         'query': query,
         'songs': <Map<String, String>>[],

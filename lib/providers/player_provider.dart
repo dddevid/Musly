@@ -438,6 +438,8 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _searchForAndroidAuto(
     String query,
   ) async {
+    debugPrint('PlayerProvider: _searchForAndroidAuto called with query="$query"');
+    debugPrint('PlayerProvider: isOfflineMode=${_offlineService.isOfflineMode}, libraryProvider=$_libraryProvider');
     
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
@@ -469,12 +471,14 @@ class PlayerProvider extends ChangeNotifier {
           .toList();
     }
     try {
+      debugPrint('PlayerProvider: Calling subsonicService.search with query="$query"');
       final results = await _subsonicService.search(
         query,
         songCount: 20,
         albumCount: 0,
         artistCount: 0,
       );
+      debugPrint('PlayerProvider: Search returned ${results.songs.length} songs');
       return results.songs
           .map(
             (song) => {
@@ -490,8 +494,9 @@ class PlayerProvider extends ChangeNotifier {
             },
           )
           .toList();
-    } catch (e) {
-      debugPrint('Android Auto search error: $e');
+    } catch (e, stackTrace) {
+      debugPrint('PlayerProvider: Android Auto search error: $e');
+      debugPrint('PlayerProvider: Stack trace: $stackTrace');
       return [];
     }
   }
