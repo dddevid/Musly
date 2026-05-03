@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/song.dart';
 import '../models/playlist.dart';
 import 'subsonic_service.dart';
@@ -56,6 +57,7 @@ class OfflineService {
   static const String _keyDownloadedSongs = 'offline_downloaded_songs';
   static const String _keyPendingScrobbles = 'pending_scrobbles';
   static const String _keyParallelDownloads = 'parallel_downloads_count';
+  static const String _keyKeepScreenOn = 'offline_keep_screen_on';
 
   static const int _defaultParallelDownloads = 3;
   static const int _maxParallelDownloads = 5;
@@ -246,6 +248,15 @@ class OfflineService {
     await _prefs?.setInt(_keyParallelDownloads, clampedCount);
   }
 
+  Future<void> setKeepScreenOn(bool value) async {
+    if (_prefs == null) await initialize();
+    await _prefs?.setBool(_keyKeepScreenOn, value);
+  }
+
+  bool getKeepScreenOn() {
+    return _prefs?.getBool(_keyKeepScreenOn) ?? true;
+  }
+
   Future<void> startBackgroundDownload(
     List<Song> songs,
     SubsonicService subsonicService, {
@@ -259,6 +270,17 @@ class OfflineService {
     _isBackgroundDownloadActive = true;
     final alreadyDownloadedCount = getDownloadedCount();
     final concurrentDownloads = parallelCount ?? getParallelDownloadsCount();
+    final keepScreenOn = getKeepScreenOn();
+
+    // Enable wake lock to prevent the screen from turning off during download
+    if (keepScreenOn && !kIsWeb) {
+      try {
+        await WakelockPlus.enable();
+        debugPrint('Wake lock enabled for library download');
+      } catch (e) {
+        debugPrint('Failed to enable wake lock: $e');
+      }
+    }
 
     downloadState.value = DownloadState(
       isDownloading: true,
@@ -309,6 +331,16 @@ class OfflineService {
     } finally {
       _isBackgroundDownloadActive = false;
       downloadState.value = downloadState.value.copyWith(isDownloading: false);
+
+      // Always disable wake lock when download finishes or fails
+      if (!kIsWeb) {
+        try {
+          await WakelockPlus.disable();
+          debugPrint('Wake lock disabled after download');
+        } catch (e) {
+          debugPrint('Failed to disable wake lock: $e');
+        }
+      }
     }
   }
 

@@ -32,6 +32,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   int _downloadedCount = 0;
   String _downloadedSize = '0 B';
   int _parallelDownloads = 3;
+  bool _keepScreenOn = true;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -70,6 +71,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       _musicCacheEnabled = _cacheSettings.getMusicCacheEnabled();
       _bpmCacheEnabled = _cacheSettings.getBpmCacheEnabled();
       _parallelDownloads = _offlineService.getParallelDownloadsCount();
+      _keepScreenOn = _offlineService.getKeepScreenOn();
     });
   }
 
@@ -130,6 +132,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           title: AppLocalizations.of(context)!.sectionOfflineDownloads,
           children: [
             _buildParallelDownloadsTile(),
+            _buildDivider(),
+            _buildKeepScreenOnTile(),
             _buildDivider(),
             _buildOfflineInfo(),
             _buildDivider(),
@@ -446,6 +450,40 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         );
       }
     }
+  }
+
+  Widget _buildKeepScreenOnTile() {
+    final l10n = AppLocalizations.of(context)!;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF9500), Color(0xFFFFCC00)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(CupertinoIcons.bolt_fill, color: Colors.white, size: 18),
+      ),
+      title: Text(l10n.keepScreenOnDuringDownload, style: const TextStyle(fontSize: 16)),
+      subtitle: Text(
+        l10n.keepScreenOnDuringDownloadSubtitle,
+        style: TextStyle(
+          fontSize: 13,
+          color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _keepScreenOn,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
+        onChanged: (value) async {
+          setState(() => _keepScreenOn = value);
+          await _offlineService.setKeepScreenOn(value);
+        },
+      ),
+    );
   }
 
   Widget _buildParallelDownloadsTile() {

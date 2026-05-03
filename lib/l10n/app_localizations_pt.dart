@@ -732,6 +732,13 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get keepScreenOnDuringDownload => 'Keep Screen On';
+
+  @override
+  String get keepScreenOnDuringDownloadSubtitle =>
+      'Prevents download from failing when device locks';
+
+  @override
   String get parallelDownloads => 'Parallel Downloads';
 
   @override

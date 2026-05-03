@@ -852,6 +852,14 @@
           }
       }
   },
+  "keepScreenOnDuringDownload": "Keep Screen On",
+  "@keepScreenOnDuringDownload": {
+      "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Prevents download from failing when device locks",
+  "@keepScreenOnDuringDownloadSubtitle": {
+      "description": "Subtitle explaining why to keep screen on during download"
+  },
   "parallelDownloads": "Parallel Downloads",
   "parallelDownloadsSubtitle": "Download multiple songs simultaneously",
   "downloadSingular": "download",

@@ -76,6 +76,7 @@ dependencies:
   countly_flutter: ^26.1.0
   youtube_explode_dart: ^3.0.5
   http: ^1.6.0
+  wakelock_plus: ^1.2.8
 
 dependency_overrides:
   ffi: ^2.1.0

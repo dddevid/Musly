@@ -1478,6 +1478,18 @@ abstract class AppLocalizations {
   /// **'This will download {count} songs to your device. This may take a while and use significant storage space.\n\nContinue?'**
   String downloadLibraryConfirm(int count);
 
+  /// Toggle to keep screen on during library download
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Screen On'**
+  String get keepScreenOnDuringDownload;
+
+  /// Subtitle explaining why to keep screen on during download
+  ///
+  /// In en, this message translates to:
+  /// **'Prevents download from failing when device locks'**
+  String get keepScreenOnDuringDownloadSubtitle;
+
   /// No description provided for @parallelDownloads.
   ///
   /// In en, this message translates to:
