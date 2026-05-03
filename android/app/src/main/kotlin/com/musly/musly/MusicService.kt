@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.TransitionDrawable
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -67,6 +69,9 @@ class MusicService : MediaBrowserServiceCompat() {
     // Lyrics support
     private var currentLyricsLine: String? = null
     private var hasLyrics: Boolean = false
+    
+    // Track loading states for smooth transitions
+    private var isLoadingArtwork: Boolean = false
 
     private val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val recentSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -486,7 +491,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 song["artworkUrl"] as? String
             ))
         }
-        notifyChildrenChanged(MEDIA_ID_RECENT)
+        // Notify with animation extras for smooth transition
+        val extras = Bundle().apply {
+            putBoolean("android.media.browse.ANIMATED", true)
+            putString("android.media.browse.TRANSITION", "slide")
+        }
+        notifyChildrenChanged(MEDIA_ID_RECENT, extras)
     }
 
     fun updateAlbums(albumList: List<Map<String, Any>>) {
@@ -499,7 +509,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 album["artworkUrl"] as? String
             ))
         }
-        notifyChildrenChanged(MEDIA_ID_ALBUMS)
+        // Notify with animation extras for smooth transition
+        val extras = Bundle().apply {
+            putBoolean("android.media.browse.ANIMATED", true)
+            putString("android.media.browse.TRANSITION", "fade")
+        }
+        notifyChildrenChanged(MEDIA_ID_ALBUMS, extras)
     }
 
     fun updateArtists(artistList: List<Map<String, Any>>) {
@@ -511,7 +526,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 "${artist["albumCount"] ?: 0} albums"
             ))
         }
-        notifyChildrenChanged(MEDIA_ID_ARTISTS)
+        // Notify with animation extras for smooth transition
+        val extras = Bundle().apply {
+            putBoolean("android.media.browse.ANIMATED", true)
+            putString("android.media.browse.TRANSITION", "slide")
+        }
+        notifyChildrenChanged(MEDIA_ID_ARTISTS, extras)
     }
 
     fun updatePlaylists(playlistList: List<Map<String, Any>>) {
@@ -524,7 +544,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 playlist["artworkUrl"] as? String
             ))
         }
-        notifyChildrenChanged(MEDIA_ID_PLAYLISTS)
+        // Notify with animation extras for smooth transition
+        val extras = Bundle().apply {
+            putBoolean("android.media.browse.ANIMATED", true)
+            putString("android.media.browse.TRANSITION", "fade")
+        }
+        notifyChildrenChanged(MEDIA_ID_PLAYLISTS, extras)
     }
 
     fun updatePlaybackState(
@@ -558,6 +583,9 @@ class MusicService : MediaBrowserServiceCompat() {
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
+            // Add display title for richer UI presentation
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, currentArtworkUrl)
 
         // Add lyrics line as display subtitle for Bluetooth AVRCP 1.6+ support
         if (hasLyrics && !currentLyricsLine.isNullOrEmpty()) {
@@ -576,6 +604,8 @@ class MusicService : MediaBrowserServiceCompat() {
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
                     .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentArtworkBitmap)
+                    // Add display metadata for richer UI
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTitle)
                     // Include lyrics in metadata for Bluetooth
                     .apply {
                         if (hasLyrics && !currentLyricsLine.isNullOrEmpty()) {
@@ -590,12 +620,19 @@ class MusicService : MediaBrowserServiceCompat() {
             return
         }
 
-        // Load new artwork asynchronously; do not clear current artwork until new bitmap is ready.
+        // Set loading state for smooth visual transition
+        isLoadingArtwork = true
+        setBufferingState(true)
+
+        // Load new artwork asynchronously with fade transition
         serviceScope.launch(Dispatchers.IO) {
             try {
                 val bitmap = BitmapFactory.decodeStream(URL(url).openStream())
                 currentArtworkBitmap = bitmap
+                isLoadingArtwork = false
+                
                 withContext(Dispatchers.Main) {
+                    // Build rich metadata with artwork
                     val updatedMetadata = MediaMetadataCompat.Builder()
                         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
                         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
@@ -603,6 +640,9 @@ class MusicService : MediaBrowserServiceCompat() {
                         .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
                         .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
                         .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                        // Add display metadata for richer UI
+                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTitle)
+                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, url)
                         // Include lyrics in metadata for Bluetooth
                         .apply {
                             if (hasLyrics && !currentLyricsLine.isNullOrEmpty()) {
@@ -610,23 +650,72 @@ class MusicService : MediaBrowserServiceCompat() {
                             }
                         }
                         .build()
+                    
+                    // Update session and trigger visual refresh
                     mediaSession.setMetadata(updatedMetadata)
+                    setBufferingState(false)
                     showNotification()
+                    
+                    // Notify UI that artwork loaded for smooth transitions
+                    val artworkExtras = Bundle().apply {
+                        putBoolean("android.media.metadata.ANIMATED", true)
+                        putString("android.media.metadata.TRANSITION", "fade")
+                    }
+                    mediaSession.setExtras(artworkExtras)
                 }
             } catch (e: Exception) {
+                isLoadingArtwork = false
+                withContext(Dispatchers.Main) {
+                    setBufferingState(false)
+                }
             }
         }
     }
 
-    private fun updateMediaSessionPlaybackState() {
-        val state = if (isPlaying) {
-            PlaybackStateCompat.STATE_PLAYING
-        } else {
-            PlaybackStateCompat.STATE_PAUSED
+    private fun updateMediaSessionPlaybackState(isBuffering: Boolean = false) {
+        val state = when {
+            isBuffering -> PlaybackStateCompat.STATE_BUFFERING
+            isPlaying -> PlaybackStateCompat.STATE_PLAYING
+            else -> PlaybackStateCompat.STATE_PAUSED
         }
 
-        stateBuilder.setState(state, currentPosition, 1.0f)
+        // Calculate position with smoothing for animation
+        val position = if (isPlaying) {
+            // Add small offset for smooth progress animation
+            currentPosition + 100
+        } else {
+            currentPosition
+        }
+
+        // Enhanced state builder with all actions and smooth position
+        stateBuilder
+            .setState(state, position, if (isPlaying) 1.0f else 0.0f)
+            .setBufferedPosition(currentDuration) // Assume fully buffered for local files
+            .setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_STOP or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SEEK_TO or
+                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
+            )
+
+        // Add custom extras for animation hints
+        val extras = Bundle().apply {
+            putBoolean("android.media.session.ANIMATED", true)
+            putLong("android.media.session.POSITION_UPDATE_TIME", System.currentTimeMillis())
+        }
+        stateBuilder.setExtras(extras)
+
         mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    // Call this when starting to load a new song for smooth transition
+    fun setBufferingState(buffering: Boolean) {
+        updateMediaSessionPlaybackState(isBuffering = buffering)
     }
 
     private fun showNotification() {
@@ -667,7 +756,7 @@ class MusicService : MediaBrowserServiceCompat() {
             // Previous button with custom icon
             addAction(
                 NotificationCompat.Action(
-                    R.drawable.ic_recent,
+                    R.drawable.ic_previous,
                     "Previous",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this@MusicService,
@@ -676,11 +765,11 @@ class MusicService : MediaBrowserServiceCompat() {
                 )
             )
             
-            // Play/Pause button with custom styling
+            // Play/Pause button with custom Musly icons
             if (isPlaying) {
                 addAction(
                     NotificationCompat.Action(
-                        android.R.drawable.ic_media_pause,
+                        R.drawable.ic_pause,
                         "Pause",
                         MediaButtonReceiver.buildMediaButtonPendingIntent(
                             this@MusicService,
@@ -701,10 +790,10 @@ class MusicService : MediaBrowserServiceCompat() {
                 )
             }
             
-            // Next button
+            // Next button with custom icon
             addAction(
                 NotificationCompat.Action(
-                    android.R.drawable.ic_media_next,
+                    R.drawable.ic_next,
                     "Next",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this@MusicService,
