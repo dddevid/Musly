@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import 'l10n/app_localizations.dart';
 import 'models/server_config.dart';
@@ -48,8 +49,121 @@ Future<void> _showPrivacyPolicyIfNeeded() async {
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// Checks if the app is running on an emulator/simulator
+Future<bool> _isRunningOnEmulator() async {
+  if (kIsWeb) return false;
+  if (!Platform.isAndroid && !Platform.isIOS) return false;
+
+  final deviceInfo = DeviceInfoPlugin();
+
+  if (Platform.isAndroid) {
+    final androidInfo = await deviceInfo.androidInfo;
+    final model = androidInfo.model?.toLowerCase() ?? '';
+    final brand = androidInfo.brand?.toLowerCase() ?? '';
+    final device = androidInfo.device?.toLowerCase() ?? '';
+    final product = androidInfo.product?.toLowerCase() ?? '';
+    final manufacturer = androidInfo.manufacturer?.toLowerCase() ?? '';
+
+    // Common emulator indicators
+    final emulatorIndicators = [
+      'sdk', 'emulator', 'simulator', 'google_sdk', 'sdk_x86',
+      'vbox86p', 'generic', 'generic_x86', 'generic_x86_64',
+      'unknown', 'google', 'nexus', 'test', 'ranchu',
+      'goldfish', 'android_x86', 'android_x86_64',
+    ];
+
+    final checkString = '$model $brand $device $product $manufacturer';
+    return emulatorIndicators.any((indicator) => checkString.contains(indicator));
+  }
+
+  if (Platform.isIOS) {
+    final iosInfo = await deviceInfo.iosInfo;
+    final model = iosInfo.model?.toLowerCase() ?? '';
+    final name = iosInfo.name?.toLowerCase() ?? '';
+
+    // iOS Simulator indicators
+    return model.contains('simulator') ||
+           name.contains('simulator') ||
+           !iosInfo.isPhysicalDevice;
+  }
+
+  return false;
+}
+
+/// Widget shown when app is running on emulator
+class _EmulatorWarningScreen extends StatelessWidget {
+  const _EmulatorWarningScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.block_rounded,
+                  size: 80,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 32),
+                const Text(
+                  'Emulator Detected',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'This app cannot run on an emulator.\nPlease use a physical device.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                FilledButton.icon(
+                  onPressed: () {
+                    // Exit the app
+                    exit(0);
+                  },
+                  icon: const Icon(Icons.exit_to_app),
+                  label: const Text('Exit App'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(200, 50),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Check if running on emulator (mobile only)
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    final isEmulator = await _isRunningOnEmulator();
+    if (isEmulator) {
+      // Show emulator warning and don't load the actual app
+      runApp(const _EmulatorWarningScreen());
+      return;
+    }
+  }
 
   JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
 
