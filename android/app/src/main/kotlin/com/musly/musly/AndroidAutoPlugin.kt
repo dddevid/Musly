@@ -223,4 +223,10 @@ object AndroidAutoPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         
         eventSink?.success(data)
     }
+    
+    /** Request library data from Flutter. Called when MusicService is ready but has no data yet. */
+    fun requestLibraryData() {
+        Log.d(TAG, "Requesting library data from Flutter")
+        sendCommand("requestLibraryData", null)
+    }
 }

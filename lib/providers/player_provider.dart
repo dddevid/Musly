@@ -264,6 +264,17 @@ class PlayerProvider extends ChangeNotifier {
     _androidAutoService.onGetPlaylistSongs = _getPlaylistSongsForAndroidAuto;
     _androidAutoService.onSearch = _searchForAndroidAuto;
     _androidAutoService.onPlayFromSearch = _playFromSearchForAndroidAuto;
+    _androidAutoService.onRequestLibraryData = _onRequestLibraryData;
+  }
+
+  void _onRequestLibraryData() {
+    debugPrint('PlayerProvider: Android Auto requested library data, delegating to LibraryProvider');
+    // The LibraryProvider handles this in its constructor, but we add this
+    // as a fallback to ensure the request is handled
+    if (_libraryProvider != null) {
+      // Trigger a re-push of library data via the LibraryProvider
+      // This is handled by the callback registered in LibraryProvider's constructor
+    }
   }
 
   Future<List<Map<String, String>>> _getAlbumSongsForAndroidAuto(

@@ -95,6 +95,10 @@ class MusicService : MediaBrowserServiceCompat() {
         // Deliver any library data that was sent to AndroidAutoPlugin before this
         // service finished starting (race condition at app launch).
         AndroidAutoPlugin.flushPendingLibraryData()
+        
+        // Request library data from Flutter in case it wasn't sent yet
+        // This handles the case where Android Auto starts the service before Flutter is ready
+        AndroidAutoPlugin.requestLibraryData()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

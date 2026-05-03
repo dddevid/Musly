@@ -19,6 +19,9 @@ class AndroidAutoService {
   );
 
   StreamSubscription? _eventSubscription;
+  
+  // Track if a library data request was received before callback was registered
+  bool _pendingLibraryDataRequest = false;
 
   VoidCallback? onPlay;
   VoidCallback? onPause;
@@ -36,6 +39,18 @@ class AndroidAutoService {
   onGetPlaylistSongs;
   Future<List<Map<String, String>>> Function(String query)? onSearch;
   Function(String query)? onPlayFromSearch;
+  
+  VoidCallback? _onRequestLibraryData;
+  VoidCallback? get onRequestLibraryData => _onRequestLibraryData;
+  set onRequestLibraryData(VoidCallback? callback) {
+    _onRequestLibraryData = callback;
+    // If there was a pending request, process it now
+    if (callback != null && _pendingLibraryDataRequest) {
+      debugPrint('AndroidAuto: Processing pending library data request');
+      _pendingLibraryDataRequest = false;
+      callback();
+    }
+  }
 
   Future<void> initialize() async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
@@ -121,6 +136,15 @@ class AndroidAutoService {
         final searchQuery = event['query'] as String?;
         if (searchQuery != null) {
           onPlayFromSearch?.call(searchQuery);
+        }
+        break;
+      case 'requestLibraryData':
+        debugPrint('AndroidAuto: Library data requested by service');
+        if (onRequestLibraryData != null) {
+          onRequestLibraryData!();
+        } else {
+          debugPrint('AndroidAuto: Warning - onRequestLibraryData callback is not set, buffering request');
+          _pendingLibraryDataRequest = true;
         }
         break;
     }

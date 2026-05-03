@@ -40,8 +40,33 @@ class LibraryProvider extends ChangeNotifier {
   static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
 
-  LibraryProvider(this._subsonicService);
+  LibraryProvider(this._subsonicService) {
+    // Register callback to push library data when Android Auto service requests it
+    _androidAutoService.onRequestLibraryData = _onRequestLibraryData;
+  }
   SubsonicService get subsonicService => _subsonicService;
+
+  void _onRequestLibraryData() {
+    debugPrint('LibraryProvider: Android Auto requested library data');
+    if (_isInitialized) {
+      if (_serverOfflineMode) {
+        _pushOfflineLibraryToAndroidAuto();
+      } else {
+        _pushLibraryToAndroidAuto();
+      }
+    } else {
+      // If not initialized yet, try to initialize and then push
+      if (!_isLoading) {
+        initialize().then((_) {
+          if (_serverOfflineMode) {
+            _pushOfflineLibraryToAndroidAuto();
+          } else {
+            _pushLibraryToAndroidAuto();
+          }
+        });
+      }
+    }
+  }
 
   void setLocalMusicService(LocalMusicService service) {
     
