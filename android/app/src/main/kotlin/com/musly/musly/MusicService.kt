@@ -40,6 +40,7 @@ class MusicService : MediaBrowserServiceCompat() {
         const val MEDIA_ID_ARTISTS = "ARTISTS"
         const val MEDIA_ID_PLAYLISTS = "PLAYLISTS"
         const val MEDIA_ID_SEARCH = "SEARCH"
+        const val MEDIA_ID_SONGS = "SONGS"
         
         @Volatile
         private var instance: MusicService? = null
@@ -110,9 +111,11 @@ class MusicService : MediaBrowserServiceCompat() {
     private fun showIdleNotification() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID).apply {
             setContentTitle("Musly")
-            setContentText("Ready to play music")
+            setContentText("Ready to play your music")
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            setColor(0xFF1DB954.toInt())
+            setColorized(true)
             priority = NotificationCompat.PRIORITY_LOW
             
             val intent = packageManager.getLaunchIntentForPackage(packageName)
@@ -267,26 +270,52 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private fun getRootItems(): List<MediaBrowserCompat.MediaItem> {
         return listOf(
-            createBrowsableMediaItem(MEDIA_ID_RECENT, "Recent", "Recently played songs"),
-            createBrowsableMediaItem(MEDIA_ID_ALBUMS, "Albums", "Browse by album"),
-            createBrowsableMediaItem(MEDIA_ID_ARTISTS, "Artists", "Browse by artist"),
-            createBrowsableMediaItem(MEDIA_ID_PLAYLISTS, "Playlists", "Your playlists")
+            createBrowsableMediaItem(
+                MEDIA_ID_RECENT, 
+                "Recent", 
+                "Recently played songs",
+                R.drawable.ic_recent
+            ),
+            createBrowsableMediaItem(
+                MEDIA_ID_ALBUMS, 
+                "Albums", 
+                "Browse your music collection",
+                R.drawable.ic_albums
+            ),
+            createBrowsableMediaItem(
+                MEDIA_ID_ARTISTS, 
+                "Artists", 
+                "Find music by artist",
+                R.drawable.ic_artists
+            ),
+            createBrowsableMediaItem(
+                MEDIA_ID_PLAYLISTS, 
+                "Playlists", 
+                "Your curated playlists",
+                R.drawable.ic_playlists
+            )
         )
     }
 
     private fun createBrowsableMediaItem(
         mediaId: String,
         title: String,
-        subtitle: String
+        subtitle: String,
+        iconResId: Int = 0
     ): MediaBrowserCompat.MediaItem {
-        val description = MediaDescriptionCompat.Builder()
+        val descriptionBuilder = MediaDescriptionCompat.Builder()
             .setMediaId(mediaId)
             .setTitle(title)
             .setSubtitle(subtitle)
-            .build()
+        
+        if (iconResId != 0) {
+            descriptionBuilder.setIconUri(
+                android.net.Uri.parse("android.resource://${packageName}/$iconResId")
+            )
+        }
         
         return MediaBrowserCompat.MediaItem(
-            description,
+            descriptionBuilder.build(),
             MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
         )
     }
@@ -302,8 +331,13 @@ class MusicService : MediaBrowserServiceCompat() {
             .setTitle(title)
             .setSubtitle(subtitle)
         
-        artworkUrl?.takeIf { it.isNotEmpty() }?.let { url ->
-            descriptionBuilder.setIconUri(android.net.Uri.parse(url))
+        if (artworkUrl?.isNotEmpty() == true) {
+            descriptionBuilder.setIconUri(android.net.Uri.parse(artworkUrl))
+        } else {
+            // Use placeholder for albums without artwork
+            descriptionBuilder.setIconUri(
+                android.net.Uri.parse("android.resource://${packageName}/${R.drawable.ic_album_placeholder}")
+            )
         }
         
         return MediaBrowserCompat.MediaItem(
@@ -325,8 +359,13 @@ class MusicService : MediaBrowserServiceCompat() {
             .setSubtitle(artist)
             .setDescription(album)
         
-        artworkUrl?.takeIf { it.isNotEmpty() }?.let { url ->
-            descriptionBuilder.setIconUri(android.net.Uri.parse(url))
+        if (artworkUrl?.isNotEmpty() == true) {
+            descriptionBuilder.setIconUri(android.net.Uri.parse(artworkUrl))
+        } else {
+            // Use placeholder icon for songs without artwork
+            descriptionBuilder.setIconUri(
+                android.net.Uri.parse("android.resource://${packageName}/${R.drawable.ic_album_placeholder}")
+            )
         }
         
         return MediaBrowserCompat.MediaItem(
@@ -608,6 +647,15 @@ class MusicService : MediaBrowserServiceCompat() {
             setSubText(description?.description ?: currentAlbum)
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            setColor(0xFF1DB954.toInt()) // Musly green accent color
+            setColorized(true)
+
+            // Use album art for large icon if available
+            description?.iconBitmap?.let { bitmap ->
+                setLargeIcon(bitmap)
+            } ?: currentArtworkBitmap?.let { bitmap ->
+                setLargeIcon(bitmap)
+            }
 
             val intent = packageManager.getLaunchIntentForPackage(packageName)
             val pendingIntent = PendingIntent.getActivity(
@@ -616,9 +664,10 @@ class MusicService : MediaBrowserServiceCompat() {
             )
             setContentIntent(pendingIntent)
 
+            // Previous button with custom icon
             addAction(
                 NotificationCompat.Action(
-                    android.R.drawable.ic_media_previous,
+                    R.drawable.ic_recent,
                     "Previous",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this@MusicService,
@@ -627,6 +676,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 )
             )
             
+            // Play/Pause button with custom styling
             if (isPlaying) {
                 addAction(
                     NotificationCompat.Action(
@@ -641,7 +691,7 @@ class MusicService : MediaBrowserServiceCompat() {
             } else {
                 addAction(
                     NotificationCompat.Action(
-                        android.R.drawable.ic_media_play,
+                        R.drawable.ic_play,
                         "Play",
                         MediaButtonReceiver.buildMediaButtonPendingIntent(
                             this@MusicService,
@@ -651,6 +701,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 )
             }
             
+            // Next button
             addAction(
                 NotificationCompat.Action(
                     android.R.drawable.ic_media_next,
