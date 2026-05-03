@@ -36,7 +36,7 @@ dependencies:
   just_audio_media_kit: ^2.1.0  # Linux (and macOS) audio backend via libmpv
   media_kit_libs_linux: ^1.2.1  # Native libmpv binaries for Linux
   audio_session: ^0.1.25
-  audio_service: ^0.18.12
+  audio_service: ^0.18.18
   
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
