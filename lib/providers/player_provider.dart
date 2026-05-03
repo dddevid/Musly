@@ -609,8 +609,9 @@ class PlayerProvider extends ChangeNotifier {
     }
 
     final coverArtId = song.coverArt!;
-    
-    for (final sz in [400, 300, 200, 150, 100]) {
+
+    // Search for cached artwork from highest to lowest quality for iOS Now Playing
+    for (final sz in [1200, 800, 600, 400, 300, 200]) {
       for (final key in ['${coverArtId}_natural_$sz', '${coverArtId}_$sz']) {
         try {
           final fileInfo = await DefaultCacheManager().getFileFromCache(key);
@@ -624,7 +625,8 @@ class PlayerProvider extends ChangeNotifier {
         } catch (_) {}
       }
     }
-    final serverUrl = _subsonicService.getCoverArtUrl(coverArtId, size: 600);
+    // Request high quality for iOS Now Playing bar / Control Center (1200px)
+    final serverUrl = _subsonicService.getCoverArtUrl(coverArtId, size: 1200);
 
     if (!_offlineService.isOfflineMode) {
       _resolvedArtworkUrl = serverUrl;

@@ -423,6 +423,8 @@ class _LibrarySection extends StatelessWidget {
         ],
       ),
     );
+    // Dispose controller to prevent memory leak
+    controller.dispose();
   }
 
   Future<void> _doCreate(
