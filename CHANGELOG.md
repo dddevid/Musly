@@ -5,6 +5,42 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Live Activities / Lyrics on Lock Screen** (iOS 16.1+ & Android)
+  - Replaced custom `iOSLyricsPlugin` with `live_activities: ^2.4.9` package
+  - iOS: Native Live Activity with Dynamic Island showing current lyrics line
+  - Android: Live Activity-style notification via RemoteViews
+  - Unified API for both platforms in `LockScreenLyricsService`
+- **Multiple Server Profiles**: Switch between different Subsonic/Navidrome servers
+- **Local Music Libraries**: Play music files stored on device with auto-scanning
+- **Parallel Downloads**: Download multiple songs simultaneously in library
+- **Heart/Repeat/Shuffle in Mini Player**: Quick action buttons in collapsed player
+- **Android Auto Improvements**: Enhanced UI, animations, and Navidrome content support
+- **SMTC Windows Lyrics & Bluetooth Lyrics**: Show lyrics in Windows notification and Bluetooth devices
+- **Emulator Detection**: Block app on emulators for mobile builds
+- **Arabic & Dutch Language Support**
+
+### Changed
+- **iOS Minimum Version**: Bumped to 16.1 for ActivityKit support
+- **audio_service**: Updated to ^0.18.18 for better iOS Now Playing artwork
+- **Donation Popup Timing**: Reduced from 25 min to 8 min usage
+- **Playing Next Section**: Improved styling and tap-to-collapse behavior
+- **Library Page Reorganization**: Better layout and filtering
+
+### Fixed
+- **iOS Build Error**: "Cannot find iOSLyricsPlugin" resolved by updating deployment target
+- **iOS Audio Stopping**: Song no longer stops when closing fullscreen player
+- **iOS Now Playing Artwork**: High-quality 1200px artwork from server
+- **Self-Signed Certificates**: Eliminated UI freeze during TLS setup (async file reads)
+- **Image Decompression Crash**: Fixed on Android low-memory devices
+- **Background Download**: GrapheneOS compatibility fixes
+- **Android Auto Artwork**: Proper loading and display
+- **Logout Null Check**: Error when logging out from settings
+- **Support Dialog**: Usability fixes on small screens
+- **Album Screen Navigation**: Fixed from now-playing flow above artist page
+
 ## [1.0.9] - 2026-05-02
 
 ### Added
