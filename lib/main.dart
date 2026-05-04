@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:safe_device/safe_device.dart';
 
 import 'l10n/app_localizations.dart';
 import 'models/server_config.dart';
@@ -52,40 +52,7 @@ Future<bool> _isRunningOnEmulator() async {
   if (kIsWeb) return false;
   if (!Platform.isAndroid && !Platform.isIOS) return false;
 
-  final deviceInfo = DeviceInfoPlugin();
-
-  if (Platform.isAndroid) {
-    final androidInfo = await deviceInfo.androidInfo;
-    final model = androidInfo.model.toLowerCase();
-    final brand = androidInfo.brand.toLowerCase();
-    final device = androidInfo.device.toLowerCase();
-    final product = androidInfo.product.toLowerCase();
-    final manufacturer = androidInfo.manufacturer.toLowerCase();
-
-    // Common emulator indicators
-    final emulatorIndicators = [
-      'sdk', 'emulator', 'simulator', 'google_sdk', 'sdk_x86',
-      'vbox86p', 'generic', 'generic_x86', 'generic_x86_64',
-      'unknown', 'google', 'nexus', 'test', 'ranchu',
-      'goldfish', 'android_x86', 'android_x86_64',
-    ];
-
-    final checkString = '$model $brand $device $product $manufacturer';
-    return emulatorIndicators.any((indicator) => checkString.contains(indicator));
-  }
-
-  if (Platform.isIOS) {
-    final iosInfo = await deviceInfo.iosInfo;
-    final model = iosInfo.model.toLowerCase();
-    final name = iosInfo.name.toLowerCase();
-
-    // iOS Simulator indicators
-    return model.contains('simulator') ||
-           name.contains('simulator') ||
-           !iosInfo.isPhysicalDevice;
-  }
-
-  return false;
+  return !(await SafeDevice.isRealDevice);
 }
 
 /// Widget shown when app is running on emulator
