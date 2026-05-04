@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
 /// iOS/background-service audio handler.
@@ -22,6 +23,7 @@ import 'package:just_audio/just_audio.dart';
 /// song changes to push metadata up to the lock screen / Control Center.
 class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
+  static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
 
   /// Exposed so [PlayerProvider] can still call setUrl, play, pause, seek, etc.
   AudioPlayer get player => _player;
@@ -156,13 +158,16 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   // ---------------------------------------------------------------------------
 
-  /// Propagates pitch changes to the native player.
-  /// TODO: bridge to ExoPlayer/AVPlayer native pitch APIs.
+  /// Propagates pitch changes to the native player via platform channel.
   Future<void> setPitch(double pitch) async {
-    // just_audio doesn't expose setPitch. This needs a custom platform
-    // channel that reaches into the underlying ExoPlayer (Android) or
-    // AVPlayer (iOS) to call setPlaybackParameters(speed, pitch) or
-    // attach an AVAudioUnitTimePitch node.
+    try {
+      await _pitchChannel.invokeMethod('setPitch', {
+        'pitch': pitch,
+        'speed': _player.speed,
+      });
+    } catch (e) {
+      debugPrint('PitchPlugin setPitch error: $e');
+    }
   }
 
   @override

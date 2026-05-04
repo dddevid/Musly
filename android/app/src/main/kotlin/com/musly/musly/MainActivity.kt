@@ -17,5 +17,8 @@ class MainActivity : FlutterFragmentActivity() {
         
         // Register lyrics plugin for lock screen lyrics support
         LyricsPlugin.registerWith(flutterEngine)
+
+        // Register pitch plugin for ExoPlayer pitch control
+        PitchPlugin.registerWith(flutterEngine)
     }
 }

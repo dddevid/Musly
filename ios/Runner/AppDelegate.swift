@@ -29,7 +29,13 @@ import AVFoundation
       if airPlayRegistrar != nil {
         registerAirPlayButtonFactory(with: airPlayRegistrar!)
       }
-      
+
+      // Pitch control plugin
+      let pitchRegistrar = registrar(forPlugin: "PitchPlugin")
+      if pitchRegistrar != nil {
+        PitchPlugin.register(with: pitchRegistrar!)
+      }
+
     }
     
     // Configure audio session for background playback
