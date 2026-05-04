@@ -21,6 +21,7 @@ class LockScreenLyricsService {
   StreamSubscription<Duration>? _positionSubscription;
   String? _lastSentLine;
   Timer? _updateTimer;
+  StreamSubscription? _eventSubscription;
   final WindowsSystemService _windowsService = WindowsSystemService();
 
   // Throttling configuration
@@ -54,7 +55,7 @@ class LockScreenLyricsService {
       }
     }
 
-    _eventChannel.receiveBroadcastStream().listen(
+    _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
       (dynamic event) {
         debugPrint('[Lyrics] Native event: $event');
       },
@@ -278,6 +279,8 @@ class LockScreenLyricsService {
 
   /// Dispose the service
   void dispose() {
+    _eventSubscription?.cancel();
+    _eventSubscription = null;
     stopSync();
     _clearLyrics();
   }

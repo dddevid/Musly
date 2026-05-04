@@ -448,7 +448,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                     ],
                                   ),
                                 );
-                                if (confirmed == true && mounted) {
+                                if (confirmed == true) {
+                                  if (!mounted) return;
                                   final playerProvider =
                                       Provider.of<PlayerProvider>(context, listen: false);
                                   await playerProvider.stop();

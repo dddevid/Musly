@@ -146,4 +146,16 @@ class PlayerUiSettingsService {
   bool getLiveSearch() {
     return _prefs?.getBool(_keyLiveSearch) ?? true;
   }
+
+  void dispose() {
+    showStarRatingsNotifier.dispose();
+    showMiniPlayerHeartNotifier.dispose();
+    showMiniPlayerRepeatNotifier.dispose();
+    showMiniPlayerShuffleNotifier.dispose();
+    liveSearchNotifier.dispose();
+    albumArtCornerRadiusNotifier.dispose();
+    artworkShapeNotifier.dispose();
+    artworkShadowNotifier.dispose();
+    artworkShadowColorNotifier.dispose();
+  }
 }

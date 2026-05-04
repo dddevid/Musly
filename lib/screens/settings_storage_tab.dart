@@ -411,15 +411,15 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
   Future<void> _addMusicFolder(BuildContext context, LocalMusicService service) async {
     final path = await service.pickMusicDirectory();
-    if (path != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added folder: $path')),
-      );
-      // Trigger a rescan if merge mode is enabled
-      final libraryProvider = context.read<LibraryProvider>();
-      if (libraryProvider.mergeLocalLibrary) {
-        service.scanForMusic();
-      }
+    if (path == null) return;
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Added folder: $path')),
+    );
+    // Trigger a rescan if merge mode is enabled
+    final libraryProvider = context.read<LibraryProvider>();
+    if (libraryProvider.mergeLocalLibrary) {
+      service.scanForMusic();
     }
   }
 
@@ -442,14 +442,12 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
     );
 
-    if (confirmed == true) {
-      await service.removeCustomScanPath(path);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Folder removed')),
-        );
-      }
-    }
+    if (confirmed != true) return;
+    await service.removeCustomScanPath(path);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Folder removed')),
+    );
   }
 
   Widget _buildKeepScreenOnTile() {
@@ -540,17 +538,22 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         title: Text(l10n.parallelDownloads),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [1, 2, 3, 4, 5].map((count) => RadioListTile<int>(
-            title: Text('$count ${count == 1 ? l10n.downloadSingular : l10n.downloadPlural}'),
-            subtitle: count == 1
-              ? Text(l10n.slowerButStable)
-              : count == 5
-                ? Text(l10n.fasterButMoreData)
-                : null,
-            value: count,
-            groupValue: _parallelDownloads,
-            onChanged: (value) => Navigator.pop(context, value),
-          )).toList(),
+          children: [1, 2, 3, 4, 5].map((count) {
+            final isSelected = count == _parallelDownloads;
+            return ListTile(
+              title: Text('$count ${count == 1 ? l10n.downloadSingular : l10n.downloadPlural}'),
+              subtitle: count == 1
+                ? Text(l10n.slowerButStable)
+                : count == 5
+                  ? Text(l10n.fasterButMoreData)
+                  : null,
+              leading: Icon(
+                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+              ),
+              onTap: () => Navigator.pop(context, count),
+            );
+          }).toList(),
         ),
         actions: [
           TextButton(

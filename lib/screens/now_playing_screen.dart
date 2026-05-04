@@ -18,6 +18,7 @@ import '../services/player_ui_settings_service.dart';
 import '../widgets/star_rating_widget.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
+import '../utils/screen_helper.dart';
 import '../widgets/synced_lyrics_view.dart';
 import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
@@ -789,8 +790,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           const Spacer(flex: 2),
 
                           Container(
-                            width: 200,
-                            height: 200,
+                            width: ScreenHelper.isSmallScreen(context) ? 160 : 200,
+                            height: ScreenHelper.isSmallScreen(context) ? 160 : 200,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
@@ -808,22 +809,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.radio,
                               color: Colors.white,
-                              size: 100,
+                              size: ScreenHelper.radioIconSize(context),
                             ),
                           ),
 
                           const Spacer(),
 
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: ScreenHelper.playerHorizontalPadding(context),
+                            ),
                             child: Text(
                               station.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 28,
+                                fontSize: ScreenHelper.radioTitleFontSize(context),
                                 fontWeight: FontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
@@ -874,8 +877,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                               return GestureDetector(
                                 onTap: provider.togglePlayPause,
                                 child: Container(
-                                  width: 80,
-                                  height: 80,
+                                  width: ScreenHelper.radioPlayButtonSize(context),
+                                  height: ScreenHelper.radioPlayButtonSize(context),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle,
@@ -894,7 +897,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                         ? Icons.pause_rounded
                                         : Icons.play_arrow_rounded,
                                     color: Colors.black,
-                                    size: 48,
+                                    size: ScreenHelper.radioPlayIconSize(context),
                                   ),
                                 ),
                               );
@@ -1836,7 +1839,9 @@ class _PlayerControlsState extends State<_PlayerControls> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(
+        horizontal: ScreenHelper.playerHorizontalPadding(context),
+      ),
       child: Column(
         children: [
           Selector<PlayerProvider, Song?>(
@@ -1951,9 +1956,9 @@ class _SongInfoState extends State<_SongInfo> {
             children: [
               Text(
                 widget.song!.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: ScreenHelper.titleFontSize(context),
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 1,
@@ -1966,7 +1971,7 @@ class _SongInfoState extends State<_SongInfo> {
                 artistIdFallback: widget.song!.artistId,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 18,
+                  fontSize: ScreenHelper.subtitleFontSize(context),
                 ),
                 onBeforeNavigate: () {
                   if (Navigator.canPop(context)) Navigator.pop(context);
@@ -2591,15 +2596,15 @@ class _PlaybackControls extends StatelessWidget {
             ),
             IconButton(
               onPressed: provider.skipPrevious,
-              icon: const Icon(
+              icon: Icon(
                 CupertinoIcons.backward_fill,
                 color: Colors.white,
-                size: 36,
+                size: ScreenHelper.skipButtonIconSize(context),
               ),
             ),
             Container(
-              width: 70,
-              height: 70,
+              width: ScreenHelper.playButtonContainerSize(context),
+              height: ScreenHelper.playButtonContainerSize(context),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -2611,7 +2616,7 @@ class _PlaybackControls extends StatelessWidget {
                       ? CupertinoIcons.pause_fill
                       : CupertinoIcons.play_fill,
                   color: Colors.black,
-                  size: 34,
+                  size: ScreenHelper.playButtonIconSize(context),
                 ),
               ),
             ),
@@ -2622,7 +2627,7 @@ class _PlaybackControls extends StatelessWidget {
                 color: hasNext
                     ? Colors.white
                     : Colors.white.withValues(alpha: 0.3),
-                size: 36,
+                size: ScreenHelper.skipButtonIconSize(context),
               ),
             ),
             IconButton(

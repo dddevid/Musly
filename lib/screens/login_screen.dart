@@ -9,6 +9,7 @@ import '../models/server_config.dart';
 import '../providers/auth_provider.dart';
 import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/screen_helper.dart';
 
 enum _LoginErrorType {
   ssl,
@@ -465,7 +466,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(ScreenHelper.loginPadding(context)),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
@@ -476,8 +477,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                   Center(
                     child: Container(
-                      width: 100,
-                      height: 100,
+                      width: ScreenHelper.loginLogoSize(context),
+                      height: ScreenHelper.loginLogoSize(context),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
@@ -497,8 +498,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           offset: const Offset(0, 8),
                           child: Image.asset(
                             'assets/logobig.png',
-                            width: 100,
-                            height: 100,
+                            width: ScreenHelper.loginLogoSize(context),
+                            height: ScreenHelper.loginLogoSize(context),
                             fit: BoxFit.fill,
                           ),
                         ),
@@ -508,7 +509,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   Text(
                     AppLocalizations.of(context)!.appName,
-                    style: theme.textTheme.displayLarge,
+                    style: theme.textTheme.displayLarge?.copyWith(
+                      fontSize: ScreenHelper.isSmallScreen(context) ? 32 : null,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(

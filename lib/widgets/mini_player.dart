@@ -10,6 +10,7 @@ import '../providers/player_provider.dart';
 import '../services/player_ui_settings_service.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/screen_helper.dart';
 import 'album_artwork.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -282,9 +283,11 @@ class _MiniPlayerControls extends StatelessWidget {
                             builder: (context, isStarred, _) {
                               return IconButton(
                                 onPressed: provider.toggleFavorite,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                 icon: Icon(
                                   isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                  size: 24,
+                                  size: ScreenHelper.miniPlayerIconSize(context),
                                 ),
                                 color: isStarred ? AppTheme.appleMusicRed : color,
                               );
@@ -297,9 +300,11 @@ class _MiniPlayerControls extends StatelessWidget {
                             builder: (context, shuffleEnabled, _) {
                               return IconButton(
                                 onPressed: provider.toggleShuffle,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                 icon: Icon(
                                   CupertinoIcons.shuffle,
-                                  size: 22,
+                                  size: ScreenHelper.miniPlayerIconSize(context),
                                 ),
                                 color: shuffleEnabled ? Theme.of(context).colorScheme.primary : color,
                               );
@@ -308,9 +313,11 @@ class _MiniPlayerControls extends StatelessWidget {
 
                         IconButton(
                           onPressed: provider.togglePlayPause,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                           icon: Icon(
                             isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            size: 32,
+                            size: ScreenHelper.miniPlayerPlayIconSize(context),
                           ),
                           color: color,
                         ),
@@ -328,7 +335,9 @@ class _MiniPlayerControls extends StatelessWidget {
                               }
                               return IconButton(
                                 onPressed: provider.toggleRepeat,
-                                icon: Icon(icon, size: 22),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                icon: Icon(icon, size: ScreenHelper.miniPlayerIconSize(context)),
                                 color: active ? Theme.of(context).colorScheme.primary : color,
                               );
                             },
@@ -337,7 +346,9 @@ class _MiniPlayerControls extends StatelessWidget {
                         if (!isRadio)
                           IconButton(
                             onPressed: hasNext ? provider.skipNext : null,
-                            icon: const Icon(Icons.skip_next_rounded, size: 28),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            icon: Icon(Icons.skip_next_rounded, size: ScreenHelper.miniPlayerSkipIconSize(context)),
                             color: color,
                           ),
                       ],

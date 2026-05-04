@@ -503,11 +503,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  void _showCreatePlaylistDialog(BuildContext context) {
+  Future<void> _showCreatePlaylistDialog(BuildContext context) async {
     final controller = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.newPlaylist),
@@ -580,6 +580,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ],
       ),
     );
+    controller.dispose();
   }
 
   void _showLibrarySearch(BuildContext context) {

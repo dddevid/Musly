@@ -84,10 +84,10 @@ class PlaylistsScreen extends StatelessWidget {
     );
   }
 
-  void _showCreatePlaylistDialog(BuildContext context) {
+  Future<void> _showCreatePlaylistDialog(BuildContext context) async {
     final controller = TextEditingController();
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('New Playlist'),
@@ -119,6 +119,7 @@ class PlaylistsScreen extends StatelessWidget {
         ],
       ),
     );
+    controller.dispose();
   }
 
   void _showPlaylistOptions(BuildContext context, Playlist playlist) {

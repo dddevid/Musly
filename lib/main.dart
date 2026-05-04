@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import 'package:audio_service/audio_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -24,7 +23,6 @@ import 'theme/theme.dart';
 import 'utils/image_cache.dart';
 
 // Global instance for analytics (to be shown after auth)
-AnalyticsService? _analyticsServiceInstance;
 
 /// Shows the privacy policy dialog on first launch
 Future<void> _showPrivacyPolicyIfNeeded() async {
@@ -58,11 +56,11 @@ Future<bool> _isRunningOnEmulator() async {
 
   if (Platform.isAndroid) {
     final androidInfo = await deviceInfo.androidInfo;
-    final model = androidInfo.model?.toLowerCase() ?? '';
-    final brand = androidInfo.brand?.toLowerCase() ?? '';
-    final device = androidInfo.device?.toLowerCase() ?? '';
-    final product = androidInfo.product?.toLowerCase() ?? '';
-    final manufacturer = androidInfo.manufacturer?.toLowerCase() ?? '';
+    final model = androidInfo.model.toLowerCase();
+    final brand = androidInfo.brand.toLowerCase();
+    final device = androidInfo.device.toLowerCase();
+    final product = androidInfo.product.toLowerCase();
+    final manufacturer = androidInfo.manufacturer.toLowerCase();
 
     // Common emulator indicators
     final emulatorIndicators = [
@@ -78,8 +76,8 @@ Future<bool> _isRunningOnEmulator() async {
 
   if (Platform.isIOS) {
     final iosInfo = await deviceInfo.iosInfo;
-    final model = iosInfo.model?.toLowerCase() ?? '';
-    final name = iosInfo.name?.toLowerCase() ?? '';
+    final model = iosInfo.model.toLowerCase();
+    final name = iosInfo.name.toLowerCase();
 
     // iOS Simulator indicators
     return model.contains('simulator') ||
@@ -230,8 +228,7 @@ void main() async {
     debugPrint('Failed to initialize analytics: $e');
   });
 
-  // Store reference to show support dialog after auth
-  _analyticsServiceInstance = analyticsService;
+  // Analytics service is initialized and used via AnalyticsNavigatorObserver
 
   try {
     await PlayerUiSettingsService().initialize();
@@ -276,13 +273,7 @@ void main() async {
     child: const MuslyApp(),
   );
 
-  // AudioServiceWidget is only needed on iOS where AudioService.init() was
-  // called.  On Android/desktop wrapping with it would break the app.
-  runApp(
-    (!kIsWeb && Platform.isIOS)
-        ? AudioServiceWidget(child: appWithProviders)
-        : appWithProviders,
-  );
+  runApp(appWithProviders);
 }
 
 class MuslyApp extends StatelessWidget {

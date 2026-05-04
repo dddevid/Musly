@@ -72,7 +72,7 @@ class PlayerProvider extends ChangeNotifier {
 
   bool _hasPlayedOnce = false;
 
-  bool _reactivatingSession = false;
+  final bool _reactivatingSession = false;
 
   Timer? _sleepTimer;
   DateTime? _sleepTimerEnd;
@@ -1135,7 +1135,7 @@ class PlayerProvider extends ChangeNotifier {
             ? await _subsonicService.getYoutubeAudioSource(song)
             : null;
 
-        Future<void> _setSource() async {
+        Future<void> setSource() async {
           if (youtubeSource != null) {
             await _audioPlayer.setAudioSource(youtubeSource);
             return;
@@ -1155,7 +1155,7 @@ class PlayerProvider extends ChangeNotifier {
         }
 
         try {
-          await _setSource();
+          await setSource();
         } catch (e) {
           // Android 16 / Media3 first-play workaround — not applicable to
           // YouTube StreamAudioSource (proxy state must not be reset).
@@ -1164,7 +1164,7 @@ class PlayerProvider extends ChangeNotifier {
               'First playback failed (Android 16 Media3 issue), retrying: $e',
             );
             await Future.delayed(const Duration(milliseconds: 100));
-            await _setSource();
+            await setSource();
             _hasPlayedOnce = true;
           } else {
             rethrow;

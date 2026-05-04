@@ -477,9 +477,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ratingController.text,
       );
       await AnalyticsService().markAppAsRated();
-      setState(() => _hasRated = true);
-
       if (mounted) {
+        setState(() => _hasRated = true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Thank you for your feedback!')),
         );

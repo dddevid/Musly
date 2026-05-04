@@ -11,7 +11,6 @@ import '../services/recommendation_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
-import '../widgets/favorite_playlists_section.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
 import 'history_screen.dart';
@@ -148,13 +147,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
                         ...personalizedFeed.take(5).map((song) {
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: personalizedFeed,
                               index: personalizedFeed.indexOf(song),
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: personalizedFeed,
@@ -173,13 +173,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
                         ...mixes['Quick Picks']!.take(5).map((song) {
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: mixes['Quick Picks']!,
                               index: mixes['Quick Picks']!.indexOf(song),
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: mixes['Quick Picks']!,
@@ -198,13 +199,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
                         ...mixes['Discover Mix']!.take(5).map((song) {
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: mixes['Discover Mix']!,
                               index: mixes['Discover Mix']!.indexOf(song),
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: mixes['Discover Mix']!,
@@ -228,13 +230,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
                         ...entry.value.take(5).map((song) {
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: entry.value,
                               index: entry.value.indexOf(song),
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: entry.value,
@@ -255,13 +258,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
                         ...entry.value.take(5).map((song) {
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: entry.value,
                               index: entry.value.indexOf(song),
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: entry.value,
@@ -329,13 +333,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           final index = libraryProvider.randomSongs.indexOf(
                             song,
                           );
-                          if (isDesktop)
+                          if (isDesktop) {
                             return _DesktopSongRow(
                               song: song,
                               playlist: libraryProvider.randomSongs,
                               index: index,
                               hPad: hPad,
                             );
+                          }
                           return SongTile(
                             song: song,
                             playlist: libraryProvider.randomSongs,

@@ -8,6 +8,7 @@ import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/screen_helper.dart';
 import '../services/offline_service.dart';
 
 class AlbumScreen extends StatefulWidget {
@@ -208,7 +209,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
             slivers: [
               SliverAppBar(
                 pinned: true,
-                expandedHeight: 360,
+                expandedHeight: ScreenHelper.isSmallScreen(context) ? 280 : 360,
                 leading: IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(8),
@@ -231,14 +232,14 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + 60,
-                          left: 40,
-                          right: 40,
-                          bottom: 80,
+                          top: MediaQuery.of(context).padding.top + 40,
+                          left: ScreenHelper.isSmallScreen(context) ? 24 : 40,
+                          right: ScreenHelper.isSmallScreen(context) ? 24 : 40,
+                          bottom: ScreenHelper.isSmallScreen(context) ? 60 : 80,
                         ),
                         child: AlbumArtwork(
                           coverArt: _album!.coverArt,
-                          size: 280,
+                          size: ScreenHelper.isSmallScreen(context) ? 200 : 280,
                           borderRadius: 10,
                           preserveAspectRatio: true,
                         ),
@@ -269,7 +270,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     children: [
                       Text(
                         _album!.name,
-                        style: theme.textTheme.headlineLarge,
+                        style: theme.textTheme.headlineLarge?.copyWith(
+                          fontSize: ScreenHelper.isSmallScreen(context) ? 22 : null,
+                        ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -282,6 +285,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         artistIdFallback: _album!.artistId,
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: AppTheme.appleMusicRed,
+                          fontSize: ScreenHelper.isSmallScreen(context) ? 16 : null,
                         ),
                       ),
                       const SizedBox(height: 4),
