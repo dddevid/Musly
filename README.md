@@ -116,10 +116,6 @@ If you find Musly useful and want to support its development
    ```bash
    flutter run
    ```
-3. Build apk for separate arch:
-   ```bash
-   flutter build apk --split-per-abi --release
-   ```
 
 ### Connecting to Your Server
 
