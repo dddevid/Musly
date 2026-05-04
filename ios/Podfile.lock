@@ -47,6 +47,8 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - flutter_app_group_directory (0.0.1):
+    - Flutter
   - flutter_chrome_cast (1.4.1):
     - Flutter
     - google-cast-sdk (~> 4.8)
@@ -55,6 +57,8 @@ PODS:
   - just_audio (0.0.1):
     - Flutter
     - FlutterMacOS
+  - live_activities (0.0.1):
+    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -89,8 +93,10 @@ DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - flutter_app_group_directory (from `.symlinks/plugins/flutter_app_group_directory/ios`)
   - flutter_chrome_cast (from `.symlinks/plugins/flutter_chrome_cast/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
+  - live_activities (from `.symlinks/plugins/live_activities/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -126,10 +132,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  flutter_app_group_directory:
+    :path: ".symlinks/plugins/flutter_app_group_directory/ios"
   flutter_chrome_cast:
     :path: ".symlinks/plugins/flutter_chrome_cast/ios"
   just_audio:
     :path: ".symlinks/plugins/just_audio/darwin"
+  live_activities:
+    :path: ".symlinks/plugins/live_activities/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -158,9 +168,11 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_app_group_directory: 55b5362007d1c0cb45dc1dd1e94f67d615f45a6b
   flutter_chrome_cast: db3f7ddddedfb14be1836d979a2e87deeda80cf8
   google-cast-sdk: 32f65af50d164e3c475e79ad123db3cc26fbcd37
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
+  live_activities: 4dfa736d0736e1c77866a2f9c056a76513cc9e7b
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d

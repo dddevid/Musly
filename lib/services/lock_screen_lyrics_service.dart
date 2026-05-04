@@ -26,11 +26,8 @@ class LockScreenLyricsService {
   // Throttling configuration
   static const _updateInterval = Duration(milliseconds: 500);
 
-  /// Whether Live Activities/iOS lock screen lyrics are supported
-  bool get supportsLiveActivities => !kIsWeb && Platform.isIOS;
-
-  /// Whether Android media notification lyrics are supported  
-  bool get supportsAndroidNotification => !kIsWeb && Platform.isAndroid;
+  /// Whether Live Activities (iOS 16.1+) or Android RemoteViews are supported
+  bool get supportsLiveActivities => !kIsWeb && (Platform.isIOS || Platform.isAndroid);
 
   /// Whether Windows notification lyrics are supported
   bool get supportsWindowsNotification => !kIsWeb && Platform.isWindows;
@@ -45,9 +42,9 @@ class LockScreenLyricsService {
     debugPrint('[Lyrics] Initializing lock screen lyrics service...');
     debugPrint('[Lyrics] Platform: ${Platform.operatingSystem}');
     debugPrint('[Lyrics] Live Activities supported: $supportsLiveActivities');
-    debugPrint('[Lyrics] Android notification supported: $supportsAndroidNotification');
+    debugPrint('[Lyrics] Windows notification supported: $supportsWindowsNotification');
 
-    // Initialize live_activities for iOS
+    // Initialize live_activities for iOS and Android
     if (supportsLiveActivities) {
       try {
         await _liveActivities.init(appGroupId: 'group.com.dddevid.musly');
@@ -65,16 +62,6 @@ class LockScreenLyricsService {
         debugPrint('[Lyrics] Native error: $error');
       },
     );
-
-    // Initialize native side (Android only now)
-    if (supportsAndroidNotification) {
-      try {
-        final result = await _platform.invokeMethod('initialize');
-        debugPrint('[Lyrics] Native init result: $result');
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to initialize native lyrics: $e');
-      }
-    }
   }
 
   /// Load lyrics for the current song
@@ -88,29 +75,21 @@ class LockScreenLyricsService {
     _currentLyrics = LyricsManager.parse(lrcContent);
     _lastSentLine = null;
 
-    // Create iOS Live Activity when lyrics are available
+    // Create Live Activity when lyrics are available (iOS/Android)
     if (supportsLiveActivities && _currentLyrics!.hasLyrics) {
       try {
-        _activityId = await _liveActivities.createActivity({
-          'currentLine': '',
-          'songTitle': '',
-          'artist': '',
-        });
+        final songId = 'lyrics_${DateTime.now().millisecondsSinceEpoch}';
+        _activityId = await _liveActivities.createActivity(
+          songId,
+          {
+            'currentLine': '',
+            'songTitle': '',
+            'artist': '',
+          },
+        );
         debugPrint('[Lyrics] Live Activity created: $_activityId');
       } catch (e) {
         debugPrint('[Lyrics] Failed to create Live Activity: $e');
-      }
-    }
-
-    // Notify native side that lyrics are available (Android)
-    if (supportsAndroidNotification && _currentLyrics!.hasLyrics) {
-      try {
-        await _platform.invokeMethod('lyricsAvailable', {
-          'hasLyrics': true,
-          'lineCount': _currentLyrics!.lineCount,
-        });
-      } catch (e) {
-        debugPrint('Failed to notify lyrics available: $e');
       }
     }
   }
@@ -122,7 +101,7 @@ class LockScreenLyricsService {
     _updateTimer?.cancel();
     _updateTimer = null;
 
-    // End iOS Live Activity
+    // End Live Activity (iOS/Android)
     if (supportsLiveActivities && _activityId != null) {
       try {
         await _liveActivities.endActivity(_activityId!);
@@ -136,16 +115,6 @@ class LockScreenLyricsService {
     // Clear Windows notification
     if (supportsWindowsNotification) {
       await _windowsService.clearLyrics();
-      return;
-    }
-
-    // Clear Android notification lyrics
-    if (supportsAndroidNotification) {
-      try {
-        await _platform.invokeMethod('clearLyrics');
-      } catch (e) {
-        debugPrint('Failed to clear lyrics: $e');
-      }
     }
   }
 
@@ -206,7 +175,7 @@ class LockScreenLyricsService {
     if (line == _lastSentLine) return;
     _lastSentLine = line;
 
-    // Update iOS Live Activity
+    // Update Live Activity (iOS/Android)
     if (supportsLiveActivities && _activityId != null) {
       try {
         await _liveActivities.updateActivity(_activityId!, {
@@ -222,19 +191,6 @@ class LockScreenLyricsService {
     // Update Windows notification lyrics
     if (supportsWindowsNotification) {
       await _windowsService.updateLyrics(line);
-      return;
-    }
-
-    // Update Android notification lyrics
-    debugPrint('[Lyrics] Sending to native: "$line"');
-    try {
-      final result = await _platform.invokeMethod('updateLyrics', {
-        'currentLine': line,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
-      debugPrint('[Lyrics] Native update result: $result');
-    } catch (e) {
-      debugPrint('[Lyrics] Failed to update lock screen lyrics: $e');
     }
   }
 
@@ -248,7 +204,7 @@ class LockScreenLyricsService {
 
     debugPrint('[Lyrics] Updating song info: $title - $artist');
 
-    // Update iOS Live Activity with song info
+    // Update Live Activity with song info (iOS/Android)
     if (supportsLiveActivities && _activityId != null) {
       try {
         await _liveActivities.updateActivity(_activityId!, {
@@ -266,18 +222,6 @@ class LockScreenLyricsService {
     if (supportsWindowsNotification) {
       // We don't have Song object here, so just pass basic info
       // The song info will be updated when loadLyrics is called
-      return;
-    }
-
-    // Update Android native side
-    try {
-      await _platform.invokeMethod('updateSongInfo', {
-        'title': title,
-        'artist': artist,
-        'artworkUrl': artworkUrl,
-      });
-    } catch (e) {
-      debugPrint('[Lyrics] Failed to update song info: $e');
     }
   }
 
