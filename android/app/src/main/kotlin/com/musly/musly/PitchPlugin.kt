@@ -84,7 +84,7 @@ class PitchPlugin : MethodCallHandler {
     }
 
     private fun findExoPlayer(audioPlayer: Any): Any? {
-        return try {
+        try {
             // Try known field name first
             val playerField = audioPlayer.javaClass.getDeclaredField("player")
             playerField.isAccessible = true
