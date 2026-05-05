@@ -72,6 +72,7 @@ class MusicService : MediaBrowserServiceCompat() {
     
     // Track loading states for smooth transitions
     private var isLoadingArtwork: Boolean = false
+    private var lastLoadedArtworkUrl: String? = null
 
     private val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
     private val recentSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -562,6 +563,21 @@ class MusicService : MediaBrowserServiceCompat() {
         position: Long,
         playing: Boolean
     ) {
+        // Detect whether song-level metadata has actually changed.
+        val songChanged = songId != currentSongId
+        val metadataChanged = songChanged
+            || title != currentTitle
+            || artist != currentArtist
+            || album != currentAlbum
+            || artworkUrl != currentArtworkUrl
+            || duration != currentDuration
+
+        // If the song itself changed, invalidate the cached artwork URL so the
+        // new artwork is always fetched even if the URL string happens to be identical.
+        if (songChanged) {
+            lastLoadedArtworkUrl = null
+        }
+
         currentSongId = songId
         currentTitle = title
         currentArtist = artist
@@ -571,7 +587,12 @@ class MusicService : MediaBrowserServiceCompat() {
         currentPosition = position
         isPlaying = playing
 
-        updateMediaSessionMetadata()
+        // Only rebuild metadata (and potentially re-fetch artwork) when something
+        // meaningful changed. Position-only or play/pause-only updates skip this
+        // expensive path entirely.
+        if (metadataChanged) {
+            updateMediaSessionMetadata()
+        }
         updateMediaSessionPlaybackState()
         showNotification()
     }
@@ -595,6 +616,28 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         val url = currentArtworkUrl
+
+        // If the artwork URL hasn't changed and we already have the bitmap, reuse it directly.
+        if (!url.isNullOrEmpty() && url == lastLoadedArtworkUrl && currentArtworkBitmap != null) {
+            Log.d(TAG, "updateMediaSessionMetadata: Artwork URL unchanged, reusing cached bitmap")
+            val cachedMetadata = MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentSongId)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTitle)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentArtist)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentAlbum)
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentDuration)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentArtworkBitmap)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTitle)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, url)
+                .apply {
+                    if (hasLyrics && !currentLyricsLine.isNullOrEmpty()) {
+                        putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentLyricsLine)
+                    }
+                }
+                .build()
+            mediaSession.setMetadata(cachedMetadata)
+            return
+        }
 
         // Avoid clearing existing album art while loading a new one to prevent flicker in Android Auto.
         if (url.isNullOrEmpty()) {
@@ -645,6 +688,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 }
                 
                 currentArtworkBitmap = bitmap
+                lastLoadedArtworkUrl = url
                 isLoadingArtwork = false
                 
                 Log.d(TAG, "updateMediaSessionMetadata: Artwork loaded successfully: ${bitmap.width}x${bitmap.height}")
