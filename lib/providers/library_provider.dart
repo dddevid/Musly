@@ -69,7 +69,8 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  void setLocalMusicService(LocalMusicService service, {bool mergeWithServer = false}) {
+  void setLocalMusicService(LocalMusicService service,
+      {bool mergeWithServer = false}) {
     _localMusicService?.removeListener(_onLocalMusicServiceChanged);
     _localMusicService = service;
     _localOnlyMode = !mergeWithServer;
@@ -110,7 +111,6 @@ class LibraryProvider extends ChangeNotifier {
 
   void setLocalOnlyMode(bool enabled) {
     if (!enabled && _localOnlyMode) {
-      
       _localMusicService?.removeListener(_onLocalMusicServiceChanged);
       _localMusicService = null;
       _cachedAllSongs = [];
@@ -152,7 +152,9 @@ class LibraryProvider extends ChangeNotifier {
   String? get error => _error;
 
   List<Album> get cachedAllAlbums {
-    if (!_mergeLocalLibrary || _localMusicService == null || _localMusicService!.isEmpty) {
+    if (!_mergeLocalLibrary ||
+        _localMusicService == null ||
+        _localMusicService!.isEmpty) {
       return _cachedAllAlbums;
     }
     // Merge server albums with local albums
@@ -168,7 +170,9 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   List<Song> get cachedAllSongs {
-    if (!_mergeLocalLibrary || _localMusicService == null || _localMusicService!.isEmpty) {
+    if (!_mergeLocalLibrary ||
+        _localMusicService == null ||
+        _localMusicService!.isEmpty) {
       return _cachedAllSongs;
     }
     // Merge server songs with local songs
@@ -184,7 +188,9 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   List<Artist> get artists {
-    if (!_mergeLocalLibrary || _localMusicService == null || _localMusicService!.isEmpty) {
+    if (!_mergeLocalLibrary ||
+        _localMusicService == null ||
+        _localMusicService!.isEmpty) {
       return _artists;
     }
     // Merge server artists with local artists
@@ -208,7 +214,6 @@ class LibraryProvider extends ChangeNotifier {
 
     try {
       if (_localOnlyMode && _localMusicService != null) {
-        
         _cachedAllSongs = List.from(_localMusicService!.songs);
         _cachedAllAlbums = List.from(_localMusicService!.albums);
         _artists = List.from(_localMusicService!.artists);
@@ -237,7 +242,7 @@ class LibraryProvider extends ChangeNotifier {
       } else {
         _pushLibraryToAndroidAuto();
       }
-      
+
       Future.delayed(const Duration(milliseconds: 800), () {
         if (_serverOfflineMode) {
           _pushOfflineLibraryToAndroidAuto();
@@ -263,7 +268,6 @@ class LibraryProvider extends ChangeNotifier {
             },
           );
         } catch (serverError) {
-          
           debugPrint('Server initialization skipped: $serverError');
         }
       }
@@ -354,11 +358,9 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void _scheduleBackgroundRefresh() {
-    
     if (_cachedAllSongs.isEmpty) return;
 
-    final shouldRefresh =
-        _lastCacheUpdate == null ||
+    final shouldRefresh = _lastCacheUpdate == null ||
         DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 6);
 
     if (shouldRefresh) {
@@ -380,35 +382,42 @@ class LibraryProvider extends ChangeNotifier {
           size: pageSize,
           offset: offset,
         );
+        if (page.isEmpty) break;
         allAlbums.addAll(page);
         if (page.length < pageSize) break;
         offset += pageSize;
       }
 
-      final previousAlbums = _cachedAllAlbums;
-      final previousSongs = _cachedAllSongs;
-      final Map<String, Song> songById = {};
-      var failedAlbumLoads = 0;
-      for (final album in allAlbums) {
+      List<Song> allSongs = [];
+      if (_subsonicService.isJellyfin) {
+        // Jellyfin/Emby: fetch all songs in O(1) API calls instead of N+1.
         try {
-          final albumSongs = await _subsonicService.getAlbumSongs(album.id);
-          for (final song in albumSongs) {
-            songById[song.id] = song;
-          }
+          allSongs = await _subsonicService.getAllSongs();
         } catch (e) {
-          failedAlbumLoads++;
-          debugPrint('Error loading album ${album.id}: $e');
+          debugPrint(
+              'Jellyfin getAllSongs failed, falling back to album traversal: $e');
         }
       }
 
-      if (failedAlbumLoads > 0) {
-        _cachedAllAlbums = previousAlbums;
-        _cachedAllSongs = previousSongs;
-        debugPrint(
-          'Background refresh incomplete: $failedAlbumLoads album(s) failed; keeping previous cache.',
-        );
-        notifyListeners();
-        return;
+      final Map<String, Song> songById = {};
+      var failedAlbumLoads = 0;
+      if (allSongs.isEmpty) {
+        // Subsonic or Jellyfin fallback: iterate albums.
+        for (final album in allAlbums) {
+          try {
+            final albumSongs = await _subsonicService.getAlbumSongs(album.id);
+            for (final song in albumSongs) {
+              songById[song.id] = song;
+            }
+          } catch (e) {
+            failedAlbumLoads++;
+            debugPrint('Error loading album ${album.id}: $e');
+          }
+        }
+      } else {
+        for (final song in allSongs) {
+          songById[song.id] = song;
+        }
       }
 
       _cachedAllAlbums = allAlbums;
@@ -417,6 +426,11 @@ class LibraryProvider extends ChangeNotifier {
 
       await _saveCachedData();
       notifyListeners();
+      debugPrint(
+        'Background refresh complete: ${allAlbums.length} albums, '
+        '${_cachedAllSongs.length} songs '
+        '(${failedAlbumLoads > 0 ? "$failedAlbumLoads album(s) failed, " : ""}kept what succeeded).',
+      );
     } catch (e) {
       debugPrint('Error refreshing all data: $e');
     }
@@ -479,24 +493,20 @@ class LibraryProvider extends ChangeNotifier {
     final downloadedIds = offlineService.getDownloadedSongIds().toSet();
 
     if (downloadedIds.isEmpty) {
-      
       _pushLibraryToAndroidAuto();
       return;
     }
 
-    final offlineSongs = _cachedAllSongs
-        .where((s) => downloadedIds.contains(s.id))
-        .toList();
+    final offlineSongs =
+        _cachedAllSongs.where((s) => downloadedIds.contains(s.id)).toList();
     if (offlineSongs.isNotEmpty) {
       _androidAutoService.updateRecentSongs(offlineSongs, getCoverArtUrl);
     } else if (_randomSongs.isNotEmpty) {
       _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     }
 
-    final albumIdsWithDownloads = offlineSongs
-        .map((s) => s.albumId)
-        .whereType<String>()
-        .toSet();
+    final albumIdsWithDownloads =
+        offlineSongs.map((s) => s.albumId).whereType<String>().toSet();
     final offlineAlbums = _cachedAllAlbums
         .where((a) => albumIdsWithDownloads.contains(a.id))
         .toList();
@@ -506,13 +516,10 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
     }
 
-    final artistIdsWithDownloads = offlineSongs
-        .map((s) => s.artistId)
-        .whereType<String>()
-        .toSet();
-    final offlineArtists = _artists
-        .where((a) => artistIdsWithDownloads.contains(a.id))
-        .toList();
+    final artistIdsWithDownloads =
+        offlineSongs.map((s) => s.artistId).whereType<String>().toSet();
+    final offlineArtists =
+        _artists.where((a) => artistIdsWithDownloads.contains(a.id)).toList();
     if (offlineArtists.isNotEmpty) {
       _androidAutoService.updateArtists(offlineArtists);
     } else if (_artists.isNotEmpty) {
@@ -537,9 +544,7 @@ class LibraryProvider extends ChangeNotifier {
             if (url.isNotEmpty) {
               _subsonicService.getCoverArtUrl(album.coverArt, size: 300);
             }
-          } catch (_) {
-            
-          }
+          } catch (_) {}
         }
       }
     });
@@ -559,7 +564,7 @@ class LibraryProvider extends ChangeNotifier {
       _saveCachedData();
     } catch (e) {
       debugPrint('Error loading artists: $e');
-      
+
       if (_artists.isNotEmpty) {
         _androidAutoService.updateArtists(_artists);
       }
@@ -638,9 +643,8 @@ class LibraryProvider extends ChangeNotifier {
         );
         if (cachedIndex != -1) {
           final cachedFn = _cachedPlaylists[cachedIndex];
-          
+
           if (cachedFn.songs != null && cachedFn.songs!.isNotEmpty) {
-            
             mergedPlaylists.add(newPlaylist.copyWith(songs: cachedFn.songs));
             continue;
           }
@@ -659,7 +663,7 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
         notifyListeners();
       }
-      
+
       if (_playlists.isNotEmpty) {
         _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
       }
@@ -674,7 +678,7 @@ class LibraryProvider extends ChangeNotifier {
       _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
     } catch (e) {
       debugPrint('Error loading random songs: $e');
-      
+
       if (_randomSongs.isNotEmpty) {
         _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
       }
@@ -715,7 +719,6 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<List<Song>> getAlbumSongs(String albumId) async {
-    
     if (_localOnlyMode && _localMusicService != null) {
       return _localMusicService!.getSongsByAlbum(albumId);
     }
@@ -728,7 +731,6 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<Playlist> getPlaylist(String playlistId) async {
-    
     if (_serverOfflineMode) {
       final cached = _playlists.firstWhere(
         (p) => p.id == playlistId,

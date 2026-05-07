@@ -154,21 +154,20 @@ class JellyfinService {
     final ticks = item['RunTimeTicks'] as int?;
     final durationSec = ticks != null ? (ticks / 10000000).round() : null;
     final artists = item['ArtistItems'] as List<dynamic>?;
-    final artistId =
-        artists?.isNotEmpty == true
-            ? (artists!.first as Map<String, dynamic>)['Id'] as String?
-            : null;
+    final artistId = artists?.isNotEmpty == true
+        ? (artists!.first as Map<String, dynamic>)['Id'] as String?
+        : null;
     final genres = item['Genres'] as List<dynamic>?;
     return Song(
       id: item['Id'] as String? ?? '',
       title: item['Name'] as String? ?? 'Unknown',
       album: item['Album'] as String?,
-      albumId: item['AlbumId'] as String?,
+      albumId: item['AlbumId'] as String? ?? item['ParentId'] as String?,
       artist: item['AlbumArtist'] as String? ??
           (item['ArtistItems'] != null &&
                   (item['ArtistItems'] as List).isNotEmpty
               ? ((item['ArtistItems'] as List).first
-                      as Map<String, dynamic>)['Name'] as String?
+                  as Map<String, dynamic>)['Name'] as String?
               : null),
       artistId: artistId,
       track: item['IndexNumber'] as int?,
@@ -184,11 +183,16 @@ class JellyfinService {
     final ticks = item['RunTimeTicks'] as int?;
     final durationSec = ticks != null ? (ticks / 10000000).round() : null;
     final genres = item['Genres'] as List<dynamic>?;
+    // Emby may return AlbumArtists array instead of single AlbumArtistId.
+    final albumArtists = item['AlbumArtists'] as List<dynamic>?;
+    final fallbackArtistId = albumArtists != null && albumArtists.isNotEmpty
+        ? (albumArtists.first as Map<String, dynamic>)['Id'] as String?
+        : null;
     return Album(
       id: item['Id'] as String? ?? '',
       name: item['Name'] as String? ?? 'Unknown Album',
       artist: item['AlbumArtist'] as String?,
-      artistId: item['AlbumArtistId'] as String?,
+      artistId: item['AlbumArtistId'] as String? ?? fallbackArtistId,
       coverArt: item['Id'] as String?,
       songCount: item['ChildCount'] as int?,
       duration: durationSec,
@@ -274,15 +278,52 @@ class JellyfinService {
           'Recursive': 'true',
           'SortBy': 'IndexNumber,SortName',
           'SortOrder': 'Ascending',
-          'Fields': 'Genres,UserData',
+          'Fields': 'Genres,UserData,Album,AlbumId,AlbumArtist,AlbumArtistId',
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      return items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
+      return items
+          .map((e) => _songFromItem(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('[Jellyfin] getAlbumSongs error: $e');
       return [];
     }
+  }
+
+  /// Fetch ALL songs directly — much faster than album-by-album traversal.
+  Future<List<Song>> getAllSongs() async {
+    if (_userId == null) return [];
+    final allSongs = <Song>[];
+    int offset = 0;
+    const pageSize = 500;
+    while (true) {
+      try {
+        final data = await _get(
+          '/Users/$_userId/Items',
+          params: {
+            'IncludeItemTypes': 'Audio',
+            'Recursive': 'true',
+            'SortBy': 'SortName',
+            'SortOrder': 'Ascending',
+            'Limit': pageSize.toString(),
+            'StartIndex': offset.toString(),
+            'Fields': 'Genres,UserData,Album,AlbumId,AlbumArtist,AlbumArtistId',
+          },
+        );
+        final items = data['Items'] as List<dynamic>? ?? [];
+        if (items.isEmpty) break;
+        allSongs.addAll(
+          items.map((e) => _songFromItem(e as Map<String, dynamic>)),
+        );
+        if (items.length < pageSize) break;
+        offset += pageSize;
+      } catch (e) {
+        debugPrint('[Jellyfin] getAllSongs error at offset $offset: $e');
+        break;
+      }
+    }
+    return allSongs;
   }
 
   Future<List<Artist>> getArtists() async {
@@ -374,9 +415,8 @@ class JellyfinService {
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      final songs = items
-          .map((e) => _songFromItem(e as Map<String, dynamic>))
-          .toList();
+      final songs =
+          items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
       return Playlist(
         id: id,
         name: meta['Name'] as String? ?? '',
@@ -396,7 +436,8 @@ class JellyfinService {
     int albumCount = 20,
     int artistCount = 20,
   }) async {
-    if (_userId == null) return SearchResult(songs: [], albums: [], artists: []);
+    if (_userId == null)
+      return SearchResult(songs: [], albums: [], artists: []);
     try {
       Future<List<T>> fetch<T>(
         String types,
@@ -444,7 +485,9 @@ class JellyfinService {
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      return items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
+      return items
+          .map((e) => _songFromItem(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('[Jellyfin] getRandomSongs error: $e');
       return [];
@@ -452,7 +495,8 @@ class JellyfinService {
   }
 
   Future<SearchResult> getStarred() async {
-    if (_userId == null) return SearchResult(songs: [], albums: [], artists: []);
+    if (_userId == null)
+      return SearchResult(songs: [], albums: [], artists: []);
     try {
       Future<List<T>> fetch<T>(
         String types,
@@ -578,7 +622,9 @@ class JellyfinService {
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      return items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
+      return items
+          .map((e) => _songFromItem(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('[Jellyfin] getSongsByGenre error: $e');
       return [];
@@ -625,7 +671,9 @@ class JellyfinService {
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      return items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
+      return items
+          .map((e) => _songFromItem(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('[Jellyfin] getSimilarSongs error: $e');
       return [];
@@ -651,7 +699,9 @@ class JellyfinService {
         },
       );
       final items = data['Items'] as List<dynamic>? ?? [];
-      return items.map((e) => _songFromItem(e as Map<String, dynamic>)).toList();
+      return items
+          .map((e) => _songFromItem(e as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('[Jellyfin] getArtistTopSongs error: $e');
       return [];
