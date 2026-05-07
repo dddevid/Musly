@@ -8,6 +8,7 @@ import '../services/offline_service.dart';
 import '../services/favorite_playlists_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
+import '../l10n/app_localizations.dart';
 
 class PlaylistScreen extends StatefulWidget {
   final String playlistId;
@@ -467,26 +468,18 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _playAll(),
-                        icon: const Icon(CupertinoIcons.play_fill),
-                        label: const Text('Play'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.appleMusicRed,
-                          foregroundColor: Colors.white,
-                        ),
+                      child: _PlayButton(
+                        icon: CupertinoIcons.play_fill,
+                        label: AppLocalizations.of(context)!.play,
+                        onTap: () => _playAll(),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _playAll(shuffle: true),
-                        icon: const Icon(CupertinoIcons.shuffle),
-                        label: const Text('Shuffle'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.appleMusicRed,
-                          side: const BorderSide(color: AppTheme.appleMusicRed),
-                        ),
+                      child: _PlayButton(
+                        icon: CupertinoIcons.shuffle,
+                        label: AppLocalizations.of(context)!.shuffle,
+                        onTap: () => _playAll(shuffle: true),
                       ),
                     ),
                   ],
@@ -641,6 +634,52 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PlayButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _PlayButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: isDark
+          ? AppTheme.appleMusicRed.withValues(alpha: 0.15)
+          : AppTheme.appleMusicRed.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppTheme.appleMusicRed, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppTheme.appleMusicRed,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
