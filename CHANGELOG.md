@@ -5,6 +5,52 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.12] - 2026-05-07
+
+### Added
+- **Persistent Queue Across Restarts** ([#156](https://github.com/dddevid/Musly/issues/156))
+  - Queue state (songs, current index, current song ID) saved to SharedPreferences
+  - Automatically restores queue on app launch without auto-playing
+  - Validates local file paths exist before restoring
+  - Debounced save (200ms) to avoid excessive writes
+  - Clears persisted data on explicit queue clear
+- **Artist Play Enhancement** ([#151](https://github.com/dddevid/Musly/pull/151))
+  - "Play" button on artist screens now appends rest of artist's songs to their top songs
+  - Provides fuller artist experience when pressing play
+
+### Fixed
+- **History Screen Loading** - Improved history loading and listener management
+- **Library Refresh** ([#152](https://github.com/dddevid/Musly/issues/152))
+  - Refresh button now forces full re-sync by bypassing 6-hour cooldown
+  - Fixes stale library content after user clicks refresh
+- **Accent Color Consistency** ([#158](https://github.com/dddevid/Musly/issues/158))
+  - Play/Shuffle buttons now use theme accent color instead of hardcoded red
+  - Applied to album, artist, and playlist screens
+- **Emby/Jellyfin Library Sync** ([#160](https://github.com/dddevid/Musly/issues/160))
+  - Added `getAllSongs()` to JellyfinService for O(1) API call
+  - SubsonicService proxy for Jellyfin compatibility
+  - Fixed albumId and artistId fallbacks in item parsing
+  - Fixed pagination loop early-break issue
+- **Play/Shuffle Button Design** ([#157](https://github.com/dddevid/Musly/issues/157))
+  - Consistent pill-shaped design across artist, album, and playlist screens
+  - Play/Shuffle row added below artist header
+- **Now Playing Screen**
+  - Replaced AnimatedMeshGradient with reliable radial gradient blobs
+  - Fixed lyrics scroll-to-current when ListView items are unbuilt
+  - Added lyrics slide-up/fade transition
+  - Fixed ReorderableListView null crash with drag handle
+- **Local Files UX**
+  - Folder cover art fallback
+  - Smart sorting with genre/year filters
+  - Added Radio Stations to mobile Library screen
+- **Localization** - Updated l10n keys for empty states and scan actions
+
+### Changed
+- **Android Build** - Bumped version to 1.0.12+1 for update support ([#148](https://github.com/dddevid/Musly/issues/148))
+- **MusicService** - Cleaned up comments and streamlined code
+- **Artwork Loading** - Optimized loading and metadata updates in MusicService
+- **Recommendation Service** - Enhanced with improved data handling and caching
+
 ## [1.0.11] - 2026-05-04
 
 ### Added
