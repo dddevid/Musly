@@ -552,7 +552,13 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     _isInitialized = false;
+    _lastCacheUpdate = null; // force full re-sync
     await initialize();
+
+    // Force immediate full background refresh if server is reachable.
+    if (!_serverOfflineMode && !_localOnlyMode) {
+      _refreshAllDataInBackground();
+    }
   }
 
   Future<void> loadArtists() async {
