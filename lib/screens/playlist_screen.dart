@@ -653,11 +653,10 @@ class _PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = Theme.of(context).colorScheme.primary;
 
     return Material(
-      color: isDark
-          ? AppTheme.appleMusicRed.withValues(alpha: 0.15)
-          : AppTheme.appleMusicRed.withValues(alpha: 0.1),
+      color: accent.withValues(alpha: isDark ? 0.15 : 0.1),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
@@ -667,12 +666,12 @@ class _PlayButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppTheme.appleMusicRed, size: 20),
+              Icon(icon, color: accent, size: 20),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.appleMusicRed,
+                style: TextStyle(
+                  color: accent,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

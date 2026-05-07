@@ -137,9 +137,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     const AlbumArtworkShimmer(size: 250),
                     const SizedBox(height: 24),
                     Shimmer.fromColors(
-                      baseColor: isDark
-                          ? AppTheme.darkCard
-                          : const Color(0xFFE0E0E0),
+                      baseColor:
+                          isDark ? AppTheme.darkCard : const Color(0xFFE0E0E0),
                       highlightColor: isDark
                           ? const Color(0xFF2A2A2A)
                           : const Color(0xFFF5F5F5),
@@ -154,9 +153,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     ),
                     const SizedBox(height: 8),
                     Shimmer.fromColors(
-                      baseColor: isDark
-                          ? AppTheme.darkCard
-                          : const Color(0xFFE0E0E0),
+                      baseColor:
+                          isDark ? AppTheme.darkCard : const Color(0xFFE0E0E0),
                       highlightColor: isDark
                           ? const Color(0xFF2A2A2A)
                           : const Color(0xFFF5F5F5),
@@ -198,8 +196,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     final hours = totalDuration ~/ 3600;
     final minutes = (totalDuration % 3600) ~/ 60;
 
-    final isOffline =
-        Provider.of<AuthProvider>(context, listen: false).state ==
+    final isOffline = Provider.of<AuthProvider>(context, listen: false).state ==
         AuthState.offlineMode;
 
     return Scaffold(
@@ -271,7 +268,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       Text(
                         _album!.name,
                         style: theme.textTheme.headlineLarge?.copyWith(
-                          fontSize: ScreenHelper.isSmallScreen(context) ? 22 : null,
+                          fontSize:
+                              ScreenHelper.isSmallScreen(context) ? 22 : null,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -285,7 +283,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         artistIdFallback: _album!.artistId,
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: AppTheme.appleMusicRed,
-                          fontSize: ScreenHelper.isSmallScreen(context) ? 16 : null,
+                          fontSize:
+                              ScreenHelper.isSmallScreen(context) ? 16 : null,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -305,7 +304,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 20),
-
                       Row(
                         children: [
                           Expanded(
@@ -366,11 +364,10 @@ class _PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = Theme.of(context).colorScheme.primary;
 
     return Material(
-      color: isDark
-          ? AppTheme.appleMusicRed.withValues(alpha: 0.15)
-          : AppTheme.appleMusicRed.withValues(alpha: 0.1),
+      color: accent.withValues(alpha: isDark ? 0.15 : 0.1),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
@@ -380,12 +377,12 @@ class _PlayButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppTheme.appleMusicRed, size: 20),
+              Icon(icon, color: accent, size: 20),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.appleMusicRed,
+                style: TextStyle(
+                  color: accent,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
