@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' show Random;
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
@@ -72,6 +74,12 @@ class PlayerProvider extends ChangeNotifier {
 
   bool _hasPlayedOnce = false;
 
+  SharedPreferences? _prefs;
+  Timer? _persistDebounceTimer;
+  static const String _keyQueue = 'persistent_queue';
+  static const String _keyQueueIndex = 'persistent_queue_index';
+  static const String _keyQueueSongId = 'persistent_queue_song_id';
+
   final bool _reactivatingSession = false;
 
   Timer? _sleepTimer;
@@ -104,12 +112,14 @@ class PlayerProvider extends ChangeNotifier {
     _initializeAutoDj();
     _wireAudioHandlerCallbacks();
     _initializeLyricsService();
-    
+
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       _discordRpcService.initialize();
       loadDiscordRpcStateStyle();
     }
+
+    _restoreQueueState();
   }
 
   /// Connect [MuslyAudioHandler] lock-screen commands back to this provider.
@@ -122,6 +132,79 @@ class PlayerProvider extends ChangeNotifier {
     _audioHandler.onSkipPrevious = skipPrevious;
     _audioHandler.onSeekTo = seek;
     _audioHandler.onTogglePlayPause = togglePlayPause;
+  }
+
+  // ── Persistent Queue ───────────────────────────────────────────────────────
+
+  void _saveQueueState() {
+    _persistDebounceTimer?.cancel();
+    _persistDebounceTimer = Timer(const Duration(milliseconds: 200), () async {
+      try {
+        _prefs ??= await SharedPreferences.getInstance();
+        if (_prefs == null) return;
+        final queueJson = _queue.map((s) => s.toJson()).toList();
+        await _prefs!.setString(_keyQueue, jsonEncode(queueJson));
+        await _prefs!.setInt(_keyQueueIndex, _currentIndex);
+        await _prefs!.setString(_keyQueueSongId, _currentSong?.id ?? '');
+      } catch (e) {
+        debugPrint('Error saving queue state: $e');
+      }
+    });
+  }
+
+  Future<void> _restoreQueueState() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      if (_prefs == null) return;
+
+      final queueRaw = _prefs!.getString(_keyQueue);
+      if (queueRaw == null || queueRaw.isEmpty) return;
+
+      final queueJson = jsonDecode(queueRaw) as List<dynamic>;
+      if (queueJson.isEmpty) return;
+
+      final restoredSongs = queueJson
+          .map((j) => Song.fromJson(j as Map<String, dynamic>))
+          .where((s) {
+        // Validate local files still exist.
+        if (s.isLocal && s.path != null) {
+          return File(s.path!).existsSync();
+        }
+        return true;
+      }).toList();
+
+      if (restoredSongs.isEmpty) return;
+
+      final savedIndex = _prefs!.getInt(_keyQueueIndex) ?? 0;
+      final savedSongId = _prefs!.getString(_keyQueueSongId);
+
+      var targetIndex = savedIndex.clamp(0, restoredSongs.length - 1);
+      if (savedSongId != null && savedSongId.isNotEmpty) {
+        final idIndex = restoredSongs.indexWhere((s) => s.id == savedSongId);
+        if (idIndex != -1) targetIndex = idIndex;
+      }
+
+      _queue = restoredSongs;
+      _currentIndex = targetIndex;
+      _currentSong = restoredSongs[targetIndex];
+      _position = Duration.zero;
+      notifyListeners();
+      debugPrint(
+          'Restored persistent queue: ${restoredSongs.length} songs, index $targetIndex');
+    } catch (e) {
+      debugPrint('Error restoring queue state: $e');
+    }
+  }
+
+  void _clearPersistedQueue() {
+    _persistDebounceTimer?.cancel();
+    try {
+      SharedPreferences.getInstance().then((p) {
+        p.remove(_keyQueue);
+        p.remove(_keyQueueIndex);
+        p.remove(_keyQueueSongId);
+      });
+    } catch (_) {}
   }
 
   void setLibraryProvider(LibraryProvider libraryProvider) {
@@ -153,7 +236,8 @@ class PlayerProvider extends ChangeNotifier {
     _androidSystemService.onSkipNext = skipNext;
     _androidSystemService.onSkipPrevious = skipPrevious;
     _androidSystemService.onSeekTo = seek;
-    _androidSystemService.onSeekForward = (interval) => seek(_position + interval);
+    _androidSystemService.onSeekForward =
+        (interval) => seek(_position + interval);
     _androidSystemService.onSeekBackward = (interval) {
       final target = _position - interval;
       seek(target.isNegative ? Duration.zero : target);
@@ -219,7 +303,7 @@ class PlayerProvider extends ChangeNotifier {
         debugPrint('Bluetooth A2DP audio active: $_isA2dpAudioActive');
       });
     };
-    
+
     _bluetoothService.registerAbsoluteVolumeControl();
 
     _samsungService.initialize();
@@ -270,7 +354,8 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _onRequestLibraryData() {
-    debugPrint('PlayerProvider: Android Auto requested library data, delegating to LibraryProvider');
+    debugPrint(
+        'PlayerProvider: Android Auto requested library data, delegating to LibraryProvider');
     // The LibraryProvider handles this in its constructor, but we add this
     // as a fallback to ensure the request is handled
     if (_libraryProvider != null) {
@@ -282,7 +367,6 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getAlbumSongsForAndroidAuto(
     String albumId,
   ) async {
-    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -297,8 +381,10 @@ class PlayerProvider extends ChangeNotifier {
                 'title': song.title,
                 'artist': song.artist ?? '',
                 'album': song.album ?? '',
-                'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) != null
-                    ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!).toString()
+                'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
+                        null
+                    ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
+                        .toString()
                     : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
                 'duration': (song.duration ?? 0).toString(),
               },
@@ -332,7 +418,6 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getArtistAlbumsForAndroidAuto(
     String artistId,
   ) async {
-    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -384,7 +469,6 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _getPlaylistSongsForAndroidAuto(
     String playlistId,
   ) async {
-    
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -403,9 +487,12 @@ class PlayerProvider extends ChangeNotifier {
                   'title': song.title,
                   'artist': song.artist ?? '',
                   'album': song.album ?? '',
-                  'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) != null
-                      ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!).toString()
-                      : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
+                  'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
+                          null
+                      ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
+                          .toString()
+                      : _subsonicService.getCoverArtUrl(song.coverArt,
+                          size: 300),
                   'duration': (song.duration ?? 0).toString(),
                 },
               )
@@ -440,9 +527,11 @@ class PlayerProvider extends ChangeNotifier {
   Future<List<Map<String, String>>> _searchForAndroidAuto(
     String query,
   ) async {
-    debugPrint('PlayerProvider: _searchForAndroidAuto called with query="$query"');
-    debugPrint('PlayerProvider: isOfflineMode=${_offlineService.isOfflineMode}, libraryProvider=$_libraryProvider');
-    
+    debugPrint(
+        'PlayerProvider: _searchForAndroidAuto called with query="$query"');
+    debugPrint(
+        'PlayerProvider: isOfflineMode=${_offlineService.isOfflineMode}, libraryProvider=$_libraryProvider');
+
     if (_offlineService.isOfflineMode && _libraryProvider != null) {
       await _offlineService.initialize();
       final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
@@ -464,8 +553,10 @@ class PlayerProvider extends ChangeNotifier {
               'title': song.title,
               'artist': song.artist ?? '',
               'album': song.album ?? '',
-              'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) != null
-                  ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!).toString()
+              'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
+                      null
+                  ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
+                      .toString()
                   : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
               'duration': (song.duration ?? 0).toString(),
             },
@@ -473,14 +564,16 @@ class PlayerProvider extends ChangeNotifier {
           .toList();
     }
     try {
-      debugPrint('PlayerProvider: Calling subsonicService.search with query="$query"');
+      debugPrint(
+          'PlayerProvider: Calling subsonicService.search with query="$query"');
       final results = await _subsonicService.search(
         query,
         songCount: 20,
         albumCount: 0,
         artistCount: 0,
       );
-      debugPrint('PlayerProvider: Search returned ${results.songs.length} songs');
+      debugPrint(
+          'PlayerProvider: Search returned ${results.songs.length} songs');
       return results.songs
           .map(
             (song) => {
@@ -506,7 +599,6 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> _playFromSearchForAndroidAuto(String query) async {
     debugPrint('Android Auto: playFromSearch called with query: "$query"');
     try {
-      
       if (query.trim().isEmpty) {
         if (_currentSong != null) {
           await play();
@@ -586,7 +678,7 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong!.isLocal) {
       return Uri.file(_currentSong!.coverArt!).toString();
     }
-    
+
     return _resolvedArtworkUrl;
   }
 
@@ -640,7 +732,7 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _resolveArtworkUrl();
-    
+
     final effectiveDuration = _duration.inMilliseconds > 0
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
@@ -675,7 +767,7 @@ class PlayerProvider extends ChangeNotifier {
     if (_currentSong == null) return;
 
     final artworkUrl = _resolveArtworkUrl();
-    
+
     final effectiveDuration = _duration.inMilliseconds > 0
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
@@ -729,6 +821,7 @@ class PlayerProvider extends ChangeNotifier {
   int get currentIndex => _currentIndex;
   bool get isPlaying => _isPlaying;
   bool get isLoading => _isLoading;
+
   /// True when audio is playing on a remote renderer (UPnP or Cast) rather
   /// than locally.  Used to suppress audio-focus and noisy-event handling that
   /// would incorrectly pause the remote device, and to route UI volume changes
@@ -860,7 +953,8 @@ class PlayerProvider extends ChangeNotifier {
       if (fadeOut) {
         final fadeStart = duration - Duration(seconds: fadeDurationSeconds);
         if (fadeStart > Duration.zero) {
-          _sleepTimerFadeTimer = Timer(fadeStart, () => _startFadeOut(fadeDurationSeconds));
+          _sleepTimerFadeTimer =
+              Timer(fadeStart, () => _startFadeOut(fadeDurationSeconds));
         } else {
           _startFadeOut(fadeDurationSeconds);
         }
@@ -923,7 +1017,8 @@ class PlayerProvider extends ChangeNotifier {
     });
 
     _storageService.getRepeatMode().then((saved) {
-      _repeatMode = RepeatMode.values[saved.clamp(0, RepeatMode.values.length - 1)];
+      _repeatMode =
+          RepeatMode.values[saved.clamp(0, RepeatMode.values.length - 1)];
       notifyListeners();
     });
 
@@ -937,16 +1032,20 @@ class PlayerProvider extends ChangeNotifier {
         _isPlaying = state.playing;
 
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
-          debugPrint('[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
+          debugPrint(
+              '[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
         }
 
         if (state.processingState == ProcessingState.completed) {
-          debugPrint('[Player] ✓ Song completed: "${_currentSong?.title ?? 'unknown'}"');
-          _onSongComplete().catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
+          debugPrint(
+              '[Player] ✓ Song completed: "${_currentSong?.title ?? 'unknown'}"');
+          _onSongComplete().catchError(
+              (e) => debugPrint('[Player] _onSongComplete error: $e'));
         }
 
         if (state.processingState == ProcessingState.buffering && !wasPlaying) {
-          debugPrint('[Player] ⟳ Buffering: "${_currentSong?.title ?? 'unknown'}"');
+          debugPrint(
+              '[Player] ⟳ Buffering: "${_currentSong?.title ?? 'unknown'}"');
         }
 
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
@@ -955,7 +1054,6 @@ class PlayerProvider extends ChangeNotifier {
         }
       },
       onError: (error) {
-        
         debugPrint('[Player] State stream error (usually harmless): $error');
       },
     );
@@ -968,8 +1066,7 @@ class PlayerProvider extends ChangeNotifier {
         // ignore its ticks so they don't overwrite the UPnP/Cast position.
         if (_isRenderingRemotely) return;
 
-        final positionJumpedBack =
-            _position.inMilliseconds > 0 &&
+        final positionJumpedBack = _position.inMilliseconds > 0 &&
             position.inMilliseconds < _position.inMilliseconds - 1000;
 
         _position = position;
@@ -1051,7 +1148,7 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> _handleEndOfQueue() async {
     if (_autoDjService.isEnabled) {
       await _addAutoDjSongs();
-      
+
       if (_currentIndex < _queue.length - 1) {
         await skipToIndex(_currentIndex + 1);
       }
@@ -1071,7 +1168,8 @@ class PlayerProvider extends ChangeNotifier {
     _isPlayingRadio = false;
     _currentRadioStation = null;
 
-    debugPrint('[Player] ▶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
+    debugPrint(
+        '[Player] ▶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
     _isLoading = true;
     notifyListeners();
 
@@ -1092,15 +1190,16 @@ class PlayerProvider extends ChangeNotifier {
       }
 
       _currentSong = song;
-      _resolvedArtworkUrl = null; 
+      _resolvedArtworkUrl = null;
       _position = Duration.zero;
       notifyListeners();
+      _saveQueueState();
 
       await _refreshArtworkUrl();
 
       // Load lyrics for lock screen sync
       await _loadAndSyncLyrics(song);
-      
+
       // Update song info for iOS Live Activity
       await _lyricsService.updateSongInfo(
         title: song.title,
@@ -1125,9 +1224,8 @@ class PlayerProvider extends ChangeNotifier {
           imageUrl: coverUrl,
           albumName: song.album,
           trackNumber: song.track,
-          duration: song.duration != null
-              ? Duration(seconds: song.duration!)
-              : null,
+          duration:
+              song.duration != null ? Duration(seconds: song.duration!) : null,
           autoPlay: true,
         );
         _isRenderingRemotely = true;
@@ -1148,8 +1246,8 @@ class PlayerProvider extends ChangeNotifier {
         try {
           // Resolve the MIME type so strict UPnP renderers (e.g. moode /
           // upmpdcli with "check metadata" on) can validate protocolInfo.
-          final mimeType = song.contentType ??
-              UpnpService.mimeTypeFromSuffix(song.suffix);
+          final mimeType =
+              song.contentType ?? UpnpService.mimeTypeFromSuffix(song.suffix);
           final success = await _upnpService.loadAndPlay(
             url: playUrl,
             title: song.title,
@@ -1163,11 +1261,11 @@ class PlayerProvider extends ChangeNotifier {
           );
           if (!success) {
             _upnpService.disconnect();
-            debugPrint('UPnP playback failed (retries exhausted), disconnected');
+            debugPrint(
+                'UPnP playback failed (retries exhausted), disconnected');
             return;
           }
         } catch (e) {
-          
           _upnpService.disconnect();
           debugPrint('UPnP playback failed, disconnected: $e');
           rethrow;
@@ -1176,7 +1274,7 @@ class PlayerProvider extends ChangeNotifier {
         _isPlaying = true;
       } else {
         _isRenderingRemotely = false;
-        
+
         // For YouTube, pre-fetch the manifest then hand a StreamAudioSource
         // to just_audio so ExoPlayer never touches the YouTube URL directly.
         final youtubeSource = song.isLocal != true
@@ -1225,14 +1323,15 @@ class PlayerProvider extends ChangeNotifier {
 
       if (song.isLocal != true) {
         if (_offlineService.isOfflineMode) {
-          
           _offlineService.queueScrobble(song.id, submission: false);
         } else {
           _subsonicService.scrobble(song.id, submission: false).catchError((e) {
             _offlineService.queueScrobble(song.id, submission: false);
           });
 
-          _offlineService.flushPendingScrobbles(_subsonicService).catchError((e) {
+          _offlineService
+              .flushPendingScrobbles(_subsonicService)
+              .catchError((e) {
             debugPrint('Scrobble flush failed: $e');
           });
         }
@@ -1259,7 +1358,6 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> playRadioStation(RadioStation station) async {
-    
     if (_isPlayingRadio && _currentRadioStation?.id == station.id) {
       await togglePlayPause();
       return;
@@ -1269,7 +1367,6 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      
       _currentSong = null;
       _queue = [];
       _currentIndex = -1;
@@ -1328,33 +1425,34 @@ class PlayerProvider extends ChangeNotifier {
     try {
       // Stop any previous sync
       _lyricsService.stopSync();
-      
+
       // Fetch lyrics from Subsonic API
       final lyricsResponse = await _subsonicService.getLyricsBySongId(song.id);
-      
+
       if (lyricsResponse != null) {
         // Extract lyrics content from response
         // Subsonic returns lyrics in various formats
         String? lyricsContent;
-        
+
         if (lyricsResponse.containsKey('lyrics')) {
           // Standard Subsonic format
           lyricsContent = lyricsResponse['lyrics'] as String?;
         } else if (lyricsResponse.containsKey('structuredLyrics')) {
           // Jellyfin format - convert to LRC
-          final structured = lyricsResponse['structuredLyrics'] as List<dynamic>?;
+          final structured =
+              lyricsResponse['structuredLyrics'] as List<dynamic>?;
           if (structured != null && structured.isNotEmpty) {
             lyricsContent = _convertStructuredToLrc(structured);
           }
         }
-        
+
         if (lyricsContent != null && lyricsContent.isNotEmpty) {
           // Load lyrics into the service
           await _lyricsService.loadLyrics(lyricsContent);
-          
+
           // Start syncing with position stream
           _lyricsService.startSync(_audioPlayer.positionStream);
-          
+
           debugPrint('[Lyrics] Loaded and started sync for "${song.title}"');
         } else {
           // No lyrics available - clear any existing
@@ -1384,14 +1482,14 @@ class PlayerProvider extends ChangeNotifier {
         final minutes = startMs ~/ 60000;
         final seconds = (startMs % 60000) ~/ 1000;
         final centiseconds = (startMs % 1000) ~/ 10;
-        buffer.writeln('[$minutes:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}]$text');
+        buffer.writeln(
+            '[$minutes:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}]$text');
       }
     }
     return buffer.toString();
   }
 
   void _updateSystemServicesForRadio(RadioStation station) {
-    
     _windowsService.updatePlaybackState(
       song: null,
       isPlaying: true,
@@ -1539,6 +1637,7 @@ class PlayerProvider extends ChangeNotifier {
       if (songsToAdd.isNotEmpty) {
         _queue.addAll(songsToAdd);
         notifyListeners();
+        _saveQueueState();
         debugPrint('Auto DJ added ${songsToAdd.length} songs to queue');
       }
     } catch (e) {
@@ -1639,6 +1738,7 @@ class PlayerProvider extends ChangeNotifier {
           );
         }
       }
+      _saveQueueState();
       notifyListeners();
     }
   }
@@ -1650,6 +1750,7 @@ class PlayerProvider extends ChangeNotifier {
     _discordRpcService.clearPresence();
     // Clear lyrics when clearing queue
     _lyricsService.stopSync();
+    _clearPersistedQueue();
     _lyricsService.loadLyrics(null);
     _audioPlayer.stop();
     _isPlaying = false;
@@ -1675,6 +1776,7 @@ class PlayerProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+    _saveQueueState();
   }
 
   Future<void> setVolume(double volume) async {
@@ -1773,7 +1875,7 @@ class PlayerProvider extends ChangeNotifier {
         await _subsonicService.star(id: song.id);
       }
       _libraryProvider?.loadStarred();
-      
+
       if (_currentSong?.id == song.id) {
         _currentSong = _currentSong!.copyWith(starred: !isStarred);
         notifyListeners();
@@ -1793,7 +1895,6 @@ class PlayerProvider extends ChangeNotifier {
     try {
       await _subsonicService.setRating(songId, rating);
     } catch (e) {
-      
       _currentSong = _currentSong?.copyWith(userRating: previousRating);
       notifyListeners();
       rethrow;
@@ -1818,7 +1919,8 @@ class PlayerProvider extends ChangeNotifier {
         // If there's a current song and audio is not playing, resume it
         // This handles the case where iOS pauses audio when dismissing the player
         if (_currentSong != null && !_audioPlayer.playing) {
-          debugPrint('[Player] iOS: Resuming playback after audio session reactivation (song: ${_currentSong!.title})');
+          debugPrint(
+              '[Player] iOS: Resuming playback after audio session reactivation (song: ${_currentSong!.title})');
           await _audioPlayer.play();
           _isPlaying = true;
           notifyListeners();
@@ -1846,10 +1948,10 @@ class PlayerProvider extends ChangeNotifier {
     _windowsService.dispose();
     _bluetoothService.dispose();
     _samsungService.dispose();
-    
+
     // Dispose lyrics service
     _lyricsService.dispose();
-    
+
     _discordRpcService.shutdown();
     _playerStateSub?.cancel();
     _positionSub?.cancel();
@@ -1894,7 +1996,6 @@ class PlayerProvider extends ChangeNotifier {
       startTime: startTimestamp,
       endTime: endTimestamp,
     );
-
   }
 
   Future<void> setDiscordRpcEnabled(bool enabled) async {
@@ -1924,10 +2025,9 @@ class PlayerProvider extends ChangeNotifier {
   void _onCastStateChanged() {
     notifyListeners();
     if (_castService.isConnected) {
-      _audioPlayer.pause(); 
+      _audioPlayer.pause();
       _androidSystemService.setRemotePlayback(isRemote: true, volume: 50);
       if (_currentSong != null) {
-        
         final song = _currentSong!;
         _currentSong = null;
         playSong(song);
@@ -1955,14 +2055,13 @@ class PlayerProvider extends ChangeNotifier {
       _upnpWasPlaying = false;
       if (_audioPlayer.playing) _audioPlayer.pause();
       final vol = _upnpService.volume;
-      
+
       if (vol >= 0) _volume = vol / 100.0;
       _androidSystemService.setRemotePlayback(
         isRemote: true,
         volume: vol >= 0 ? vol : 50,
       );
       if (_currentSong != null) {
-        
         final song = _currentSong!;
         _currentSong = null;
         playSong(song);
@@ -1995,9 +2094,11 @@ class PlayerProvider extends ChangeNotifier {
       // end.  We don't check duration > 0 here because many renderers
       // (including moode/upmpdcli) return 0:00:00 from GetPositionInfo once
       // the transport is stopped, which would cause the check to silently fail.
-      debugPrint('UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
+      debugPrint(
+          'UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
       _upnpWasPlaying = false;
-      _onSongComplete().catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
+      _onSongComplete()
+          .catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
       return;
     }
 
