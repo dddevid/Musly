@@ -181,6 +181,10 @@
   "@genres": {
     "description": "Genres section label"
   },
+  "years": "Years",
+  "@years": {
+    "description": "Years filter tab label"
+  },
 
   "favorites": "Favorites",
   "@favorites": {
@@ -683,6 +687,11 @@
   "localMusicStats": "Local Music Files",
   "addMusicFolder": "Add Music Folder",
   "rescanLocalMusic": "Rescan Local Music",
+  "localLibraryEmpty": "Your library is empty",
+  "localLibraryEmptySubtitle": "No local music files were found. Tap the button below to scan again.",
+  "libraryEmpty": "Your library is empty",
+  "libraryEmptySubtitle": "Add some songs to get started.",
+  "scanForMusic": "Scan for Music",
   "radioStations": "Radio Stations",
   "playlist": "Playlist",
   "internetRadio": "Internet Radio",
@@ -1787,5 +1796,109 @@
   "supportWayShare": "Tell your friends about Musly",
   "supportWayBugs": "Report bugs or suggest features",
   "supportWayEnjoy": "Just enjoy the music! 🎵",
-  "supportMadeWithLove": "Made with 💙 in Italy"
+  "supportMadeWithLove": "Made with 💙 in Italy",
+
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Playback Speed",
+  "@playbackSpeed": { "description": "Title of the playback speed bottom sheet" },
+
+  "normalSpeed": "Normal (1×)",
+  "@normalSpeed": { "description": "Label for 1× (normal) playback speed option" },
+
+  "preservePitch": "Preserve pitch",
+  "@preservePitch": { "description": "Toggle label to keep original pitch when changing speed" },
+
+  "preservePitchSubtitle": "Keep original pitch when changing speed",
+  "@preservePitchSubtitle": { "description": "Subtitle for the preserve-pitch toggle" },
+
+  "pitch": "Pitch",
+  "@pitch": { "description": "Label for the pitch slider in the speed dialog" },
+
+  "pitchPreserved": "pitch preserved",
+  "@pitchPreserved": { "description": "Tooltip fragment shown when pitch correction is on" },
+
+  "speedTooltipWithPitch": "Speed {speed} · pitch {pitch}×",
+  "@speedTooltipWithPitch": {
+    "description": "Tooltip for the speed button showing speed and pitch values",
+    "placeholders": {
+      "speed": { "type": "String" },
+      "pitch": { "type": "String" }
+    }
+  },
+
+  "speedTooltipPitchPreserved": "Speed {speed} · pitch preserved",
+  "@speedTooltipPitchPreserved": {
+    "description": "Tooltip for the speed button when pitch is preserved",
+    "placeholders": {
+      "speed": { "type": "String" }
+    }
+  },
+
+  "sleepTimer": "Sleep Timer",
+  "@sleepTimer": { "description": "Title of the sleep timer bottom sheet" },
+
+  "sleepTimerActive": "Sleep timer active",
+  "@sleepTimerActive": { "description": "Tooltip for the sleep timer button when a timer is running" },
+
+  "fadeOut": "Fade out",
+  "@fadeOut": { "description": "Toggle label for the fade-out option in the sleep timer dialog" },
+
+  "fadeOutSubtitle": "Gradually lower volume in the last {seconds} s",
+  "@fadeOutSubtitle": {
+    "description": "Subtitle for the fade-out toggle, showing fade duration in seconds",
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "finishCurrentSong": "Finish current song",
+  "@finishCurrentSong": { "description": "Toggle label to stop after the current track finishes" },
+
+  "finishCurrentSongSubtitle": "Stop after the current track ends",
+  "@finishCurrentSongSubtitle": { "description": "Subtitle for the finish-current-song toggle" },
+
+  "sleepTimerMinutes": "{count} min",
+  "@sleepTimerMinutes": {
+    "description": "Sleep timer option label for a duration in minutes",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "sleepTimerHours": "{count} hour",
+  "@sleepTimerHours": {
+    "description": "Sleep timer option label for a duration in hours",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "sleepTimerSetFor": "Sleep timer set for {duration}",
+  "@sleepTimerSetFor": {
+    "description": "Snackbar shown after setting the sleep timer",
+    "placeholders": {
+      "duration": { "type": "String" }
+    }
+  },
+
+  "customDuration": "Custom duration…",
+  "@customDuration": { "description": "List tile label to open the custom sleep timer dialog" },
+
+  "cancelTimer": "Cancel timer",
+  "@cancelTimer": { "description": "List tile label to cancel the active sleep timer" },
+
+  "customSleepTimer": "Custom Sleep Timer",
+  "@customSleepTimer": { "description": "Title of the custom sleep timer dialog" },
+
+  "set": "Set",
+  "@set": { "description": "Confirm button label in the custom sleep timer dialog" },
+
+  "addToPlaylistTitle": "Add to Playlist",
+  "@addToPlaylistTitle": { "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)" },
+
+  "yourPlaylistsLabel": "Your Playlists",
+  "@yourPlaylistsLabel": { "description": "Section heading inside the add-to-playlist bottom sheet" },
+
+  "unknownArtist": "Unknown Artist",
+  "@unknownArtist": { "description": "Fallback displayed when a song has no artist" }
 }

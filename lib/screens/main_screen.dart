@@ -80,19 +80,15 @@ class _MainScreenState extends State<MainScreen> {
           context,
           listen: false,
         );
-        
+
         libraryProvider.setLocalMusicService(localMusicService);
 
         if (localMusicService.isEmpty && !localMusicService.isScanning) {
-          
           localMusicService.scanForMusic();
         } else if (!localMusicService.isScanning) {
-          
           libraryProvider.initialize();
         }
-        
       } else {
-        
         libraryProvider.setLocalOnlyMode(false);
         libraryProvider.setServerOfflineMode(widget.isOfflineMode);
         libraryProvider.initialize();
@@ -155,7 +151,6 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -218,7 +213,6 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
               ),
-
               if (changelog.isNotEmpty)
                 Flexible(
                   child: Padding(
@@ -246,9 +240,8 @@ class _MainScreenState extends State<MainScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   height: 1.5,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.black87,
+                                  color:
+                                      isDark ? Colors.white70 : Colors.black87,
                                 ),
                               ),
                             ),
@@ -258,7 +251,6 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 ),
-
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -315,7 +307,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openNowPlaying() {
-    Navigator.of(context).push(
+    Navigator.of(context)
+        .push(
       PageRouteBuilder(
         opaque: true,
         barrierColor: Colors.black,
@@ -339,8 +332,8 @@ class _MainScreenState extends State<MainScreen> {
         },
         transitionDuration: const Duration(milliseconds: 400),
       ),
-    ).then((_) async {
-      
+    )
+        .then((_) async {
       if (!mounted) return;
       if (Platform.isIOS) {
         // Wait longer for the transition to complete and audio session to stabilize
@@ -426,11 +419,9 @@ class _MainScreenState extends State<MainScreen> {
             _handleBackButton();
           },
           child: Scaffold(
-            resizeToAvoidBottomInset:
-                false, 
+            resizeToAvoidBottomInset: false,
             body: Column(
               children: [
-                
                 if (widget.isOfflineMode || isLocalMode)
                   Container(
                     width: double.infinity,
@@ -456,10 +447,12 @@ class _MainScreenState extends State<MainScreen> {
                               isLocalMode
                                   ? AppLocalizations.of(
                                       context,
-                                    )!.localFilesModeBanner
+                                    )!
+                                      .localFilesModeBanner
                                   : AppLocalizations.of(
                                       context,
-                                    )!.offlineModeBanner,
+                                    )!
+                                      .offlineModeBanner,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 13,
@@ -471,7 +464,6 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                   ),
-                
                 if (isLocalMode)
                   Selector<LocalMusicService, (bool, double, String)>(
                     selector: (_, s) =>
@@ -480,27 +472,43 @@ class _MainScreenState extends State<MainScreen> {
                       final (isScanning, progress, status) = data;
                       if (!isScanning) return const SizedBox.shrink();
                       return Container(
-                        color: Colors.indigo.shade700,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.85),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 6,
+                          vertical: 8,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              status,
-                              style: const TextStyle(
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
                                 color: Colors.white,
-                                fontSize: 12,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            LinearProgressIndicator(
-                              value: progress,
-                              backgroundColor: Colors.indigo.shade900,
-                              color: Colors.white,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                status,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
+                            if (progress > 0)
+                              Text(
+                                '${(progress * 100).toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
                           ],
                         ),
                       );
@@ -519,7 +527,6 @@ class _MainScreenState extends State<MainScreen> {
                     },
                   ),
                 ),
-                
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -538,7 +545,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _handleBackButton() {
-    
     final navigatorState = NavigationHelper.mobileNavigatorKey.currentState;
     if (navigatorState != null && navigatorState.canPop()) {
       navigatorState.pop();
@@ -653,9 +659,7 @@ class _MainScreenState extends State<MainScreen> {
                               key: ValueKey(isSelected),
                               color: isSelected
                                   ? accent
-                                  : (isDark
-                                        ? Colors.white54
-                                        : Colors.black38),
+                                  : (isDark ? Colors.white54 : Colors.black38),
                               size: 22,
                             ),
                           ),
@@ -669,9 +673,7 @@ class _MainScreenState extends State<MainScreen> {
                                   : FontWeight.w400,
                               color: isSelected
                                   ? accent
-                                  : (isDark
-                                        ? Colors.white54
-                                        : Colors.black38),
+                                  : (isDark ? Colors.white54 : Colors.black38),
                             ),
                           ),
                         ],
@@ -707,7 +709,6 @@ class _MainScreenState extends State<MainScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            
             final navigatorState =
                 NavigationHelper.mobileNavigatorKey.currentState;
             navigatorState?.popUntil((route) => route.isFirst);

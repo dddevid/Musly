@@ -356,6 +356,12 @@ abstract class AppLocalizations {
   /// **'Genres'**
   String get genres;
 
+  /// Years filter tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Years'**
+  String get years;
+
   /// Favorites section label
   ///
   /// In en, this message translates to:
@@ -560,7 +566,7 @@ abstract class AppLocalizations {
   /// **'Join Discord Community'**
   String get joinDiscord;
 
-  /// Placeholder for unknown artist
+  /// Fallback displayed when a song has no artist
   ///
   /// In en, this message translates to:
   /// **'Unknown Artist'**
@@ -1003,6 +1009,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rescan Local Music'**
   String get rescanLocalMusic;
+
+  /// No description provided for @localLibraryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is empty'**
+  String get localLibraryEmpty;
+
+  /// No description provided for @localLibraryEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No local music files were found. Tap the button below to scan again.'**
+  String get localLibraryEmptySubtitle;
+
+  /// No description provided for @libraryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is empty'**
+  String get libraryEmpty;
+
+  /// No description provided for @libraryEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add some songs to get started.'**
+  String get libraryEmptySubtitle;
+
+  /// No description provided for @scanForMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan for Music'**
+  String get scanForMusic;
 
   /// No description provided for @radioStations.
   ///
@@ -3169,6 +3205,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Made with 💙 in Italy'**
   String get supportMadeWithLove;
+
+  /// Title of the playback speed bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Playback Speed'**
+  String get playbackSpeed;
+
+  /// Label for 1× (normal) playback speed option
+  ///
+  /// In en, this message translates to:
+  /// **'Normal (1×)'**
+  String get normalSpeed;
+
+  /// Toggle label to keep original pitch when changing speed
+  ///
+  /// In en, this message translates to:
+  /// **'Preserve pitch'**
+  String get preservePitch;
+
+  /// Subtitle for the preserve-pitch toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Keep original pitch when changing speed'**
+  String get preservePitchSubtitle;
+
+  /// Label for the pitch slider in the speed dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Pitch'**
+  String get pitch;
+
+  /// Tooltip fragment shown when pitch correction is on
+  ///
+  /// In en, this message translates to:
+  /// **'pitch preserved'**
+  String get pitchPreserved;
+
+  /// Tooltip for the speed button showing speed and pitch values
+  ///
+  /// In en, this message translates to:
+  /// **'Speed {speed} · pitch {pitch}×'**
+  String speedTooltipWithPitch(String speed, String pitch);
+
+  /// Tooltip for the speed button when pitch is preserved
+  ///
+  /// In en, this message translates to:
+  /// **'Speed {speed} · pitch preserved'**
+  String speedTooltipPitchPreserved(String speed);
+
+  /// Title of the sleep timer bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep Timer'**
+  String get sleepTimer;
+
+  /// Tooltip for the sleep timer button when a timer is running
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer active'**
+  String get sleepTimerActive;
+
+  /// Toggle label for the fade-out option in the sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Fade out'**
+  String get fadeOut;
+
+  /// Subtitle for the fade-out toggle, showing fade duration in seconds
+  ///
+  /// In en, this message translates to:
+  /// **'Gradually lower volume in the last {seconds} s'**
+  String fadeOutSubtitle(int seconds);
+
+  /// Toggle label to stop after the current track finishes
+  ///
+  /// In en, this message translates to:
+  /// **'Finish current song'**
+  String get finishCurrentSong;
+
+  /// Subtitle for the finish-current-song toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Stop after the current track ends'**
+  String get finishCurrentSongSubtitle;
+
+  /// Sleep timer option label for a duration in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String sleepTimerMinutes(int count);
+
+  /// Sleep timer option label for a duration in hours
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hour'**
+  String sleepTimerHours(int count);
+
+  /// Snackbar shown after setting the sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer set for {duration}'**
+  String sleepTimerSetFor(String duration);
+
+  /// List tile label to open the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom duration…'**
+  String get customDuration;
+
+  /// List tile label to cancel the active sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel timer'**
+  String get cancelTimer;
+
+  /// Title of the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Sleep Timer'**
+  String get customSleepTimer;
+
+  /// Confirm button label in the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get set;
+
+  /// Title of the add-to-playlist bottom sheet (distinct from the menu action)
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Playlist'**
+  String get addToPlaylistTitle;
+
+  /// Section heading inside the add-to-playlist bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Your Playlists'**
+  String get yourPlaylistsLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -81,7 +81,8 @@ class LocalMusicService extends ChangeNotifier {
     if (!await dir.exists()) return false;
 
     currentPaths.add(path);
-    final success = await _prefs!.setStringList(_customScanPathsKey, currentPaths);
+    final success =
+        await _prefs!.setStringList(_customScanPathsKey, currentPaths);
     if (success) {
       notifyListeners();
     }
@@ -96,7 +97,8 @@ class LocalMusicService extends ChangeNotifier {
     if (!currentPaths.contains(path)) return true;
 
     currentPaths.remove(path);
-    final success = await _prefs!.setStringList(_customScanPathsKey, currentPaths);
+    final success =
+        await _prefs!.setStringList(_customScanPathsKey, currentPaths);
     if (success) {
       notifyListeners();
     }
@@ -186,9 +188,8 @@ class LocalMusicService extends ChangeNotifier {
     }
 
     if (Platform.isIOS) {
-      
       final status = await Permission.mediaLibrary.request();
-      
+
       debugPrint('iOS mediaLibrary permission: $status');
       return true;
     }
@@ -222,7 +223,16 @@ class LocalMusicService extends ChangeNotifier {
 
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['mp3', 'flac', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'wma'],
+      allowedExtensions: [
+        'mp3',
+        'flac',
+        'm4a',
+        'aac',
+        'wav',
+        'ogg',
+        'opus',
+        'wma'
+      ],
       allowMultiple: true,
       withData: false,
       withReadStream: false,
@@ -251,7 +261,8 @@ class LocalMusicService extends ChangeNotifier {
         }
         fileToProcess = destFile;
       } catch (e) {
-        debugPrint('Failed to copy picked file to sandbox: $e — using original path');
+        debugPrint(
+            'Failed to copy picked file to sandbox: $e — using original path');
         fileToProcess = srcFile;
       }
 
@@ -344,7 +355,6 @@ class LocalMusicService extends ChangeNotifier {
     if (Platform.isAndroid) {
       return _defaultScanPaths;
     } else if (Platform.isIOS) {
-      
       final docs = _artCacheDir != null
           ? path.join(path.dirname(path.dirname(_artCacheDir!)), 'Music')
           : null;
@@ -368,7 +378,6 @@ class LocalMusicService extends ChangeNotifier {
         recursive: true,
         followLinks: false,
       )) {
-        
         if (excluded.any((ex) => entity.path.startsWith(ex))) {
           continue;
         }
@@ -431,8 +440,49 @@ class LocalMusicService extends ChangeNotifier {
           }
         }
       }
-    } catch (_) {
-      
+    } catch (e) {
+      debugPrint('Metadata read failed for ${file.path}: $e');
+    }
+
+    // Fallback: look for folder art in the parent directory.
+    if (coverArtPath == null && _artCacheDir != null) {
+      final albumId = 'local_album_${albumName.hashCode.abs()}';
+      if (_albumArtCache.containsKey(albumId)) {
+        coverArtPath = _albumArtCache[albumId];
+      } else {
+        final parent = file.parent;
+        final candidates = [
+          'cover.jpg',
+          'folder.jpg',
+          'albumart.jpg',
+          'front.jpg',
+          'Cover.jpg',
+          'Folder.jpg',
+          'AlbumArt.jpg',
+          'Front.jpg',
+          'cover.png',
+          'folder.png',
+        ];
+        for (final candidate in candidates) {
+          final candidateFile = File('${parent.path}/$candidate');
+          if (await candidateFile.exists()) {
+            // Copy to cache so we have a stable path across sessions.
+            final ext = path.extension(candidateFile.path).toLowerCase();
+            final dest =
+                File('$_artCacheDir/$albumId${ext.isEmpty ? '.jpg' : ext}');
+            try {
+              await candidateFile.copy(dest.path);
+              coverArtPath = dest.path;
+              _albumArtCache[albumId] = coverArtPath;
+            } catch (e) {
+              // If copy fails, just use the original path directly.
+              coverArtPath = candidateFile.path;
+              _albumArtCache[albumId] = coverArtPath;
+            }
+            break;
+          }
+        }
+      }
     }
 
     if (artist == null) {
@@ -440,7 +490,7 @@ class LocalMusicService extends ChangeNotifier {
         final parts = fileName.split(' - ');
         if (parts.length >= 2) {
           final rawArtist = parts[0].trim();
-          
+
           final noNum = RegExp(r'^(\d{1,2})[.\s]+(.+)$').firstMatch(rawArtist);
           artist = noNum != null ? noNum.group(2)!.trim() : rawArtist;
           title = parts.sublist(1).join(' - ').trim();
@@ -485,7 +535,7 @@ class LocalMusicService extends ChangeNotifier {
       genre: genre,
       duration: duration,
       bitRate: bitRate,
-      coverArt: coverArtPath, 
+      coverArt: coverArtPath,
       path: file.path,
       isLocal: true,
     );
@@ -507,7 +557,6 @@ class LocalMusicService extends ChangeNotifier {
     final artistMap = <String, List<Song>>{};
 
     for (final song in _songs) {
-      
       final albumKey = song.albumId ?? song.album ?? 'Unknown';
       albumMap.putIfAbsent(albumKey, () => []).add(song);
 
@@ -545,8 +594,26 @@ class LocalMusicService extends ChangeNotifier {
       );
     }
 
-    _songs.sort((a, b) => a.title.compareTo(b.title));
-    _albums.sort((a, b) => a.name.compareTo(b.name));
+    // Sort songs by album name, then by track number (natural album order).
+    _songs.sort((a, b) {
+      final albumCmp = (a.album ?? '').compareTo(b.album ?? '');
+      if (albumCmp != 0) return albumCmp;
+      final trackA = a.track ?? 9999;
+      final trackB = b.track ?? 9999;
+      return trackA.compareTo(trackB);
+    });
+
+    // Sort albums: newest first (year desc), then name (A-Z).
+    _albums.sort((a, b) {
+      if (a.year != null && b.year != null) {
+        final yearCmp = b.year!.compareTo(a.year!);
+        if (yearCmp != 0) return yearCmp;
+      }
+      if (a.year != null && b.year == null) return -1;
+      if (a.year == null && b.year != null) return 1;
+      return a.name.compareTo(b.name);
+    });
+
     _artists.sort((a, b) => a.name.compareTo(b.name));
   }
 
@@ -584,6 +651,7 @@ class LocalMusicService extends ChangeNotifier {
         'version': 1,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'songs': _songs.map((s) => s.toJson()).toList(),
+        'albumArt': _albumArtCache,
       };
       await file.writeAsString(json.encode(data));
       await _prefs?.setInt('local_song_count', _songs.length);
@@ -596,7 +664,7 @@ class LocalMusicService extends ChangeNotifier {
     try {
       final file = await _getCacheFile();
       if (!await file.exists()) {
-        return; 
+        return;
       }
 
       final content = await file.readAsString();
@@ -604,11 +672,22 @@ class LocalMusicService extends ChangeNotifier {
 
       final timestamp = data['timestamp'] as int? ?? 0;
       final age = DateTime.now().millisecondsSinceEpoch - timestamp;
-      const maxAge = 7 * 24 * 60 * 60 * 1000; 
+      const maxAge = 7 * 24 * 60 * 60 * 1000;
 
       final cachedSongs = (data['songs'] as List<dynamic>)
           .map((s) => Song.fromJson(s as Map<String, dynamic>))
           .toList();
+
+      final artCache = data['albumArt'];
+      if (artCache != null && artCache is Map) {
+        _albumArtCache.clear();
+        for (final entry in artCache.entries) {
+          final value = entry.value;
+          if (value is String && File(value).existsSync()) {
+            _albumArtCache[entry.key] = value;
+          }
+        }
+      }
 
       if (cachedSongs.isEmpty) return;
 
@@ -622,14 +701,14 @@ class LocalMusicService extends ChangeNotifier {
           final filename = path.basename(song.path!);
           final sandboxPath = '$musicDirPath/$filename';
           if (await File(sandboxPath).exists()) {
-            
             final fixedSong = song.copyWith(
               path: sandboxPath,
               id: 'local_${sandboxPath.hashCode.abs()}',
             );
             remapped.add(fixedSong);
           } else {
-            debugPrint('Dropping cached song (file missing in sandbox): $filename');
+            debugPrint(
+                'Dropping cached song (file missing in sandbox): $filename');
           }
         }
         if (remapped.isEmpty) return;
@@ -637,8 +716,9 @@ class LocalMusicService extends ChangeNotifier {
         _songs.addAll(remapped);
         _buildAlbumsAndArtists();
         notifyListeners();
-        debugPrint('Loaded ${_songs.length} songs from local cache (iOS paths remapped).');
-        
+        debugPrint(
+            'Loaded ${_songs.length} songs from local cache (iOS paths remapped).');
+
         await _cacheLibrary();
         return;
       }
@@ -674,7 +754,7 @@ class LocalMusicService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting local music cache: $e');
     }
-    
+
     if (_artCacheDir != null) {
       try {
         final dir = Directory(_artCacheDir!);

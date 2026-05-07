@@ -117,6 +117,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get genres => 'Genres';
 
   @override
+  String get years => 'Years';
+
+  @override
   String get favorites => 'Favorites';
 
   @override
@@ -466,6 +469,22 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get rescanLocalMusic => 'Rescan Local Music';
+
+  @override
+  String get localLibraryEmpty => 'Your library is empty';
+
+  @override
+  String get localLibraryEmptySubtitle =>
+      'No local music files were found. Tap the button below to scan again.';
+
+  @override
+  String get libraryEmpty => 'Your library is empty';
+
+  @override
+  String get libraryEmptySubtitle => 'Add some songs to get started.';
+
+  @override
+  String get scanForMusic => 'Scan for Music';
 
   @override
   String get radioStations => 'Radio Stations';
@@ -1661,4 +1680,85 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get supportMadeWithLove => 'Made with 💙 in Italy';
+
+  @override
+  String get playbackSpeed => 'Playback Speed';
+
+  @override
+  String get normalSpeed => 'Normal (1×)';
+
+  @override
+  String get preservePitch => 'Preserve pitch';
+
+  @override
+  String get preservePitchSubtitle => 'Keep original pitch when changing speed';
+
+  @override
+  String get pitch => 'Pitch';
+
+  @override
+  String get pitchPreserved => 'pitch preserved';
+
+  @override
+  String speedTooltipWithPitch(String speed, String pitch) {
+    return 'Speed $speed · pitch $pitch×';
+  }
+
+  @override
+  String speedTooltipPitchPreserved(String speed) {
+    return 'Speed $speed · pitch preserved';
+  }
+
+  @override
+  String get sleepTimer => 'Sleep Timer';
+
+  @override
+  String get sleepTimerActive => 'Sleep timer active';
+
+  @override
+  String get fadeOut => 'Fade out';
+
+  @override
+  String fadeOutSubtitle(int seconds) {
+    return 'Gradually lower volume in the last $seconds s';
+  }
+
+  @override
+  String get finishCurrentSong => 'Finish current song';
+
+  @override
+  String get finishCurrentSongSubtitle => 'Stop after the current track ends';
+
+  @override
+  String sleepTimerMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String sleepTimerHours(int count) {
+    return '$count hour';
+  }
+
+  @override
+  String sleepTimerSetFor(String duration) {
+    return 'Sleep timer set for $duration';
+  }
+
+  @override
+  String get customDuration => 'Custom duration…';
+
+  @override
+  String get cancelTimer => 'Cancel timer';
+
+  @override
+  String get customSleepTimer => 'Custom Sleep Timer';
+
+  @override
+  String get set => 'Set';
+
+  @override
+  String get addToPlaylistTitle => 'Add to Playlist';
+
+  @override
+  String get yourPlaylistsLabel => 'Your Playlists';
 }

@@ -6,7 +6,9 @@ import '../models/song.dart';
 import '../providers/player_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
-import 'synced_lyrics_view.dart' show AppleMusicLyricsController, AMLLLyricsWidget;
+import 'synced_lyrics_view.dart'
+    show AppleMusicLyricsController, AMLLLyricsWidget;
+import '../l10n/app_localizations.dart';
 
 class CompactLyricsView extends StatefulWidget {
   final Song song;
@@ -123,12 +125,11 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       if (syncedData != null) {
         final structuredLyrics = syncedData['structuredLyrics'];
         if (structuredLyrics is List && structuredLyrics.isNotEmpty) {
-          final syncedEntry = structuredLyrics
-              .cast<Map<String, dynamic>>()
-              .firstWhere(
-                (l) => l['synced'] == true,
-                orElse: () => <String, dynamic>{},
-              );
+          final syncedEntry =
+              structuredLyrics.cast<Map<String, dynamic>>().firstWhere(
+                    (l) => l['synced'] == true,
+                    orElse: () => <String, dynamic>{},
+                  );
           final lines = syncedEntry['line'] as List?;
           if (lines != null && lines.isNotEmpty) {
             final parsedLines = lines
@@ -169,13 +170,13 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
       }
 
       setState(() {
-        _error = 'No lyrics available';
+        _error = AppLocalizations.of(context)!.noLyricsAvailable;
         _isLoading = false;
       });
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load lyrics';
+          _error = AppLocalizations.of(context)!.failedToLoadLyrics;
           _isLoading = false;
         });
       }
@@ -227,7 +228,7 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
             Icon(Icons.music_off_rounded, size: 48, color: Colors.white38),
             const SizedBox(height: 16),
             Text(
-              _error ?? 'No lyrics',
+              _error ?? AppLocalizations.of(context)!.noLyrics,
               style: const TextStyle(color: Colors.white54, fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -264,18 +265,19 @@ class _CompactLyricsViewState extends State<CompactLyricsView> {
                     color: Colors.white24,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.keyboard_arrow_down,
                         color: Colors.white,
                         size: 18,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'Back to current',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        AppLocalizations.of(context)!.backToCurrent,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ],
                   ),

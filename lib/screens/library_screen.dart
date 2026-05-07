@@ -4,8 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/server_config.dart';
+import '../models/song.dart';
+import '../models/album.dart';
 import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
+import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'album_screen.dart';
@@ -16,6 +19,7 @@ import 'playlists_screen.dart';
 import 'settings_screen.dart';
 import 'library_search_delegate.dart';
 import 'artist_screen.dart';
+import 'radio_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
 
@@ -28,7 +32,15 @@ class LibraryScreen extends StatefulWidget {
 
 class _LibraryScreenState extends State<LibraryScreen> {
   String _selectedFilter = 'Faves';
-  final List<String> _filters = ['Faves', 'Albums', 'Artists', 'Songs'];
+
+  List<String> _getFilters(BuildContext context) {
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+    if (libraryProvider.isLocalOnlyMode) {
+      return ['Faves', 'Albums', 'Artists', 'Songs', 'Genres', 'Years'];
+    }
+    return ['Faves', 'Albums', 'Artists', 'Songs'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,16 +100,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ],
           ),
-
           SliverToBoxAdapter(
             child: Builder(
               builder: (context) {
                 final l10n = AppLocalizations.of(context)!;
+                final filters = _getFilters(context);
                 final filterLabels = {
                   'Faves': l10n.faves,
                   'Albums': l10n.filterAlbums,
                   'Artists': l10n.filterArtists,
                   'Songs': l10n.songs,
+                  'Genres': l10n.genres,
+                  'Years': l10n.years,
                 };
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -106,7 +120,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     vertical: 8,
                   ),
                   child: Row(
-                    children: _filters.map((filter) {
+                    children: filters.map((filter) {
                       final isSelected = _selectedFilter == filter;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -141,7 +155,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
               },
             ),
           ),
-
           SliverToBoxAdapter(
             child: Column(
               children: [
@@ -173,14 +186,31 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     isGradient: false,
                     onTap: () => _navigate(context, const LikedAlbumsScreen()),
                   ),
+                  // Radio Stations folder
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.antenna_radiowaves_left_right,
+                    iconColor: const Color(0xFF34C759),
+                    title: AppLocalizations.of(context)!.radioStations,
+                    subtitle: AppLocalizations.of(context)!.internetRadio,
+                    isGradient: false,
+                    onTap: () => _navigate(context, const RadioScreen()),
+                  ),
                 ],
               ],
             ),
           ),
-
           Consumer<LibraryProvider>(
             builder: (context, libraryProvider, _) {
               final items = _getFilteredItems(context, libraryProvider);
+
+              if (items.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _LibraryEmptyState(
+                    isLocalMode: libraryProvider.isLocalOnlyMode,
+                  ),
+                );
+              }
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
@@ -229,8 +259,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             name: a.name,
             subtitle:
                 a.artistParticipants != null && a.artistParticipants!.isNotEmpty
-                ? a.artistParticipants!.map((r) => r.name).join(', ')
-                : (a.artist ?? ''),
+                    ? a.artistParticipants!.map((r) => r.name).join(', ')
+                    : (a.artist ?? ''),
             coverArt: a.coverArt,
           ),
         ),
@@ -242,18 +272,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
       final albums = provider.isLocalOnlyMode
           ? provider.cachedAllAlbums
           : (provider.cachedAllAlbums.isNotEmpty
-                ? provider.cachedAllAlbums
-                : provider.recentAlbums);
+              ? provider.cachedAllAlbums
+              : provider.recentAlbums);
       items.addAll(
         albums.map(
           (a) => _LibraryItem(
             type: 'Album',
             id: a.id,
             name: a.name,
-            subtitle:
-                a.artistParticipants != null && a.artistParticipants!.isNotEmpty
-                ? a.artistParticipants!.map((r) => r.name).join(', ')
-                : (a.artist ?? ''),
+            subtitle: () {
+              final artistStr = a.artistParticipants != null &&
+                      a.artistParticipants!.isNotEmpty
+                  ? a.artistParticipants!.map((r) => r.name).join(', ')
+                  : (a.artist ?? '');
+              if (a.year != null && artistStr.isNotEmpty) {
+                return '$artistStr • ${a.year}';
+              }
+              return artistStr.isNotEmpty
+                  ? artistStr
+                  : (a.year?.toString() ?? '');
+            }(),
             coverArt: a.coverArt,
           ),
         ),
@@ -288,6 +326,60 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
+    if (_selectedFilter == 'Genres') {
+      final genreMap = <String, List<Song>>{};
+      for (final s in provider.cachedAllSongs) {
+        final g = (s.genre ?? 'Unknown').trim();
+        if (g.isEmpty) continue;
+        genreMap.putIfAbsent(g, () => []).add(s);
+      }
+      final sortedGenres = genreMap.keys.toList()..sort();
+      items.addAll(
+        sortedGenres.map(
+          (g) => _LibraryItem(
+            type: 'Genre',
+            id: 'genre_$g',
+            name: g,
+            subtitle: l10n.songsCount(genreMap[g]!.length),
+            coverArt: genreMap[g]!
+                    .firstWhere(
+                      (s) => s.coverArt != null,
+                      orElse: () => genreMap[g]!.first,
+                    )
+                    .coverArt ??
+                '',
+          ),
+        ),
+      );
+    }
+
+    if (_selectedFilter == 'Years') {
+      final yearMap = <int, List<Album>>{};
+      for (final a in provider.cachedAllAlbums) {
+        if (a.year != null) {
+          yearMap.putIfAbsent(a.year!, () => []).add(a);
+        }
+      }
+      final sortedYears = yearMap.keys.toList()..sort((a, b) => b.compareTo(a));
+      items.addAll(
+        sortedYears.map(
+          (y) => _LibraryItem(
+            type: 'Year',
+            id: 'year_$y',
+            name: y.toString(),
+            subtitle: l10n.albumsCount(yearMap[y]!.length),
+            coverArt: yearMap[y]!
+                    .firstWhere(
+                      (a) => a.coverArt != null,
+                      orElse: () => yearMap[y]!.first,
+                    )
+                    .coverArt ??
+                '',
+          ),
+        ),
+      );
+    }
+
     return items;
   }
 
@@ -300,8 +392,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final coverArtUrl = item.coverArt != null
         ? (isLocalFilePath(item.coverArt)
-              ? item.coverArt!
-              : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
+            ? item.coverArt!
+            : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
         : null;
 
     final String typeLabel = switch (item.type) {
@@ -319,20 +411,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
         height: 56,
         child: coverArtUrl != null
             ? (isLocalFilePath(coverArtUrl)
-                  ? Image.file(
-                      File(coverArtUrl),
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) =>
-                          _buildPlaceholder(item.type, isDark),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: coverArtUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (ctx, url) =>
-                          Container(color: Colors.grey[800]),
-                      errorWidget: (ctx, url, err) =>
-                          _buildPlaceholder(item.type, isDark),
-                    ))
+                ? Image.file(
+                    File(coverArtUrl),
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) =>
+                        _buildPlaceholder(item.type, isDark),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: coverArtUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (ctx, url) =>
+                        Container(color: Colors.grey[800]),
+                    errorWidget: (ctx, url, err) =>
+                        _buildPlaceholder(item.type, isDark),
+                  ))
             : _buildPlaceholder(item.type, isDark),
       ),
     );
@@ -397,13 +489,34 @@ class _LibraryScreenState extends State<LibraryScreen> {
       case 'Song':
         icon = Icons.music_note;
         break;
+      case 'Genre':
+        icon = Icons.local_offer;
+        break;
+      case 'Year':
+        icon = Icons.calendar_today;
+        break;
       default:
         icon = Icons.music_note;
     }
 
     return Container(
-      color: isDark ? const Color(0xFF282828) : Colors.grey[300],
-      child: Icon(icon, color: Colors.white54),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF2C2C2E), const Color(0xFF1C1C1E)]
+              : [const Color(0xFFF2F2F7), const Color(0xFFE5E5EA)],
+        ),
+        borderRadius: BorderRadius.circular(type == 'Artist' ? 28 : 4),
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          size: 24,
+          color: isDark ? Colors.white24 : Colors.black12,
+        ),
+      ),
     );
   }
 
@@ -438,6 +551,36 @@ class _LibraryScreenState extends State<LibraryScreen> {
             playlist: songs,
             startIndex: index,
           );
+        }
+        break;
+      case 'Genre':
+        final genreName = item.name;
+        final libraryProvider = Provider.of<LibraryProvider>(
+          context,
+          listen: false,
+        );
+        final songs = libraryProvider.cachedAllSongs
+            .where((s) => s.genre == genreName)
+            .toList();
+        if (songs.isNotEmpty) {
+          final playerProvider = Provider.of<PlayerProvider>(
+            context,
+            listen: false,
+          );
+          playerProvider.playSong(songs.first, playlist: songs, startIndex: 0);
+        }
+        break;
+      case 'Year':
+        final yearStr = item.name;
+        final libraryProvider = Provider.of<LibraryProvider>(
+          context,
+          listen: false,
+        );
+        final albums = libraryProvider.cachedAllAlbums
+            .where((a) => a.year?.toString() == yearStr)
+            .toList();
+        if (albums.isNotEmpty) {
+          NavigationHelper.push(context, AlbumScreen(albumId: albums.first.id));
         }
         break;
     }
@@ -475,7 +618,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       content: Text(
                         AppLocalizations.of(
                           context,
-                        )!.playlistDeleted(item.name),
+                        )!
+                            .playlistDeleted(item.name),
                       ),
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -519,9 +663,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)!.playlistName,
               filled: true,
-              fillColor: isDark
-                  ? const Color(0xFF2C2C2E)
-                  : const Color(0xFFF2F2F7),
+              fillColor:
+                  isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide.none,
@@ -551,7 +694,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         content: Text(
                           AppLocalizations.of(
                             context,
-                          )!.playlistCreated(controller.text),
+                          )!
+                              .playlistCreated(controller.text),
                         ),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -565,7 +709,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         content: Text(
                           AppLocalizations.of(
                             context,
-                          )!.errorCreatingPlaylist(e),
+                          )!
+                              .errorCreatingPlaylist(e),
                         ),
                         behavior: SnackBarBehavior.floating,
                         backgroundColor: Colors.red,
@@ -604,6 +749,77 @@ class _LibraryScreenState extends State<LibraryScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => const _SettingsSheet(),
+    );
+  }
+}
+
+class _LibraryEmptyState extends StatelessWidget {
+  final bool isLocalMode;
+
+  const _LibraryEmptyState({required this.isLocalMode});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 60),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.library_music_outlined,
+            size: 64,
+            color: isDark ? Colors.white24 : Colors.black26,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isLocalMode ? l10n.localLibraryEmpty : l10n.libraryEmpty,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white54 : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isLocalMode
+                ? l10n.localLibraryEmptySubtitle
+                : l10n.libraryEmptySubtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+          ),
+          if (isLocalMode) ...[
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                final localService = Provider.of<LocalMusicService>(
+                  context,
+                  listen: false,
+                );
+                if (!localService.isScanning) {
+                  localService.scanForMusic();
+                }
+              },
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.scanForMusic),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: isDark ? Colors.black : Colors.white,
+                backgroundColor: isDark ? Colors.white : Colors.black,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -747,9 +963,8 @@ class _SettingsSheet extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppTheme.darkCard
-                          : AppTheme.lightBackground,
+                      color:
+                          isDark ? AppTheme.darkCard : AppTheme.lightBackground,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -921,10 +1136,13 @@ class _SettingsSheet extends StatelessWidget {
                 builder: (context, snapshot) {
                   final profiles = snapshot.data ?? [];
                   final currentConfig = authProvider.config;
-                  final otherProfiles = profiles.where((p) =>
-                    p.serverUrl != currentConfig?.serverUrl ||
-                    p.username != currentConfig?.username,
-                  ).toList();
+                  final otherProfiles = profiles
+                      .where(
+                        (p) =>
+                            p.serverUrl != currentConfig?.serverUrl ||
+                            p.username != currentConfig?.username,
+                      )
+                      .toList();
 
                   return Column(
                     children: otherProfiles.map((profile) {
@@ -941,8 +1159,9 @@ class _SettingsSheet extends StatelessWidget {
                         ),
                         onTap: () async {
                           Navigator.pop(ctx);
-                          final playerProvider =
-                              Provider.of<PlayerProvider>(context, listen: false);
+                          final playerProvider = Provider.of<PlayerProvider>(
+                              context,
+                              listen: false);
                           await playerProvider.stop();
                           await authProvider.switchProfile(profile);
                         },

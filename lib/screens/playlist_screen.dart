@@ -318,9 +318,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: widget.playlistName != null
-              ? Text(widget.playlistName!)
-              : null,
+          title:
+              widget.playlistName != null ? Text(widget.playlistName!) : null,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -333,8 +332,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       );
     }
 
-    final isOffline =
-        Provider.of<AuthProvider>(context, listen: false).state ==
+    final isOffline = Provider.of<AuthProvider>(context, listen: false).state ==
         AuthState.offlineMode;
 
     return Scaffold(
@@ -342,14 +340,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         title: _isSelecting
             ? Text('${_selectedIndices.length} selected')
             : _isReordering
-            ? const Text('Reorder Songs')
-            : Text(_playlist!.name),
+                ? const Text('Reorder Songs')
+                : Text(_playlist!.name),
         leading: _isSelecting || _isReordering
             ? IconButton(
                 icon: const Icon(CupertinoIcons.xmark),
-                onPressed: _isSelecting
-                    ? _toggleSelectMode
-                    : _toggleReorderMode,
+                onPressed:
+                    _isSelecting ? _toggleSelectMode : _toggleReorderMode,
               )
             : null,
         actions: [
@@ -357,8 +354,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             IconButton(
               tooltip:
                   _selectedIndices.length == (_playlist?.songs?.length ?? 0)
-                  ? 'Deselect all'
-                  : 'Select all',
+                      ? 'Deselect all'
+                      : 'Select all',
               icon: Icon(
                 _selectedIndices.length == (_playlist?.songs?.length ?? 0)
                     ? CupertinoIcons.checkmark_square
@@ -383,11 +380,15 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             AnimatedBuilder(
               animation: FavoritePlaylistsService(),
               builder: (context, child) {
-                final isFavorite = FavoritePlaylistsService().isFavorite(widget.playlistId);
+                final isFavorite =
+                    FavoritePlaylistsService().isFavorite(widget.playlistId);
                 return IconButton(
-                  tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                  tooltip:
+                      isFavorite ? 'Remove from favorites' : 'Add to favorites',
                   icon: Icon(
-                    isFavorite ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                    isFavorite
+                        ? CupertinoIcons.heart_fill
+                        : CupertinoIcons.heart,
                     color: isFavorite ? Colors.red : null,
                   ),
                   onPressed: _toggleFavorite,
@@ -399,8 +400,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               icon: const Icon(CupertinoIcons.arrow_up_arrow_down),
               onPressed:
                   _playlist!.songs != null && _playlist!.songs!.length > 1
-                  ? _toggleReorderMode
-                  : null,
+                      ? _toggleReorderMode
+                      : null,
             ),
             IconButton(
               tooltip: 'Select songs',
@@ -494,7 +495,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             ),
           ),
           const Divider(),
-
           Expanded(
             child: _playlist!.songs?.isEmpty ?? true
                 ? Center(
@@ -506,132 +506,139 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     ),
                   )
                 : _isReordering
-                ? ReorderableListView.builder(
-                    padding: const EdgeInsets.only(bottom: 150),
-                    itemCount: _playlist!.songs!.length,
-                    onReorder: _onSongReordered,
-                    itemBuilder: (context, index) {
-                      final song = _playlist!.songs![index];
-                      return ListTile(
-                        key: ValueKey('reorder_${song.id}_$index'),
-                        leading: Icon(
-                          CupertinoIcons.line_horizontal_3,
-                          color: isDark
-                              ? AppTheme.darkSecondaryText
-                              : AppTheme.lightSecondaryText,
-                        ),
-                        title: Text(
-                          song.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          song.artist ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    },
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 150),
-                    itemCount: _playlist!.songs!.length,
-                    itemBuilder: (context, index) {
-                      final song = _playlist!.songs![index];
-                      final isSelected = _selectedIndices.contains(index);
-
-                      final tile = SongTile(
-                        song: song,
-                        playlist: _playlist!.songs,
-                        index: index,
-                        showArtist: true,
-                        onTap: _isSelecting
-                            ? () => _toggleSelection(index)
-                            : null,
-                        onLongPress: _isSelecting
-                            ? null
-                            : () {
-                                _toggleSelectMode();
-                                _toggleSelection(index);
-                              },
-                      );
-
-                      if (_isSelecting) {
-                        return CheckboxListTile(
-                          key: ValueKey('sel_${song.id}_$index'),
-                          value: isSelected,
-                          onChanged: (_) => _toggleSelection(index),
-                          activeColor: AppTheme.appleMusicRed,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: const EdgeInsets.only(
-                            left: 4,
-                            right: 16,
-                          ),
-                          title: Text(
-                            song.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            song.artist ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          secondary: IconButton(
-                            icon: const Icon(CupertinoIcons.trash, size: 20),
-                            color: Colors.red,
-                            tooltip: 'Remove from playlist',
-                            onPressed: () async {
-                              setState(() => _selectedIndices.remove(index));
-                              await _removeSongFromPlaylist(index);
-                            },
-                          ),
-                        );
-                      }
-
-                      return Dismissible(
-                        key: ValueKey('${song.id}_$index'),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 20),
-                          color: Colors.red,
-                          child: const Icon(
-                            CupertinoIcons.trash,
-                            color: Colors.white,
-                          ),
-                        ),
-                        confirmDismiss: (_) async {
-                          return await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Remove from playlist'),
-                                  content: Text(
-                                    'Remove "${song.title}" from this playlist?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text(
-                                        'Remove',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ) ??
-                              false;
+                    ? ReorderableListView.builder(
+                        padding: const EdgeInsets.only(bottom: 150),
+                        itemCount: _playlist!.songs!.length,
+                        buildDefaultDragHandles: false,
+                        onReorder: _onSongReordered,
+                        itemBuilder: (context, index) {
+                          final song = _playlist!.songs![index];
+                          return ListTile(
+                            key: ValueKey('reorder_${song.id}_$index'),
+                            leading: ReorderableDragStartListener(
+                              index: index,
+                              child: Icon(
+                                CupertinoIcons.line_horizontal_3,
+                                color: isDark
+                                    ? AppTheme.darkSecondaryText
+                                    : AppTheme.lightSecondaryText,
+                              ),
+                            ),
+                            title: Text(
+                              song.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              song.artist ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
                         },
-                        onDismissed: (_) => _removeSongFromPlaylist(index),
-                        child: tile,
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 150),
+                        itemCount: _playlist!.songs!.length,
+                        itemBuilder: (context, index) {
+                          final song = _playlist!.songs![index];
+                          final isSelected = _selectedIndices.contains(index);
+
+                          final tile = SongTile(
+                            song: song,
+                            playlist: _playlist!.songs,
+                            index: index,
+                            showArtist: true,
+                            onTap: _isSelecting
+                                ? () => _toggleSelection(index)
+                                : null,
+                            onLongPress: _isSelecting
+                                ? null
+                                : () {
+                                    _toggleSelectMode();
+                                    _toggleSelection(index);
+                                  },
+                          );
+
+                          if (_isSelecting) {
+                            return CheckboxListTile(
+                              key: ValueKey('sel_${song.id}_$index'),
+                              value: isSelected,
+                              onChanged: (_) => _toggleSelection(index),
+                              activeColor: AppTheme.appleMusicRed,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              contentPadding: const EdgeInsets.only(
+                                left: 4,
+                                right: 16,
+                              ),
+                              title: Text(
+                                song.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                song.artist ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              secondary: IconButton(
+                                icon:
+                                    const Icon(CupertinoIcons.trash, size: 20),
+                                color: Colors.red,
+                                tooltip: 'Remove from playlist',
+                                onPressed: () async {
+                                  setState(
+                                      () => _selectedIndices.remove(index));
+                                  await _removeSongFromPlaylist(index);
+                                },
+                              ),
+                            );
+                          }
+
+                          return Dismissible(
+                            key: ValueKey('${song.id}_$index'),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: Colors.red,
+                              child: const Icon(
+                                CupertinoIcons.trash,
+                                color: Colors.white,
+                              ),
+                            ),
+                            confirmDismiss: (_) async {
+                              return await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Remove from playlist'),
+                                      content: Text(
+                                        'Remove "${song.title}" from this playlist?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: const Text(
+                                            'Remove',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ) ??
+                                  false;
+                            },
+                            onDismissed: (_) => _removeSongFromPlaylist(index),
+                            child: tile,
+                          );
+                        },
+                      ),
           ),
         ],
       ),
