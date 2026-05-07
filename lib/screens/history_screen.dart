@@ -20,7 +20,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHistory();
+      // Listen for library / profile updates in case data arrives later.
+      final libraryProvider = Provider.of<LibraryProvider>(
+        context,
+        listen: false,
+      );
+      final recommendationService = Provider.of<RecommendationService>(
+        context,
+        listen: false,
+      );
+      libraryProvider.addListener(_onProvidersChanged);
+      recommendationService.addListener(_onProvidersChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    final libraryProvider = Provider.of<LibraryProvider>(
+      context,
+      listen: false,
+    );
+    final recommendationService = Provider.of<RecommendationService>(
+      context,
+      listen: false,
+    );
+    libraryProvider.removeListener(_onProvidersChanged);
+    recommendationService.removeListener(_onProvidersChanged);
+    super.dispose();
+  }
+
+  void _onProvidersChanged() {
+    if (mounted) _loadHistory();
   }
 
   Future<void> _loadHistory() async {
@@ -33,8 +65,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
       listen: false,
     );
 
+    // If library is still loading, keep showing the spinner.
     if (libraryProvider.cachedAllSongs.isEmpty) {
-      setState(() => _isLoading = false);
+      if (!libraryProvider.isLoading && libraryProvider.isInitialized) {
+        // Library finished loading and is genuinely empty.
+        if (mounted) {
+          setState(() {
+            _recentSongs = [];
+            _isLoading = false;
+          });
+        }
+      }
       return;
     }
 
@@ -53,10 +94,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     playedSongs.sort((a, b) => b.value.compareTo(a.value));
 
-    setState(() {
-      _recentSongs = playedSongs.map((e) => e.key).take(100).toList();
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _recentSongs = playedSongs.map((e) => e.key).take(100).toList();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -69,49 +112,49 @@ class _HistoryScreenState extends State<HistoryScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _recentSongs.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.history_rounded,
-                    size: 64,
-                    color: isDark
-                        ? AppTheme.darkSecondaryText
-                        : AppTheme.lightSecondaryText,
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.history_rounded,
+                        size: 64,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No Listening History',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: isDark
+                              ? AppTheme.darkSecondaryText
+                              : AppTheme.lightSecondaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Songs you play will appear here',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark
+                              ? AppTheme.darkSecondaryText
+                              : AppTheme.lightSecondaryText,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No Listening History',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: isDark
-                          ? AppTheme.darkSecondaryText
-                          : AppTheme.lightSecondaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Songs you play will appear here',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark
-                          ? AppTheme.darkSecondaryText
-                          : AppTheme.lightSecondaryText,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: _recentSongs.length,
-              itemBuilder: (context, index) {
-                return SongTile(
-                  song: _recentSongs[index],
-                  playlist: _recentSongs,
-                  index: index,
-                  showAlbum: true,
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  itemCount: _recentSongs.length,
+                  itemBuilder: (context, index) {
+                    return SongTile(
+                      song: _recentSongs[index],
+                      playlist: _recentSongs,
+                      index: index,
+                      showAlbum: true,
+                    );
+                  },
+                ),
     );
   }
 }
