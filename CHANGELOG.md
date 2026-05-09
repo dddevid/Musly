@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive Test Suite** — Unit, widget, integration, security, and memory-leak tests with configurable Navidrome server support via `test_server_config.json`
 - **Android Audio Session Configuration** — Explicit `AudioSession` setup for music playback on Android, ensuring proper audio focus and routing on car head units
 - **Lyrics Wake Lock** — Screen stays on while lyrics view is visible to prevent display timeout during active listening
+- **Spotify-Style Desktop UX Redesign** — Complete overhaul of desktop interface emulating Spotify's design system
+  - **3-Column Layout**: Fixed left sidebar (280px), expandable center content area, optional right sidebar (320px) for queue
+  - **Spotify-like Dark Mode**: Deep black backgrounds (#000000, #121212, #181818) with consistent color palette
+  - **Right Sidebar Queue**: Dedicated sidebar showing current playback queue with song artwork and metadata
+  - **Enhanced Player Bar**: Improved 90px fixed bottom bar with Spotify color scheme (#181818) and border (#282828)
+  - **Micro-Interactions**: Smooth hover effects on all cards (1.04x scale, 16px elevation shadow, 200ms animations)
+  - **Green Play Button**: Spotify-signature green (#1DB954) circular play button appears on hover for albums and artists
+  - **Quick Access Grid**: Spotify-style quick access tiles with hover states and background transitions
+  - **Gradient Header Widget**: Dynamic gradient headers that extract dominant colors from album artwork
+  - **Updated Navigation Sidebar**: 280px width (expanded) with improved Spotify-like colors and hover states
+  - **New Widgets**: `SpotifyLikeCard`, `RightSidebar`, `QuickAccessGrid`, `GradientHeader` for reusable Spotify-style components
 
 ### Fixed
 - **History Screen Loading** - Improved history loading and listener management
