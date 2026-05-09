@@ -795,198 +795,209 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         ),
                       ),
                       child: SafeArea(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                IconButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  icon: const Icon(
-                                    CupertinoIcons.chevron_down,
-                                    color: Colors.white,
-                                    size: 28,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    icon: const Icon(
+                                      CupertinoIcons.chevron_down,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
                                   ),
-                                ),
-                                Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
+                                  Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.appleMusicRed,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          AppLocalizations.of(context)!.live,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.appleMusicRed,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        AppLocalizations.of(context)!.live,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .internetRadioUppercase,
                                         style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white70,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.5,
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .internetRadioUppercase,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 48),
-                              ],
-                            ),
-                          ),
-                          const Spacer(flex: 2),
-                          Container(
-                            width:
-                                ScreenHelper.isSmallScreen(context) ? 160 : 200,
-                            height:
-                                ScreenHelper.isSmallScreen(context) ? 160 : 200,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFFFF2D55), Color(0xFFFF6B35)],
-                              ),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFFFF2D55,
-                                  ).withValues(alpha: 0.4),
-                                  blurRadius: 40,
-                                  spreadRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.radio,
-                              color: Colors.white,
-                              size: ScreenHelper.radioIconSize(context),
-                            ),
-                          ),
-                          const Spacer(),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  ScreenHelper.playerHorizontalPadding(context),
-                            ),
-                            child: Text(
-                              station.name,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize:
-                                    ScreenHelper.radioTitleFontSize(context),
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.appleMusicRed,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.appleMusicRed.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppLocalizations.of(context)!.streamingLive,
-                                style: const TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(flex: 2),
-                          Selector<PlayerProvider, bool>(
-                            selector: (_, p) => p.isPlaying,
-                            builder: (context, isPlaying, _) {
-                              final provider = context.read<PlayerProvider>();
-                              return GestureDetector(
-                                onTap: provider.togglePlayPause,
-                                child: Container(
-                                  width:
-                                      ScreenHelper.radioPlayButtonSize(context),
-                                  height:
-                                      ScreenHelper.radioPlayButtonSize(context),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.3,
-                                        ),
-                                        blurRadius: 20,
-                                        spreadRadius: 5,
                                       ),
                                     ],
                                   ),
-                                  child: Icon(
-                                    isPlaying
-                                        ? Icons.pause_rounded
-                                        : Icons.play_arrow_rounded,
-                                    color: Colors.black,
-                                    size:
-                                        ScreenHelper.radioPlayIconSize(context),
+                                  const SizedBox(width: 48),
+                                ],
+                              ),
+                            ),
+                            const Spacer(flex: 2),
+                            Container(
+                              width: ScreenHelper.isSmallScreen(context)
+                                  ? 160
+                                  : 200,
+                              height: ScreenHelper.isSmallScreen(context)
+                                  ? 160
+                                  : 200,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFFFF2D55),
+                                    Color(0xFFFF6B35)
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFFF2D55,
+                                    ).withValues(alpha: 0.4),
+                                    blurRadius: 40,
+                                    spreadRadius: 10,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.radio,
+                                color: Colors.white,
+                                size: ScreenHelper.radioIconSize(context),
+                              ),
+                            ),
+                            const Spacer(),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal:
+                                    ScreenHelper.playerHorizontalPadding(
+                                        context),
+                              ),
+                              child: Text(
+                                station.name,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize:
+                                      ScreenHelper.radioTitleFontSize(context),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.appleMusicRed,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            AppTheme.appleMusicRed.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton.icon(
-                            onPressed: () {
-                              context.read<PlayerProvider>().stopRadio();
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons.stop_rounded,
-                              color: Colors.white60,
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)!.streamingLive,
+                                  style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                            label: Text(
-                              AppLocalizations.of(context)!.stopRadio,
-                              style: const TextStyle(color: Colors.white60),
+                            const Spacer(flex: 2),
+                            Selector<PlayerProvider, bool>(
+                              selector: (_, p) => p.isPlaying,
+                              builder: (context, isPlaying, _) {
+                                final provider = context.read<PlayerProvider>();
+                                return GestureDetector(
+                                  onTap: provider.togglePlayPause,
+                                  child: Container(
+                                    width: ScreenHelper.radioPlayButtonSize(
+                                        context),
+                                    height: ScreenHelper.radioPlayButtonSize(
+                                        context),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 20,
+                                          spreadRadius: 5,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      isPlaying
+                                          ? Icons.pause_rounded
+                                          : Icons.play_arrow_rounded,
+                                      color: Colors.black,
+                                      size: ScreenHelper.radioPlayIconSize(
+                                          context),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                          const Spacer(),
-                        ],
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: () {
+                                context.read<PlayerProvider>().stopRadio();
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(
+                                Icons.stop_rounded,
+                                color: Colors.white60,
+                              ),
+                              label: Text(
+                                AppLocalizations.of(context)!.stopRadio,
+                                style: const TextStyle(color: Colors.white60),
+                              ),
+                            ),
+                            const Spacer(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
