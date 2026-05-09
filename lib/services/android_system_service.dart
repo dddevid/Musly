@@ -38,7 +38,8 @@ class AndroidSystemService {
   VoidCallback? onBecomingNoisy;
 
   bool _showOnLockScreen = true;
-  bool _handleAudioFocus = true;
+  // Disable custom audio focus handling — audio_session plugin manages it
+  bool _handleAudioFocus = false;
   bool _handleMediaButtons = true;
   bool _showInQuickSettings = true;
   bool _colorizeNotification = true;
@@ -51,14 +52,16 @@ class AndroidSystemService {
 
   Future<void> initialize() async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) { return; }
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
     if (_isInitialized) return;
 
     try {
       _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
-        _handleEvent,
-        onError: _handleError,
-      );
+            _handleEvent,
+            onError: _handleError,
+          );
 
       await _methodChannel.invokeMethod('initialize', {
         'showOnLockScreen': _showOnLockScreen,
@@ -160,9 +163,13 @@ class AndroidSystemService {
     // On iOS, MPNowPlayingInfoCenter is maintained by the audio_service plugin
     // (MuslyAudioHandler.updateNowPlaying).  Calling iOSSystemPlugin here as
     // well would write conflicting data to the same API, so we bail out early.
-    if (defaultTargetPlatform == TargetPlatform.iOS) { return; }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return;
+    }
 
-    if (defaultTargetPlatform != TargetPlatform.android) { return; }
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
 
     try {
       await _methodChannel.invokeMethod('updatePlaybackState', {
@@ -210,7 +217,9 @@ class AndroidSystemService {
   }
 
   Future<void> setNotificationColor(int argbColor) async {
-    if (defaultTargetPlatform != TargetPlatform.android) { return; }
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
 
     try {
       await _methodChannel.invokeMethod('setNotificationColor', {
@@ -222,9 +231,10 @@ class AndroidSystemService {
   }
 
   Future<bool> requestAudioFocus() async {
-    
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) { return true; }
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return true;
+    }
 
     try {
       final result = await _methodChannel.invokeMethod<bool>(
@@ -239,7 +249,9 @@ class AndroidSystemService {
 
   Future<void> abandonAudioFocus() async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) { return; }
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
 
     try {
       await _methodChannel.invokeMethod('abandonAudioFocus');
@@ -256,7 +268,9 @@ class AndroidSystemService {
     bool? colorizeNotification,
   }) async {
     if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) { return; }
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
 
     if (showOnLockScreen != null) _showOnLockScreen = showOnLockScreen;
     if (handleAudioFocus != null) _handleAudioFocus = handleAudioFocus;
@@ -324,7 +338,9 @@ class AndroidSystemService {
     required bool isRemote,
     int volume = 50,
   }) async {
-    if (defaultTargetPlatform != TargetPlatform.android) { return; }
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
     try {
       await _methodChannel.invokeMethod('setRemotePlayback', {
         'isRemote': isRemote,
@@ -336,7 +352,9 @@ class AndroidSystemService {
   }
 
   Future<void> updateRemoteVolume(int volume) async {
-    if (defaultTargetPlatform != TargetPlatform.android) { return; }
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
     try {
       await _methodChannel.invokeMethod('updateRemoteVolume', {
         'volume': volume,
@@ -347,7 +365,9 @@ class AndroidSystemService {
   }
 
   Future<void> dispose() async {
-    if (defaultTargetPlatform != TargetPlatform.android) { return; }
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
 
     _eventSubscription?.cancel();
     _isInitialized = false;

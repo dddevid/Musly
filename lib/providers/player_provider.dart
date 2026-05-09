@@ -1125,6 +1125,38 @@ class PlayerProvider extends ChangeNotifier {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
       debugPrint('[Player] AudioSession configured for music playback');
+
+      // Listen for audio interruptions (another app takes audio focus)
+      session.interruptionEventStream.listen((event) {
+        if (event.begin) {
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+              _audioPlayer.setVolume(0.3);
+              break;
+            case AudioInterruptionType.pause:
+            case AudioInterruptionType.unknown:
+              if (isRemotePlayback) return;
+              pause();
+              break;
+          }
+        } else {
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+              _audioPlayer.setVolume(_volume);
+              break;
+            case AudioInterruptionType.pause:
+            case AudioInterruptionType.unknown:
+              // Optionally resume after interruption ends
+              break;
+          }
+        }
+      });
+
+      // Listen for headphone disconnection
+      session.becomingNoisyEventStream.listen((_) {
+        if (isRemotePlayback) return;
+        pause();
+      });
     } catch (e) {
       debugPrint('[Player] AudioSession configuration failed: $e');
     }
