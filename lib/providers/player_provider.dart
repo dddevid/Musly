@@ -871,6 +871,10 @@ class PlayerProvider extends ChangeNotifier {
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
 
+  // Fallback timer for Windows where positionStream may not emit reliably
+  Timer? _windowsPositionTimer;
+  Duration? _lastPolledPosition;
+
   double get progress {
     if (_duration.inMilliseconds == 0) return 0;
     return _position.inMilliseconds / _duration.inMilliseconds;
@@ -1046,6 +1050,30 @@ class PlayerProvider extends ChangeNotifier {
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
           debugPrint(
               '[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
+
+          // Start/stop Windows position polling timer
+          if (_isPlaying && Platform.isWindows && !_isRenderingRemotely) {
+            _windowsPositionTimer?.cancel();
+            _lastPolledPosition = null;
+            _windowsPositionTimer = Timer.periodic(
+              const Duration(milliseconds: 500),
+              (_) {
+                final pos = _audioPlayer.position;
+                if (_lastPolledPosition == null ||
+                    pos.inMilliseconds != _lastPolledPosition!.inMilliseconds) {
+                  _lastPolledPosition = pos;
+                  _position = pos;
+                  _positionController.add(pos);
+                  notifyListeners();
+                  _updateAllServices();
+                }
+              },
+            );
+          } else {
+            _windowsPositionTimer?.cancel();
+            _windowsPositionTimer = null;
+            _lastPolledPosition = null;
+          }
         }
 
         if (state.processingState == ProcessingState.completed) {
@@ -2012,6 +2040,7 @@ class PlayerProvider extends ChangeNotifier {
     _sleepTimer?.cancel();
     _sleepTimerFadeTimer?.cancel();
     _sleepTimerFadePeriodicTimer?.cancel();
+    _windowsPositionTimer?.cancel();
     _castService.removeListener(_onCastStateChanged);
     _upnpService.removeListener(_onUpnpStateChanged);
     if (_upnpService.onRendererLost == _onUpnpRendererLost) {
