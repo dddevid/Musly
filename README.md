@@ -10,7 +10,7 @@
 
 🌐 **Website:** [musly.devid.lol](https://musly.devid.lol/)
 
-[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.11-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.11)
+[![Download Musly](https://img.shields.io/badge/Download-Musly%20v1.0.12-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v1.0.12)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.lol)
 [![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.lol)
 
@@ -49,7 +49,7 @@ Musly is a cross-platform application that supports:
 ## Download Musly - Best Navidrome Client
 
 You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v1.0.11 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.11)**
+👉 **[Download Musly v1.0.12 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.12)**
 
 ## Community
 

@@ -8,9 +8,9 @@ class ReleaseAsset {
   const ReleaseAsset({required this.name, required this.browserDownloadUrl});
 
   factory ReleaseAsset.fromJson(Map<String, dynamic> json) => ReleaseAsset(
-    name: json['name'] as String,
-    browserDownloadUrl: json['browser_download_url'] as String,
-  );
+        name: json['name'] as String,
+        browserDownloadUrl: json['browser_download_url'] as String,
+      );
 }
 
 class ReleaseInfo {
@@ -36,8 +36,7 @@ class ReleaseInfo {
       tagName: tag,
       htmlUrl: json['html_url'] as String? ?? '',
       body: json['body'] as String? ?? '',
-      assets:
-          (json['assets'] as List<dynamic>?)
+      assets: (json['assets'] as List<dynamic>?)
               ?.map((a) => ReleaseAsset.fromJson(a as Map<String, dynamic>))
               .toList() ??
           [],
@@ -46,7 +45,7 @@ class ReleaseInfo {
 }
 
 class UpdateService {
-  static const String currentVersion = '1.0.11';
+  static const String currentVersion = '1.0.12';
 
   static const String _apiUrl =
       'https://api.github.com/repos/dddevid/Musly/releases/latest';
