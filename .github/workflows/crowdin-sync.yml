@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - 'lib/l10n/app_en.arb'
+      - 'lib/l10n/app_*.arb'
 
   # Run daily to download latest translations
   schedule:
@@ -29,11 +29,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Crowdin push (upload source)
+      # Push local translations to Crowdin first so GitHub edits are not lost
+      - name: Crowdin push (upload source + local translations)
         uses: crowdin/github-action@v2
         with:
           upload_sources: true
-          upload_translations: false
+          upload_translations: true
           download_translations: false
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
@@ -49,7 +50,7 @@ jobs:
           download_translations: true
           skip_untranslated_strings: true
           export_only_approved: false
-          create_pull_request: false # Explicitly disable to avoid conflicts
+          create_pull_request: false
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
         env:
@@ -59,9 +60,40 @@ jobs:
         run: |
           for file in lib/l10n/app_*.arb; do
             locale=$(basename "$file" .arb | sed 's/app_//')
-            # Standardize @@locale to match the filename (e.g., es-ES -> es)
             sed -i "s/\"@@locale\": \"[^\"]*\"/\"@@locale\": \"$locale\"/g" "$file"
           done
+
+      # Remove translation keys that do not exist in app_en.arb (orphaned keys)
+      - name: Cleanup extra translation keys
+        run: |
+          python3 << 'EOF'
+          import json
+          import glob
+          import os
+
+          en_path = 'lib/l10n/app_en.arb'
+          with open(en_path, 'r', encoding='utf-8') as f:
+              en_arb = json.load(f)
+          en_keys = set(en_arb.keys())
+
+          for filepath in glob.glob('lib/l10n/app_*.arb'):
+              if filepath.endswith('app_en.arb'):
+                  continue
+
+              with open(filepath, 'r', encoding='utf-8') as f:
+                  arb = json.load(f)
+
+              cleaned = {}
+              for key, value in arb.items():
+                  if key == '@@locale' or key in en_keys:
+                      cleaned[key] = value
+
+              if cleaned != arb:
+                  with open(filepath, 'w', encoding='utf-8') as f:
+                      json.dump(cleaned, f, ensure_ascii=False, indent=2)
+                      f.write('\n')
+                  print(f"Cleaned extra keys from {os.path.basename(filepath)}")
+          EOF
 
       - name: Fix file permissions
         run: sudo chown -R $USER:$USER .
