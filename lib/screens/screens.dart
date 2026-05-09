@@ -6,7 +6,6 @@ export 'search_screen.dart';
 export 'now_playing_screen.dart';
 export 'album_screen.dart';
 export 'artist_screen.dart';
-export 'artists_screen.dart';
 export 'albums_screen.dart';
 export 'songs_screen.dart';
 export 'playlists_screen.dart';

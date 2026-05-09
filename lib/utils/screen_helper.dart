@@ -7,16 +7,6 @@ class ScreenHelper {
     return size.width < 380;
   }
 
-  static bool isCompactHeight(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    return size.height < 700;
-  }
-
-  static double horizontalPadding(BuildContext context,
-      {double normal = 24, double small = 16}) {
-    return isSmallScreen(context) ? small : normal;
-  }
-
   static double playerHorizontalPadding(BuildContext context) {
     return isSmallScreen(context) ? 16 : 32;
   }
