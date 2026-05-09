@@ -20,6 +20,7 @@ import 'settings_screen.dart';
 import 'library_search_delegate.dart';
 import 'artist_screen.dart';
 import 'radio_screen.dart';
+import 'all_songs_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
 
@@ -176,6 +177,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     subtitle: AppLocalizations.of(context)!.playlist,
                     isGradient: true,
                     onTap: () => _navigate(context, const FavoritesScreen()),
+                  ),
+                  // All Songs folder
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.music_note_list,
+                    iconColor: const Color(0xFF34C759),
+                    title: AppLocalizations.of(context)!.songs,
+                    subtitle: AppLocalizations.of(context)!.songs,
+                    isGradient: false,
+                    onTap: () => _navigate(context, const AllSongsScreen()),
                   ),
                   // Liked Albums folder
                   _SpotifyLibraryTile(
