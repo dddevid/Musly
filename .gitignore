@@ -16,6 +16,7 @@ musly-1.0.4-setup.exe
 /discord_sdk_temp
 # lib/services/analytics_service.dart
 .env
+test_server_config.json
 
 # IntelliJ related
 *.iml
