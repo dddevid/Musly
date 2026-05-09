@@ -16,12 +16,15 @@ class DiscordRpcService {
   Future<void> initialize() async {
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-      _enabled = await _storageService.getDiscordRpcEnabled();
-      if (_enabled) {
-        
-        DiscordRPC.initialize();
-        _rpc = DiscordRPC(applicationId: _applicationId);
-        _startRpc();
+      try {
+        _enabled = await _storageService.getDiscordRpcEnabled();
+        if (_enabled) {
+          DiscordRPC.initialize();
+          _rpc = DiscordRPC(applicationId: _applicationId);
+          _startRpc();
+        }
+      } catch (e) {
+        debugPrint('Discord RPC initialization failed: $e');
       }
     }
   }
@@ -39,26 +42,33 @@ class DiscordRpcService {
 
   void shutdown() {
     if (_initialized) {
-      _rpc?.clearPresence();
-      
+      try {
+        _rpc?.clearPresence();
+      } catch (_) {}
       _initialized = false;
     }
   }
 
   Future<void> setEnabled(bool enabled) async {
     _enabled = enabled;
-    await _storageService.saveDiscordRpcEnabled(enabled);
+    try {
+      await _storageService.saveDiscordRpcEnabled(enabled);
+    } catch (_) {}
 
     if (enabled) {
-      
-      if (_rpc == null) {
-        DiscordRPC.initialize();
-        _rpc = DiscordRPC(applicationId: _applicationId);
+      try {
+        if (_rpc == null) {
+          DiscordRPC.initialize();
+          _rpc = DiscordRPC(applicationId: _applicationId);
+        }
+        _startRpc();
+      } catch (e) {
+        debugPrint('Discord RPC setEnabled failed: $e');
       }
-      _startRpc();
     } else {
-      _rpc?.clearPresence();
-      
+      try {
+        _rpc?.clearPresence();
+      } catch (_) {}
     }
   }
 
@@ -76,9 +86,10 @@ class DiscordRpcService {
     String? button1Label,
     String? button1Url,
   }) {
-    
     if (kIsWeb ||
-        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) { return; }
+        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      return;
+    }
     if (!_enabled) return;
     if (!_initialized || _rpc == null) {
       _startRpc();
@@ -92,12 +103,10 @@ class DiscordRpcService {
           details: details,
           startTimeStamp: startTime,
           endTimeStamp: endTime,
-          largeImageKey:
-              largeImageKey, 
+          largeImageKey: largeImageKey,
           largeImageText: largeImageText,
           smallImageKey: smallImageKey,
           smallImageText: smallImageText,
-          
         ),
       );
       debugPrint('Discord Presence updated successfully request sent.');
@@ -108,7 +117,9 @@ class DiscordRpcService {
 
   void clearPresence() {
     if (kIsWeb ||
-        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) { return; }
+        !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      return;
+    }
     debugPrint('Clearing Discord Presence');
     if (_initialized) {
       try {

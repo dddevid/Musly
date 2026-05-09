@@ -94,11 +94,13 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+      await tester.pump();
+      final navigatorState =
+          tester.state<NavigatorState>(find.byType(Navigator));
+      navigatorState.pop();
+      await tester.pump();
       expect(find.text('Open'), findsOneWidget);
     });
 

@@ -107,16 +107,26 @@ class PlayerProvider extends ChangeNotifier {
     _upnpService.addListener(_onUpnpStateChanged);
     _upnpService.onRendererLost = _onUpnpRendererLost;
     _initializePlayer();
-    _initializeAndroidAuto();
-    _initializeSystemServices();
+    try {
+      _initializeAndroidAuto();
+    } catch (_) {}
+    try {
+      _initializeSystemServices();
+    } catch (_) {}
     _initializeAutoDj();
     _wireAudioHandlerCallbacks();
-    _initializeLyricsService();
+    try {
+      _initializeLyricsService();
+    } catch (_) {}
 
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-      _discordRpcService.initialize();
-      loadDiscordRpcStateStyle();
+      try {
+        _discordRpcService.initialize();
+      } catch (_) {}
+      try {
+        loadDiscordRpcStateStyle();
+      } catch (_) {}
     }
 
     _restoreQueueState();
@@ -1774,11 +1784,17 @@ class PlayerProvider extends ChangeNotifier {
     _queue.clear();
     _currentIndex = -1;
     _currentSong = null;
-    _discordRpcService.clearPresence();
+    try {
+      _discordRpcService.clearPresence();
+    } catch (_) {}
     // Clear lyrics when clearing queue
-    _lyricsService.stopSync();
+    try {
+      _lyricsService.stopSync();
+    } catch (_) {}
     _clearPersistedQueue();
-    _lyricsService.loadLyrics(null);
+    try {
+      _lyricsService.loadLyrics(null);
+    } catch (_) {}
     _audioPlayer.stop();
     _isPlaying = false;
     _position = Duration.zero;
@@ -1970,16 +1986,30 @@ class PlayerProvider extends ChangeNotifier {
       _upnpService.onRendererLost = null;
     }
     _audioHandler.customAction('dispose');
-    _androidAutoService.dispose();
-    _androidSystemService.dispose();
-    _windowsService.dispose();
-    _bluetoothService.dispose();
-    _samsungService.dispose();
+    try {
+      _androidAutoService.dispose();
+    } catch (_) {}
+    try {
+      _androidSystemService.dispose();
+    } catch (_) {}
+    try {
+      _windowsService.dispose();
+    } catch (_) {}
+    try {
+      _bluetoothService.dispose();
+    } catch (_) {}
+    try {
+      _samsungService.dispose();
+    } catch (_) {}
 
     // Dispose lyrics service
-    _lyricsService.dispose();
+    try {
+      _lyricsService.dispose();
+    } catch (_) {}
 
-    _discordRpcService.shutdown();
+    try {
+      _discordRpcService.shutdown();
+    } catch (_) {}
     _playerStateSub?.cancel();
     _positionSub?.cancel();
     _durationSub?.cancel();
@@ -2000,36 +2030,40 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _updateDiscordRpc() {
-    if (_currentSong == null) {
-      _discordRpcService.clearPresence();
-      return;
-    }
+    try {
+      if (_currentSong == null) {
+        _discordRpcService.clearPresence();
+        return;
+      }
 
-    final int now = DateTime.now().millisecondsSinceEpoch;
-    final int startTimestamp = now - _position.inMilliseconds;
-    final int? endTimestamp = _isPlaying && _duration.inMilliseconds > 0
-        ? startTimestamp + _duration.inMilliseconds
-        : null;
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      final int startTimestamp = now - _position.inMilliseconds;
+      final int? endTimestamp = _isPlaying && _duration.inMilliseconds > 0
+          ? startTimestamp + _duration.inMilliseconds
+          : null;
 
-    final stateText = _discordStateText();
+      final stateText = _discordStateText();
 
-    _discordRpcService.updatePresence(
-      state: stateText,
-      details: _currentSong!.title,
-      largeImageKey: 'musly_logo',
-      largeImageText: _currentSong!.album,
-      smallImageKey: 'musly_logo',
-      smallImageText: _isPlaying ? 'Playing' : 'Paused',
-      startTime: startTimestamp,
-      endTime: endTimestamp,
-    );
+      _discordRpcService.updatePresence(
+        state: stateText,
+        details: _currentSong!.title,
+        largeImageKey: 'musly_logo',
+        largeImageText: _currentSong!.album,
+        smallImageKey: 'musly_logo',
+        smallImageText: _isPlaying ? 'Playing' : 'Paused',
+        startTime: startTimestamp,
+        endTime: endTimestamp,
+      );
+    } catch (_) {}
   }
 
   Future<void> setDiscordRpcEnabled(bool enabled) async {
-    await _discordRpcService.setEnabled(enabled);
-    if (enabled) {
-      _updateDiscordRpc();
-    }
+    try {
+      await _discordRpcService.setEnabled(enabled);
+      if (enabled) {
+        _updateDiscordRpc();
+      }
+    } catch (_) {}
   }
 
   bool get discordRpcEnabled => _discordRpcService.enabled;

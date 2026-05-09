@@ -12,7 +12,7 @@ void main() {
       });
 
       test('should reject overly long URLs', () {
-        final longUrl = 'http://example.com/${'a' * 2000}';
+        final longUrl = 'http://example.com/${'a' * 2100}';
         expect(longUrl.length, greaterThan(2048));
       });
 

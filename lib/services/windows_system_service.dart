@@ -43,20 +43,20 @@ class WindowsSystemService {
         );
 
         _isInitialized = true;
-        
+
         // Initialize local notifier for lyrics
         await localNotifier.setup(
           appName: 'Musly',
           shortcutPolicy: ShortcutPolicy.requireNoCreate,
         );
-        
-        debugPrint('WindowsSystemService initialized (SMTC, Taskbar & Lyrics Notification)');
+
+        debugPrint(
+            'WindowsSystemService initialized (SMTC, Taskbar & Lyrics Notification)');
       } catch (e) {
         debugPrint('Error initializing WindowsSystemService: $e');
         debugPrint(
           'SMTC will be disabled. This is normal if flutter_rust_bridge is not initialized.',
         );
-        
       }
     }
   }
@@ -70,7 +70,6 @@ class WindowsSystemService {
   }) async {
     if (!kIsWeb && Platform.isWindows && _isInitialized) {
       try {
-        
         _smtc?.setPlaybackStatus(
           isPlaying ? PlaybackStatus.playing : PlaybackStatus.paused,
         );
@@ -169,8 +168,12 @@ class WindowsSystemService {
 
   Future<void> dispose() async {
     if (!kIsWeb && Platform.isWindows) {
-      await clearLyrics();
-      WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
+      try {
+        await clearLyrics();
+        await WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
+      } catch (e) {
+        debugPrint('WindowsSystemService dispose failed: $e');
+      }
       _isInitialized = false;
     }
   }

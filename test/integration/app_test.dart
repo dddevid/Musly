@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:musly/main.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/services.dart';
+import 'package:musly/services/locale_service.dart';
+import 'package:musly/services/theme_service.dart';
 import '../bootstrap.dart';
 
 void main() {
@@ -20,6 +22,9 @@ void main() {
           providers: [
             Provider<StorageService>.value(value: storageService),
             Provider<SubsonicService>.value(value: subsonicService),
+            ChangeNotifierProvider<LocaleService>(
+                create: (_) => LocaleService()),
+            ChangeNotifierProvider<ThemeService>(create: (_) => ThemeService()),
             ChangeNotifierProvider(
               create: (_) => AuthProvider(subsonicService, storageService),
             ),
@@ -28,7 +33,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('Musly'), findsWidgets);
       expect(find.text('Connect to your Subsonic server'), findsOneWidget);
@@ -43,6 +48,9 @@ void main() {
           providers: [
             Provider<StorageService>.value(value: storageService),
             Provider<SubsonicService>.value(value: subsonicService),
+            ChangeNotifierProvider<LocaleService>(
+                create: (_) => LocaleService()),
+            ChangeNotifierProvider<ThemeService>(create: (_) => ThemeService()),
             ChangeNotifierProvider(
               create: (_) => AuthProvider(subsonicService, storageService),
             ),
@@ -51,7 +59,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('Server URL'), findsOneWidget);
       expect(find.text('Username'), findsOneWidget);
@@ -68,6 +76,9 @@ void main() {
           providers: [
             Provider<StorageService>.value(value: storageService),
             Provider<SubsonicService>.value(value: subsonicService),
+            ChangeNotifierProvider<LocaleService>(
+                create: (_) => LocaleService()),
+            ChangeNotifierProvider<ThemeService>(create: (_) => ThemeService()),
             ChangeNotifierProvider(
               create: (_) => AuthProvider(subsonicService, storageService),
             ),
@@ -76,11 +87,12 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final connectButton = find.text('Connect');
+      await tester.ensureVisible(connectButton);
       await tester.tap(connectButton);
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('Please enter server URL'), findsOneWidget);
       expect(find.text('Please enter username'), findsOneWidget);

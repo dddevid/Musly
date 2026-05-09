@@ -8,8 +8,8 @@ enum AuthState {
   unauthenticated,
   authenticating,
   authenticated,
-  offlineMode, 
-  serverUnreachable, 
+  offlineMode,
+  serverUnreachable,
   error,
 }
 
@@ -61,17 +61,20 @@ class AuthProvider extends ChangeNotifier {
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       pingResult = await _subsonicService.pingWithError().timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => PingResult(success: false, error: 'Connection timed out'),
-      );
+            const Duration(seconds: 10),
+            onTimeout: () =>
+                PingResult(success: false, error: 'Connection timed out'),
+          );
       if (pingResult.success) break;
-      debugPrint('[Auth] Ping attempt $attempt/$maxAttempts failed: ${pingResult.error}');
+      debugPrint(
+          '[Auth] Ping attempt $attempt/$maxAttempts failed: ${pingResult.error}');
       if (attempt < maxAttempts) {
         await Future.delayed(const Duration(seconds: 2));
       }
     }
     if (pingResult!.success) {
-      debugPrint('[Auth] Ping OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
+      debugPrint(
+          '[Auth] Ping OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
       if (_config != null) {
         final updatedConfig = _config!.copyWith(
           serverType: pingResult.serverType,
@@ -85,21 +88,20 @@ class AuthProvider extends ChangeNotifier {
       }
       debugPrint('[Auth] State: authenticating → authenticated');
       _state = AuthState.authenticated;
-      
+
       final offlineService = OfflineService();
       await offlineService.initialize();
-      offlineService
-          .flushPendingScrobbles(_subsonicService)
-          .catchError(
+      offlineService.flushPendingScrobbles(_subsonicService).catchError(
             (e) => debugPrint('Error flushing pending scrobbles: $e'),
           );
     } else {
       debugPrint('[Auth] Ping failed: ${pingResult.error}');
-      
+
       final offlineService = OfflineService();
       await offlineService.initialize();
       _hasOfflineContent = offlineService.getDownloadedCount() > 0;
-      debugPrint('[Auth] State: authenticating → serverUnreachable (offlineContent=$_hasOfflineContent)');
+      debugPrint(
+          '[Auth] State: authenticating → serverUnreachable (offlineContent=$_hasOfflineContent)');
       _state = AuthState.serverUnreachable;
     }
     notifyListeners();
@@ -136,7 +138,8 @@ class AuthProvider extends ChangeNotifier {
     String? profileName,
     String serverFamily = 'subsonic',
   }) async {
-    debugPrint('[Auth] login: user=$username server=$serverUrl family=$serverFamily');
+    debugPrint(
+        '[Auth] login: user=$username server=$serverUrl family=$serverFamily');
     _state = AuthState.authenticating;
     _error = null;
     notifyListeners();
@@ -197,7 +200,8 @@ class AuthProvider extends ChangeNotifier {
     try {
       final pingResult = await _subsonicService.pingWithError();
       if (pingResult.success) {
-        debugPrint('[Auth] Login OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
+        debugPrint(
+            '[Auth] Login OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
         debugPrint('[Auth] State: authenticating → authenticated');
         final updatedConfig = config.copyWith(
           serverType: pingResult.serverType,
@@ -207,21 +211,20 @@ class AuthProvider extends ChangeNotifier {
         await _storageService.saveServerConfig(updatedConfig);
         _state = AuthState.authenticated;
         notifyListeners();
-        
+
         _storageService.saveProfile(updatedConfig).catchError(
-          (e) => debugPrint('Error saving profile: $e'),
-        );
+              (e) => debugPrint('Error saving profile: $e'),
+            );
 
         final offlineService = OfflineService();
         await offlineService.initialize();
-        offlineService
-            .flushPendingScrobbles(_subsonicService)
-            .catchError(
+        offlineService.flushPendingScrobbles(_subsonicService).catchError(
               (e) => debugPrint('Error flushing pending scrobbles: $e'),
             );
         return true;
       } else {
-        _error = _formatError(pingResult.error ?? 'Failed to connect to server');
+        _error =
+            _formatError(pingResult.error ?? 'Failed to connect to server');
         debugPrint('[Auth] Login failed: $_error');
         debugPrint('[Auth] State: authenticating → error');
         _state = AuthState.error;
@@ -255,18 +258,21 @@ class AuthProvider extends ChangeNotifier {
       return 'Connection timed out. Check your server URL.';
     } else if (errorStr.contains('FormatException')) {
       return 'Invalid server URL format.';
-    } else if (errorStr.contains('401') || errorStr.contains('Unauthorized') ||
+    } else if (errorStr.contains('401') ||
+        errorStr.contains('Unauthorized') ||
         errorStr.contains('Invalid username or password')) {
       return 'Invalid username or password.';
-    } else if (errorStr.contains('404') || errorStr.contains('Not Found') ||
+    } else if (errorStr.contains('404') ||
+        errorStr.contains('Not Found') ||
         errorStr.contains('Server not found')) {
       return 'Server not found. Check your URL path.';
     } else {
-      
       return errorStr
           .replaceAll('Exception:', '')
           .replaceAll('Network error:', '')
-          .replaceAll('This indicates an error which most likely cannot be solved by the library.', '')
+          .replaceAll(
+              'This indicates an error which most likely cannot be solved by the library.',
+              '')
           .trim();
     }
   }
@@ -319,15 +325,27 @@ class AuthProvider extends ChangeNotifier {
       offlineService.cancelBackgroundDownload();
     }
 
-    await Future.wait([
-      DefaultCacheManager().emptyCache(),
-      BpmAnalyzerService().clearCache(),
-      offlineService.deleteAllDownloads(),
-      AndroidAutoService().dispose(),
-      AndroidSystemService().dispose(),
-      SamsungIntegrationService().dispose(),
-      BluetoothAvrcpService().dispose(),
-    ]);
+    try {
+      await DefaultCacheManager().emptyCache();
+    } catch (_) {}
+    try {
+      await BpmAnalyzerService().clearCache();
+    } catch (_) {}
+    try {
+      await offlineService.deleteAllDownloads();
+    } catch (_) {}
+    try {
+      await AndroidAutoService().dispose();
+    } catch (_) {}
+    try {
+      await AndroidSystemService().dispose();
+    } catch (_) {}
+    try {
+      await SamsungIntegrationService().dispose();
+    } catch (_) {}
+    try {
+      await BluetoothAvrcpService().dispose();
+    } catch (_) {}
 
     await _storageService.clearAll();
 

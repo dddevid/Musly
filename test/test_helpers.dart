@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:musly/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/providers/providers.dart';
 import 'package:musly/services/services.dart';
 import 'package:musly/services/audio_handler.dart';
+import 'package:musly/services/transcoding_service.dart';
 
 class FakeCastService extends CastService {
   @override
@@ -56,13 +58,20 @@ Widget createTestApp({
       ChangeNotifierProvider<PlayerProvider>(
         create: (_) =>
             playerProvider ??
-            PlayerProvider(service, storage, FakeCastService(), UpnpService(), MuslyAudioHandler()),
+            PlayerProvider(service, storage, FakeCastService(), UpnpService(),
+                MuslyAudioHandler()),
       ),
       ChangeNotifierProvider<LibraryProvider>(
         create: (_) => libraryProvider ?? LibraryProvider(service),
       ),
+      ChangeNotifierProvider<TranscodingService>(
+          create: (_) => TranscodingService()),
     ],
-    child: MaterialApp(home: Scaffold(body: child)),
+    child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: child),
+    ),
   );
 }
 
