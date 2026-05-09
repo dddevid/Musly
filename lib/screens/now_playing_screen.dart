@@ -477,254 +477,267 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             _isDragging ? Duration.zero : const Duration(milliseconds: 300);
         final animCurve = Curves.easeOutCubic;
 
-        return GestureDetector(
-          onVerticalDragStart: _showLyrics ? null : _onVerticalDragStart,
-          onVerticalDragUpdate: _showLyrics ? null : _onVerticalDragUpdate,
-          onVerticalDragEnd: _showLyrics ? null : _onVerticalDragEnd,
-          onHorizontalDragStart: _showLyrics ? null : _onHorizontalDragStart,
-          onHorizontalDragUpdate: _showLyrics ? null : _onHorizontalDragUpdate,
-          onHorizontalDragEnd: _showLyrics ? null : _onHorizontalDragEnd,
-          child: Material(
-            color: Colors.transparent,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AnimatedContainer(
-                  duration: animDuration,
-                  curve: animCurve,
-                  transform: Matrix4.identity()
-                    ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
-                    ..scaleByDouble(_scale, _scale, 1.0, 1.0),
-                  transformAlignment: Alignment.topCenter,
-                  child: AnimatedContainer(
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+          child: GestureDetector(
+            onVerticalDragStart: _showLyrics ? null : _onVerticalDragStart,
+            onVerticalDragUpdate: _showLyrics ? null : _onVerticalDragUpdate,
+            onVerticalDragEnd: _showLyrics ? null : _onVerticalDragEnd,
+            onHorizontalDragStart: _showLyrics ? null : _onHorizontalDragStart,
+            onHorizontalDragUpdate:
+                _showLyrics ? null : _onHorizontalDragUpdate,
+            onHorizontalDragEnd: _showLyrics ? null : _onHorizontalDragEnd,
+            child: Material(
+              color: Colors.transparent,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AnimatedContainer(
                     duration: animDuration,
                     curve: animCurve,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(_borderRadius),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Scaffold(
-                      backgroundColor: Colors.transparent,
-                      body: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          _DynamicBackground(
-                            imageUrl: _cachedImageUrl ?? '',
-                          ),
-                          IgnorePointer(
-                            ignoring: _showLyrics,
-                            child: AnimatedOpacity(
-                              opacity: _showLyrics ? 0.12 : 1.0,
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeOutCubic,
-                              child: SafeArea(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final screenHeight = constraints.maxHeight;
-                                    final screenWidth = constraints.maxWidth;
+                    transform: Matrix4.identity()
+                      ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
+                      ..scaleByDouble(_scale, _scale, 1.0, 1.0),
+                    transformAlignment: Alignment.topCenter,
+                    child: AnimatedContainer(
+                      duration: animDuration,
+                      curve: animCurve,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(_borderRadius),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            _DynamicBackground(
+                              imageUrl: _cachedImageUrl ?? '',
+                            ),
+                            IgnorePointer(
+                              ignoring: _showLyrics,
+                              child: AnimatedOpacity(
+                                opacity: _showLyrics ? 0.12 : 1.0,
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeOutCubic,
+                                child: SafeArea(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final screenHeight =
+                                          constraints.maxHeight;
+                                      final screenWidth = constraints.maxWidth;
 
-                                    final isLandscape =
-                                        screenWidth > screenHeight;
+                                      final isLandscape =
+                                          screenWidth > screenHeight;
 
-                                    if (isLandscape) {
-                                      return _buildLandscapeLayout(
-                                        context,
-                                        song,
-                                        screenWidth,
-                                        screenHeight,
-                                        animDuration,
-                                        animCurve,
+                                      if (isLandscape) {
+                                        return _buildLandscapeLayout(
+                                          context,
+                                          song,
+                                          screenWidth,
+                                          screenHeight,
+                                          animDuration,
+                                          animCurve,
+                                        );
+                                      }
+
+                                      // Clamp artwork safely: ensure max >= min so
+                                      // clamp() never throws on small screens
+                                      // (e.g. Sony NW-A306 Walkman ~240x400 dp).
+                                      final artworkMinSize =
+                                          screenHeight < 400 ? 80.0 : 120.0;
+                                      final artworkMaxSize =
+                                          (screenHeight * 0.38)
+                                              .clamp(artworkMinSize, 400.0);
+                                      final artworkSize =
+                                          (screenWidth * 0.80).clamp(
+                                        artworkMinSize,
+                                        artworkMaxSize,
                                       );
-                                    }
+                                      _currentArtworkSize = artworkSize;
 
-                                    // Clamp artwork safely: ensure max >= min so
-                                    // clamp() never throws on small screens
-                                    // (e.g. Sony NW-A306 Walkman ~240x400 dp).
-                                    final artworkMinSize =
-                                        screenHeight < 400 ? 80.0 : 120.0;
-                                    final artworkMaxSize = (screenHeight * 0.38)
-                                        .clamp(artworkMinSize, 400.0);
-                                    final artworkSize =
-                                        (screenWidth * 0.80).clamp(
-                                      artworkMinSize,
-                                      artworkMaxSize,
-                                    );
-                                    _currentArtworkSize = artworkSize;
+                                      final controlsHeight =
+                                          screenHeight < 420 ? 180.0 : 250.0;
+                                      final headerHeight =
+                                          screenHeight < 420 ? 44.0 : 56.0;
 
-                                    final controlsHeight =
-                                        screenHeight < 420 ? 180.0 : 250.0;
-                                    final headerHeight =
-                                        screenHeight < 420 ? 44.0 : 56.0;
+                                      final availableSpace = screenHeight -
+                                          headerHeight -
+                                          artworkSize -
+                                          controlsHeight;
 
-                                    final availableSpace = screenHeight -
-                                        headerHeight -
-                                        artworkSize -
-                                        controlsHeight;
+                                      final topSpacing = (availableSpace * 0.35)
+                                          .clamp(8.0, 60.0);
+                                      final middleSpacing =
+                                          (availableSpace * 0.45)
+                                              .clamp(12.0, 50.0);
+                                      final bottomSpacing =
+                                          (availableSpace * 0.20)
+                                              .clamp(4.0, 30.0);
 
-                                    final topSpacing = (availableSpace * 0.35)
-                                        .clamp(8.0, 60.0);
-                                    final middleSpacing =
-                                        (availableSpace * 0.45)
-                                            .clamp(12.0, 50.0);
-                                    final bottomSpacing =
-                                        (availableSpace * 0.20)
-                                            .clamp(4.0, 30.0);
-
-                                    return SingleChildScrollView(
-                                      physics: const BouncingScrollPhysics(),
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minHeight: screenHeight,
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            AnimatedOpacity(
-                                              duration: animDuration,
-                                              opacity:
-                                                  (1.0 - _morphProgress * 1.5)
-                                                      .clamp(0.0, 1.0),
-                                              child: _PlayerHeader(
-                                                albumName: song.album ??
-                                                    AppLocalizations.of(
-                                                            context)!
-                                                        .unknownAlbum,
-                                                albumId: song.albumId,
-                                                showLyricsButton: true,
-                                                isLyricsActive: _showLyrics,
-                                                onLyricsPressed: () {
-                                                  setState(() {
-                                                    _showLyrics = !_showLyrics;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                            SizedBox(height: topSpacing),
-                                            AnimatedContainer(
-                                              duration: animDuration,
-                                              curve: animCurve,
-                                              transform: Matrix4.identity()
-                                                ..translateByDouble(
-                                                  0.0,
-                                                  -_morphProgress * 20,
-                                                  0.0,
-                                                  1.0,
-                                                )
-                                                ..scaleByDouble(
-                                                  1.0 + _morphProgress * 0.05,
-                                                  1.0 + _morphProgress * 0.05,
-                                                  1.0,
-                                                  1.0,
-                                                ),
-                                              transformAlignment:
-                                                  Alignment.center,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    _showLyrics = true;
-                                                  });
-                                                },
-                                                child: _SwipeableAlbumArtwork(
-                                                  currentImageUrl:
-                                                      _cachedImageUrl ?? '',
-                                                  currentThumbnailUrl:
-                                                      _cachedThumbnailUrl,
-                                                  previewImageUrl:
-                                                      _getPreviewArtworkUrl(
-                                                    _previewSong,
-                                                  ),
-                                                  hasPreviewSong:
-                                                      _previewSong != null,
-                                                  size: artworkSize,
-                                                  swipeProgress: _swipeProgress,
-                                                  horizontalDragOffset:
-                                                      _horizontalDragOffset,
+                                      return SingleChildScrollView(
+                                        physics: const BouncingScrollPhysics(),
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minHeight: screenHeight,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              AnimatedOpacity(
+                                                duration: animDuration,
+                                                opacity:
+                                                    (1.0 - _morphProgress * 1.5)
+                                                        .clamp(0.0, 1.0),
+                                                child: _PlayerHeader(
+                                                  albumName: song.album ??
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .unknownAlbum,
+                                                  albumId: song.albumId,
+                                                  showLyricsButton: true,
+                                                  isLyricsActive: _showLyrics,
+                                                  onLyricsPressed: () {
+                                                    setState(() {
+                                                      _showLyrics =
+                                                          !_showLyrics;
+                                                    });
+                                                  },
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(height: middleSpacing),
-                                            AnimatedOpacity(
-                                              duration: animDuration,
-                                              opacity:
-                                                  (1.0 - _morphProgress * 1.2)
-                                                      .clamp(0.0, 1.0),
-                                              child: AnimatedContainer(
+                                              SizedBox(height: topSpacing),
+                                              AnimatedContainer(
                                                 duration: animDuration,
                                                 curve: animCurve,
                                                 transform: Matrix4.identity()
                                                   ..translateByDouble(
                                                     0.0,
-                                                    _morphProgress * 30,
+                                                    -_morphProgress * 20,
                                                     0.0,
                                                     1.0,
+                                                  )
+                                                  ..scaleByDouble(
+                                                    1.0 + _morphProgress * 0.05,
+                                                    1.0 + _morphProgress * 0.05,
+                                                    1.0,
+                                                    1.0,
                                                   ),
-                                                child: _PlayerControls(
-                                                  formatDuration:
-                                                      _formatDuration,
+                                                transformAlignment:
+                                                    Alignment.center,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _showLyrics = true;
+                                                    });
+                                                  },
+                                                  child: _SwipeableAlbumArtwork(
+                                                    currentImageUrl:
+                                                        _cachedImageUrl ?? '',
+                                                    currentThumbnailUrl:
+                                                        _cachedThumbnailUrl,
+                                                    previewImageUrl:
+                                                        _getPreviewArtworkUrl(
+                                                      _previewSong,
+                                                    ),
+                                                    hasPreviewSong:
+                                                        _previewSong != null,
+                                                    size: artworkSize,
+                                                    swipeProgress:
+                                                        _swipeProgress,
+                                                    horizontalDragOffset:
+                                                        _horizontalDragOffset,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(height: bottomSpacing),
-                                          ],
+                                              SizedBox(height: middleSpacing),
+                                              AnimatedOpacity(
+                                                duration: animDuration,
+                                                opacity:
+                                                    (1.0 - _morphProgress * 1.2)
+                                                        .clamp(0.0, 1.0),
+                                                child: AnimatedContainer(
+                                                  duration: animDuration,
+                                                  curve: animCurve,
+                                                  transform: Matrix4.identity()
+                                                    ..translateByDouble(
+                                                      0.0,
+                                                      _morphProgress * 30,
+                                                      0.0,
+                                                      1.0,
+                                                    ),
+                                                  child: _PlayerControls(
+                                                    formatDuration:
+                                                        _formatDuration,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: bottomSpacing),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 450),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            transitionBuilder: (child, animation) {
-                              final isEntering = animation.status ==
-                                      AnimationStatus.forward ||
-                                  animation.status == AnimationStatus.completed;
-                              final slideAnimation = Tween<Offset>(
-                                begin: const Offset(0, 0.18),
-                                end: Offset.zero,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: isEntering
-                                      ? Curves.easeOutCubic
-                                      : Curves.easeInCubic,
-                                ),
-                              );
-                              return FadeTransition(
-                                opacity: animation,
-                                child: SlideTransition(
-                                  position: slideAnimation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: _showLyrics
-                                ? SizedBox.expand(
-                                    key: const ValueKey('lyrics'),
-                                    child: SyncedLyricsView(
-                                      song: song,
-                                      imageUrl: _cachedImageUrl,
-                                      onClose: () {
-                                        setState(() {
-                                          _showLyrics = false;
-                                        });
-                                      },
-                                    ),
-                                  )
-                                : const SizedBox.shrink(
-                                    key: ValueKey('no-lyrics'),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 450),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (child, animation) {
+                                final isEntering = animation.status ==
+                                        AnimationStatus.forward ||
+                                    animation.status ==
+                                        AnimationStatus.completed;
+                                final slideAnimation = Tween<Offset>(
+                                  begin: const Offset(0, 0.18),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: isEntering
+                                        ? Curves.easeOutCubic
+                                        : Curves.easeInCubic,
                                   ),
-                          ),
-                        ],
+                                );
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: slideAnimation,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: _showLyrics
+                                  ? SizedBox.expand(
+                                      key: const ValueKey('lyrics'),
+                                      child: SyncedLyricsView(
+                                        song: song,
+                                        imageUrl: _cachedImageUrl,
+                                        onClose: () {
+                                          setState(() {
+                                            _showLyrics = false;
+                                          });
+                                        },
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(
+                                      key: ValueKey('no-lyrics'),
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -739,43 +752,49 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             : const Duration(milliseconds: 300);
     final animCurve = Curves.easeOutCubic;
 
-    return GestureDetector(
-      onVerticalDragStart: _onVerticalDragStart,
-      onVerticalDragUpdate: _onVerticalDragUpdate,
-      onVerticalDragEnd: _onVerticalDragEnd,
-      child: Material(
-        color: Colors.transparent,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            AnimatedContainer(
-              duration: animDuration,
-              curve: animCurve,
-              transform: Matrix4.identity()
-                ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
-                ..scaleByDouble(_scale, _scale, 1.0, 1.0),
-              transformAlignment: Alignment.topCenter,
-              child: AnimatedContainer(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: GestureDetector(
+        onVerticalDragStart: _onVerticalDragStart,
+        onVerticalDragUpdate: _onVerticalDragUpdate,
+        onVerticalDragEnd: _onVerticalDragEnd,
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              AnimatedContainer(
                 duration: animDuration,
                 curve: animCurve,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_borderRadius),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Scaffold(
-                  body: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFF1a1a2e),
-                          Color(0xFF16213e),
-                          Color(0xFF0f0f23),
-                        ],
+                transform: Matrix4.identity()
+                  ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
+                  ..scaleByDouble(_scale, _scale, 1.0, 1.0),
+                transformAlignment: Alignment.topCenter,
+                child: AnimatedContainer(
+                  duration: animDuration,
+                  curve: animCurve,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(_borderRadius),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Scaffold(
+                    body: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF1a1a2e),
+                            Color(0xFF16213e),
+                            Color(0xFF0f0f23),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: SafeArea(
+                      child: SafeArea(
                       child: Column(
                         children: [
                           Padding(
