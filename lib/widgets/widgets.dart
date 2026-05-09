@@ -11,3 +11,7 @@ export 'desktop_player_bar.dart';
 export 'desktop_navigation_sidebar.dart';
 export 'star_rating_widget.dart';
 export 'favorite_playlists_section.dart';
+export 'spotify_like_card.dart';
+export 'right_sidebar.dart';
+export 'quick_access_grid.dart';
+export 'gradient_header.dart';

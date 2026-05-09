@@ -36,6 +36,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   int _searchTapCount = 0;
   DateTime _lastSearchTap = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _showRightSidebar = true;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -390,6 +391,16 @@ class _MainScreenState extends State<MainScreen> {
                       },
                     ),
                   ),
+                  if (_showRightSidebar)
+                    Selector<PlayerProvider, bool>(
+                      selector: (_, p) =>
+                          p.currentSong != null || p.isPlayingRadio,
+                      builder: (context, hasCurrentSong, _) {
+                        return hasCurrentSong
+                            ? const RightSidebar()
+                            : const SizedBox.shrink();
+                      },
+                    ),
                 ],
               ),
             ),

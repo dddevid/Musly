@@ -69,10 +69,9 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    final width = _isCollapsed ? 72.0 : 260.0;
-    final sidebarBg = isDark
-        ? const Color(0xFF121212)
-        : const Color(0xFFEEEEEE);
+    final width = _isCollapsed ? 72.0 : 280.0;
+    final sidebarBg =
+        isDark ? const Color(0xFF000000) : const Color(0xFFEEEEEE);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -230,9 +229,8 @@ class _NavItem extends StatelessWidget {
                         style: TextStyle(
                           color: textColor,
                           fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -278,7 +276,6 @@ class _LibrarySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
           if (!isCollapsed)
             InkWell(
               onTap: onLibraryTap,
@@ -322,7 +319,6 @@ class _LibrarySection extends StatelessWidget {
                 ),
               ),
             ),
-          
           if (isCollapsed)
             Tooltip(
               message: l10n.yourLibrary,
@@ -345,15 +341,13 @@ class _LibrarySection extends StatelessWidget {
                     color: selectedIndex == 1
                         ? (isDark ? Colors.white : Colors.black)
                         : (isDark
-                              ? const Color(0xFFB3B3B3)
-                              : const Color(0xFF6B6B6B)),
+                            ? const Color(0xFFB3B3B3)
+                            : const Color(0xFF6B6B6B)),
                   ),
                 ),
               ),
             ),
-          
           _LikedSongsItem(isCollapsed: isCollapsed, onTap: onFavoritesTap),
-          
           Expanded(
             child: Consumer<LibraryProvider>(
               builder: (context, libraryProvider, _) {
@@ -400,9 +394,8 @@ class _LibrarySection extends StatelessWidget {
           decoration: InputDecoration(
             hintText: l10n.playlistName,
             filled: true,
-            fillColor: isDark
-                ? const Color(0xFF383838)
-                : const Color(0xFFF2F2F7),
+            fillColor:
+                isDark ? const Color(0xFF383838) : const Color(0xFFF2F2F7),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -677,7 +670,7 @@ class _ArtworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? const Color(0xFF282828) : const Color(0xFFD0D0D0);
+    final bg = isDark ? const Color(0xFF181818) : const Color(0xFFD0D0D0);
     if (url == null) {
       return Container(
         color: bg,
@@ -722,9 +715,8 @@ class _CollapseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark
-        ? const Color(0xFF9B9B9B)
-        : const Color(0xFF6B6B6B);
+    final iconColor =
+        isDark ? const Color(0xFF9B9B9B) : const Color(0xFF6B6B6B);
     final hoverBg = isDark
         ? Colors.white.withValues(alpha: 0.07)
         : Colors.black.withValues(alpha: 0.06);

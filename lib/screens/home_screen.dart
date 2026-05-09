@@ -82,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
               if (isDesktop) const SizedBox(width: 8),
             ],
           ),
-
           SliverToBoxAdapter(
             child: Consumer2<LibraryProvider, RecommendationService>(
               builder: (context, libraryProvider, recommendationService, _) {
@@ -368,7 +367,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 AppLocalizations.of(
                                   context,
-                                )!.noContentAvailable,
+                                )!
+                                    .noContentAvailable,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -463,9 +463,8 @@ class _QuickAccessGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final raw = [...albums, ...playlists].take(isDesktop ? 9 : 6).toList();
 
-    final items = (!isDesktop && raw.length.isOdd)
-        ? raw.sublist(0, raw.length - 1)
-        : raw;
+    final items =
+        (!isDesktop && raw.length.isOdd) ? raw.sublist(0, raw.length - 1) : raw;
 
     if (items.isEmpty) {
       return const SizedBox.shrink();
@@ -536,34 +535,35 @@ class _QuickAccessGrid extends StatelessWidget {
       title = item.name;
       imageUrl = item.coverArt != null
           ? (isLocalFilePath(item.coverArt)
-                ? item.coverArt
-                : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
+              ? item.coverArt
+              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
           : null;
       onTap = () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              PlaylistScreen(playlistId: item.id, playlistName: item.name),
-        ),
-      );
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  PlaylistScreen(playlistId: item.id, playlistName: item.name),
+            ),
+          );
     } else {
       title = item.name;
       imageUrl = item.coverArt != null
           ? (isLocalFilePath(item.coverArt)
-                ? item.coverArt
-                : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
+              ? item.coverArt
+              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
           : null;
       onTap = () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AlbumScreen(albumId: item.id)),
-      );
+            context,
+            MaterialPageRoute(
+                builder: (context) => AlbumScreen(albumId: item.id)),
+          );
     }
 
     return _QuickAccessTile(title: title, imageUrl: imageUrl, onTap: onTap);
   }
 }
 
-class _QuickAccessTile extends StatelessWidget {
+class _QuickAccessTile extends StatefulWidget {
   final String title;
   final String? imageUrl;
   final VoidCallback onTap;
@@ -575,74 +575,102 @@ class _QuickAccessTile extends StatelessWidget {
   });
 
   @override
+  State<_QuickAccessTile> createState() => _QuickAccessTileState();
+}
+
+class _QuickAccessTileState extends State<_QuickAccessTile> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Material(
-      color: isDark ? const Color(0xFF282828) : Colors.grey[200],
-      borderRadius: BorderRadius.circular(4),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(4),
-              ),
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: imageUrl != null
-                    ? (isLocalFilePath(imageUrl)
-                          ? Image.file(
-                              File(imageUrl!),
-                              fit: BoxFit.cover,
-                              errorBuilder: (ctx, e, _) => Container(
-                                color: Colors.grey[800],
-                                child: const Icon(
-                                  Icons.music_note,
-                                  color: Colors.white30,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        decoration: BoxDecoration(
+          color: isDark
+              ? (_isHovered ? AppTheme.darkElevated : AppTheme.darkCard)
+              : (_isHovered ? Colors.grey[300] : Colors.grey[200]),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: _isHovered
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(4),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(4),
+                  ),
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: widget.imageUrl != null
+                        ? (isLocalFilePath(widget.imageUrl)
+                            ? Image.file(
+                                File(widget.imageUrl!),
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, e, _) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white30,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: imageUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (ctx, e) =>
-                                  Container(color: Colors.grey[800]),
-                              errorWidget: (ctx, e, _) => Container(
-                                color: Colors.grey[800],
-                                child: const Icon(
-                                  Icons.music_note,
-                                  color: Colors.white30,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: widget.imageUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (ctx, e) =>
+                                    Container(color: Colors.grey[800]),
+                                errorWidget: (ctx, e, _) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white30,
+                                  ),
                                 ),
-                              ),
-                            ))
-                    : Container(
-                        color: Colors.grey[800],
-                        child: const Icon(
-                          Icons.music_note,
-                          color: Colors.white30,
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                              ))
+                        : Container(
+                            color: Colors.grey[800],
+                            child: const Icon(
+                              Icons.music_note,
+                              color: Colors.white30,
+                            ),
+                          ),
+                  ),
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
-            const SizedBox(width: 8),
-          ],
+          ),
         ),
       ),
     );
@@ -719,9 +747,8 @@ class _PlaylistCard extends StatelessWidget {
                         ),
                       )
                     : Container(
-                        color: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : Colors.grey[300],
+                        color:
+                            isDark ? const Color(0xFF2C2C2E) : Colors.grey[300],
                         child: const Center(
                           child: Icon(
                             Icons.queue_music_rounded,
@@ -746,8 +773,8 @@ class _PlaylistCard extends StatelessWidget {
               Text(
                 '${playlist.songCount} songs',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
               ),
           ],
         ),
@@ -873,8 +900,8 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
 
     final rowBg = _hovered
         ? (isDark
-              ? Colors.white.withValues(alpha: 0.06)
-              : Colors.black.withValues(alpha: 0.04))
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.04))
         : Colors.transparent;
 
     return MouseRegion(
@@ -883,10 +910,10 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => context.read<PlayerProvider>().playSong(
-          song,
-          playlist: widget.playlist,
-          startIndex: widget.index,
-        ),
+              song,
+              playlist: widget.playlist,
+              startIndex: widget.index,
+            ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           color: rowBg,
@@ -903,25 +930,26 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                           color: isDark ? Colors.white : Colors.black,
                         )
                       : isPlaying
-                      ? Icon(
-                          Icons.bar_chart_rounded,
-                          size: 18,
-                          color: AppTheme.appleMusicRed,
-                        )
-                      : Text(
-                          '${widget.index + 1}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isPlaying
-                                ? AppTheme.appleMusicRed
-                                : (isDark ? Colors.white60 : Colors.black54),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                          ? Icon(
+                              Icons.bar_chart_rounded,
+                              size: 18,
+                              color: AppTheme.appleMusicRed,
+                            )
+                          : Text(
+                              '${widget.index + 1}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isPlaying
+                                    ? AppTheme.appleMusicRed
+                                    : (isDark
+                                        ? Colors.white60
+                                        : Colors.black54),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                 ),
               ),
               const SizedBox(width: 12),
-
               ClipRRect(
                 borderRadius: BorderRadius.circular(3),
                 child: SizedBox(
@@ -956,7 +984,6 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                 ),
               ),
               const SizedBox(width: 12),
-
               Expanded(
                 flex: 5,
                 child: Column(
@@ -988,7 +1015,6 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                   ],
                 ),
               ),
-
               Expanded(
                 flex: 3,
                 child: Text(
@@ -1001,7 +1027,6 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-
               SizedBox(
                 width: 40,
                 child: _hovered || song.starred == true
@@ -1018,13 +1043,12 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                         padding: EdgeInsets.zero,
                         onPressed: () {
                           context.read<PlayerProvider>().toggleFavoriteForSong(
-                            song,
-                          );
+                                song,
+                              );
                         },
                       )
                     : const SizedBox.shrink(),
               ),
-
               SizedBox(
                 width: 52,
                 child: Text(

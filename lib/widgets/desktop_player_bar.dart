@@ -45,20 +45,20 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     } else {
       rootNav
           .push(
-            MaterialPageRoute(
-              fullscreenDialog: true,
-              builder: (ctx) => SyncedLyricsView(
-                song: song,
-                onClose: () {
-                  Navigator.of(ctx, rootNavigator: true).pop();
-                  setState(() => _lyricsOpen = false);
-                },
-              ),
-            ),
-          )
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (ctx) => SyncedLyricsView(
+            song: song,
+            onClose: () {
+              Navigator.of(ctx, rootNavigator: true).pop();
+              setState(() => _lyricsOpen = false);
+            },
+          ),
+        ),
+      )
           .then((_) {
-            if (mounted) setState(() => _lyricsOpen = false);
-          });
+        if (mounted) setState(() => _lyricsOpen = false);
+      });
       setState(() => _lyricsOpen = true);
     }
   }
@@ -69,7 +69,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Selector<PlayerProvider, (Song?, RadioStation?, bool)>(
-      selector: (_, p) => (p.currentSong, p.currentRadioStation, p.isPlayingRadio),
+      selector: (_, p) =>
+          (p.currentSong, p.currentRadioStation, p.isPlayingRadio),
       builder: (context, data, _) {
         final (currentSong, radioStation, isPlayingRadio) = data;
 
@@ -84,10 +85,13 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     );
   }
 
-  Widget _buildRadioBar(BuildContext context, ThemeData theme, bool isDark, RadioStation station) {
-    final barColor = isDark ? const Color(0xFF181818) : const Color(0xFFF8F8F8);
-    final borderColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFDDDDDD);
-    final iconColor = isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B);
+  Widget _buildRadioBar(BuildContext context, ThemeData theme, bool isDark,
+      RadioStation station) {
+    final barColor = isDark ? AppTheme.playerBarDark : AppTheme.playerBarLight;
+    final borderColor =
+        isDark ? AppTheme.playerBarBorder : const Color(0xFFDDDDDD);
+    final iconColor =
+        isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
 
     return Container(
       height: 90,
@@ -98,7 +102,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
       ),
       child: Row(
         children: [
-          
           Expanded(
             flex: 3,
             child: Row(
@@ -114,7 +117,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                       end: Alignment.bottomRight,
                     ),
                   ),
-                  child: const Icon(Icons.radio_rounded, color: Colors.white, size: 28),
+                  child: const Icon(Icons.radio_rounded,
+                      color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -140,14 +144,19 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             decoration: BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
-                              boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.5), blurRadius: 4)],
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.red.withValues(alpha: 0.5),
+                                    blurRadius: 4)
+                              ],
                             ),
                           ),
                           const SizedBox(width: 6),
                           Text(
                             'LIVE',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color:
+                                  isDark ? Colors.grey[400] : Colors.grey[600],
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 1.2,
@@ -161,7 +170,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
           Expanded(
             flex: 4,
             child: Selector<PlayerProvider, bool>(
@@ -185,7 +193,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                       ),
                       child: IconButton(
                         icon: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           size: 32,
                           color: Colors.black,
                         ),
@@ -195,7 +205,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     ),
                     const SizedBox(width: 16),
                     IconButton(
-                      icon: Icon(Icons.stop_rounded, size: 26, color: iconColor),
+                      icon:
+                          Icon(Icons.stop_rounded, size: 26, color: iconColor),
                       onPressed: provider.stop,
                       tooltip: 'Stop',
                     ),
@@ -204,7 +215,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               },
             ),
           ),
-
           Expanded(
             flex: 3,
             child: Row(
@@ -217,15 +227,16 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     );
   }
 
-  Widget _buildSongBar(BuildContext context, ThemeData theme, bool isDark, Song currentSong) {
+  Widget _buildSongBar(
+      BuildContext context, ThemeData theme, bool isDark, Song currentSong) {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF181818) : const Color(0xFFF8F8F8),
+        color: isDark ? AppTheme.playerBarDark : AppTheme.playerBarLight,
         border: Border(
           top: BorderSide(
-            color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFDDDDDD),
+            color: isDark ? AppTheme.playerBarBorder : const Color(0xFFDDDDDD),
             width: 1,
           ),
         ),
@@ -263,13 +274,16 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                           child: GestureDetector(
                             onTap: () {
                               if (currentSong.artistId != null) {
-                                _navigateToArtist(context, currentSong.artistId!);
+                                _navigateToArtist(
+                                    context, currentSong.artistId!);
                               }
                             },
                             child: Text(
                               currentSong.artist!,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                                 fontSize: 12,
                               ),
                               maxLines: 1,
@@ -285,14 +299,19 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                   builder: (context, isStarred, _) {
                     return IconButton(
                       icon: Icon(
-                        isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        isStarred
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
                         size: 20,
                         color: isStarred
                             ? AppTheme.appleMusicRed
-                            : (isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B)),
+                            : (isDark
+                                ? const Color(0xFFB3B3B3)
+                                : const Color(0xFF6B6B6B)),
                       ),
                       onPressed: () {
-                        Provider.of<PlayerProvider>(context, listen: false).toggleFavorite();
+                        Provider.of<PlayerProvider>(context, listen: false)
+                            .toggleFavorite();
                       },
                       tooltip: isStarred
                           ? AppLocalizations.of(context)!.removeFromFavorites
@@ -303,7 +322,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
           Expanded(
             flex: 4,
             child: Column(
@@ -315,7 +333,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
           Expanded(
             flex: 3,
             child: Row(
@@ -327,7 +344,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     size: 20,
                     color: _lyricsOpen
                         ? AppTheme.appleMusicRed
-                        : (isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B)),
+                        : (isDark
+                            ? const Color(0xFFB3B3B3)
+                            : const Color(0xFF6B6B6B)),
                   ),
                   onPressed: () => _toggleLyrics(context, currentSong),
                   tooltip: _lyricsOpen
@@ -337,7 +356,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                 IconButton(
                   icon: const Icon(Icons.queue_music_rounded, size: 20),
                   onPressed: () {},
-                  color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B),
+                  color: isDark
+                      ? const Color(0xFFB3B3B3)
+                      : const Color(0xFF6B6B6B),
                 ),
                 const SizedBox(width: 8),
                 const _VolumeControl(),
@@ -382,8 +403,8 @@ class _PlayerControls extends StatelessWidget {
                 color: shuffleEnabled
                     ? AppTheme.appleMusicRed
                     : (isDark
-                          ? const Color(0xFFB3B3B3)
-                          : const Color(0xFF6B6B6B)),
+                        ? const Color(0xFFB3B3B3)
+                        : const Color(0xFF6B6B6B)),
               ),
               onPressed: provider.toggleShuffle,
               tooltip: AppLocalizations.of(context)!.enableShuffle,
@@ -435,8 +456,8 @@ class _PlayerControls extends StatelessWidget {
                 color: repeatMode != RepeatMode.off
                     ? AppTheme.appleMusicRed
                     : (isDark
-                          ? const Color(0xFFB3B3B3)
-                          : const Color(0xFF6B6B6B)),
+                        ? const Color(0xFFB3B3B3)
+                        : const Color(0xFF6B6B6B)),
               ),
               onPressed: provider.toggleRepeat,
               tooltip: AppLocalizations.of(context)!.enableRepeat,
@@ -491,9 +512,8 @@ class _ProgressBar extends StatelessWidget {
                         overlayRadius: 12,
                       ),
                       activeTrackColor: AppTheme.appleMusicRed,
-                      inactiveTrackColor: isDark
-                          ? const Color(0xFF535353)
-                          : Colors.grey[300],
+                      inactiveTrackColor:
+                          isDark ? const Color(0xFF535353) : Colors.grey[300],
                       thumbColor: Colors.white,
                       overlayColor: AppTheme.appleMusicRed.withValues(
                         alpha: 0.15,
@@ -501,9 +521,9 @@ class _ProgressBar extends StatelessWidget {
                     ),
                     child: Slider(
                       value: position.inMilliseconds.toDouble().clamp(
-                        0.0,
-                        duration.inMilliseconds.toDouble(),
-                      ),
+                            0.0,
+                            duration.inMilliseconds.toDouble(),
+                          ),
                       min: 0.0,
                       max: duration.inMilliseconds.toDouble(),
                       onChanged: (value) {
@@ -528,7 +548,6 @@ class _VolumeControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Selector<PlayerProvider, double>(
       selector: (_, p) => p.volume,
       builder: (context, volume, _) {
@@ -544,8 +563,8 @@ class _VolumeControl extends StatelessWidget {
                 isMuted
                     ? Icons.volume_off_rounded
                     : volume < 0.5
-                    ? Icons.volume_down_rounded
-                    : Icons.volume_up_rounded,
+                        ? Icons.volume_down_rounded
+                        : Icons.volume_up_rounded,
                 size: 20,
               ),
               onPressed: () {
@@ -565,9 +584,8 @@ class _VolumeControl extends StatelessWidget {
                     overlayRadius: 12,
                   ),
                   activeTrackColor: AppTheme.appleMusicRed,
-                  inactiveTrackColor: isDark
-                      ? const Color(0xFF535353)
-                      : Colors.grey[300],
+                  inactiveTrackColor:
+                      isDark ? const Color(0xFF535353) : Colors.grey[300],
                   thumbColor: Colors.white,
                   overlayColor: AppTheme.appleMusicRed.withValues(alpha: 0.15),
                 ),
