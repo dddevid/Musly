@@ -1005,6 +1005,8 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void _initializePlayer() {
+    _configureAudioSession();
+
     _storageService.getVolume().then((savedVolume) {
       _volume = savedVolume;
       _audioPlayer.setVolume(_volume);
@@ -1105,6 +1107,27 @@ class PlayerProvider extends ChangeNotifier {
         debugPrint('Duration stream error (can be ignored): $error');
       },
     );
+  }
+
+  Future<void> _configureAudioSession() async {
+    if (kIsWeb || !Platform.isAndroid) return;
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      debugPrint('[Player] AudioSession configured for music playback');
+    } catch (e) {
+      debugPrint('[Player] AudioSession configuration failed: $e');
+    }
+  }
+
+  Future<void> _ensureAudioFocus() async {
+    if (kIsWeb || !Platform.isAndroid) return;
+    try {
+      final granted = await _androidSystemService.requestAudioFocus();
+      debugPrint('[Player] Audio focus requested, granted=$granted');
+    } catch (e) {
+      debugPrint('[Player] Audio focus request failed: $e');
+    }
   }
 
   Future<void> _onSongComplete() async {
@@ -1318,6 +1341,7 @@ class PlayerProvider extends ChangeNotifier {
         }
 
         await _applyReplayGain(song);
+        await _ensureAudioFocus();
         await _audioPlayer.play();
       }
 
@@ -1393,6 +1417,7 @@ class PlayerProvider extends ChangeNotifier {
 
       await _audioPlayer.setVolume(_volume);
 
+      await _ensureAudioFocus();
       await _audioPlayer.play();
 
       _updateSystemServicesForRadio(station);
@@ -1522,6 +1547,7 @@ class PlayerProvider extends ChangeNotifier {
       notifyListeners();
       _updateAndroidAuto();
     } else {
+      await _ensureAudioFocus();
       await _audioPlayer.play();
     }
   }
