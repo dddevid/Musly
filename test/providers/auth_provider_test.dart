@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/services.dart';
+import '../bootstrap.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  initializeTestEnvironment();
 
   group('AuthProvider', () {
     late SubsonicService subsonicService;

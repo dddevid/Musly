@@ -5,8 +5,10 @@ import 'package:musly/screens/playlists_screen.dart';
 import 'package:musly/screens/settings_screen.dart';
 
 import '../test_helpers.dart';
+import '../bootstrap.dart';
 
 void main() {
+  initializeTestEnvironment();
   group('Screen Widget Tests', () {
     testWidgets('LibraryScreen builds without exception', (
       WidgetTester tester,

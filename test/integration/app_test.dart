@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:musly/main.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/services.dart';
+import '../bootstrap.dart';
 
 void main() {
+  initializeTestEnvironment();
   group('Musly App Integration Tests', () {
     testWidgets('should display login screen when not authenticated', (
       tester,

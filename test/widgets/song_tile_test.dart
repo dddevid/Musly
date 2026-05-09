@@ -9,8 +9,10 @@ import 'package:musly/services/upnp_service.dart';
 import 'package:musly/services/audio_handler.dart';
 import 'package:musly/widgets/song_tile.dart';
 import '../test_helpers.dart';
+import '../bootstrap.dart';
 
 void main() {
+  initializeTestEnvironment();
   group('SongTile', () {
     late SubsonicService subsonicService;
     late PlayerProvider playerProvider;

@@ -8,9 +8,10 @@ import 'package:musly/services/audio_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../test_helpers.dart';
+import '../bootstrap.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  initializeTestEnvironment();
 
   group('Memory Leak & Disposal Tests', () {
     testWidgets('PlayerProvider should dispose without leaking', (

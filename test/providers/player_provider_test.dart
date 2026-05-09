@@ -6,8 +6,10 @@ import 'package:musly/services/storage_service.dart';
 import 'package:musly/services/upnp_service.dart';
 import 'package:musly/services/audio_handler.dart';
 import '../test_helpers.dart';
+import '../bootstrap.dart';
 
 void main() {
+  initializeTestEnvironment();
   group('PlayerProvider', () {
     late SubsonicService subsonicService;
     late PlayerProvider playerProvider;
