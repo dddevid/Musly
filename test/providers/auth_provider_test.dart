@@ -3,6 +3,8 @@ import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/services.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('AuthProvider', () {
     late SubsonicService subsonicService;
     late StorageService storageService;

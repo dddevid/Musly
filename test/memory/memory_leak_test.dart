@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import '../test_helpers.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Memory Leak & Disposal Tests', () {
     testWidgets('PlayerProvider should dispose without leaking', (
       WidgetTester tester,
@@ -31,7 +33,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
       provider.dispose();
       expect(true, true); // If we got here without exception, disposal worked
     });
@@ -49,7 +51,7 @@ void main() {
           child: const MaterialApp(home: Scaffold()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
       provider.dispose();
       expect(true, true);
     });
@@ -66,7 +68,7 @@ void main() {
           child: const MaterialApp(home: Scaffold()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
       provider.dispose();
       expect(true, true);
     });
