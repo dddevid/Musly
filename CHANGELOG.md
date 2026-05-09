@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed syntax error causing build failure in `_buildRadioPlayer`
   - Status-bar icons now forced to white on dark background so they remain visible
 - **Android Audio Focus** — Playback now requests audio focus before starting, resolving no-sound issues on Android car head units and during remote playback
+- **Android Playback Fix** — Resolved conflict between custom `AndroidSystemPlugin` and `audio_session` plugin that caused songs to start then immediately pause on Android devices
+- **Windows Progress Bar** — Added fallback position polling timer for Windows desktop where `just_audio_windows` position stream does not emit reliably; progress bar and SMTC now update correctly during playback
 - **Queue Layout** — Prevented queue list from sliding under the navigation bar on devices with gesture navigation
 - **All Songs Screen** — Deferred `_loadCachedData` to post-frame callback, eliminating `setState during build` exception
 - **Native Service Resilience** — `AuthProvider.logout()`, `PlayerProvider.dispose()`, `DiscordRpcService`, `WindowsSystemService`, and Android system services now gracefully handle missing native plugins in test environments
