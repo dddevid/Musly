@@ -1707,6 +1707,7 @@ class PlayerProvider extends ChangeNotifier {
       _queue.remove(currentSong);
       _queue.insert(0, currentSong);
       _currentIndex = 0;
+      _saveQueueState();
     }
     _storageService.saveShuffleMode(_shuffleEnabled);
     notifyListeners();
