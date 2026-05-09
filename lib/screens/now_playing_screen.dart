@@ -3155,95 +3155,98 @@ class _QueueSheet extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Selector<PlayerProvider, (List<Song>, int)>(
-                  selector: (_, p) => (p.queue, p.currentIndex),
-                  builder: (context, data, _) {
-                    final (queue, currentIndex) = data;
-                    final provider = context.read<PlayerProvider>();
+                child: SafeArea(
+                  top: false,
+                  child: Selector<PlayerProvider, (List<Song>, int)>(
+                    selector: (_, p) => (p.queue, p.currentIndex),
+                    builder: (context, data, _) {
+                      final (queue, currentIndex) = data;
+                      final provider = context.read<PlayerProvider>();
 
-                    return ReorderableListView.builder(
-                      scrollController: scrollController,
-                      itemCount: queue.length,
-                      buildDefaultDragHandles: false,
-                      onReorder: provider.reorderQueue,
-                      proxyDecorator: (child, index, animation) =>
-                          AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, child) {
-                          final elevationValue =
-                              Tween<double>(begin: 0.0, end: 6.0)
-                                  .animate(animation)
-                                  .value;
-                          return Material(
-                            elevation: elevationValue,
-                            color: Colors.transparent,
-                            shadowColor: Colors.black.withValues(alpha: 0.3),
-                            child: child,
-                          );
-                        },
-                        child: child,
-                      ),
-                      itemBuilder: (context, index) {
-                        final song = queue[index];
-                        final isPlaying = index == currentIndex;
+                      return ReorderableListView.builder(
+                        scrollController: scrollController,
+                        itemCount: queue.length,
+                        buildDefaultDragHandles: false,
+                        onReorder: provider.reorderQueue,
+                        proxyDecorator: (child, index, animation) =>
+                            AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, child) {
+                            final elevationValue =
+                                Tween<double>(begin: 0.0, end: 6.0)
+                                    .animate(animation)
+                                    .value;
+                            return Material(
+                              elevation: elevationValue,
+                              color: Colors.transparent,
+                              shadowColor: Colors.black.withValues(alpha: 0.3),
+                              child: child,
+                            );
+                          },
+                          child: child,
+                        ),
+                        itemBuilder: (context, index) {
+                          final song = queue[index];
+                          final isPlaying = index == currentIndex;
 
-                        return ListTile(
-                          key: ValueKey(song.id),
-                          leading: isPlaying
-                              ? const Icon(
-                                  Icons.equalizer_rounded,
-                                  color: AppTheme.appleMusicRed,
-                                )
-                              : Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                    color: AppTheme.lightSecondaryText,
+                          return ListTile(
+                            key: ValueKey(song.id),
+                            leading: isPlaying
+                                ? const Icon(
+                                    Icons.equalizer_rounded,
+                                    color: AppTheme.appleMusicRed,
+                                  )
+                                : Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      color: AppTheme.lightSecondaryText,
+                                    ),
+                                  ),
+                            title: Text(
+                              song.title,
+                              style: TextStyle(
+                                color: isPlaying
+                                    ? AppTheme.appleMusicRed
+                                    : Colors.white,
+                                fontWeight: isPlaying ? FontWeight.w600 : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              song.artist ?? '',
+                              style: const TextStyle(
+                                color: AppTheme.lightSecondaryText,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.remove_circle_outline,
+                                    color: Colors.white70,
+                                  ),
+                                  onPressed: () =>
+                                      provider.removeFromQueue(index),
+                                ),
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: const Icon(
+                                    Icons.drag_handle,
+                                    color: Colors.white38,
                                   ),
                                 ),
-                          title: Text(
-                            song.title,
-                            style: TextStyle(
-                              color: isPlaying
-                                  ? AppTheme.appleMusicRed
-                                  : Colors.white,
-                              fontWeight: isPlaying ? FontWeight.w600 : null,
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            song.artist ?? '',
-                            style: const TextStyle(
-                              color: AppTheme.lightSecondaryText,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.remove_circle_outline,
-                                  color: Colors.white70,
-                                ),
-                                onPressed: () =>
-                                    provider.removeFromQueue(index),
-                              ),
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: const Icon(
-                                  Icons.drag_handle,
-                                  color: Colors.white38,
-                                ),
-                              ),
-                            ],
-                          ),
-                          onTap: () => provider.skipToIndex(index),
-                        );
-                      },
-                    );
-                  },
+                            onTap: () => provider.skipToIndex(index),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
