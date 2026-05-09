@@ -2765,45 +2765,77 @@ class _ProgressBarState extends State<_ProgressBar> {
                   context.read<PlayerProvider>().seekToProgress(newProgress);
                 },
                 child: SizedBox(
-                  height: 40,
+                  height: 44,
                   child: Center(
                     child: Stack(
                       alignment: Alignment.centerLeft,
                       children: [
-                        Container(
-                          height: 4,
+                        // Background track
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          curve: Curves.easeOut,
+                          height: _isDragging ? 5 : 3,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        FractionallySizedBox(
-                          widthFactor: displayProgress.clamp(0.0, 1.0),
-                          child: Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(2),
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(
+                              _isDragging ? 2.5 : 1.5,
                             ),
                           ),
                         ),
+                        // Active track
+                        FractionallySizedBox(
+                          widthFactor: displayProgress.clamp(0.0, 1.0),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            curve: Curves.easeOut,
+                            height: _isDragging ? 5 : 3,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(
+                                _isDragging ? 2.5 : 1.5,
+                              ),
+                              boxShadow: _isDragging
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                        blurRadius: 8,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        // Thumb
                         Positioned(
                           left:
                               ((trackWidth * displayProgress.clamp(0.0, 1.0)) -
-                                      6)
-                                  .clamp(0.0, trackWidth - 12),
-                          child: Container(
-                            width: 12,
-                            height: 12,
+                                      (_isDragging ? 14 : 0))
+                                  .clamp(
+                            0.0,
+                            trackWidth - (_isDragging ? 28 : 0),
+                          ),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            curve: Curves.easeOut,
+                            width: _isDragging ? 28 : 0,
+                            height: _isDragging ? 28 : 0,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                ),
-                              ],
+                              boxShadow: _isDragging
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                        blurRadius: 12,
+                                        spreadRadius: 2,
+                                      ),
+                                    ]
+                                  : null,
                             ),
                           ),
                         ),
@@ -3073,49 +3105,63 @@ class _VolumeSliderState extends State<_VolumeSlider> {
                       );
                     },
                     child: SizedBox(
-                      height: 40,
+                      height: 44,
                       child: Center(
                         child: Stack(
                           alignment: Alignment.centerLeft,
                           children: [
+                            // Background track
                             AnimatedContainer(
-                              duration: const Duration(milliseconds: 120),
+                              duration: const Duration(milliseconds: 150),
                               curve: Curves.easeOut,
-                              height: _isDragging ? 6 : 4,
+                              height: _isDragging ? 5 : 3,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Colors.white.withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(
-                                  _isDragging ? 3 : 2,
+                                  _isDragging ? 2.5 : 1.5,
                                 ),
                               ),
                             ),
+                            // Active track
                             FractionallySizedBox(
                               widthFactor: displayVolume.clamp(0.0, 1.0),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 120),
+                                duration: const Duration(milliseconds: 150),
                                 curve: Curves.easeOut,
-                                height: _isDragging ? 6 : 4,
+                                height: _isDragging ? 5 : 3,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(
-                                    _isDragging ? 3 : 2,
+                                    _isDragging ? 2.5 : 1.5,
                                   ),
+                                  boxShadow: _isDragging
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                               ),
                             ),
+                            // Thumb
                             Positioned(
                               left: ((trackWidth *
                                           displayVolume.clamp(0.0, 1.0)) -
-                                      (_isDragging ? 10 : 6))
+                                      (_isDragging ? 14 : 6))
                                   .clamp(
                                 0.0,
-                                trackWidth - (_isDragging ? 20 : 12),
+                                trackWidth - (_isDragging ? 28 : 12),
                               ),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 120),
+                                duration: const Duration(milliseconds: 150),
                                 curve: Curves.easeOut,
-                                width: _isDragging ? 20 : 12,
-                                height: _isDragging ? 20 : 12,
+                                width: _isDragging ? 28 : 12,
+                                height: _isDragging ? 28 : 12,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
@@ -3123,18 +3169,18 @@ class _VolumeSliderState extends State<_VolumeSlider> {
                                       ? [
                                           BoxShadow(
                                             color: Colors.black.withValues(
-                                              alpha: 0.4,
+                                              alpha: 0.25,
                                             ),
-                                            blurRadius: 8,
-                                            spreadRadius: 1,
+                                            blurRadius: 12,
+                                            spreadRadius: 2,
                                           ),
                                         ]
                                       : [
                                           BoxShadow(
                                             color: Colors.black.withValues(
-                                              alpha: 0.2,
+                                              alpha: 0.15,
                                             ),
-                                            blurRadius: 3,
+                                            blurRadius: 4,
                                           ),
                                         ],
                                 ),

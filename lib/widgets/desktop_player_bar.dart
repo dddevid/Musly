@@ -504,19 +504,19 @@ class _ProgressBar extends StatelessWidget {
                   height: 20,
                   child: SliderTheme(
                     data: SliderThemeData(
-                      trackHeight: 4,
+                      trackHeight: 3,
                       thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 6,
+                        enabledThumbRadius: 5,
                       ),
                       overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 12,
+                        overlayRadius: 14,
                       ),
                       activeTrackColor: AppTheme.appleMusicRed,
                       inactiveTrackColor:
-                          isDark ? const Color(0xFF535353) : Colors.grey[300],
+                          isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                       thumbColor: Colors.white,
                       overlayColor: AppTheme.appleMusicRed.withValues(
-                        alpha: 0.15,
+                        alpha: 0.2,
                       ),
                     ),
                     child: Slider(
@@ -576,18 +576,18 @@ class _VolumeControl extends StatelessWidget {
               width: 100,
               child: SliderTheme(
                 data: SliderThemeData(
-                  trackHeight: 4,
+                  trackHeight: 3,
                   thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 6,
+                    enabledThumbRadius: 5,
                   ),
                   overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 12,
+                    overlayRadius: 14,
                   ),
                   activeTrackColor: AppTheme.appleMusicRed,
                   inactiveTrackColor:
-                      isDark ? const Color(0xFF535353) : Colors.grey[300],
+                      isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                   thumbColor: Colors.white,
-                  overlayColor: AppTheme.appleMusicRed.withValues(alpha: 0.15),
+                  overlayColor: AppTheme.appleMusicRed.withValues(alpha: 0.2),
                 ),
                 child: Slider(
                   value: volume,
