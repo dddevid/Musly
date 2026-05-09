@@ -80,12 +80,11 @@ If you find Musly useful and want to support its development
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
 - [x] **Desktop Lyrics & Fullscreen Mode**: Apple Music–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
 - [-] **CarPlay Support**: Add a dedicated browsing interface for CarPlay. (Carplay needs a signed certificate, until the app is available on the appstore carplay wont work, only if selfsigned and with carplay enabled in the code)
-- [ ] **Last.fm Integration**: Support for scrobbling and artist/album metadata.
 - [X] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
 - [X] Improved synchronization for offline music.
 - [ ] Tizen OS (Samsung TV) and WebOS (LG TV) port
-- [ ] Jellyfin / Emby support
+- [X] Jellyfin / Emby support
 
 ## Screenshots
 
