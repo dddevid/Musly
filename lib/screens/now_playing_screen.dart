@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:flutter/cupertino.dart' hide RepeatMode;
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../models/song.dart';
 import '../models/radio_station.dart';
@@ -39,7 +41,26 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   String? _cachedImageUrl;
   String? _cachedThumbnailUrl;
   String? _cachedCoverArtId;
-  bool _showLyrics = false;
+  bool _showLyricsInternal = false;
+  bool get _showLyrics => _showLyricsInternal;
+  set _showLyrics(bool value) {
+    if (_showLyricsInternal == value) return;
+    _showLyricsInternal = value;
+    _updateWakelock();
+  }
+
+  Future<void> _updateWakelock() async {
+    if (kIsWeb) return;
+    try {
+      if (_showLyricsInternal) {
+        await WakelockPlus.enable();
+      } else {
+        await WakelockPlus.disable();
+      }
+    } catch (e) {
+      debugPrint('Failed to update wake lock: $e');
+    }
+  }
 
   double _dragOffset = 0.0;
   bool _isDragging = false;
@@ -76,6 +97,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   @override
   void dispose() {
     _swipeAnimationController.dispose();
+    if (_showLyricsInternal && !kIsWeb) {
+      unawaited(WakelockPlus.disable());
+    }
     super.dispose();
   }
 
