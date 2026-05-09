@@ -5,7 +5,7 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.12] - 2026-05-07
+## [1.0.12] - 2026-05-09
 
 ### Added
 - **Persistent Queue Across Restarts** ([#156](https://github.com/dddevid/Musly/issues/156))
@@ -14,9 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validates local file paths exist before restoring
   - Debounced save (200ms) to avoid excessive writes
   - Clears persisted data on explicit queue clear
+- **Shuffle Persistence** — Shuffled queue order is now persisted alongside the queue, so reopening the app restores the correct shuffled sequence when shuffle mode is enabled
 - **Artist Play Enhancement** ([#151](https://github.com/dddevid/Musly/pull/151))
   - "Play" button on artist screens now appends rest of artist's songs to their top songs
   - Provides fuller artist experience when pressing play
+- **Collapsible Playlist Cover Art** — `PlaylistScreen` now uses a `SliverAppBar` with `FlexibleSpaceBar`, matching the collapsible behavior of `AlbumScreen`
+- **All Songs Entry Restored** — "All Songs" tile added back to Library → Faves tab for quick access to the full song list
+- **Comprehensive Test Suite** — Unit, widget, integration, security, and memory-leak tests with configurable Navidrome server support via `test_server_config.json`
+- **Android Audio Session Configuration** — Explicit `AudioSession` setup for music playback on Android, ensuring proper audio focus and routing on car head units
+- **Lyrics Wake Lock** — Screen stays on while lyrics view is visible to prevent display timeout during active listening
 
 ### Fixed
 - **History Screen Loading** - Improved history loading and listener management
@@ -39,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed lyrics scroll-to-current when ListView items are unbuilt
   - Added lyrics slide-up/fade transition
   - Fixed ReorderableListView null crash with drag handle
+  - Fixed syntax error causing build failure in `_buildRadioPlayer`
+  - Status-bar icons now forced to white on dark background so they remain visible
+- **Android Audio Focus** — Playback now requests audio focus before starting, resolving no-sound issues on Android car head units and during remote playback
+- **Queue Layout** — Prevented queue list from sliding under the navigation bar on devices with gesture navigation
+- **All Songs Screen** — Deferred `_loadCachedData` to post-frame callback, eliminating `setState during build` exception
+- **Native Service Resilience** — `AuthProvider.logout()`, `PlayerProvider.dispose()`, `DiscordRpcService`, `WindowsSystemService`, and Android system services now gracefully handle missing native plugins in test environments
 - **Local Files UX**
   - Folder cover art fallback
   - Smart sorting with genre/year filters
