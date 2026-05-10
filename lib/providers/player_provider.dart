@@ -7,6 +7,7 @@ import 'dart:math' show Random;
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
@@ -1461,7 +1462,26 @@ class PlayerProvider extends ChangeNotifier {
               playUrl = await _subsonicService.resolveStreamUrlAsync(song);
             }
           }
-          await _audioPlayer.setUrl(playUrl);
+          // Cache remote streams locally so seeking works even when the
+          // server transcodes and doesn't support HTTP range requests (#170).
+          if (song.isLocal == true ||
+              _offlineService.getLocalPath(song.id) != null) {
+            await _audioPlayer.setUrl(playUrl);
+          } else {
+            final cacheDir = await getTemporaryDirectory();
+            final cacheFile = File(
+              '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
+            );
+            // ignore: experimental_member_use
+            await _audioPlayer.setAudioSource(
+              // ignore: experimental_member_use
+              LockCachingAudioSource(
+                Uri.parse(playUrl),
+                cacheFile: cacheFile,
+                tag: song.id,
+              ),
+            );
+          }
           await _applyReplayGain(song);
           await _ensureAudioFocus();
           await _audioPlayer.play();
@@ -1805,7 +1825,8 @@ class PlayerProvider extends ChangeNotifier {
         if (_concatenatingSource != null) {
           for (final song in songsToAdd) {
             try {
-              _concatenatingSource!.add(_buildAudioSourceForSong(song));
+              final source = await _buildAudioSourceForSong(song);
+              _concatenatingSource!.add(source);
             } catch (e) {
               debugPrint('Error adding AutoDJ song to concatenating source: $e');
             }
@@ -1923,7 +1944,7 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addToQueueNext(Song song) {
+  Future<void> addToQueueNext(Song song) async {
     final insertIndex = _currentIndex + 1;
     if (insertIndex < _queue.length) {
       _queue.insert(insertIndex, song);
@@ -1932,7 +1953,7 @@ class PlayerProvider extends ChangeNotifier {
     }
     if (_concatenatingSource != null) {
       try {
-        final audioSource = _buildAudioSourceForSong(song);
+        final audioSource = await _buildAudioSourceForSong(song);
         if (insertIndex < _concatenatingSource!.length) {
           _concatenatingSource!.insert(insertIndex, audioSource);
         } else {
@@ -1945,13 +1966,14 @@ class PlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAllToQueue(Iterable<Song> songs) {
+  Future<void> addAllToQueue(Iterable<Song> songs) async {
     final newSongs = songs.toList();
     _queue.addAll(newSongs);
     if (_concatenatingSource != null) {
       for (final song in newSongs) {
         try {
-          _concatenatingSource!.add(_buildAudioSourceForSong(song));
+          final source = await _buildAudioSourceForSong(song);
+          _concatenatingSource!.add(source);
         } catch (e) {
           debugPrint('Error adding to concatenating source: $e');
         }
@@ -2085,7 +2107,7 @@ class PlayerProvider extends ChangeNotifier {
 
   // ── Gapless playback helpers ───────────────────────────────────────────
 
-  AudioSource _buildAudioSourceForSong(Song song) {
+  Future<AudioSource> _buildAudioSourceForSong(Song song) async {
     if (song.isLocal == true && song.path != null) {
       return AudioSource.uri(Uri.file(song.path!));
     }
@@ -2094,11 +2116,22 @@ class PlayerProvider extends ChangeNotifier {
       return AudioSource.uri(Uri.file(offlinePath));
     }
     final url = _subsonicService.getStreamUrl(song.id);
-    return AudioSource.uri(Uri.parse(url));
+    // Cache remote streams locally so seeking works even when the server
+    // transcodes and doesn't support HTTP range requests (issue #170).
+    final cacheDir = await getTemporaryDirectory();
+    final cacheFile = File(
+      '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
+    );
+    // ignore: experimental_member_use
+    return LockCachingAudioSource(
+      Uri.parse(url),
+      cacheFile: cacheFile,
+      tag: song.id,
+    );
   }
 
   Future<void> _buildAndSetConcatenatingSource({required int initialIndex}) async {
-    final children = _queue.map(_buildAudioSourceForSong).toList();
+    final children = await Future.wait(_queue.map(_buildAudioSourceForSong));
     _concatenatingSource = ConcatenatingAudioSource(children: children);
     await _audioPlayer.setAudioSource(
       _concatenatingSource!,
