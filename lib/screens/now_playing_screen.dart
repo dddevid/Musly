@@ -1843,7 +1843,7 @@ class _PlayerHeader extends StatelessWidget {
   }
 }
 
-class _AlbumArtworkSection extends StatelessWidget {
+class _AlbumArtworkSection extends StatefulWidget {
   final String imageUrl;
   final String? thumbnailUrl;
   final double size;
@@ -1853,6 +1853,39 @@ class _AlbumArtworkSection extends StatelessWidget {
     this.thumbnailUrl,
     required this.size,
   });
+
+  @override
+  State<_AlbumArtworkSection> createState() => _AlbumArtworkSectionState();
+}
+
+class _AlbumArtworkSectionState extends State<_AlbumArtworkSection>
+    with TickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1871,11 +1904,11 @@ class _AlbumArtworkSection extends StatelessWidget {
                 ),
               ];
         
-        return Padding(
+        Widget artworkWidget = Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: SizedBox(
-            width: size,
-            height: size,
+            width: widget.size,
+            height: widget.size,
             child: RepaintBoundary(
               child: Container(
                 decoration: BoxDecoration(
@@ -1884,19 +1917,19 @@ class _AlbumArtworkSection extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: borderRadius,
-              child: imageUrl.isNotEmpty
-                  ? isLocalFilePath(imageUrl)
+              child: widget.imageUrl.isNotEmpty
+                  ? isLocalFilePath(widget.imageUrl)
                       ? Image.file(
-                          File(imageUrl),
-                          key: ValueKey(imageUrl),
+                          File(widget.imageUrl),
+                          key: ValueKey(widget.imageUrl),
                           fit: BoxFit.contain,
                           cacheWidth: 1200,
                           errorBuilder: (ctx, e, _) =>
                               _buildNoArtPlaceholder(ctx),
                         )
                       : CachedNetworkImage(
-                          key: ValueKey(imageUrl),
-                          imageUrl: imageUrl,
+                          key: ValueKey(widget.imageUrl),
+                          imageUrl: widget.imageUrl,
                           fit: BoxFit.contain,
                           memCacheWidth: 1200,
                           maxWidthDiskCache: 1200,
@@ -1905,9 +1938,9 @@ class _AlbumArtworkSection extends StatelessWidget {
                           fadeInDuration: Duration.zero,
                           fadeOutDuration: Duration.zero,
                           placeholder: (ctx, url) =>
-                              thumbnailUrl != null && thumbnailUrl!.isNotEmpty
+                              widget.thumbnailUrl != null && widget.thumbnailUrl!.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: thumbnailUrl!,
+                                      imageUrl: widget.thumbnailUrl!,
                                       fit: BoxFit.contain,
                                       memCacheWidth: 200,
                                       fadeInDuration: Duration.zero,
@@ -1924,6 +1957,20 @@ class _AlbumArtworkSection extends StatelessWidget {
         ),
       ),
         );
+
+        if (isCustom && theme.animations.coverRotation) {
+          artworkWidget = RotationTransition(
+            turns: _rotationController,
+            child: artworkWidget,
+          );
+        } else if (isCustom && theme.animations.pulse) {
+          artworkWidget = ScaleTransition(
+            scale: _pulseAnimation,
+            child: artworkWidget,
+          );
+        }
+
+        return artworkWidget;
       },
     );
   }
@@ -1933,8 +1980,8 @@ class _AlbumArtworkSection extends StatelessWidget {
       baseColor: const Color(0xFF2A2A2A),
       highlightColor: const Color(0xFF3A3A3A),
       child: Container(
-        width: size,
-        height: size,
+        width: widget.size,
+        height: widget.size,
         color: const Color(0xFF2A2A2A),
       ),
     );
@@ -1942,8 +1989,8 @@ class _AlbumArtworkSection extends StatelessWidget {
 
   Widget _buildNoArtPlaceholder(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: widget.size,
+      height: widget.size,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1956,14 +2003,14 @@ class _AlbumArtworkSection extends StatelessWidget {
         children: [
           Icon(
             Icons.music_note_rounded,
-            size: (size * 0.28).clamp(40.0, 100.0),
+            size: (widget.size * 0.28).clamp(40.0, 100.0),
             color: Colors.white.withValues(alpha: 0.15),
           ),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context)!.noArtwork,
             style: TextStyle(
-              fontSize: (size * 0.045).clamp(11.0, 16.0),
+              fontSize: (widget.size * 0.045).clamp(11.0, 16.0),
               fontWeight: FontWeight.w500,
               color: Colors.white.withValues(alpha: 0.18),
               letterSpacing: 0.5,
