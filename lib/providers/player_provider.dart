@@ -870,6 +870,9 @@ class PlayerProvider extends ChangeNotifier {
   StreamSubscription<PlayerState>? _playerStateSub;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
+  StreamSubscription<int?>? _currentIndexSub;
+
+  ConcatenatingAudioSource? _concatenatingSource;
 
   // Fallback timer for Windows where positionStream may not emit reliably
   Timer? _windowsPositionTimer;
@@ -1145,6 +1148,22 @@ class PlayerProvider extends ChangeNotifier {
         debugPrint('Duration stream error (can be ignored): $error');
       },
     );
+
+    _currentIndexSub = _audioPlayer.currentIndexStream.listen(
+      (index) {
+        if (index != null &&
+            index != _currentIndex &&
+            !_isRenderingRemotely &&
+            _concatenatingSource != null) {
+          _onCurrentIndexChanged(index).catchError((e) {
+            debugPrint('[Player] _onCurrentIndexChanged error: $e');
+          });
+        }
+      },
+      onError: (error) {
+        debugPrint('Current index stream error (can be ignored): $error');
+      },
+    );
   }
 
   Future<void> _configureAudioSession() async {
@@ -1222,9 +1241,14 @@ class PlayerProvider extends ChangeNotifier {
       return;
     }
 
-    // Repeat-one, or repeat-all with a single-song queue: seek and replay
-    // (skipNext would call playSong with the same song, triggering the
-    // "same song = togglePlayPause" guard and pausing instead of replaying)
+    if (_concatenatingSource != null) {
+      // With ConcatenatingAudioSource this only fires at the very end
+      // of the queue when LoopMode is off.
+      await _handleEndOfQueue();
+      return;
+    }
+
+    // Fallback for single-song mode
     if (_repeatMode == RepeatMode.one ||
         (_repeatMode == RepeatMode.all && _queue.length == 1)) {
       await seek(Duration.zero);
@@ -1374,11 +1398,14 @@ class PlayerProvider extends ChangeNotifier {
             ? await _subsonicService.getYoutubeAudioSource(song)
             : null;
 
-        Future<void> setSource() async {
-          if (youtubeSource != null) {
-            await _audioPlayer.setAudioSource(youtubeSource);
-            return;
-          }
+        if (youtubeSource != null) {
+          // YouTube: single StreamAudioSource, no gapless
+          await _audioPlayer.setAudioSource(youtubeSource);
+          await _applyReplayGain(song);
+          await _ensureAudioFocus();
+          await _audioPlayer.play();
+        } else if (_subsonicService.isYoutube) {
+          // All songs are YouTube — can't build ConcatenatingAudioSource easily
           final String playUrl;
           if (song.isLocal == true && song.path != null) {
             playUrl = Uri.file(song.path!).toString();
@@ -1391,28 +1418,30 @@ class PlayerProvider extends ChangeNotifier {
             }
           }
           await _audioPlayer.setUrl(playUrl);
-        }
-
-        try {
-          await setSource();
-        } catch (e) {
-          // Android 16 / Media3 first-play workaround — not applicable to
-          // YouTube StreamAudioSource (proxy state must not be reset).
-          if (!_hasPlayedOnce && youtubeSource == null) {
-            debugPrint(
-              'First playback failed (Android 16 Media3 issue), retrying: $e',
-            );
-            await Future.delayed(const Duration(milliseconds: 100));
-            await setSource();
-            _hasPlayedOnce = true;
-          } else {
-            rethrow;
+          await _applyReplayGain(song);
+          await _ensureAudioFocus();
+          await _audioPlayer.play();
+        } else {
+          // Build ConcatenatingAudioSource for gapless playback
+          try {
+            await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
+          } catch (e) {
+            // Android 16 / Media3 first-play workaround
+            if (!_hasPlayedOnce) {
+              debugPrint(
+                'First playback failed (Android 16 Media3 issue), retrying: $e',
+              );
+              await Future.delayed(const Duration(milliseconds: 100));
+              await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
+              _hasPlayedOnce = true;
+            } else {
+              rethrow;
+            }
           }
+          await _applyReplayGain(song);
+          await _ensureAudioFocus();
+          await _audioPlayer.play();
         }
-
-        await _applyReplayGain(song);
-        await _ensureAudioFocus();
-        await _audioPlayer.play();
       }
 
       if (song.isLocal != true) {
@@ -1700,6 +1729,23 @@ class PlayerProvider extends ChangeNotifier {
       await _addAutoDjSongs();
     }
 
+    if (_concatenatingSource != null) {
+      if (_shuffleEnabled && _queue.length > 1) {
+        _shuffleHistory.add(_currentSong!.id);
+        if (_shuffleHistory.length > 50) _shuffleHistory.removeAt(0);
+        int next;
+        do {
+          next = Random().nextInt(_queue.length);
+        } while (next == _currentIndex);
+        await _audioPlayer.seek(Duration.zero, index: next);
+      } else if (_currentIndex < _queue.length - 1) {
+        await _audioPlayer.seek(Duration.zero, index: _currentIndex + 1);
+      } else if (_repeatMode == RepeatMode.all) {
+        await _audioPlayer.seek(Duration.zero, index: 0);
+      }
+      return;
+    }
+
     if (_shuffleEnabled && _queue.length > 1) {
       _shuffleHistory.add(_currentSong!.id);
       if (_shuffleHistory.length > 50) _shuffleHistory.removeAt(0);
@@ -1732,6 +1778,15 @@ class PlayerProvider extends ChangeNotifier {
 
       if (songsToAdd.isNotEmpty) {
         _queue.addAll(songsToAdd);
+        if (_concatenatingSource != null) {
+          for (final song in songsToAdd) {
+            try {
+              _concatenatingSource!.add(_buildAudioSourceForSong(song));
+            } catch (e) {
+              debugPrint('Error adding AutoDJ song to concatenating source: $e');
+            }
+          }
+        }
         notifyListeners();
         _saveQueueState();
         debugPrint('Auto DJ added ${songsToAdd.length} songs to queue');
@@ -1744,7 +1799,29 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> skipPrevious() async {
     if (_position.inSeconds > 3) {
       await seek(Duration.zero);
-    } else if (_shuffleEnabled && _shuffleHistory.isNotEmpty) {
+      return;
+    }
+
+    if (_concatenatingSource != null) {
+      if (_shuffleEnabled && _shuffleHistory.isNotEmpty) {
+        final prevId = _shuffleHistory.removeLast();
+        final prev = _queue.indexWhere((s) => s.id == prevId);
+        if (prev != -1) {
+          await _audioPlayer.seek(Duration.zero, index: prev);
+          return;
+        }
+      }
+      if (_currentIndex > 0) {
+        await _audioPlayer.seek(Duration.zero, index: _currentIndex - 1);
+      } else if (_repeatMode == RepeatMode.all && _queue.isNotEmpty) {
+        await _audioPlayer.seek(Duration.zero, index: _queue.length - 1);
+      } else {
+        await seek(Duration.zero);
+      }
+      return;
+    }
+
+    if (_shuffleEnabled && _shuffleHistory.isNotEmpty) {
       final prevId = _shuffleHistory.removeLast();
       final prev = _queue.indexWhere((s) => s.id == prevId);
       if (prev != -1) await skipToIndex(prev);
@@ -1764,7 +1841,11 @@ class PlayerProvider extends ChangeNotifier {
 
   Future<void> skipToIndex(int index) async {
     if (index >= 0 && index < _queue.length) {
-      await playSong(_queue[index], playlist: _queue, startIndex: index);
+      if (_concatenatingSource != null) {
+        await _audioPlayer.seek(Duration.zero, index: index);
+      } else {
+        await playSong(_queue[index], playlist: _queue, startIndex: index);
+      }
     }
   }
 
@@ -1777,6 +1858,11 @@ class PlayerProvider extends ChangeNotifier {
       _queue.remove(currentSong);
       _queue.insert(0, currentSong);
       _currentIndex = 0;
+      if (_concatenatingSource != null) {
+        _buildAndSetConcatenatingSource(initialIndex: 0).catchError((e) {
+          debugPrint('Error rebuilding concatenating source after shuffle: $e');
+        });
+      }
       _saveQueueState();
     }
     _storageService.saveShuffleMode(_shuffleEnabled);
@@ -1787,12 +1873,15 @@ class PlayerProvider extends ChangeNotifier {
     switch (_repeatMode) {
       case RepeatMode.off:
         _repeatMode = RepeatMode.all;
+        _audioPlayer.setLoopMode(LoopMode.all);
         break;
       case RepeatMode.all:
         _repeatMode = RepeatMode.one;
+        _audioPlayer.setLoopMode(LoopMode.one);
         break;
       case RepeatMode.one:
         _repeatMode = RepeatMode.off;
+        _audioPlayer.setLoopMode(LoopMode.off);
         break;
     }
     _storageService.saveRepeatMode(_repeatMode.index);
@@ -1805,22 +1894,52 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   void addToQueueNext(Song song) {
-    if (_currentIndex + 1 < _queue.length) {
-      _queue.insert(_currentIndex + 1, song);
+    final insertIndex = _currentIndex + 1;
+    if (insertIndex < _queue.length) {
+      _queue.insert(insertIndex, song);
     } else {
       _queue.add(song);
+    }
+    if (_concatenatingSource != null) {
+      try {
+        final audioSource = _buildAudioSourceForSong(song);
+        if (insertIndex < _concatenatingSource!.length) {
+          _concatenatingSource!.insert(insertIndex, audioSource);
+        } else {
+          _concatenatingSource!.add(audioSource);
+        }
+      } catch (e) {
+        debugPrint('Error adding to concatenating source: $e');
+      }
     }
     notifyListeners();
   }
 
   void addAllToQueue(Iterable<Song> songs) {
-    _queue.addAll(songs);
+    final newSongs = songs.toList();
+    _queue.addAll(newSongs);
+    if (_concatenatingSource != null) {
+      for (final song in newSongs) {
+        try {
+          _concatenatingSource!.add(_buildAudioSourceForSong(song));
+        } catch (e) {
+          debugPrint('Error adding to concatenating source: $e');
+        }
+      }
+    }
     notifyListeners();
   }
 
   void removeFromQueue(int index) {
     if (index >= 0 && index < _queue.length) {
       _queue.removeAt(index);
+      if (_concatenatingSource != null && index < _concatenatingSource!.length) {
+        try {
+          _concatenatingSource!.removeAt(index);
+        } catch (e) {
+          debugPrint('Error removing from concatenating source: $e');
+        }
+      }
       if (index < _currentIndex) {
         _currentIndex--;
       } else if (index == _currentIndex && _queue.isNotEmpty) {
@@ -1844,6 +1963,7 @@ class PlayerProvider extends ChangeNotifier {
     _queue.clear();
     _currentIndex = -1;
     _currentSong = null;
+    _concatenatingSource = null;
     try {
       _discordRpcService.clearPresence();
     } catch (_) {}
@@ -1869,6 +1989,14 @@ class PlayerProvider extends ChangeNotifier {
 
     final song = _queue.removeAt(oldIndex);
     _queue.insert(newIndex, song);
+
+    if (_concatenatingSource != null) {
+      try {
+        _concatenatingSource!.move(oldIndex, newIndex);
+      } catch (e) {
+        debugPrint('Error moving in concatenating source: $e');
+      }
+    }
 
     if (oldIndex == _currentIndex) {
       _currentIndex = newIndex;
@@ -1923,6 +2051,88 @@ class PlayerProvider extends ChangeNotifier {
     } finally {
       _upnpVolumeWriteInProgress = false;
     }
+  }
+
+  // ── Gapless playback helpers ───────────────────────────────────────────
+
+  AudioSource _buildAudioSourceForSong(Song song) {
+    if (song.isLocal == true && song.path != null) {
+      return AudioSource.uri(Uri.file(song.path!));
+    }
+    final offlinePath = _offlineService.getLocalPath(song.id);
+    if (offlinePath != null) {
+      return AudioSource.uri(Uri.file(offlinePath));
+    }
+    final url = _subsonicService.getStreamUrl(song.id);
+    return AudioSource.uri(Uri.parse(url));
+  }
+
+  Future<void> _buildAndSetConcatenatingSource({required int initialIndex}) async {
+    final children = _queue.map(_buildAudioSourceForSong).toList();
+    _concatenatingSource = ConcatenatingAudioSource(children: children);
+    await _audioPlayer.setAudioSource(
+      _concatenatingSource!,
+      initialIndex: initialIndex,
+      preload: true,
+    );
+  }
+
+  Future<void> _onCurrentIndexChanged(int newIndex) async {
+    if (newIndex < 0 || newIndex >= _queue.length) return;
+    if (newIndex == _currentIndex) return;
+
+    debugPrint(
+        '[Player] ⏭ Track changed by index: $newIndex "${_queue[newIndex].title}"');
+
+    // Sleep timer: end after current song
+    if (_sleepTimerEndCurrentSong) {
+      _doSleepTimerStop();
+      return;
+    }
+
+    // Track completion of the previous song
+    if (_currentSong != null) {
+      if (_currentSong!.isLocal != true) {
+        _subsonicService.scrobble(_currentSong!.id, submission: true).catchError(
+          (e) {
+            _offlineService.queueScrobble(_currentSong!.id, submission: true);
+          },
+        );
+      }
+      if (_recommendationService != null) {
+        _recommendationService!.trackSongPlay(
+          _currentSong!,
+          durationPlayed: _duration.inSeconds,
+          completed: true,
+        );
+      }
+    }
+
+    // AutoDJ: add songs near end of queue
+    if (_autoDjService.shouldAddSongs(newIndex, _queue.length)) {
+      await _addAutoDjSongs();
+    }
+
+    _currentIndex = newIndex;
+    _currentSong = _queue[_currentIndex];
+    _position = Duration.zero;
+    _resolvedArtworkUrl = null;
+    notifyListeners();
+    _saveQueueState();
+
+    await _refreshArtworkUrl();
+    if (_currentSong != null) {
+      await _loadAndSyncLyrics(_currentSong!);
+      await _lyricsService.updateSongInfo(
+        title: _currentSong!.title,
+        artist: _currentSong!.artist ?? 'Unknown Artist',
+        artworkUrl: _resolvedArtworkUrl ?? _currentSong!.coverArt,
+      );
+      await _applyReplayGain(_currentSong);
+    }
+
+    _updateAllServices();
+    _updateAndroidAuto();
   }
 
   Future<void> _applyReplayGain(Song? song) async {
@@ -2074,6 +2284,7 @@ class PlayerProvider extends ChangeNotifier {
     _playerStateSub?.cancel();
     _positionSub?.cancel();
     _durationSub?.cancel();
+    _currentIndexSub?.cancel();
     _positionController.close();
     super.dispose();
   }
