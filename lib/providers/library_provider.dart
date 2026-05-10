@@ -14,6 +14,7 @@ class LibraryProvider extends ChangeNotifier {
   bool _serverOfflineMode = false;
   bool _mergeLocalLibrary = false;
   LocalMusicService? _localMusicService;
+  final LibraryDatabaseService _db = LibraryDatabaseService();
 
   List<Artist> _artists = [];
   List<Album> _recentAlbums = [];
@@ -35,8 +36,6 @@ class LibraryProvider extends ChangeNotifier {
   bool _isInitialized = false;
   String? _error;
 
-  static const String _allAlbumsCacheKey = 'cached_all_albums';
-  static const String _allSongsCacheKey = 'cached_all_songs';
   static const String _playlistsCacheKey = 'cached_playlists';
   static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
@@ -331,20 +330,11 @@ class LibraryProvider extends ChangeNotifier {
       }
 
       if (loadFullLibrary) {
-        final albumsJson = prefs.getString(_allAlbumsCacheKey);
-        if (albumsJson != null) {
-          final List<dynamic> albumsList = json.decode(albumsJson);
-          _cachedAllAlbums = albumsList
-              .map((a) => Album.fromJson(a as Map<String, dynamic>))
-              .toList();
-        }
-
-        final songsJson = prefs.getString(_allSongsCacheKey);
-        if (songsJson != null) {
-          final List<dynamic> songsList = json.decode(songsJson);
-          _cachedAllSongs = songsList
-              .map((s) => Song.fromJson(s as Map<String, dynamic>))
-              .toList();
+        try {
+          _cachedAllAlbums = await _db.getAllAlbums();
+          _cachedAllSongs = await _db.getAllSongs();
+        } catch (e) {
+          debugPrint('Error loading library from DB: $e');
         }
       }
 
@@ -375,6 +365,10 @@ class LibraryProvider extends ChangeNotifier {
       const pageSize = 500;
       int offset = 0;
       final List<Album> allAlbums = [];
+      final seenSongIds = <String>{};
+
+      // Clear DB before refresh so we don't accumulate stale data.
+      await _db.clearServerData();
 
       while (true) {
         final page = await _subsonicService.getAlbumList(
@@ -384,44 +378,54 @@ class LibraryProvider extends ChangeNotifier {
         );
         if (page.isEmpty) break;
         allAlbums.addAll(page);
+        await _db.insertAlbumsBatch(page);
         if (page.length < pageSize) break;
         offset += pageSize;
       }
 
-      List<Song> allSongs = [];
       if (_subsonicService.isJellyfin) {
-        // Jellyfin/Emby: fetch all songs in O(1) API calls instead of N+1.
+        // Jellyfin/Emby: fetch all songs in O(1) API call.
         try {
-          allSongs = await _subsonicService.getAllSongs();
+          final allSongs = await _subsonicService.getAllSongs();
+          for (final song in allSongs) {
+            seenSongIds.add(song.id);
+          }
+          await _db.insertSongsBatch(allSongs);
         } catch (e) {
           debugPrint(
               'Jellyfin getAllSongs failed, falling back to album traversal: $e');
         }
       }
 
-      final Map<String, Song> songById = {};
       var failedAlbumLoads = 0;
-      if (allSongs.isEmpty) {
-        // Subsonic or Jellyfin fallback: iterate albums.
-        for (final album in allAlbums) {
-          try {
-            final albumSongs = await _subsonicService.getAlbumSongs(album.id);
-            for (final song in albumSongs) {
-              songById[song.id] = song;
+      if (seenSongIds.isEmpty) {
+        // Subsonic or Jellyfin fallback: iterate albums from DB
+        // instead of holding the entire album list in RAM.
+        final albumCount = await _db.getAlbumCount();
+        const albumBatchSize = 50;
+        for (int aOffset = 0;
+            aOffset < albumCount;
+            aOffset += albumBatchSize) {
+          final albums =
+              await _db.getAlbumsPaginated(limit: albumBatchSize, offset: aOffset);
+          for (final album in albums) {
+            try {
+              final albumSongs =
+                  await _subsonicService.getAlbumSongs(album.id);
+              final newSongs = albumSongs.where((s) => seenSongIds.add(s.id)).toList();
+              if (newSongs.isNotEmpty) {
+                await _db.insertSongsBatch(newSongs);
+              }
+            } catch (e) {
+              failedAlbumLoads++;
+              debugPrint('Error loading album ${album.id}: $e');
             }
-          } catch (e) {
-            failedAlbumLoads++;
-            debugPrint('Error loading album ${album.id}: $e');
           }
-        }
-      } else {
-        for (final song in allSongs) {
-          songById[song.id] = song;
         }
       }
 
       _cachedAllAlbums = allAlbums;
-      _cachedAllSongs = songById.values.toList();
+      _cachedAllSongs = await _db.getAllSongs();
       _lastCacheUpdate = DateTime.now();
 
       await _saveCachedData();
@@ -438,18 +442,14 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> _saveCachedData() async {
     try {
+      // Persist large collections (songs/albums) to SQLite instead of
+      // SharedPreferences JSON to avoid OutOfMemoryError with 100k+ tracks.
+      await _db.insertAlbumsBatch(_cachedAllAlbums);
+      await _db.insertSongsBatch(_cachedAllSongs);
+
       final prefs = await SharedPreferences.getInstance();
 
-      final albumsJson = json.encode(
-        _cachedAllAlbums.map((a) => a.toJson()).toList(),
-      );
-      await prefs.setString(_allAlbumsCacheKey, albumsJson);
-
-      final songsJson = json.encode(
-        _cachedAllSongs.map((s) => s.toJson()).toList(),
-      );
-      await prefs.setString(_allSongsCacheKey, songsJson);
-
+      // Playlists and artists are small enough to keep in SharedPreferences
       final playlistsJson = json.encode(
         _cachedPlaylists.map((p) => p.toJson()).toList(),
       );

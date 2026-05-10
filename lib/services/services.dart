@@ -21,3 +21,4 @@ export 'jukebox_service.dart';
 export 'theme_service.dart';
 export 'lyrics_manager.dart';
 export 'lock_screen_lyrics_service.dart';
+export 'library_database_service.dart';

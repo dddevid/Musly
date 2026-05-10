@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../models/song.dart';
 import '../models/album.dart';
 import '../models/artist.dart';
+import 'library_database_service.dart';
 
 class LocalMusicService extends ChangeNotifier {
   static final LocalMusicService _instance = LocalMusicService._internal();
@@ -18,6 +19,7 @@ class LocalMusicService extends ChangeNotifier {
   LocalMusicService._internal();
 
   SharedPreferences? _prefs;
+  final LibraryDatabaseService _db = LibraryDatabaseService();
   bool _isInitialized = false;
   bool _isScanning = false;
   double _scanProgress = 0.0;
@@ -639,21 +641,18 @@ class LocalMusicService extends ChangeNotifier {
     return 'file://${song.path}';
   }
 
-  Future<File> _getCacheFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/local_music_cache.json');
-  }
-
   Future<void> _cacheLibrary() async {
     try {
-      final file = await _getCacheFile();
-      final data = {
-        'version': 1,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        'songs': _songs.map((s) => s.toJson()).toList(),
-        'albumArt': _albumArtCache,
-      };
-      await file.writeAsString(json.encode(data));
+      // Save songs/albums/artists to SQLite to avoid OOM with huge libraries
+      await _db.insertSongsBatch(_songs);
+      await _db.insertAlbumsBatch(_albums);
+      await _db.insertArtistsBatch(_artists);
+
+      // Album art cache is small; keep in SharedPreferences
+      await _prefs?.setString(
+        'local_album_art_cache',
+        json.encode(_albumArtCache),
+      );
       await _prefs?.setInt('local_song_count', _songs.length);
     } catch (e) {
       debugPrint('Error caching local library: $e');
@@ -662,29 +661,16 @@ class LocalMusicService extends ChangeNotifier {
 
   Future<void> _loadCachedLibrary() async {
     try {
-      final file = await _getCacheFile();
-      if (!await file.exists()) {
-        return;
-      }
+      var cachedSongs = await _db.getLocalSongs();
 
-      final content = await file.readAsString();
-      final data = json.decode(content) as Map<String, dynamic>;
-
-      final timestamp = data['timestamp'] as int? ?? 0;
-      final age = DateTime.now().millisecondsSinceEpoch - timestamp;
-      const maxAge = 7 * 24 * 60 * 60 * 1000;
-
-      final cachedSongs = (data['songs'] as List<dynamic>)
-          .map((s) => Song.fromJson(s as Map<String, dynamic>))
-          .toList();
-
-      final artCache = data['albumArt'];
-      if (artCache != null && artCache is Map) {
+      // Restore album art cache from SharedPreferences
+      final artCacheJson = _prefs?.getString('local_album_art_cache');
+      if (artCacheJson != null) {
+        final artMap = json.decode(artCacheJson) as Map<String, dynamic>;
         _albumArtCache.clear();
-        for (final entry in artCache.entries) {
-          final value = entry.value;
-          if (value is String && File(value).existsSync()) {
-            _albumArtCache[entry.key] = value;
+        for (final entry in artMap.entries) {
+          if (entry.value is String && File(entry.value).existsSync()) {
+            _albumArtCache[entry.key] = entry.value;
           }
         }
       }
@@ -727,18 +713,9 @@ class LocalMusicService extends ChangeNotifier {
       _songs.addAll(cachedSongs);
       _buildAlbumsAndArtists();
       notifyListeners();
-      debugPrint('Loaded ${_songs.length} songs from local cache.');
-
-      if (age > maxAge) {
-        debugPrint('Local music cache is stale, rescanning in background...');
-        Future.delayed(const Duration(seconds: 3), () => scanForMusic());
-      }
+      debugPrint('Loaded ${_songs.length} songs from local cache (DB).');
     } catch (e) {
       debugPrint('Error loading local music cache, will rescan: $e');
-      try {
-        final file = await _getCacheFile();
-        if (await file.exists()) await file.delete();
-      } catch (_) {}
     }
   }
 
@@ -749,10 +726,17 @@ class LocalMusicService extends ChangeNotifier {
     _albumArtCache.clear();
     await _prefs?.remove('local_song_count');
     try {
-      final file = await _getCacheFile();
-      if (await file.exists()) await file.delete();
+      // Delete legacy JSON cache file if it exists
+      final docsDir = await getApplicationDocumentsDirectory();
+      final legacyFile = File('${docsDir.path}/local_music_cache.json');
+      if (await legacyFile.exists()) await legacyFile.delete();
     } catch (e) {
-      debugPrint('Error deleting local music cache: $e');
+      debugPrint('Error deleting legacy local music cache: $e');
+    }
+    try {
+      await _db.clearAll();
+    } catch (e) {
+      debugPrint('Error clearing local DB: $e');
     }
 
     if (_artCacheDir != null) {

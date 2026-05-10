@@ -77,6 +77,7 @@ dependencies:
   countly_flutter: ^26.1.0
   youtube_explode_dart: ^3.0.5
   http: ^1.6.0
+  sqflite: ^2.3.0
   wakelock_plus: ^1.4.0
 
 dependency_overrides:
