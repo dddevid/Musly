@@ -5,6 +5,50 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] - 2026-05-10
+
+### Added
+
+- **Now Playing Custom Themes** — Complete theme system for personalizing the Now Playing screen
+  - Theme manager screen with create, edit, duplicate, export/import, and delete
+  - 5 editor tabs: Background, Artwork, Text, Controls, Animations
+  - Background types: Solid color, Gradient, Blur, Mesh gradient, Custom Flutter code (with safe mode)
+  - Artwork shapes: Circle, Rounded Rectangle (fixed Musly default 12 px radius), Square (configurable corner radius 0–50 px)
+  - Shadow intensity, rotation, and size factor controls
+  - Cover rotation animation with configurable speed (3–60 seconds per full turn)
+  - Pulse effect animation for artwork
+  - Text styling for title, artist, album, and duration (font family, color, size, weight)
+  - Control styling (color, size, spacing) and progress bar styling (color, height, shape)
+  - Real-time animated preview in theme cards
+  - All themes persisted to disk and survive app restarts
+
+- **Gapless Playback** — Seamless track-to-track transitions via `ConcatenatingAudioSource`
+  - Toggle in Playback settings to enable/disable
+  - Preloads next track for instant switching
+
+- **LRCLIB Lyrics Fallback** — Automatic lyrics lookup from LRCLIB when the Subsonic server has no lyrics
+  - Toggle in Playback settings
+  - Searches by song title and artist name
+
+### Fixed
+
+- **Playback Resume After App Restart** — Correctly restores playback position and prepares the audio source after cold start ([#171](https://github.com/dddevid/Musly/issues/171))
+- **Seek with Transcoding** — Fixed broken seeking when using transcoding via `LockCachingAudioSource` ([#170](https://github.com/dddevid/Musly/issues/170))
+- **Jukebox Mode UI** — Jukebox controls now properly integrated into the main playback controls ([#173](https://github.com/dddevid/Musly/issues/173))
+- **Cache Memory Optimization** — Replaced JSON bulk cache with SQLite to prevent OOM crashes on libraries with 100 000+ items
+- **iOS Deployment Target** — Lowered minimum iOS version from 16.1 back to 15.0 (removes Live Activities dependency on iOS)
+- **Theme Editor Overflow** — Fixed all `RenderFlex` overflow errors in `ThemePreviewCard` and `ThemeEditorScreen`
+- **Theme Editor Layout** — Removed unwanted leading whitespace from `TabBar` in `ThemeEditorScreen`
+- **Duplicate Theme Dialog** — Fixed `_dependents.isEmpty` assertion crash when cancelling or swiping away the duplicate dialog
+- **Export Theme on Mobile** — `FilePicker.saveFile` now correctly passes `bytes` on Android & iOS, resolving "invalid argument(s): Bytes are required"
+- **Rotation Animation State** — Cover rotation animation now pauses when playback stops and resumes when it starts
+
+### Changed
+
+- **Library Cache Backend** — JSON bulk cache replaced by SQLite for significantly lower memory usage on large libraries
+- **Theme Strings** — All hardcoded UI strings in the theme editor and preview card moved to ARB localization keys
+- **PlayerProvider Lifecycle** — Debounce timer for queue persistence is now cancelled in `dispose()` to avoid timer leaks in tests
+
 ## [1.0.12] - 2026-05-09
 
 ### Added
