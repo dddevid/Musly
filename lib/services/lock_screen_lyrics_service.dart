@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:live_activities/live_activities.dart';
 
 import 'lyrics_manager.dart';
 import 'windows_system_service.dart';
@@ -14,8 +13,9 @@ class LockScreenLyricsService {
   static const _platform = MethodChannel('com.devid.musly/lyrics');
   static const _eventChannel = EventChannel('com.devid.musly/lyrics_updates');
 
-  final LiveActivities _liveActivities = LiveActivities();
-  String? _activityId;
+  // Live Activities removed for iOS 15 compatibility (requires iOS 16.1+)
+  // final LiveActivities _liveActivities = LiveActivities();
+  // String? _activityId;
 
   LyricsManager? _currentLyrics;
   StreamSubscription<Duration>? _positionSubscription;
@@ -28,7 +28,8 @@ class LockScreenLyricsService {
   static const _updateInterval = Duration(milliseconds: 500);
 
   /// Whether Live Activities (iOS 16.1+) or Android RemoteViews are supported
-  bool get supportsLiveActivities => !kIsWeb && (Platform.isIOS || Platform.isAndroid);
+  /// Disabled for iOS 15 compatibility
+  bool get supportsLiveActivities => !kIsWeb && Platform.isAndroid;
 
   /// Whether Windows notification lyrics are supported
   bool get supportsWindowsNotification => !kIsWeb && Platform.isWindows;
@@ -45,15 +46,15 @@ class LockScreenLyricsService {
     debugPrint('[Lyrics] Live Activities supported: $supportsLiveActivities');
     debugPrint('[Lyrics] Windows notification supported: $supportsWindowsNotification');
 
-    // Initialize live_activities for iOS and Android
-    if (supportsLiveActivities) {
-      try {
-        await _liveActivities.init(appGroupId: 'group.com.dddevid.musly');
-        debugPrint('[Lyrics] LiveActivities initialized');
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to initialize LiveActivities: $e');
-      }
-    }
+    // Live Activities initialization removed for iOS 15 compatibility
+    // if (supportsLiveActivities) {
+    //   try {
+    //     await _liveActivities.init(appGroupId: 'group.com.dddevid.musly');
+    //     debugPrint('[Lyrics] LiveActivities initialized');
+    //   } catch (e) {
+    //     debugPrint('[Lyrics] Failed to initialize LiveActivities: $e');
+    //   }
+    // }
 
     _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
       (dynamic event) {
@@ -76,23 +77,13 @@ class LockScreenLyricsService {
     _currentLyrics = LyricsManager.parse(lrcContent);
     _lastSentLine = null;
 
-    // Create Live Activity when lyrics are available (iOS/Android)
-    if (supportsLiveActivities && _currentLyrics!.hasLyrics) {
-      try {
-        final songId = 'lyrics_${DateTime.now().millisecondsSinceEpoch}';
-        _activityId = await _liveActivities.createActivity(
-          songId,
-          {
-            'currentLine': '',
-            'songTitle': '',
-            'artist': '',
-          },
-        );
-        debugPrint('[Lyrics] Live Activity created: $_activityId');
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to create Live Activity: $e');
-      }
-    }
+    // Live Activity creation removed for iOS 15 compatibility
+    // if (supportsLiveActivities && _currentLyrics!.hasLyrics) {
+    //   try {
+    //     final songId = 'lyrics_${DateTime.now().millisecondsSinceEpoch}';
+    //     _activityId = await _liveActivities.createActivity(...);
+    //   } catch (e) {}
+    // }
   }
 
   /// Clear current lyrics
@@ -102,16 +93,14 @@ class LockScreenLyricsService {
     _updateTimer?.cancel();
     _updateTimer = null;
 
-    // End Live Activity (iOS/Android)
-    if (supportsLiveActivities && _activityId != null) {
-      try {
-        await _liveActivities.endActivity(_activityId!);
-        _activityId = null;
-        debugPrint('[Lyrics] Live Activity ended');
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to end Live Activity: $e');
-      }
-    }
+    // End Live Activity removed for iOS 15 compatibility
+    // if (supportsLiveActivities && _activityId != null) {
+    //   try {
+    //     await _liveActivities.endActivity(_activityId!);
+    //     _activityId = null;
+    //   } catch (e) {}
+    // }
+    // _activityId = null;
 
     // Clear Windows notification
     if (supportsWindowsNotification) {
@@ -176,18 +165,15 @@ class LockScreenLyricsService {
     if (line == _lastSentLine) return;
     _lastSentLine = line;
 
-    // Update Live Activity (iOS/Android)
-    if (supportsLiveActivities && _activityId != null) {
-      try {
-        await _liveActivities.updateActivity(_activityId!, {
-          'currentLine': line,
-        });
-        debugPrint('[Lyrics] Live Activity updated: "$line"');
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to update Live Activity: $e');
-      }
-      return;
-    }
+    // Live Activity update removed for iOS 15 compatibility
+    // if (supportsLiveActivities && _activityId != null) {
+    //   try {
+    //     await _liveActivities.updateActivity(_activityId!, {
+    //       'currentLine': line,
+    //     });
+    //   } catch (e) {}
+    //   return;
+    // }
 
     // Update Windows notification lyrics
     if (supportsWindowsNotification) {
@@ -205,19 +191,17 @@ class LockScreenLyricsService {
 
     debugPrint('[Lyrics] Updating song info: $title - $artist');
 
-    // Update Live Activity with song info (iOS/Android)
-    if (supportsLiveActivities && _activityId != null) {
-      try {
-        await _liveActivities.updateActivity(_activityId!, {
-          'songTitle': title,
-          'artist': artist,
-          'artworkUrl': artworkUrl ?? '',
-        });
-      } catch (e) {
-        debugPrint('[Lyrics] Failed to update song info in Live Activity: $e');
-      }
-      return;
-    }
+    // Live Activity song info update removed for iOS 15 compatibility
+    // if (supportsLiveActivities && _activityId != null) {
+    //   try {
+    //     await _liveActivities.updateActivity(_activityId!, {
+    //       'songTitle': title,
+    //       'artist': artist,
+    //       'artworkUrl': artworkUrl ?? '',
+    //     });
+    //   } catch (e) {}
+    //   return;
+    // }
 
     // Update Windows service with current song info
     if (supportsWindowsNotification) {

@@ -132,10 +132,5 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Musly requires microphone access for certain audio features.</string>
 	
-	<!-- Live Activities Support (iOS 16.1+) -->
-	<key>NSSupportsLiveActivities</key>
-	<true/>
-	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
-	<true/>
 </dict>
 </plist>
