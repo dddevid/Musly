@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -189,22 +191,20 @@ class _ThemeManagerScreenState extends State<ThemeManagerScreen> {
       final fileName = '${theme.themeName.replaceAll(' ', '_')}_theme.json';
 
       if (Platform.isAndroid || Platform.isIOS) {
-        // Mobile: use file picker to save
+        // Mobile: FilePicker.saveFile requires bytes on Android & iOS
+        final bytes = Uint8List.fromList(utf8.encode(json));
         final result = await FilePicker.platform.saveFile(
           dialogTitle: 'Export Theme',
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: ['json'],
+          bytes: bytes,
         );
 
-        if (result != null) {
-          final file = File(result);
-          await file.writeAsString(json);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Exported to $result')),
-            );
-          }
+        if (result != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Exported to $result')),
+          );
         }
       } else {
         // Desktop: use file picker to save
