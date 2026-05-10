@@ -162,58 +162,12 @@ class _ThemeManagerScreenState extends State<ThemeManagerScreen> {
     NowPlayingTheme theme,
     NowPlayingThemeService service,
   ) async {
-    final controller = TextEditingController(text: '${theme.themeName} Copy');
-
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.darkSurface,
-        title: const Text(
-          'Duplicate Theme',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'New theme name',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.appleMusicRed),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                Navigator.pop(ctx, controller.text.trim());
-              }
-            },
-            child: const Text(
-              'Duplicate',
-              style: TextStyle(
-                color: AppTheme.appleMusicRed,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+      builder: (ctx) => _DuplicateThemeDialog(
+        initialName: '${theme.themeName} Copy',
       ),
     );
-
-    controller.dispose();
 
     if (result != null && result.isNotEmpty && context.mounted) {
       await service.duplicateTheme(theme.id, result);
@@ -597,5 +551,79 @@ class _ThemeManagerScreenState extends State<ThemeManagerScreen> {
         ),
       );
     }
+  }
+}
+
+class _DuplicateThemeDialog extends StatefulWidget {
+  final String initialName;
+
+  const _DuplicateThemeDialog({required this.initialName});
+
+  @override
+  State<_DuplicateThemeDialog> createState() => _DuplicateThemeDialogState();
+}
+
+class _DuplicateThemeDialogState extends State<_DuplicateThemeDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppTheme.darkSurface,
+      title: const Text(
+        'Duplicate Theme',
+        style: TextStyle(color: Colors.white),
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: 'New theme name',
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: AppTheme.appleMusicRed),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_controller.text.trim().isNotEmpty) {
+              Navigator.pop(context, _controller.text.trim());
+            }
+          },
+          child: const Text(
+            'Duplicate',
+            style: TextStyle(
+              color: AppTheme.appleMusicRed,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
