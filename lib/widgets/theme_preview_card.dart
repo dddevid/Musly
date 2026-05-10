@@ -147,17 +147,15 @@ class ThemePreviewCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  Row(
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
                     children: [
                       _buildTag(theme.background.type.toUpperCase()),
-                      const SizedBox(width: 4),
                       _buildTag(theme.artwork.shape.toUpperCase()),
                       if (theme.animations.coverRotation ||
                           theme.animations.pulse)
-                        ...[
-                          const SizedBox(width: 4),
-                          _buildTag('ANIM'),
-                        ],
+                        _buildTag('ANIM'),
                     ],
                   ),
                 ],
@@ -286,8 +284,8 @@ class ThemePreviewCard extends StatelessWidget {
       children: [
         // Artwork preview
         Container(
-          width: 60,
-          height: 60,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
             color: theme.controls.getColor().withOpacity(0.2),
             borderRadius: BorderRadius.circular(
@@ -310,14 +308,14 @@ class ThemePreviewCard extends StatelessWidget {
           child: Icon(
             CupertinoIcons.music_note,
             color: theme.controls.getColor().withOpacity(0.5),
-            size: 24,
+            size: 20,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // Progress bar preview
         Container(
-          width: 80,
-          height: theme.progressBar.height,
+          width: 70,
+          height: theme.progressBar.height.clamp(2.0, 4.0),
           decoration: BoxDecoration(
             color: theme.progressBar.getInactiveColor(),
             borderRadius: BorderRadius.circular(
@@ -341,11 +339,11 @@ class ThemePreviewCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // Play button preview
         Container(
-          width: theme.controls.size * 0.5,
-          height: theme.controls.size * 0.5,
+          width: (theme.controls.size * 0.4).clamp(20.0, 30.0),
+          height: (theme.controls.size * 0.4).clamp(20.0, 30.0),
           decoration: BoxDecoration(
             color: theme.controls.getColor(),
             shape: theme.controls.playShape == 'circle'
@@ -358,7 +356,7 @@ class ThemePreviewCard extends StatelessWidget {
           child: Icon(
             CupertinoIcons.play_fill,
             color: theme.controls.getPlayButtonColor(),
-            size: theme.controls.size * 0.25,
+            size: 12,
           ),
         ),
       ],
