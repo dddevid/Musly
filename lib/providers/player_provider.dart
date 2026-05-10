@@ -81,6 +81,7 @@ class PlayerProvider extends ChangeNotifier {
   static const String _keyQueue = 'persistent_queue';
   static const String _keyQueueIndex = 'persistent_queue_index';
   static const String _keyQueueSongId = 'persistent_queue_song_id';
+  static const String _keyQueuePosition = 'persistent_queue_position_ms';
 
   final bool _reactivatingSession = false;
 
@@ -158,6 +159,7 @@ class PlayerProvider extends ChangeNotifier {
         await _prefs!.setString(_keyQueue, jsonEncode(queueJson));
         await _prefs!.setInt(_keyQueueIndex, _currentIndex);
         await _prefs!.setString(_keyQueueSongId, _currentSong?.id ?? '');
+        await _prefs!.setInt(_keyQueuePosition, _position.inMilliseconds);
       } catch (e) {
         debugPrint('Error saving queue state: $e');
       }
@@ -189,6 +191,7 @@ class PlayerProvider extends ChangeNotifier {
 
       final savedIndex = _prefs!.getInt(_keyQueueIndex) ?? 0;
       final savedSongId = _prefs!.getString(_keyQueueSongId);
+      final savedPositionMs = _prefs!.getInt(_keyQueuePosition) ?? 0;
 
       var targetIndex = savedIndex.clamp(0, restoredSongs.length - 1);
       if (savedSongId != null && savedSongId.isNotEmpty) {
@@ -199,10 +202,10 @@ class PlayerProvider extends ChangeNotifier {
       _queue = restoredSongs;
       _currentIndex = targetIndex;
       _currentSong = restoredSongs[targetIndex];
-      _position = Duration.zero;
+      _position = Duration(milliseconds: savedPositionMs);
       notifyListeners();
       debugPrint(
-          'Restored persistent queue: ${restoredSongs.length} songs, index $targetIndex');
+          'Restored persistent queue: ${restoredSongs.length} songs, index $targetIndex, position $_position');
     } catch (e) {
       debugPrint('Error restoring queue state: $e');
     }
@@ -1135,6 +1138,7 @@ class PlayerProvider extends ChangeNotifier {
                 1000) {
           lastSystemUpdate = position;
           _updateAllServices();
+          _saveQueueState();
         }
       },
       onError: (error) {
@@ -1690,6 +1694,11 @@ class PlayerProvider extends ChangeNotifier {
       notifyListeners();
       _updateAndroidAuto();
     } else {
+      // After app restart the audio source may not be loaded yet.
+      // If we have a current song but the player has no source, prepare it first.
+      if (_currentSong != null && _audioPlayer.duration == Duration.zero) {
+        await _prepareCurrentSong();
+      }
       await _ensureAudioFocus();
       await _audioPlayer.play();
     }
@@ -2138,6 +2147,51 @@ class PlayerProvider extends ChangeNotifier {
       initialIndex: initialIndex,
       preload: true,
     );
+  }
+
+  Future<void> _prepareCurrentSong() async {
+    if (_currentSong == null) return;
+    try {
+      if (_gaplessEnabled && _queue.isNotEmpty) {
+        await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
+      } else {
+        final String playUrl;
+        if (_currentSong!.isLocal == true && _currentSong!.path != null) {
+          playUrl = Uri.file(_currentSong!.path!).toString();
+        } else {
+          final offlinePath = _offlineService.getLocalPath(_currentSong!.id);
+          if (offlinePath != null) {
+            playUrl = 'file://$offlinePath';
+          } else {
+            playUrl = await _subsonicService.resolveStreamUrlAsync(_currentSong!);
+          }
+        }
+        if (_currentSong!.isLocal == true ||
+            _offlineService.getLocalPath(_currentSong!.id) != null) {
+          await _audioPlayer.setUrl(playUrl);
+        } else {
+          final cacheDir = await getTemporaryDirectory();
+          final cacheFile = File(
+            '${cacheDir.path}/musly_stream_${_currentSong!.id.hashCode}.tmp',
+          );
+          // ignore: experimental_member_use
+          await _audioPlayer.setAudioSource(
+            // ignore: experimental_member_use
+            LockCachingAudioSource(
+              Uri.parse(playUrl),
+              cacheFile: cacheFile,
+              tag: _currentSong!.id,
+            ),
+          );
+        }
+      }
+      // Seek to the restored position after the source is loaded
+      if (_position.inMilliseconds > 0) {
+        await _audioPlayer.seek(_position);
+      }
+    } catch (e) {
+      debugPrint('Error preparing current song after restore: $e');
+    }
   }
 
   Future<void> _onCurrentIndexChanged(int newIndex) async {
