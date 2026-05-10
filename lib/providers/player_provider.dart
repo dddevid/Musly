@@ -210,6 +210,10 @@ class PlayerProvider extends ChangeNotifier {
       _currentIndex = targetIndex;
       _currentSong = restoredSongs[targetIndex];
       _position = Duration(milliseconds: savedPositionMs);
+      final songDurationSecs = restoredSongs[targetIndex].duration;
+      if (songDurationSecs != null && songDurationSecs > 0) {
+        _duration = Duration(seconds: songDurationSecs);
+      }
       notifyListeners();
       debugPrint(
           'Restored persistent queue: ${restoredSongs.length} songs, index $targetIndex, position $_position');
@@ -1800,7 +1804,9 @@ class PlayerProvider extends ChangeNotifier {
     } else {
       // After app restart the audio source may not be loaded yet.
       // If we have a current song but the player has no source, prepare it first.
-      if (_currentSong != null && _audioPlayer.duration == Duration.zero) {
+      if (_currentSong != null &&
+          (_audioPlayer.audioSource == null ||
+              _audioPlayer.duration == Duration.zero)) {
         await _prepareCurrentSong();
       }
       await _ensureAudioFocus();

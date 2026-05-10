@@ -2924,7 +2924,9 @@ class _ProgressBarState extends State<_ProgressBar> {
                 ),
               ),
               Text(
-                '-${widget.formatDuration(widget.duration - displayPosition)}',
+                widget.duration > Duration.zero
+                    ? '-${widget.formatDuration(widget.duration - displayPosition)}'
+                    : '',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 13,

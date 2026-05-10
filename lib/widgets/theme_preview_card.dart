@@ -53,7 +53,9 @@ class ThemePreviewCard extends StatelessWidget {
                       gradient: _buildPreviewGradient(),
                     ),
                     child: Center(
-                      child: _buildPreviewContent(),
+                      child: ClipRect(
+                        child: _buildPreviewContent(),
+                      ),
                     ),
                   ),
                   if (isActive)
@@ -170,7 +172,9 @@ class ThemePreviewCard extends StatelessWidget {
                     bottom: Radius.circular(12),
                   ),
                 ),
-                child: Row(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     if (onEdit != null)
@@ -203,6 +207,7 @@ class ThemePreviewCard extends StatelessWidget {
                         color: AppTheme.appleMusicRed,
                       ),
                   ],
+                  ),
                 ),
               ),
           ],
@@ -241,10 +246,10 @@ class ThemePreviewCard extends StatelessWidget {
         color: color ?? Colors.white.withOpacity(0.7),
       ),
       onPressed: onPressed,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(6),
       constraints: const BoxConstraints(
-        minWidth: 40,
-        minHeight: 40,
+        minWidth: 32,
+        minHeight: 32,
       ),
     );
   }
@@ -284,13 +289,13 @@ class ThemePreviewCard extends StatelessWidget {
       children: [
         // Artwork preview
         Container(
-          width: 50,
-          height: 50,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: theme.controls.getColor().withOpacity(0.2),
             borderRadius: BorderRadius.circular(
               theme.artwork.shape == 'circle'
-                  ? 30
+                  ? 20
                   : theme.artwork.shape == 'rounded_rect'
                       ? theme.artwork.cornerRadius
                       : 0,
@@ -308,13 +313,13 @@ class ThemePreviewCard extends StatelessWidget {
           child: Icon(
             CupertinoIcons.music_note,
             color: theme.controls.getColor().withOpacity(0.5),
-            size: 20,
+            size: 16,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         // Progress bar preview
         Container(
-          width: 70,
+          width: 60,
           height: theme.progressBar.height.clamp(2.0, 3.5),
           decoration: BoxDecoration(
             color: theme.progressBar.getInactiveColor(),
@@ -339,11 +344,11 @@ class ThemePreviewCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         // Play button preview
         Container(
-          width: (theme.controls.size * 0.4).clamp(20.0, 30.0),
-          height: (theme.controls.size * 0.4).clamp(20.0, 30.0),
+          width: (theme.controls.size * 0.35).clamp(18.0, 24.0),
+          height: (theme.controls.size * 0.35).clamp(18.0, 24.0),
           decoration: BoxDecoration(
             color: theme.controls.getColor(),
             shape: theme.controls.playShape == 'circle'
