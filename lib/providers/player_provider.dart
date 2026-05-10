@@ -55,6 +55,7 @@ class PlayerProvider extends ChangeNotifier {
   bool _isPlaying = false;
   bool _isLoading = false;
   bool _shuffleEnabled = false;
+  bool _gaplessEnabled = true;
   final List<String> _shuffleHistory = [];
   RepeatMode _repeatMode = RepeatMode.off;
   Duration _position = Duration.zero;
@@ -838,6 +839,7 @@ class PlayerProvider extends ChangeNotifier {
   /// to the renderer instead of the Android system volume.
   bool get isRemotePlayback => _isRenderingRemotely;
   bool get shuffleEnabled => _shuffleEnabled;
+  bool get gaplessEnabled => _gaplessEnabled;
   RepeatMode get repeatMode => _repeatMode;
   Duration get position => _position;
   Duration get duration => _duration;
@@ -1038,6 +1040,11 @@ class PlayerProvider extends ChangeNotifier {
     _storageService.getRepeatMode().then((saved) {
       _repeatMode =
           RepeatMode.values[saved.clamp(0, RepeatMode.values.length - 1)];
+      notifyListeners();
+    });
+
+    _storageService.getGaplessPlayback().then((saved) {
+      _gaplessEnabled = saved;
       notifyListeners();
     });
 
@@ -1421,7 +1428,7 @@ class PlayerProvider extends ChangeNotifier {
           await _applyReplayGain(song);
           await _ensureAudioFocus();
           await _audioPlayer.play();
-        } else {
+        } else if (_gaplessEnabled) {
           // Build ConcatenatingAudioSource for gapless playback
           try {
             await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
@@ -1438,6 +1445,23 @@ class PlayerProvider extends ChangeNotifier {
               rethrow;
             }
           }
+          await _applyReplayGain(song);
+          await _ensureAudioFocus();
+          await _audioPlayer.play();
+        } else {
+          // Gapless disabled — single-song mode
+          final String playUrl;
+          if (song.isLocal == true && song.path != null) {
+            playUrl = Uri.file(song.path!).toString();
+          } else {
+            final offlinePath = _offlineService.getLocalPath(song.id);
+            if (offlinePath != null) {
+              playUrl = 'file://$offlinePath';
+            } else {
+              playUrl = await _subsonicService.resolveStreamUrlAsync(song);
+            }
+          }
+          await _audioPlayer.setUrl(playUrl);
           await _applyReplayGain(song);
           await _ensureAudioFocus();
           await _audioPlayer.play();
@@ -1885,6 +1909,12 @@ class PlayerProvider extends ChangeNotifier {
         break;
     }
     _storageService.saveRepeatMode(_repeatMode.index);
+    notifyListeners();
+  }
+
+  void toggleGaplessPlayback() {
+    _gaplessEnabled = !_gaplessEnabled;
+    _storageService.saveGaplessPlayback(_gaplessEnabled);
     notifyListeners();
   }
 
