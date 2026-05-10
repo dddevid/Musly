@@ -26,6 +26,7 @@ import '../widgets/compact_lyrics_view.dart';
 import 'album_screen.dart';
 import '../widgets/multi_artist_widget.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
+import '../widgets/themed_now_playing_elements.dart';
 
 const _kCarouselGap = 40.0;
 
@@ -2232,28 +2233,36 @@ class _SongInfoState extends State<_SongInfo> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.song!.title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: ScreenHelper.titleFontSize(context),
-                  fontWeight: FontWeight.bold,
+              ThemeAwareBuilder(
+                builder: (ctx, theme, isCustom) => Text(
+                  widget.song!.title,
+                  style: isCustom
+                      ? theme.getTitleTextStyle()
+                      : TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenHelper.titleFontSize(context),
+                          fontWeight: FontWeight.bold,
+                        ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-              MultiArtistWidget(
-                artists: widget.song!.artistParticipants,
-                artistFallback: widget.song!.artist,
-                artistIdFallback: widget.song!.artistId,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: ScreenHelper.subtitleFontSize(context),
+              ThemeAwareBuilder(
+                builder: (ctx, theme, isCustom) => MultiArtistWidget(
+                  artists: widget.song!.artistParticipants,
+                  artistFallback: widget.song!.artist,
+                  artistIdFallback: widget.song!.artistId,
+                  style: isCustom
+                      ? theme.getArtistTextStyle()
+                      : TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: ScreenHelper.subtitleFontSize(context),
+                        ),
+                  onBeforeNavigate: () {
+                    if (Navigator.canPop(context)) Navigator.pop(context);
+                  },
                 ),
-                onBeforeNavigate: () {
-                  if (Navigator.canPop(context)) Navigator.pop(context);
-                },
               ),
             ],
           ),
@@ -2771,42 +2780,66 @@ class _ProgressBarState extends State<_ProgressBar> {
                       alignment: Alignment.centerLeft,
                       children: [
                         // Background track
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOut,
-                          height: _isDragging ? 5 : 3,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(
-                              _isDragging ? 2.5 : 1.5,
-                            ),
-                          ),
+                        ThemeAwareBuilder(
+                          builder: (ctx, theme, isCustom) {
+                            final height = isCustom
+                                ? theme.progressBar.height
+                                : (_isDragging ? 5.0 : 3.0);
+                            final color = isCustom
+                                ? theme.progressBar.getInactiveColor()
+                                : Colors.white.withValues(alpha: 0.25);
+                            final radius = isCustom
+                                ? theme.getProgressBarBorderRadius()
+                                : BorderRadius.circular(
+                                    _isDragging ? 2.5 : 1.5,
+                                  );
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              curve: Curves.easeOut,
+                              height: height,
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: radius,
+                              ),
+                            );
+                          },
                         ),
                         // Active track
-                        FractionallySizedBox(
-                          widthFactor: displayProgress.clamp(0.0, 1.0),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            curve: Curves.easeOut,
-                            height: _isDragging ? 5 : 3,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(
-                                _isDragging ? 2.5 : 1.5,
+                        ThemeAwareBuilder(
+                          builder: (ctx, theme, isCustom) {
+                            final height = isCustom
+                                ? theme.progressBar.height
+                                : (_isDragging ? 5.0 : 3.0);
+                            final color = isCustom
+                                ? theme.progressBar.getActiveColor()
+                                : Colors.white;
+                            final radius = isCustom
+                                ? theme.getProgressBarBorderRadius()
+                                : BorderRadius.circular(
+                                    _isDragging ? 2.5 : 1.5,
+                                  );
+                            return FractionallySizedBox(
+                              widthFactor: displayProgress.clamp(0.0, 1.0),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                curve: Curves.easeOut,
+                                height: height,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: radius,
+                                  boxShadow: _isDragging
+                                      ? [
+                                          BoxShadow(
+                                            color: color.withValues(alpha: 0.4),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : null,
+                                ),
                               ),
-                              boxShadow: _isDragging
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        blurRadius: 8,
-                                        spreadRadius: 1,
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
+                            );
+                          },
                         ),
                         // Thumb
                         Positioned(
@@ -2912,23 +2945,45 @@ class _PlaybackControls extends StatelessWidget {
                 size: ScreenHelper.skipButtonIconSize(context),
               ),
             ),
-            Container(
-              width: ScreenHelper.playButtonContainerSize(context),
-              height: ScreenHelper.playButtonContainerSize(context),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                onPressed: provider.togglePlayPause,
-                icon: Icon(
-                  isPlaying
-                      ? CupertinoIcons.pause_fill
-                      : CupertinoIcons.play_fill,
-                  color: Colors.black,
-                  size: ScreenHelper.playButtonIconSize(context),
-                ),
-              ),
+            ThemeAwareBuilder(
+              builder: (ctx, theme, isCustom) {
+                final size = isCustom
+                    ? theme.controls.size
+                    : ScreenHelper.playButtonContainerSize(context);
+                final bgColor = isCustom
+                    ? theme.controls.getColor()
+                    : Colors.white;
+                final iconColor = isCustom
+                    ? theme.controls.getPlayButtonColor()
+                    : Colors.black;
+                final shape = isCustom && theme.controls.playShape != 'circle'
+                    ? BoxShape.rectangle
+                    : BoxShape.circle;
+                final borderRadius = shape == BoxShape.rectangle
+                    ? BorderRadius.circular(8)
+                    : null;
+                return Container(
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    shape: shape,
+                    borderRadius: borderRadius,
+                  ),
+                  child: IconButton(
+                    onPressed: provider.togglePlayPause,
+                    icon: Icon(
+                      isPlaying
+                          ? CupertinoIcons.pause_fill
+                          : CupertinoIcons.play_fill,
+                      color: iconColor,
+                      size: isCustom
+                          ? size * 0.5
+                          : ScreenHelper.playButtonIconSize(context),
+                    ),
+                  ),
+                );
+              },
             ),
             IconButton(
               onPressed: hasNext ? provider.skipNext : null,
