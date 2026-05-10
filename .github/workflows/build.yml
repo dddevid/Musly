@@ -205,13 +205,17 @@ jobs:
         run: |
           & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
 
+      - name: Prepare Windows Package
+        run: |
+          New-Item -ItemType Directory -Force -Path windows_package
+          Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "windows_package\" -Recurse -Force
+          Copy-Item -Path "musly-setup.exe" -Destination "windows_package\" -Force
+
       - name: Upload Windows Build
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: |
-            build/windows/x64/runner/Release/
-            musly-setup.exe
+          path: windows_package/
 
   # Linux Build
   build-linux:
@@ -296,6 +300,25 @@ jobs:
             --dart-define=COUNTLY_SERVER_URL="$COUNTLY_SERVER_URL" \
             --dart-define=COUNTLY_APP_KEY="$COUNTLY_APP_KEY" 2>&1 | grep -v "$COUNTLY_APP_KEY" || true
       
+      - name: Create DMG
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "Musly" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --app-drop-link 600 185 \
+            --icon "musly.app" 200 185 \
+            "musly-macos.dmg" \
+            "build/macos/Build/Products/Release/musly.app"
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: musly-macos.dmg
+
       - name: Upload macOS Build
         uses: actions/upload-artifact@v4
         with:
@@ -347,13 +370,15 @@ jobs:
           name: macos-build
           path: artifacts/macos/
 
+      - name: Download macOS DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: artifacts/macos-dmg/
+
       - name: Package Windows
         run: |
           cd artifacts/windows
-          # Se l'installer esiste, lo includiamo
-          if [ -f ../../musly-setup.exe ]; then
-            cp ../../musly-setup.exe ./musly-setup.exe
-          fi
           zip -r ../../musly-windows.zip .
           cd ../..
 
@@ -365,9 +390,7 @@ jobs:
 
       - name: Package macOS
         run: |
-          cd artifacts/macos
-          zip -r ../../musly-macos.zip .
-          cd ../..
+          cp artifacts/macos-dmg/*.dmg musly-macos.dmg
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -403,9 +426,9 @@ jobs:
           files: |
             artifacts/android/*.apk
             artifacts/ios/*.ipa
-            musly-setup.exe
+            artifacts/windows/musly-setup.exe
             musly-windows.zip
             musly-linux-x64.tar.gz
-            musly-macos.zip
+            musly-macos.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
