@@ -11,6 +11,7 @@ import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'theme_manager_screen.dart';
 
 class SettingsDisplayTab extends StatefulWidget {
   const SettingsDisplayTab({super.key});
@@ -109,6 +110,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               _buildDivider(),
               _buildDiscordRpcStateStyleSelector(),
             ],
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildSection(
+          title: 'NOW PLAYING THEMES',
+          children: [
+            _buildNowPlayingThemesButton(),
           ],
         ),
         const SizedBox(height: 24),
@@ -476,6 +484,51 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           await _playerUiSettings.setShowMiniPlayerShuffle(value);
         },
       ),
+    );
+  }
+
+  Widget _buildNowPlayingThemesButton() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFFFA243C)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.paintbrush,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+      title: const Text(
+        'Customize Now Playing Screen',
+        style: TextStyle(fontSize: 16),
+      ),
+      subtitle: const Text(
+        'Create and manage custom themes',
+        style: TextStyle(
+          fontSize: 13,
+          color: Colors.grey,
+        ),
+      ),
+      trailing: const Icon(
+        CupertinoIcons.chevron_right,
+        color: Colors.grey,
+        size: 18,
+      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ThemeManagerScreen(),
+          ),
+        );
+      },
     );
   }
 

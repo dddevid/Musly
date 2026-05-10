@@ -14,3 +14,5 @@ export 'liked_albums_screen.dart';
 export 'playlist_screen.dart';
 export 'settings_screen.dart';
 export 'fantasy_screen.dart';
+export 'theme_manager_screen.dart';
+export 'theme_editor_screen.dart';
