@@ -49,7 +49,7 @@ Musly is a cross-platform application that supports:
 ## Download Musly - Best Navidrome Client
 
 You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v1.0.12 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.12)**
+👉 **[Download Musly v1.0.13 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v1.0.13)**
 
 ## Community
 
