@@ -94,6 +94,8 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          padding: EdgeInsets.zero,
           indicatorColor: AppTheme.appleMusicRed,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white.withOpacity(0.6),
