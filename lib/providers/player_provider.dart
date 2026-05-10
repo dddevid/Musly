@@ -24,6 +24,7 @@ import '../services/discord_rpc_service.dart';
 import '../services/storage_service.dart';
 import '../services/cast_service.dart';
 import '../services/upnp_service.dart';
+import '../services/jukebox_service.dart';
 import '../services/audio_handler.dart';
 import '../services/lock_screen_lyrics_service.dart';
 import '../providers/library_provider.dart';
@@ -92,6 +93,9 @@ class PlayerProvider extends ChangeNotifier {
   int _sleepTimerFadeDurationSeconds = 30;
   Timer? _sleepTimerFadeTimer;
   Timer? _sleepTimerFadePeriodicTimer;
+  Timer? _jukeboxPollTimer;
+
+  final JukeboxService _jukeboxService;
 
   double _playbackSpeed = 1.0;
   double _pitch = 1.0;
@@ -103,13 +107,16 @@ class PlayerProvider extends ChangeNotifier {
     this._castService,
     this._upnpService,
     this._audioHandler,
+    this._jukeboxService,
   ) {
     _storageService = storageService;
     _discordRpcService = DiscordRpcService(storageService);
     _castService.addListener(_onCastStateChanged);
     _upnpService.addListener(_onUpnpStateChanged);
     _upnpService.onRendererLost = _onUpnpRendererLost;
+    _jukeboxService.addListener(_onJukeboxEnabledChanged);
     _initializePlayer();
+    _onJukeboxEnabledChanged();
     try {
       _initializeAndroidAuto();
     } catch (_) {}
@@ -220,6 +227,78 @@ class PlayerProvider extends ChangeNotifier {
         p.remove(_keyQueueSongId);
       });
     } catch (_) {}
+  }
+
+  // ── Jukebox mode ─────────────────────────────────────────────────────────
+
+  void _onJukeboxEnabledChanged() {
+    if (_jukeboxService.enabled) {
+      _startJukeboxPolling();
+    } else {
+      _stopJukeboxPolling();
+    }
+  }
+
+  void _startJukeboxPolling() {
+    _stopJukeboxPolling();
+    _jukeboxPollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _pollJukebox();
+    });
+    _pollJukebox();
+  }
+
+  void _stopJukeboxPolling() {
+    _jukeboxPollTimer?.cancel();
+    _jukeboxPollTimer = null;
+  }
+
+  Future<void> _pollJukebox() async {
+    if (!_jukeboxService.enabled) return;
+    try {
+      await _jukeboxService.refresh(_subsonicService);
+      _syncFromJukeboxStatus();
+    } catch (e) {
+      debugPrint('Jukebox poll error: $e');
+    }
+  }
+
+  void _syncFromJukeboxStatus() {
+    if (!_jukeboxService.enabled) return;
+    final status = _jukeboxService.status;
+    final song = status.currentSong;
+
+    bool changed = false;
+    if (song != null && song.id != _currentSong?.id) {
+      _currentSong = song;
+      _resolvedArtworkUrl = null;
+      changed = true;
+    }
+    if (_isPlaying != status.playing) {
+      _isPlaying = status.playing;
+      changed = true;
+    }
+    if (_position != status.position) {
+      _position = status.position;
+      changed = true;
+    }
+    if (status.playlist.isNotEmpty &&
+        !identical(_queue, status.playlist)) {
+      _queue = List.from(status.playlist);
+      changed = true;
+    }
+    final clampedIndex = status.currentIndex.clamp(
+      0,
+      (_queue.length - 1).clamp(0, double.maxFinite.toInt()),
+    );
+    if (_currentIndex != clampedIndex) {
+      _currentIndex = clampedIndex;
+      changed = true;
+    }
+    if (changed) {
+      notifyListeners();
+      _updateAllServices();
+      _updateAndroidAuto();
+    }
   }
 
   void setLibraryProvider(LibraryProvider libraryProvider) {
@@ -1297,6 +1376,24 @@ class PlayerProvider extends ChangeNotifier {
     _isPlayingRadio = false;
     _currentRadioStation = null;
 
+    // Jukebox mode: send to server instead of playing locally.
+    if (_jukeboxService.enabled) {
+      final targetPlaylist = (playlist ?? [song]).toList();
+      final targetIndex = startIndex ??
+          targetPlaylist.indexWhere((s) => s.id == song.id).clamp(0, targetPlaylist.length - 1);
+      await _jukeboxService.setQueue(
+        _subsonicService,
+        targetPlaylist,
+        startIndex: targetIndex,
+      );
+      _isPlaying = true;
+      _isLoading = false;
+      notifyListeners();
+      _updateAllServices();
+      _updateAndroidAuto();
+      return;
+    }
+
     debugPrint(
         '[Player] ▶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
     _isLoading = true;
@@ -1683,6 +1780,13 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> play() async {
+    if (_jukeboxService.enabled) {
+      await _jukeboxService.play(_subsonicService);
+      _isPlaying = true;
+      notifyListeners();
+      _updateAndroidAuto();
+      return;
+    }
     if (_castService.isConnected) {
       await _castService.play();
       _isPlaying = true;
@@ -1705,6 +1809,13 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> pause() async {
+    if (_jukeboxService.enabled) {
+      await _jukeboxService.pause(_subsonicService);
+      _isPlaying = false;
+      notifyListeners();
+      _updateAndroidAuto();
+      return;
+    }
     if (_castService.isConnected) {
       await _castService.pause();
       _isPlaying = false;
@@ -1747,6 +1858,10 @@ class PlayerProvider extends ChangeNotifier {
   Future<void> seek(Duration position) async {
     _position = position;
     notifyListeners();
+    if (_jukeboxService.enabled) {
+      // Jukebox doesn't support seek by position; ignore.
+      return;
+    }
     if (_castService.isConnected) {
       await _castService.seek(position);
     } else if (_upnpService.isConnected) {
@@ -1776,6 +1891,11 @@ class PlayerProvider extends ChangeNotifier {
           completed: played >= total * 0.8,
         );
       }
+    }
+
+    if (_jukeboxService.enabled) {
+      await _jukeboxService.skipNext(_subsonicService);
+      return;
     }
 
     if (_autoDjService.shouldAddSongs(_currentIndex, _queue.length)) {
@@ -1851,6 +1971,10 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   Future<void> skipPrevious() async {
+    if (_jukeboxService.enabled) {
+      await _jukeboxService.skipPrevious(_subsonicService);
+      return;
+    }
     if (_position.inSeconds > 3) {
       await seek(Duration.zero);
       return;
@@ -2151,6 +2275,8 @@ class PlayerProvider extends ChangeNotifier {
 
   Future<void> _prepareCurrentSong() async {
     if (_currentSong == null) return;
+    // When jukebox mode is active, the server handles playback.
+    if (_jukeboxService.enabled) return;
     try {
       if (_gaplessEnabled && _queue.isNotEmpty) {
         await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
@@ -2367,6 +2493,8 @@ class PlayerProvider extends ChangeNotifier {
     _sleepTimer?.cancel();
     _sleepTimerFadeTimer?.cancel();
     _sleepTimerFadePeriodicTimer?.cancel();
+    _jukeboxPollTimer?.cancel();
+    _jukeboxService.removeListener(_onJukeboxEnabledChanged);
     _windowsPositionTimer?.cancel();
     _castService.removeListener(_onCastStateChanged);
     _upnpService.removeListener(_onUpnpStateChanged);

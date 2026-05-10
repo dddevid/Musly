@@ -59,7 +59,7 @@ Widget createTestApp({
         create: (_) =>
             playerProvider ??
             PlayerProvider(service, storage, FakeCastService(), UpnpService(),
-                MuslyAudioHandler()),
+                MuslyAudioHandler(), JukeboxService()),
       ),
       ChangeNotifierProvider<LibraryProvider>(
         create: (_) => libraryProvider ?? LibraryProvider(service),

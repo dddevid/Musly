@@ -25,6 +25,7 @@ void main() {
         FakeCastService(),
         UpnpService(),
         MuslyAudioHandler(),
+        JukeboxService(),
       );
 
       await tester.pumpWidget(

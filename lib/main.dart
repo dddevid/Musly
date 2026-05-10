@@ -233,6 +233,7 @@ void main() async {
           castService,
           upnpService,
           audioHandler,
+          jukeboxService,
         ),
       ),
       ChangeNotifierProvider(create: (_) => LibraryProvider(subsonicService)),
