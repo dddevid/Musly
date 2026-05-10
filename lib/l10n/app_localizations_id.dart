@@ -1768,4 +1768,51 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get lrcLibFallbackSubtitle =>
       'Automatically search LRCLIB for lyrics when your server does not provide them';
+
+  @override
+  String get themeSaved => 'Theme saved';
+
+  @override
+  String get themeUnsavedChanges => 'Unsaved changes';
+
+  @override
+  String get themeUnsavedChangesTitle => 'Unsaved Changes';
+
+  @override
+  String get themeUnsavedChangesBody =>
+      'You have unsaved changes. Do you want to save before leaving?';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String pickColor(String label) {
+    return 'Pick $label';
+  }
+
+  @override
+  String get titleStyle => 'Title Style';
+
+  @override
+  String get artistStyle => 'Artist Style';
+
+  @override
+  String get themeActive => 'ACTIVE';
+
+  @override
+  String get themeSafeMode => 'SAFE';
+
+  @override
+  String get themeCodeMode => 'CODE';
+
+  @override
+  String get themeAnimBadge => 'ANIM';
+
+  @override
+  String themeAuthor(String author) {
+    return 'by $author';
+  }
 }

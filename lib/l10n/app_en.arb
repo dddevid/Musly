@@ -1910,5 +1910,36 @@
   "lrcLibFallbackSubtitle": "Automatically search LRCLIB for lyrics when your server does not provide them",
   "@lrcLibFallbackSubtitle": {
     "description": "Subtitle explaining the LRCLIB fallback toggle"
-  }
+  },
+
+  "themeSaved": "Theme saved",
+  "@themeSaved": { "description": "Snackbar message after saving a Now Playing theme" },
+  "themeUnsavedChanges": "Unsaved changes",
+  "@themeUnsavedChanges": { "description": "Subtitle in AppBar when theme has unsaved changes" },
+  "themeUnsavedChangesTitle": "Unsaved Changes",
+  "@themeUnsavedChangesTitle": { "description": "Title of the unsaved changes dialog" },
+  "themeUnsavedChangesBody": "You have unsaved changes. Do you want to save before leaving?",
+  "@themeUnsavedChangesBody": { "description": "Body of the unsaved changes dialog" },
+  "discard": "Discard",
+  "@discard": { "description": "Button to discard unsaved changes" },
+  "save": "Save",
+  "@save": { "description": "Button to save changes" },
+  "done": "Done",
+  "@done": { "description": "Button to confirm a color picker dialog" },
+  "pickColor": "Pick {label}",
+  "@pickColor": { "description": "Title of the color picker dialog", "placeholders": { "label": { "type": "String" } } },
+  "titleStyle": "Title Style",
+  "@titleStyle": { "description": "Section heading for title text style in theme editor" },
+  "artistStyle": "Artist Style",
+  "@artistStyle": { "description": "Section heading for artist text style in theme editor" },
+  "themeActive": "ACTIVE",
+  "@themeActive": { "description": "Badge shown on the active Now Playing theme card" },
+  "themeSafeMode": "SAFE",
+  "@themeSafeMode": { "description": "Badge shown when a theme is in safe mode" },
+  "themeCodeMode": "CODE",
+  "@themeCodeMode": { "description": "Badge shown when a theme has custom Flutter code enabled" },
+  "themeAnimBadge": "ANIM",
+  "@themeAnimBadge": { "description": "Badge shown on theme cards that have animations enabled" },
+  "themeAuthor": "by {author}",
+  "@themeAuthor": { "description": "Author attribution shown on theme preview card", "placeholders": { "author": { "type": "String" } } }
 }

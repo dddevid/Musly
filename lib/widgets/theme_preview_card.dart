@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../models/now_playing_theme.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// A card widget that shows a thumbnail preview of a Now Playing theme
 class ThemePreviewCard extends StatelessWidget {
@@ -71,13 +72,15 @@ class ThemePreviewCard extends StatelessWidget {
                           color: AppTheme.appleMusicRed,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(
+                        child: Builder(
+                          builder: (ctx) => Text(
+                          AppLocalizations.of(ctx)!.themeActive,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
+                        ),
                         ),
                       ),
                     ),
@@ -107,13 +110,15 @@ class ThemePreviewCard extends StatelessWidget {
                               color: Colors.white,
                             ),
                             const SizedBox(width: 3),
-                            Text(
-                              theme.safeMode ? 'SAFE' : 'CODE',
+                            Builder(
+                              builder: (ctx) => Text(
+                              theme.safeMode ? AppLocalizations.of(ctx)!.themeSafeMode : AppLocalizations.of(ctx)!.themeCodeMode,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),
+                            ),
                             ),
                           ],
                         ),
@@ -139,14 +144,16 @@ class ThemePreviewCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'by ${theme.author}',
+                  Builder(
+                    builder: (ctx) => Text(
+                    AppLocalizations.of(ctx)!.themeAuthor(theme.author),
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.6),
                       fontSize: 11,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -157,7 +164,10 @@ class ThemePreviewCard extends StatelessWidget {
                       _buildTag(theme.artwork.shape.toUpperCase()),
                       if (theme.animations.coverRotation ||
                           theme.animations.pulse)
-                        _buildTag('ANIM'),
+                        Builder(
+                          builder: (ctx) =>
+                              _buildTag(AppLocalizations.of(ctx)!.themeAnimBadge),
+                        ),
                     ],
                   ),
                 ],

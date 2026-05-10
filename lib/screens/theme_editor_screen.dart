@@ -5,6 +5,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../models/now_playing_theme.dart';
 import '../services/now_playing_theme_service.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class ThemeEditorScreen extends StatefulWidget {
   final String themeId;
@@ -52,7 +53,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
     setState(() => _hasChanges = false);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Theme saved')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.themeSaved)),
       );
     }
   }
@@ -72,7 +73,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
             ),
             if (_hasChanges)
               Text(
-                'Unsaved changes',
+                AppLocalizations.of(context)!.themeUnsavedChanges,
                 style: TextStyle(
                   color: Colors.orange.withOpacity(0.8),
                   fontSize: 12,
@@ -268,9 +269,9 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Title Style',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.titleStyle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -290,9 +291,9 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
           );
         }),
         const SizedBox(height: 24),
-        const Text(
-          'Artist Style',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.artistStyle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -900,7 +901,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
               builder: (ctx) => AlertDialog(
                 backgroundColor: AppTheme.darkSurface,
                 title: Text(
-                  'Pick $label',
+                  AppLocalizations.of(context)!.pickColor(label),
                   style: const TextStyle(color: Colors.white),
                 ),
                 content: SingleChildScrollView(
@@ -913,9 +914,9 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text(
-                      'Done',
-                      style: TextStyle(color: AppTheme.appleMusicRed),
+                    child: Text(
+                      AppLocalizations.of(context)!.done,
+                      style: const TextStyle(color: AppTheme.appleMusicRed),
                     ),
                   ),
                 ],
@@ -948,27 +949,27 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.darkSurface,
-        title: const Text(
-          'Unsaved Changes',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          AppLocalizations.of(context)!.themeUnsavedChangesTitle,
+          style: const TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          'You have unsaved changes. Do you want to save before leaving?',
-          style: TextStyle(color: Colors.white),
+        content: Text(
+          AppLocalizations.of(context)!.themeUnsavedChangesBody,
+          style: const TextStyle(color: Colors.white),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'Discard',
+              AppLocalizations.of(context)!.discard,
               style: TextStyle(color: Colors.white.withOpacity(0.7)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Save',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.save,
+              style: const TextStyle(
                 color: AppTheme.appleMusicRed,
                 fontWeight: FontWeight.bold,
               ),

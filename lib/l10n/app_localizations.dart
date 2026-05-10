@@ -482,7 +482,7 @@ abstract class AppLocalizations {
   /// **'OK'**
   String get ok;
 
-  /// Save button label
+  /// Button to save changes
   ///
   /// In en, this message translates to:
   /// **'Save'**
@@ -3355,6 +3355,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Automatically search LRCLIB for lyrics when your server does not provide them'**
   String get lrcLibFallbackSubtitle;
+
+  /// Snackbar message after saving a Now Playing theme
+  ///
+  /// In en, this message translates to:
+  /// **'Theme saved'**
+  String get themeSaved;
+
+  /// Subtitle in AppBar when theme has unsaved changes
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get themeUnsavedChanges;
+
+  /// Title of the unsaved changes dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved Changes'**
+  String get themeUnsavedChangesTitle;
+
+  /// Body of the unsaved changes dialog
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Do you want to save before leaving?'**
+  String get themeUnsavedChangesBody;
+
+  /// Button to discard unsaved changes
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// Button to confirm a color picker dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// Title of the color picker dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Pick {label}'**
+  String pickColor(String label);
+
+  /// Section heading for title text style in theme editor
+  ///
+  /// In en, this message translates to:
+  /// **'Title Style'**
+  String get titleStyle;
+
+  /// Section heading for artist text style in theme editor
+  ///
+  /// In en, this message translates to:
+  /// **'Artist Style'**
+  String get artistStyle;
+
+  /// Badge shown on the active Now Playing theme card
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get themeActive;
+
+  /// Badge shown when a theme is in safe mode
+  ///
+  /// In en, this message translates to:
+  /// **'SAFE'**
+  String get themeSafeMode;
+
+  /// Badge shown when a theme has custom Flutter code enabled
+  ///
+  /// In en, this message translates to:
+  /// **'CODE'**
+  String get themeCodeMode;
+
+  /// Badge shown on theme cards that have animations enabled
+  ///
+  /// In en, this message translates to:
+  /// **'ANIM'**
+  String get themeAnimBadge;
+
+  /// Author attribution shown on theme preview card
+  ///
+  /// In en, this message translates to:
+  /// **'by {author}'**
+  String themeAuthor(String author);
 }
 
 class _AppLocalizationsDelegate
