@@ -311,11 +311,11 @@ class ThemePreviewCard extends StatelessWidget {
             size: 20,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         // Progress bar preview
         Container(
           width: 70,
-          height: theme.progressBar.height.clamp(2.0, 4.0),
+          height: theme.progressBar.height.clamp(2.0, 3.5),
           decoration: BoxDecoration(
             color: theme.progressBar.getInactiveColor(),
             borderRadius: BorderRadius.circular(
@@ -339,7 +339,7 @@ class ThemePreviewCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         // Play button preview
         Container(
           width: (theme.controls.size * 0.4).clamp(20.0, 30.0),

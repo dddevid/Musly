@@ -1836,25 +1836,34 @@ class _AlbumArtworkSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: RepaintBoundary(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
+    return ThemeAwareBuilder(
+      builder: (ctx, theme, isCustom) {
+        final borderRadius = isCustom
+            ? theme.getArtworkBorderRadius()
+            : BorderRadius.circular(12);
+        final boxShadow = isCustom
+            ? theme.getArtworkShadow()
+            : [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 40,
                   offset: const Offset(0, 20),
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              ];
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: RepaintBoundary(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: borderRadius,
+                  boxShadow: boxShadow,
+                ),
+                child: ClipRRect(
+                  borderRadius: borderRadius,
               child: imageUrl.isNotEmpty
                   ? isLocalFilePath(imageUrl)
                       ? Image.file(
@@ -1894,6 +1903,8 @@ class _AlbumArtworkSection extends StatelessWidget {
           ),
         ),
       ),
+        );
+      },
     );
   }
 
