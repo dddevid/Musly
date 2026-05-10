@@ -19,6 +19,7 @@ export 'update_service.dart';
 export 'upnp_service.dart';
 export 'jukebox_service.dart';
 export 'theme_service.dart';
+export 'now_playing_theme_service.dart';
 export 'lyrics_manager.dart';
 export 'lock_screen_lyrics_service.dart';
 export 'library_database_service.dart';

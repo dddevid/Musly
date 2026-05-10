@@ -7,3 +7,4 @@ export 'server_config.dart';
 export 'music_folder.dart';
 export 'radio_station.dart';
 export 'genre.dart';
+export 'now_playing_theme.dart';

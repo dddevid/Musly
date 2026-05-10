@@ -79,6 +79,8 @@ dependencies:
   http: ^1.6.0
   sqflite: ^2.3.0
   wakelock_plus: ^1.4.0
+  dart_eval: ^0.8.4
+  flutter_colorpicker: ^1.1.0
 
 dependency_overrides:
   ffi: ^2.1.0

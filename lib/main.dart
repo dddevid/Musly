@@ -161,6 +161,7 @@ void main() async {
   final upnpService = UpnpService();
   final jukeboxService = JukeboxService();
   final themeService = ThemeService();
+  final nowPlayingThemeService = NowPlayingThemeService();
 
   BpmAnalyzerService().initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -182,6 +183,9 @@ void main() async {
   });
   jukeboxService.initialize().catchError((e) {
     debugPrint('Failed to initialize jukebox service: $e');
+  });
+  nowPlayingThemeService.initialize().catchError((e) {
+    debugPrint('Failed to initialize now playing theme service: $e');
   });
 
   // Initialize favorite playlists service
@@ -224,6 +228,9 @@ void main() async {
       ChangeNotifierProvider<CastService>.value(value: castService),
       ChangeNotifierProvider<LocaleService>.value(value: localeService),
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
+      ChangeNotifierProvider<NowPlayingThemeService>.value(
+        value: nowPlayingThemeService,
+      ),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
       ChangeNotifierProvider(
