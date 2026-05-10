@@ -423,8 +423,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
             ),
           ),
         ),
-        if (_draft.artwork.shape == 'rounded_rect' ||
-            _draft.artwork.shape == 'square') ...[
+        if (_draft.artwork.shape == 'square') ...[
           const SizedBox(height: 16),
           _buildSlider(
             label: 'Corner Radius',

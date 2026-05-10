@@ -296,10 +296,11 @@ class ThemePreviewCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(
               theme.artwork.shape == 'circle'
                   ? 20
-                  : (theme.artwork.shape == 'rounded_rect' ||
-                          theme.artwork.shape == 'square')
-                      ? theme.artwork.cornerRadius
-                      : 0,
+                  : theme.artwork.shape == 'rounded_rect'
+                      ? 4
+                      : theme.artwork.shape == 'square'
+                          ? theme.artwork.cornerRadius
+                          : 0,
             ),
             boxShadow: theme.artwork.shadow
                 ? [
