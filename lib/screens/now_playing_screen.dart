@@ -1145,51 +1145,71 @@ class _DynamicBackgroundState extends State<_DynamicBackground> {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: TweenAnimationBuilder<List<Color>>(
-        tween: _ColorListTween(begin: _prevColors, end: _meshColors),
-        duration: const Duration(milliseconds: 900),
-        builder: (context, colors, _) {
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Bottom solid fill — always visible.
-              ColoredBox(color: colors[3]),
-              // Blob 1 — top-left.
-              _GradientBlob(
-                color: colors[0],
-                alignment: const Alignment(-0.8, -0.8),
-                radius: 0.9,
-              ),
-              // Blob 2 — top-right.
-              _GradientBlob(
-                color: colors[1],
-                alignment: const Alignment(0.8, -0.6),
-                radius: 0.8,
-              ),
-              // Blob 3 — bottom-center.
-              _GradientBlob(
-                color: colors[2],
-                alignment: const Alignment(0.0, 0.9),
-                radius: 0.85,
-              ),
-              // Dark overlay for readability.
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color.fromRGBO(0, 0, 0, 0.42),
-                      Color.fromRGBO(0, 0, 0, 0.70),
-                    ],
-                  ),
+    return ThemeAwareBuilder(
+      builder: (ctx, theme, isCustom) {
+        if (isCustom) {
+          final bgType = theme.background.type;
+          if (bgType == 'solid') {
+            return ColoredBox(color: theme.background.getColor(0));
+          } else if (bgType == 'gradient') {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.background.getColor(0),
+                    theme.background.getColor(1),
+                  ],
                 ),
               ),
-            ],
-          );
-        },
-      ),
+            );
+          }
+          // bgType == 'dynamic' falls through to default mesh below
+        }
+
+        return RepaintBoundary(
+          child: TweenAnimationBuilder<List<Color>>(
+            tween: _ColorListTween(begin: _prevColors, end: _meshColors),
+            duration: const Duration(milliseconds: 900),
+            builder: (context, colors, _) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(color: colors[3]),
+                  _GradientBlob(
+                    color: colors[0],
+                    alignment: const Alignment(-0.8, -0.8),
+                    radius: 0.9,
+                  ),
+                  _GradientBlob(
+                    color: colors[1],
+                    alignment: const Alignment(0.8, -0.6),
+                    radius: 0.8,
+                  ),
+                  _GradientBlob(
+                    color: colors[2],
+                    alignment: const Alignment(0.0, 0.9),
+                    radius: 0.85,
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color.fromRGBO(0, 0, 0, 0.42),
+                          Color.fromRGBO(0, 0, 0, 0.70),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
