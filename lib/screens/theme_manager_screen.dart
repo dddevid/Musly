@@ -574,7 +574,6 @@ class _DuplicateThemeDialogState extends State<_DuplicateThemeDialog> {
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
   }
 
