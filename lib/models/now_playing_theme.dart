@@ -321,17 +321,20 @@ class LayoutConfig {
 /// Animation configuration
 class AnimationConfig {
   final bool coverRotation;
+  final double rotationSpeed; // seconds per full rotation
   final bool pulse;
   final bool fadeIn;
 
   const AnimationConfig({
     this.coverRotation = false,
+    this.rotationSpeed = 12.0,
     this.pulse = false,
     this.fadeIn = true,
   });
 
   Map<String, dynamic> toJson() => {
         'cover_rotation': coverRotation,
+        'rotation_speed': rotationSpeed,
         'pulse': pulse,
         'fade_in': fadeIn,
       };
@@ -339,6 +342,7 @@ class AnimationConfig {
   factory AnimationConfig.fromJson(Map<String, dynamic> json) =>
       AnimationConfig(
         coverRotation: json['cover_rotation'] as bool? ?? false,
+        rotationSpeed: (json['rotation_speed'] as num?)?.toDouble() ?? 12.0,
         pulse: json['pulse'] as bool? ?? false,
         fadeIn: json['fade_in'] as bool? ?? true,
       );

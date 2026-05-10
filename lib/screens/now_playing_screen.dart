@@ -1864,13 +1864,15 @@ class _AlbumArtworkSectionState extends State<_AlbumArtworkSection>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  double _currentRotationSpeed = 12.0;
+
   @override
   void initState() {
     super.initState();
     _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
-    )..repeat();
+      duration: Duration(milliseconds: (_currentRotationSpeed * 1000).round()),
+    );
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -1878,6 +1880,30 @@ class _AlbumArtworkSectionState extends State<_AlbumArtworkSection>
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+  }
+
+  void _updateRotation(bool coverRotation, double speed, bool isPlaying) {
+    if (!coverRotation) {
+      _rotationController.stop();
+      return;
+    }
+    // Update speed if changed
+    if (speed != _currentRotationSpeed) {
+      _currentRotationSpeed = speed;
+      final progress = _rotationController.value;
+      _rotationController.duration =
+          Duration(milliseconds: (speed * 1000).round());
+      if (isPlaying) {
+        _rotationController.repeat();
+        _rotationController.value = progress;
+      }
+    }
+    // Pause/resume based on playback state
+    if (isPlaying && !_rotationController.isAnimating) {
+      _rotationController.repeat();
+    } else if (!isPlaying && _rotationController.isAnimating) {
+      _rotationController.stop();
+    }
   }
 
   @override
@@ -1889,8 +1915,15 @@ class _AlbumArtworkSectionState extends State<_AlbumArtworkSection>
 
   @override
   Widget build(BuildContext context) {
+    final isPlaying = context.select<PlayerProvider, bool>((p) => p.isPlaying);
     return ThemeAwareBuilder(
       builder: (ctx, theme, isCustom) {
+        if (isCustom && theme.animations.coverRotation) {
+          _updateRotation(true, theme.animations.rotationSpeed, isPlaying);
+        } else {
+          _updateRotation(false, _currentRotationSpeed, isPlaying);
+        }
+
         final borderRadius = isCustom
             ? theme.getArtworkBorderRadius()
             : BorderRadius.circular(12);

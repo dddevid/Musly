@@ -672,12 +672,32 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
             (d) => d.copyWith(
               animations: AnimationConfig(
                 coverRotation: val,
+                rotationSpeed: d.animations.rotationSpeed,
                 pulse: d.animations.pulse,
                 fadeIn: d.animations.fadeIn,
               ),
             ),
           ),
         ),
+        if (_draft.animations.coverRotation) ...[
+          const SizedBox(height: 16),
+          _buildSlider(
+            label: 'Rotation Speed (s/turn)',
+            value: _draft.animations.rotationSpeed,
+            min: 3.0,
+            max: 60.0,
+            onChanged: (val) => _updateDraft(
+              (d) => d.copyWith(
+                animations: AnimationConfig(
+                  coverRotation: d.animations.coverRotation,
+                  rotationSpeed: val,
+                  pulse: d.animations.pulse,
+                  fadeIn: d.animations.fadeIn,
+                ),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         _buildSwitch(
           label: 'Pulse Effect',
@@ -686,6 +706,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
             (d) => d.copyWith(
               animations: AnimationConfig(
                 coverRotation: d.animations.coverRotation,
+                rotationSpeed: d.animations.rotationSpeed,
                 pulse: val,
                 fadeIn: d.animations.fadeIn,
               ),
@@ -700,6 +721,7 @@ class _ThemeEditorScreenState extends State<ThemeEditorScreen>
             (d) => d.copyWith(
               animations: AnimationConfig(
                 coverRotation: d.animations.coverRotation,
+                rotationSpeed: d.animations.rotationSpeed,
                 pulse: d.animations.pulse,
                 fadeIn: val,
               ),

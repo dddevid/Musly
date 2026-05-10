@@ -506,7 +506,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
       ),
       title: const Text(
-        'Customize Now Playing Screen',
+        'Customize Now Playing Screen (Beta)',
         style: TextStyle(fontSize: 16),
       ),
       subtitle: const Text(
