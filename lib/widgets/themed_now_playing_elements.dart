@@ -56,6 +56,8 @@ extension ThemedColors on NowPlayingTheme {
       return BorderRadius.circular(9999);
     } else if (artwork.shape == 'rounded_rect') {
       return BorderRadius.circular(artwork.cornerRadius);
+    } else if (artwork.shape == 'square' && artwork.cornerRadius > 0) {
+      return BorderRadius.circular(artwork.cornerRadius);
     }
     return BorderRadius.zero;
   }
