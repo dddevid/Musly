@@ -3343,6 +3343,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Playlists'**
   String get yourPlaylistsLabel;
+
+  /// Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch lyrics from LRCLIB'**
+  String get enableLrcLibFallback;
+
+  /// Subtitle explaining the LRCLIB fallback toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically search LRCLIB for lyrics when your server does not provide them'**
+  String get lrcLibFallbackSubtitle;
 }
 
 class _AppLocalizationsDelegate

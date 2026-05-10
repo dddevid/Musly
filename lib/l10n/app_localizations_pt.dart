@@ -1769,4 +1769,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get yourPlaylistsLabel => 'Your Playlists';
+
+  @override
+  String get enableLrcLibFallback => 'Fetch lyrics from LRCLIB';
+
+  @override
+  String get lrcLibFallbackSubtitle =>
+      'Automatically search LRCLIB for lyrics when your server does not provide them';
 }

@@ -6,6 +6,7 @@ import '../providers/player_provider.dart';
 import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
 import '../services/transcoding_service.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsPlaybackTab extends StatefulWidget {
@@ -22,6 +23,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   double _replayGainPreamp = 0.0;
   bool _replayGainPreventClipping = true;
   double _replayGainFallback = -6.0;
+  bool _lrcLibFallback = false;
   AutoDjMode _autoDjMode = AutoDjMode.off;
   int _autoDjSongsToAdd = 5;
 
@@ -37,11 +39,14 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     await _replayGainService.initialize();
 
+    final storageService = StorageService();
+    final lrcLibFallback = await storageService.getLrcLibFallback();
     setState(() {
       _replayGainMode = _replayGainService.getMode();
       _replayGainPreamp = _replayGainService.getPreampGain();
       _replayGainPreventClipping = _replayGainService.getPreventClipping();
       _replayGainFallback = _replayGainService.getFallbackGain();
+      _lrcLibFallback = lrcLibFallback;
       _autoDjMode = playerProvider.autoDjService.mode;
       _autoDjSongsToAdd = playerProvider.autoDjService.songsToAdd;
     });
@@ -64,6 +69,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         ),
         const SizedBox(height: 24),
         _buildGaplessSection(),
+        const SizedBox(height: 24),
+        _buildLrcLibSection(),
         const SizedBox(height: 24),
         _buildSection(
           title: AppLocalizations.of(context)!.sectionVolumeNormalization,
@@ -323,6 +330,58 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           setState(() => _replayGainFallback = value);
         },
       ),
+    );
+  }
+
+  Widget _buildLrcLibSection() {
+    final accent = Theme.of(context).colorScheme.primary;
+    return _buildSection(
+      title: 'Lyrics',
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [accent, accent.withValues(alpha: 0.6)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.text_quote,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: Text(
+            AppLocalizations.of(context)!.enableLrcLibFallback,
+            style: const TextStyle(fontSize: 16),
+          ),
+          subtitle: Text(
+            AppLocalizations.of(context)!.lrcLibFallbackSubtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.5),
+            ),
+          ),
+          trailing: CupertinoSwitch(
+            value: _lrcLibFallback,
+            activeTrackColor: accent,
+            onChanged: (v) async {
+              final storage = StorageService();
+              await storage.saveLrcLibFallback(v);
+              setState(() => _lrcLibFallback = v);
+            },
+          ),
+        ),
+      ],
     );
   }
 

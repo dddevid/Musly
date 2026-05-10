@@ -1900,5 +1900,15 @@
   "@yourPlaylistsLabel": { "description": "Section heading inside the add-to-playlist bottom sheet" },
 
   "unknownArtist": "Unknown Artist",
-  "@unknownArtist": { "description": "Fallback displayed when a song has no artist" }
+  "@unknownArtist": { "description": "Fallback displayed when a song has no artist" },
+
+  "enableLrcLibFallback": "Fetch lyrics from LRCLIB",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+
+  "lrcLibFallbackSubtitle": "Automatically search LRCLIB for lyrics when your server does not provide them",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  }
 }
