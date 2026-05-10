@@ -70,7 +70,7 @@ export default function DownloadSection() {
                     <FadeIn delay={0.1}>
                         <div className="dl-version">
                             <div className="dl-version-dot" />
-                            <span className="dl-version-name">{version ?? 'v1.0.12'}</span>
+                            <span className="dl-version-name">{version ?? 'v1.0.13'}</span>
                             <span className="dl-version-sep">·</span>
                             <span className="dl-version-date">{date ?? 'Latest release'}</span>
                         </div>
