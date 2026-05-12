@@ -16,38 +16,32 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   List<Song> _recentSongs = [];
   bool _isLoading = true;
+  LibraryProvider? _libraryProvider;
+  RecommendationService? _recommendationService;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadHistory();
       // Listen for library / profile updates in case data arrives later.
-      final libraryProvider = Provider.of<LibraryProvider>(
+      _libraryProvider = Provider.of<LibraryProvider>(
         context,
         listen: false,
       );
-      final recommendationService = Provider.of<RecommendationService>(
+      _recommendationService = Provider.of<RecommendationService>(
         context,
         listen: false,
       );
-      libraryProvider.addListener(_onProvidersChanged);
-      recommendationService.addListener(_onProvidersChanged);
+      _libraryProvider!.addListener(_onProvidersChanged);
+      _recommendationService!.addListener(_onProvidersChanged);
+      _loadHistory();
     });
   }
 
   @override
   void dispose() {
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
-    final recommendationService = Provider.of<RecommendationService>(
-      context,
-      listen: false,
-    );
-    libraryProvider.removeListener(_onProvidersChanged);
-    recommendationService.removeListener(_onProvidersChanged);
+    _libraryProvider?.removeListener(_onProvidersChanged);
+    _recommendationService?.removeListener(_onProvidersChanged);
     super.dispose();
   }
 
@@ -56,14 +50,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _loadHistory() async {
-    final recommendationService = Provider.of<RecommendationService>(
-      context,
-      listen: false,
-    );
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
+    final recommendationService = _recommendationService;
+    final libraryProvider = _libraryProvider;
+    if (recommendationService == null || libraryProvider == null) return;
 
     // If library is still loading, keep showing the spinner.
     if (libraryProvider.cachedAllSongs.isEmpty) {
