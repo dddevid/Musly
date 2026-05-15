@@ -25,7 +25,6 @@ class PlaylistScreen extends StatefulWidget {
 class _PlaylistScreenState extends State<PlaylistScreen> {
   Playlist? _playlist;
   bool _isLoading = true;
-  bool _isDownloading = false;
   bool _isSelecting = false;
   final Set<int> _selectedIndices = {};
 
@@ -216,13 +215,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     final subsonicService = Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
 
-    setState(() => _isDownloading = true);
-
-    offlineService
-        .queuePlaylistDownload(widget.playlistId, songs, subsonicService)
-        .whenComplete(() {
-      if (mounted) setState(() => _isDownloading = false);
-    });
+    offlineService.queuePlaylistDownload(widget.playlistId, songs, subsonicService);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -297,16 +290,31 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               onPressed: _toggleSelectMode,
             ),
             if (!isOffline)
-              IconButton(
-                tooltip: 'Download playlist',
-                onPressed: _isDownloading ? null : _downloadPlaylist,
-                icon: _isDownloading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(CupertinoIcons.cloud_download),
+              ValueListenableBuilder<Set<String>>(
+                valueListenable: OfflineService().queuedPlaylistIds,
+                builder: (context, queued, _) {
+                  return ValueListenableBuilder<Set<String>>(
+                    valueListenable: OfflineService().downloadedSongIds,
+                    builder: (context, downloaded, _) {
+                      final songs = _playlist?.songs ?? [];
+                      final allDownloaded = songs.isNotEmpty &&
+                          songs.every((s) => downloaded.contains(s.id));
+                      final isQueued = queued.contains(widget.playlistId);
+                      final isSpinning = isQueued && !allDownloaded;
+                      return IconButton(
+                        tooltip: isSpinning ? 'Downloading…' : 'Download playlist',
+                        onPressed: isSpinning ? null : _downloadPlaylist,
+                        icon: isSpinning
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(CupertinoIcons.cloud_download),
+                      );
+                    },
+                  );
+                },
               ),
           ],
         ],
