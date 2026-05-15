@@ -269,9 +269,20 @@ class OfflineService {
     return '$_offlineDir/$songId.jpg';
   }
 
+  String _getCoverArtByArtIdPath(String coverArtId) {
+    return '$_offlineDir/art_${coverArtId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.jpg';
+  }
+
   String? getLocalCoverArtPath(String songId) {
     if (_offlineDir == null) return null;
     final path = _getCoverArtPath(songId);
+    if (File(path).existsSync()) return path;
+    return null;
+  }
+
+  String? getLocalCoverArtPathByCoverArtId(String? coverArtId) {
+    if (_offlineDir == null || coverArtId == null || coverArtId.isEmpty) return null;
+    final path = _getCoverArtByArtIdPath(coverArtId);
     if (File(path).existsSync()) return path;
     return null;
   }
@@ -389,7 +400,13 @@ class OfflineService {
           final coverUrl = subsonicService.getCoverArtUrl(song.coverArt, size: 600);
           if (coverUrl.isNotEmpty) {
             final dioCover = Dio();
-            await dioCover.download(coverUrl, _getCoverArtPath(song.id));
+            final songCoverPath = _getCoverArtPath(song.id);
+            await dioCover.download(coverUrl, songCoverPath);
+            // Also save indexed by coverArt ID so album/playlist views can find it offline
+            final artIdPath = _getCoverArtByArtIdPath(song.coverArt!);
+            if (!File(artIdPath).existsSync()) {
+              await File(songCoverPath).copy(artIdPath);
+            }
           }
         }
       } catch (e) {

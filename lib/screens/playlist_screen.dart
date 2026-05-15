@@ -28,7 +28,6 @@ class PlaylistScreen extends StatefulWidget {
 class _PlaylistScreenState extends State<PlaylistScreen> {
   Playlist? _playlist;
   bool _isLoading = true;
-  bool _isDownloading = false;
   bool _isSelecting = false;
   bool _isReordering = false;
   final Set<int> _selectedIndices = {};
@@ -283,13 +282,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     final subsonicService = Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
 
-    setState(() => _isDownloading = true);
-
-    offlineService
-        .queuePlaylistDownload(widget.playlistId, songs, subsonicService)
-        .whenComplete(() {
-      if (mounted) setState(() => _isDownloading = false);
-    });
+    offlineService.queuePlaylistDownload(widget.playlistId, songs, subsonicService);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
