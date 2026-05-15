@@ -50,9 +50,26 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     if (!mounted) return;
     final songs = _playlist?.songs ?? [];
     if (songs.isEmpty) return;
-    final ids = OfflineService().downloadedSongIds.value;
-    final allDown = songs.every((s) => ids.contains(s.id));
-    final queued = OfflineService().queuedPlaylistIds.value.contains(widget.playlistId);
+    final offline = OfflineService();
+    final ids = offline.downloadedSongIds.value;
+    bool allDown = songs.every((s) => ids.contains(s.id));
+    final queued = offline.queuedPlaylistIds.value.contains(widget.playlistId);
+    // Reactive set can lag behind disk after a download completes — verify directly,
+    // but only on the queued→not-queued transition to avoid per-song disk I/O for
+    // every open screen while something else is downloading.
+    if (!allDown && !queued && _isQueued) {
+      allDown = songs.every((s) => offline.isSongDownloaded(s.id));
+      if (allDown) {
+        final missing = songs
+            .where((s) => !ids.contains(s.id))
+            .map((s) => s.id)
+            .toSet();
+        if (missing.isNotEmpty) {
+          offline.downloadedSongIds.value = {...ids, ...missing};
+          return; // listener will re-fire with the corrected set
+        }
+      }
+    }
     if (allDown != _allDownloaded || queued != _isQueued) {
       setState(() {
         _allDownloaded = allDown;
@@ -274,7 +291,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       ),
     );
     if (confirmed == true && mounted) {
-      await OfflineService().deletePlaylistDownloads(songs.map((s) => s.id).toList());
+      await OfflineService().deletePlaylistDownloads(songs);
     }
   }
 
