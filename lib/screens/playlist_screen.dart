@@ -28,10 +28,37 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   bool _isSelecting = false;
   final Set<int> _selectedIndices = {};
 
+  bool _allDownloaded = false;
+  bool _isQueued = false;
+
   @override
   void initState() {
     super.initState();
     _loadPlaylist();
+    OfflineService().downloadedSongIds.addListener(_updateDownloadState);
+    OfflineService().queuedPlaylistIds.addListener(_updateDownloadState);
+  }
+
+  @override
+  void dispose() {
+    OfflineService().downloadedSongIds.removeListener(_updateDownloadState);
+    OfflineService().queuedPlaylistIds.removeListener(_updateDownloadState);
+    super.dispose();
+  }
+
+  void _updateDownloadState() {
+    if (!mounted) return;
+    final songs = _playlist?.songs ?? [];
+    if (songs.isEmpty) return;
+    final ids = OfflineService().downloadedSongIds.value;
+    final allDown = songs.every((s) => ids.contains(s.id));
+    final queued = OfflineService().queuedPlaylistIds.value.contains(widget.playlistId);
+    if (allDown != _allDownloaded || queued != _isQueued) {
+      setState(() {
+        _allDownloaded = allDown;
+        _isQueued = queued;
+      });
+    }
   }
 
   Future<void> _loadPlaylist() async {
@@ -47,6 +74,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
           _playlist = playlist;
           _isLoading = false;
         });
+        _updateDownloadState();
       }
     } catch (e) {
       if (mounted) {
@@ -210,21 +238,70 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   Future<void> _downloadPlaylist() async {
     final songs = _playlist?.songs;
     if (songs == null || songs.isEmpty) return;
-
     final offlineService = OfflineService();
     final subsonicService = Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
-
     offlineService.queuePlaylistDownload(widget.playlistId, songs, subsonicService);
-
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Queued ${songs.length} songs from ${_playlist!.name} for download…'),
+          content: Text('Queued ${songs.length} songs for download…'),
           duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  Future<void> _cancelDownload() async {
+    await OfflineService().cancelPlaylistDownload(widget.playlistId);
+  }
+
+  Future<void> _removeDownloads() async {
+    final songs = _playlist?.songs ?? [];
+    if (songs.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove downloads?'),
+        content: Text('Remove all ${songs.length} downloaded songs from "${_playlist!.name}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await OfflineService().deletePlaylistDownloads(songs.map((s) => s.id).toList());
+    }
+  }
+
+  Widget _buildDownloadButton(BuildContext context) {
+    if (_allDownloaded) {
+      return IconButton(
+        tooltip: 'Downloaded — tap to remove',
+        onPressed: _removeDownloads,
+        icon: const Icon(Icons.cloud_done, color: Colors.green),
+      );
+    }
+    if (_isQueued) {
+      return IconButton(
+        tooltip: 'Downloading — tap to cancel',
+        onPressed: _cancelDownload,
+        icon: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    return IconButton(
+      tooltip: 'Download playlist',
+      onPressed: _downloadPlaylist,
+      icon: const Icon(CupertinoIcons.cloud_download),
+    );
   }
 
   @override
@@ -289,33 +366,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               icon: const Icon(CupertinoIcons.checkmark_circle),
               onPressed: _toggleSelectMode,
             ),
-            if (!isOffline)
-              ValueListenableBuilder<Set<String>>(
-                valueListenable: OfflineService().queuedPlaylistIds,
-                builder: (context, queued, _) {
-                  return ValueListenableBuilder<Set<String>>(
-                    valueListenable: OfflineService().downloadedSongIds,
-                    builder: (context, downloaded, _) {
-                      final songs = _playlist?.songs ?? [];
-                      final allDownloaded = songs.isNotEmpty &&
-                          songs.every((s) => downloaded.contains(s.id));
-                      final isQueued = queued.contains(widget.playlistId);
-                      final isSpinning = isQueued && !allDownloaded;
-                      return IconButton(
-                        tooltip: isSpinning ? 'Downloading…' : 'Download playlist',
-                        onPressed: isSpinning ? null : _downloadPlaylist,
-                        icon: isSpinning
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(CupertinoIcons.cloud_download),
-                      );
-                    },
-                  );
-                },
-              ),
+            if (!isOffline) _buildDownloadButton(context),
           ],
         ],
       ),

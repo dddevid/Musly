@@ -568,6 +568,22 @@ class OfflineService {
     );
   }
 
+  Future<void> cancelPlaylistDownload(String playlistId) async {
+    _downloadQueue.removeWhere((e) => e.playlistId == playlistId);
+    if (_isBackgroundDownloadActive) cancelBackgroundDownload();
+    queuedPlaylistIds.value = queuedPlaylistIds.value.difference({playlistId});
+    _queuedPlaylistData.remove(playlistId);
+    await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    final data = _queuedPlaylistData;
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(data));
+  }
+
+  Future<void> deletePlaylistDownloads(List<String> songIds) async {
+    for (final id in songIds) {
+      await deleteSong(id);
+    }
+  }
+
   bool get isBackgroundDownloadActive => _isBackgroundDownloadActive;
 
   Future<void> downloadPlaylist(
