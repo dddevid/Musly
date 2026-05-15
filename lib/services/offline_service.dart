@@ -620,18 +620,37 @@ class OfflineService {
   }
 
   Future<void> cancelPlaylistDownload(String playlistId) async {
+    // Check before removing: if it's still in the queue it hasn't started yet.
+    final wasStillQueued = _downloadQueue.any((e) => e.playlistId == playlistId);
     _downloadQueue.removeWhere((e) => e.playlistId == playlistId);
-    if (_isBackgroundDownloadActive) cancelBackgroundDownload();
+    // Only cancel the active background download when this playlist is the one
+    // currently running (already popped from the queue and in startBackgroundDownload).
+    if (_isBackgroundDownloadActive && !wasStillQueued) {
+      cancelBackgroundDownload();
+    }
     queuedPlaylistIds.value = queuedPlaylistIds.value.difference({playlistId});
     _queuedPlaylistData.remove(playlistId);
     await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
-    final data = _queuedPlaylistData;
-    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(data));
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
   }
 
-  Future<void> deletePlaylistDownloads(List<String> songIds) async {
-    for (final id in songIds) {
-      await deleteSong(id);
+  Future<void> deletePlaylistDownloads(List<Song> songs) async {
+    for (final song in songs) {
+      await deleteSong(song.id);
+    }
+    // deleteSong can't reach art_* files (no coverArtId available from songId alone).
+    // Delete them here using the unique coverArtIds in this set of songs.
+    if (_offlineDir == null) return;
+    final coverArtIds = songs
+        .map((s) => s.coverArt)
+        .whereType<String>()
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    for (final artId in coverArtIds) {
+      try {
+        final f = File(_getCoverArtByArtIdPath(artId));
+        if (f.existsSync()) await f.delete();
+      } catch (_) {}
     }
   }
 

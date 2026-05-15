@@ -45,10 +45,24 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   void _updateDownloadState() {
     if (!mounted || _songs.isEmpty) return;
-    final ids = OfflineService().downloadedSongIds.value;
-    final allDown = _songs.every((s) => ids.contains(s.id));
+    final offline = OfflineService();
+    final ids = offline.downloadedSongIds.value;
+    bool allDown = _songs.every((s) => ids.contains(s.id));
     final queued = _album != null &&
-        OfflineService().queuedPlaylistIds.value.contains(_album!.id);
+        offline.queuedPlaylistIds.value.contains(_album!.id);
+    if (!allDown && !queued && _isQueued) {
+      allDown = _songs.every((s) => offline.isSongDownloaded(s.id));
+      if (allDown) {
+        final missing = _songs
+            .where((s) => !ids.contains(s.id))
+            .map((s) => s.id)
+            .toSet();
+        if (missing.isNotEmpty) {
+          offline.downloadedSongIds.value = {...ids, ...missing};
+          return;
+        }
+      }
+    }
     if (allDown != _allDownloaded || queued != _isQueued) {
       setState(() {
         _allDownloaded = allDown;
@@ -147,7 +161,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
       ),
     );
     if (confirmed == true && mounted) {
-      await OfflineService().deletePlaylistDownloads(_songs.map((s) => s.id).toList());
+      await OfflineService().deletePlaylistDownloads(_songs);
     }
   }
 

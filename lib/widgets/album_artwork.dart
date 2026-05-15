@@ -189,14 +189,16 @@ class AlbumArtwork extends StatelessWidget {
       );
     }
 
-    final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
-    if (offlinePath != null) {
-      return Image.file(
-        File(offlinePath),
-        key: ValueKey('offline_natural_$coverArt'),
-        fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
-      );
+    if (OfflineService().downloadedSongIds.value.isNotEmpty) {
+      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      if (offlinePath != null) {
+        return Image.file(
+          File(offlinePath),
+          key: ValueKey('offline_natural_$coverArt'),
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
+        );
+      }
     }
 
     return Builder(
@@ -240,16 +242,18 @@ class AlbumArtwork extends StatelessWidget {
       );
     }
 
-    final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
-    if (offlinePath != null) {
-      return Image.file(
-        File(offlinePath),
-        key: ValueKey('offline_$coverArt'),
-        fit: BoxFit.cover,
-        cacheWidth: cacheSize,
-        cacheHeight: cacheSize,
-        errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
-      );
+    if (OfflineService().downloadedSongIds.value.isNotEmpty) {
+      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      if (offlinePath != null) {
+        return Image.file(
+          File(offlinePath),
+          key: ValueKey('offline_$coverArt'),
+          fit: BoxFit.cover,
+          cacheWidth: cacheSize,
+          cacheHeight: cacheSize,
+          errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
+        );
+      }
     }
 
     return Builder(
