@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'playlist_screen.dart';
@@ -156,6 +157,7 @@ class PlaylistsScreen extends StatelessWidget {
                 title: const Text('Delete Playlist'),
                 onTap: () async {
                   Navigator.pop(context);
+                  await OfflineService().cancelPlaylistDownload(playlist.id);
                   await libraryProvider.deletePlaylist(playlist.id);
                 },
               ),
@@ -210,10 +212,26 @@ class _PlaylistTile extends StatelessWidget {
         '${playlist.songCount ?? 0} songs',
         style: theme.textTheme.bodySmall,
       ),
-      trailing: const Icon(
-        CupertinoIcons.chevron_right,
-        size: 18,
-        color: AppTheme.lightSecondaryText,
+      trailing: ValueListenableBuilder<Set<String>>(
+        valueListenable: OfflineService().downloadedPlaylistIds,
+        builder: (context, downloaded, _) {
+          return ValueListenableBuilder<Set<String>>(
+            valueListenable: OfflineService().queuedPlaylistIds,
+            builder: (context, queued, _) {
+              if (downloaded.contains(playlist.id)) {
+                return const Icon(Icons.check_circle, size: 20, color: Colors.green);
+              }
+              if (queued.contains(playlist.id)) {
+                return const Icon(Icons.check_circle_outline, size: 20, color: Colors.green);
+              }
+              return const Icon(
+                CupertinoIcons.chevron_right,
+                size: 18,
+                color: AppTheme.lightSecondaryText,
+              );
+            },
+          );
+        },
       ),
       onTap: onTap,
       onLongPress: onLongPress,

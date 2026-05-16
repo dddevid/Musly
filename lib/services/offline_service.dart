@@ -9,17 +9,31 @@ import '../models/song.dart';
 import '../models/playlist.dart';
 import 'subsonic_service.dart';
 
+enum DownloadStatus { queued, downloading, done, failed }
+
+class DownloadLogEntry {
+  final Song song;
+  final DownloadStatus status;
+  const DownloadLogEntry(this.song, this.status);
+  DownloadLogEntry copyWith({DownloadStatus? status}) =>
+      DownloadLogEntry(song, status ?? this.status);
+}
+
 class DownloadState {
   final bool isDownloading;
   final int currentProgress;
   final int totalCount;
   final int downloadedCount;
+  final Song? currentSong;
+  final List<Song> failedSongs;
 
   DownloadState({
     this.isDownloading = false,
     this.currentProgress = 0,
     this.totalCount = 0,
     this.downloadedCount = 0,
+    this.currentSong,
+    this.failedSongs = const [],
   });
 
   DownloadState copyWith({
@@ -27,12 +41,17 @@ class DownloadState {
     int? currentProgress,
     int? totalCount,
     int? downloadedCount,
+    Song? currentSong,
+    bool clearCurrentSong = false,
+    List<Song>? failedSongs,
   }) {
     return DownloadState(
       isDownloading: isDownloading ?? this.isDownloading,
       currentProgress: currentProgress ?? this.currentProgress,
       totalCount: totalCount ?? this.totalCount,
       downloadedCount: downloadedCount ?? this.downloadedCount,
+      currentSong: clearCurrentSong ? null : (currentSong ?? this.currentSong),
+      failedSongs: failedSongs ?? this.failedSongs,
     );
   }
 }
@@ -52,15 +71,48 @@ class OfflineService {
   final ValueNotifier<DownloadState> downloadState = ValueNotifier(
     DownloadState(),
   );
+
+  /// Reactive set of song IDs that are confirmed downloaded on disk.
+  /// Widgets can listen to this to show/hide the green checkmark badge.
+  final ValueNotifier<Set<String>> downloadedSongIds = ValueNotifier({});
+
+  /// Per-batch download log, cleared at the start of each batch.
+  /// Used by the Active Downloads detail screen.
+  final ValueNotifier<List<DownloadLogEntry>> downloadLog = ValueNotifier([]);
+
   bool _isBackgroundDownloadActive = false;
 
   static const String _keyDownloadedSongs = 'offline_downloaded_songs';
   static const String _keyPendingScrobbles = 'pending_scrobbles';
+  static const String _keyExpectedSizes = 'offline_expected_sizes';
+  static const String _keyQueuedPlaylists = 'offline_queued_playlists';
+  static const String _keyQueuedPlaylistData = 'offline_queued_playlist_data';
+  static const String _keyDownloadedPlaylists = 'offline_downloaded_playlists';
   static const String _keyParallelDownloads = 'parallel_downloads_count';
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
 
   static const int _defaultParallelDownloads = 3;
   static const int _maxParallelDownloads = 5;
+
+  Map<String, int> _expectedSizes = {};
+
+  /// Playlist IDs that have been queued for download but aren't fully done.
+  /// Drives the outline-check badge in playlist list views.
+  final ValueNotifier<Set<String>> queuedPlaylistIds = ValueNotifier({});
+
+  /// Playlist IDs the user explicitly completed downloading (intent-based).
+  /// Drives the solid-check badge — decoupled from individual song file presence
+  /// so cross-playlist songs don't create false positives.
+  final ValueNotifier<Set<String>> downloadedPlaylistIds = ValueNotifier({});
+
+  /// playlistId → serialised song list, so we can resume without LibraryProvider.
+  Map<String, List<Map<String, dynamic>>> _queuedPlaylistData = {};
+
+  /// Sequential download queue: each entry is (playlistId, songs).
+  final List<({String playlistId, List<Song> songs, SubsonicService service})>
+      _downloadQueue = [];
+  bool _queueProcessorRunning = false;
+  String? _activePlaylistId;
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -71,6 +123,170 @@ class OfflineService {
     if (!await offlineDirectory.exists()) {
       await offlineDirectory.create(recursive: true);
     }
+
+    // Load expected sizes map
+    final sizesJson = _prefs?.getString(_keyExpectedSizes);
+    if (sizesJson != null) {
+      try {
+        final raw = json.decode(sizesJson) as Map<String, dynamic>;
+        _expectedSizes = raw.map((k, v) => MapEntry(k, v as int));
+      } catch (_) {}
+    }
+
+    // Seed from SharedPrefs first
+    final prefsIds = getDownloadedSongIds().toSet();
+
+    // Reconcile with disk: any valid .mp3 on disk that isn't in the index
+    // gets added (handles interrupted downloads where file landed but prefs
+    // weren't updated before the app was killed)
+    final diskIds = <String>{};
+    final offDir = Directory(_offlineDir!);
+    if (await offDir.exists()) {
+      await for (final entity in offDir.list()) {
+        if (entity is File && entity.path.endsWith('.mp3')) {
+          final songId = entity.path.split('/').last.replaceAll('.mp3', '');
+          if (_isFileValid(songId, entity)) diskIds.add(songId);
+        }
+      }
+    }
+
+    final merged = {...prefsIds, ...diskIds};
+    if (merged.length != prefsIds.length) {
+      await _prefs?.setStringList(_keyDownloadedSongs, merged.toList());
+    }
+    downloadedSongIds.value = merged;
+
+    // Load queued playlist tracking
+    final queuedIds = _prefs?.getStringList(_keyQueuedPlaylists) ?? [];
+    final queuedDataJson = _prefs?.getString(_keyQueuedPlaylistData);
+    if (queuedDataJson != null) {
+      try {
+        final raw = json.decode(queuedDataJson) as Map<String, dynamic>;
+        _queuedPlaylistData = raw.map(
+          (k, v) => MapEntry(k, (v as List).cast<Map<String, dynamic>>()),
+        );
+      } catch (_) {}
+    }
+    queuedPlaylistIds.value = queuedIds.toSet();
+
+    // Load intent-based downloaded playlist tracking
+    final downloadedPlaylistList = _prefs?.getStringList(_keyDownloadedPlaylists) ?? [];
+    downloadedPlaylistIds.value = downloadedPlaylistList.toSet();
+
+    // Unmark any playlists that are now fully on disk
+    await _checkAndUnmarkCompleted(merged);
+  }
+
+  /// Removes playlists from the queued set if all their songs are now present.
+  Future<void> _checkAndUnmarkCompleted(Set<String> presentIds) async {
+    final nowDone = <String>{};
+    for (final playlistId in queuedPlaylistIds.value) {
+      final data = _queuedPlaylistData[playlistId];
+      if (data == null || data.isEmpty) continue;
+      final songIds = data.map((s) => s['id']?.toString() ?? '').where((id) => id.isNotEmpty);
+      if (songIds.every(presentIds.contains)) nowDone.add(playlistId);
+    }
+    if (nowDone.isEmpty) return;
+    for (final id in nowDone) { _queuedPlaylistData.remove(id); }
+    queuedPlaylistIds.value = queuedPlaylistIds.value.difference(nowDone);
+    downloadedPlaylistIds.value = {...downloadedPlaylistIds.value, ...nowDone};
+    await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+    await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
+  }
+
+  /// Queue a playlist for download. If the processor isn't running, start it.
+  /// Multiple calls stack up and are processed sequentially.
+  Future<void> queuePlaylistDownload(
+    String playlistId,
+    List<Song> songs,
+    SubsonicService subsonicService,
+  ) async {
+    if (_offlineDir == null) await initialize();
+
+    // Persist queued state so outline badge appears immediately
+    _queuedPlaylistData[playlistId] = songs.map((s) => s.toJson()).toList();
+    queuedPlaylistIds.value = {...queuedPlaylistIds.value, playlistId};
+    await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+
+    // Filter to only songs that still need downloading
+    final missing = songs.where((s) => !isSongDownloaded(s.id)).toList();
+    if (missing.isEmpty) {
+      await _checkAndUnmarkCompleted(downloadedSongIds.value);
+      return;
+    }
+
+    _downloadQueue.add((playlistId: playlistId, songs: missing, service: subsonicService));
+    _startQueueProcessor();
+  }
+
+  void _startQueueProcessor() {
+    if (_queueProcessorRunning) return;
+    _queueProcessorRunning = true;
+    _processQueue();
+  }
+
+  Future<void> _processQueue() async {
+    while (_downloadQueue.isNotEmpty) {
+      final entry = _downloadQueue.removeAt(0);
+      _activePlaylistId = entry.playlistId;
+      await startBackgroundDownload(entry.songs, entry.service);
+      _activePlaylistId = null;
+      // If every song in this playlist landed on disk, record it as fully downloaded.
+      // playlistData may be null if cancelPlaylistDownload ran during the download.
+      final playlistData = _queuedPlaylistData[entry.playlistId];
+      if (playlistData != null && playlistData.isNotEmpty) {
+        final presentIds = downloadedSongIds.value;
+        final allDone = playlistData.every(
+          (s) => presentIds.contains(s['id']?.toString() ?? ''),
+        );
+        if (allDone) {
+          downloadedPlaylistIds.value = {...downloadedPlaylistIds.value, entry.playlistId};
+          await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
+        }
+      }
+      // Always clear queued state after the attempt (cancel may have already done this).
+      _queuedPlaylistData.remove(entry.playlistId);
+      queuedPlaylistIds.value = queuedPlaylistIds.value.difference({entry.playlistId});
+      await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+      await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+    }
+    _queueProcessorRunning = false;
+  }
+
+  /// Called at startup to re-queue any playlists that were interrupted.
+  Future<void> resumeIncompleteDownloads(SubsonicService subsonicService) async {
+    if (_queuedPlaylistData.isEmpty) return;
+    for (final entry in _queuedPlaylistData.entries) {
+      final missing = entry.value
+          .map((s) => Song.fromJson(s))
+          .where((s) => !isSongDownloaded(s.id))
+          .toList();
+      if (missing.isEmpty) continue;
+      _downloadQueue.add((playlistId: entry.key, songs: missing, service: subsonicService));
+    }
+    if (_downloadQueue.isNotEmpty) _startQueueProcessor();
+  }
+
+  /// Returns true if the file on disk is complete.
+  /// Uses the stored expected size when available, falls back to 64 KB floor.
+  bool _isFileValid(String songId, File file) {
+    try {
+      final len = file.lengthSync();
+      final expected = _expectedSizes[songId];
+      if (expected != null && expected > 0) {
+        return len >= expected;
+      }
+      return len >= 65536;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _persistExpectedSize(String songId, int bytes) async {
+    _expectedSizes[songId] = bytes;
+    await _prefs?.setString(_keyExpectedSizes, json.encode(_expectedSizes));
   }
 
   String _getSongPath(String songId) {
@@ -85,9 +301,20 @@ class OfflineService {
     return '$_offlineDir/$songId.jpg';
   }
 
+  String _getCoverArtByArtIdPath(String coverArtId) {
+    return '$_offlineDir/art_${coverArtId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.jpg';
+  }
+
   String? getLocalCoverArtPath(String songId) {
     if (_offlineDir == null) return null;
     final path = _getCoverArtPath(songId);
+    if (File(path).existsSync()) return path;
+    return null;
+  }
+
+  String? getLocalCoverArtPathByCoverArtId(String? coverArtId) {
+    if (_offlineDir == null || coverArtId == null || coverArtId.isEmpty) return null;
+    final path = _getCoverArtByArtIdPath(coverArtId);
     if (File(path).existsSync()) return path;
     return null;
   }
@@ -115,7 +342,8 @@ class OfflineService {
   bool isSongDownloaded(String songId) {
     if (_offlineDir == null) return false;
     final file = File(_getSongPath(songId));
-    return file.existsSync();
+    if (!file.existsSync()) return false;
+    return _isFileValid(songId, file);
   }
 
   List<String> getDownloadedSongIds() {
@@ -150,6 +378,14 @@ class OfflineService {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
+  /// Returns (downloaded, total) for a list of songs — used by the
+  /// Playlist Status settings panel.
+  (int, int) getPlaylistDownloadStatus(List<Song> songs) {
+    final ids = downloadedSongIds.value;
+    final downloaded = songs.where((s) => ids.contains(s.id)).length;
+    return (downloaded, songs.length);
+  }
+
   Future<bool> downloadSong(
     Song song,
     SubsonicService subsonicService, {
@@ -157,9 +393,16 @@ class OfflineService {
   }) async {
     if (_offlineDir == null) await initialize();
 
+    // Persist expected size before downloading so reconciliation can use it
+    // even if the app is killed mid-download.
+    if (song.size != null && song.size! > 0) {
+      await _persistExpectedSize(song.id, song.size!);
+    }
+
+    final filePath = _getSongPath(song.id);
     try {
-      final url = subsonicService.getStreamUrl(song.id);
-      final filePath = _getSongPath(song.id);
+      // Use /download (original file, no transcoding) so size matches song.size
+      final url = subsonicService.getDownloadUrl(song.id);
 
       final dio = Dio();
       await dio.download(
@@ -172,18 +415,30 @@ class OfflineService {
         },
       );
 
+      // Validate against stored expected size (or 64 KB floor if unknown)
+      if (!isSongDownloaded(song.id)) {
+        throw Exception('Downloaded file for ${song.id} failed size check');
+      }
       final downloadedIds = getDownloadedSongIds();
       if (!downloadedIds.contains(song.id)) {
         downloadedIds.add(song.id);
         await _prefs?.setStringList(_keyDownloadedSongs, downloadedIds);
       }
+      // Notify reactive listeners (SongTile badges, playlist checkmarks)
+      downloadedSongIds.value = {...downloadedSongIds.value, song.id};
 
       try {
         if (song.coverArt != null) {
           final coverUrl = subsonicService.getCoverArtUrl(song.coverArt, size: 600);
           if (coverUrl.isNotEmpty) {
             final dioCover = Dio();
-            await dioCover.download(coverUrl, _getCoverArtPath(song.id));
+            final songCoverPath = _getCoverArtPath(song.id);
+            await dioCover.download(coverUrl, songCoverPath);
+            // Also save indexed by coverArt ID so album/playlist views can find it offline
+            final artIdPath = _getCoverArtByArtIdPath(song.coverArt!);
+            if (!File(artIdPath).existsSync()) {
+              await File(songCoverPath).copy(artIdPath);
+            }
           }
         }
       } catch (e) {
@@ -282,11 +537,17 @@ class OfflineService {
       }
     }
 
+    // Reset the per-batch log and seed it with queued entries
+    downloadLog.value = songs
+        .map((s) => DownloadLogEntry(s, DownloadStatus.queued))
+        .toList();
+
     downloadState.value = DownloadState(
       isDownloading: true,
       currentProgress: 0,
       totalCount: songs.length,
       downloadedCount: alreadyDownloadedCount,
+      failedSongs: [],
     );
 
     if (_offlineDir == null) await initialize();
@@ -305,48 +566,111 @@ class OfflineService {
         final batch = pendingSongs.skip(i).take(concurrentDownloads).toList();
 
         // Download all songs in the batch concurrently
-        final downloadFutures = batch.map((song) async {
+        final downloadFutures = batch.asMap().entries.map((entry) async {
+          final batchIdx = entry.key;
+          final song = entry.value;
           if (!_isBackgroundDownloadActive) return false;
+
+          final logIdx = i + batchIdx;
+          _updateLogEntry(logIdx, DownloadStatus.downloading);
 
           final success = await downloadSong(song, subsonicService);
           completedCount++;
 
+          _updateLogEntry(logIdx, success ? DownloadStatus.done : DownloadStatus.failed);
+
           final newDownloadedCount = getDownloadedCount();
+          final newFailed = success
+              ? downloadState.value.failedSongs
+              : [...downloadState.value.failedSongs, song];
+
           downloadState.value = downloadState.value.copyWith(
             currentProgress: completedCount,
             downloadedCount: newDownloadedCount,
+            failedSongs: newFailed,
           );
 
           if (!success) {
             debugPrint('Failed to download song: ${song.title}');
           }
           return success;
-        });
+        }).toList();
 
         // Wait for all downloads in the batch to complete
         await Future.wait(downloadFutures);
       }
     } catch (e) {
       debugPrint('Error during background download: $e');
-    } finally {
-      _isBackgroundDownloadActive = false;
-      downloadState.value = downloadState.value.copyWith(isDownloading: false);
+    }
 
-      // Always disable wake lock when download finishes or fails
-      if (!kIsWeb) {
-        try {
-          await WakelockPlus.disable();
-          debugPrint('Wake lock disabled after download');
-        } catch (e) {
-          debugPrint('Failed to disable wake lock: $e');
-        }
+    // One automatic retry pass for any failed songs
+    final toRetry = List<Song>.from(downloadState.value.failedSongs);
+    if (toRetry.isNotEmpty && _isBackgroundDownloadActive) {
+      debugPrint('Retrying ${toRetry.length} failed song(s)...');
+      final retryFailed = <Song>[];
+      for (final song in toRetry) {
+        if (!_isBackgroundDownloadActive) break;
+        final success = await downloadSong(song, subsonicService);
+        if (!success) retryFailed.add(song);
       }
+      downloadState.value = downloadState.value.copyWith(
+        failedSongs: retryFailed,
+      );
+    }
+
+    if (!kIsWeb) {
+      try {
+        await WakelockPlus.disable();
+        debugPrint('Wake lock disabled after download');
+      } catch (e) {
+        debugPrint('Failed to disable wake lock: $e');
+      }
+    }
+
+    _isBackgroundDownloadActive = false;
+    downloadState.value = downloadState.value.copyWith(
+      isDownloading: false,
+      clearCurrentSong: true,
+    );
+  }
+
+  void _updateLogEntry(int index, DownloadStatus status) {
+    final log = List<DownloadLogEntry>.from(downloadLog.value);
+    if (index < log.length) {
+      log[index] = log[index].copyWith(status: status);
+      downloadLog.value = log;
     }
   }
 
   void cancelBackgroundDownload() {
     _isBackgroundDownloadActive = false;
-    downloadState.value = downloadState.value.copyWith(isDownloading: false);
+    downloadState.value = downloadState.value.copyWith(
+      isDownloading: false,
+      clearCurrentSong: true,
+    );
+  }
+
+  Future<void> cancelPlaylistDownload(String playlistId) async {
+    _downloadQueue.removeWhere((e) => e.playlistId == playlistId);
+    // Only cancel the active background download when this specific playlist is
+    // the one currently running — not any other playlist that happens to be active.
+    if (_isBackgroundDownloadActive && _activePlaylistId == playlistId) {
+      cancelBackgroundDownload();
+    }
+    queuedPlaylistIds.value = queuedPlaylistIds.value.difference({playlistId});
+    downloadedPlaylistIds.value = downloadedPlaylistIds.value.difference({playlistId});
+    _queuedPlaylistData.remove(playlistId);
+    await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+  }
+
+  Future<void> deletePlaylistDownloads(List<Song> songs) async {
+    for (final song in songs) {
+      await deleteSong(song.id);
+    }
+    // art_* files (indexed by coverArtId) are intentionally left behind — they
+    // may be shared by songs in other playlists. deleteAllDownloads clears them.
   }
 
   bool get isBackgroundDownloadActive => _isBackgroundDownloadActive;
@@ -386,6 +710,9 @@ class OfflineService {
       final downloadedIds = getDownloadedSongIds();
       downloadedIds.remove(songId);
       await _prefs?.setStringList(_keyDownloadedSongs, downloadedIds);
+      downloadedSongIds.value = {...downloadedSongIds.value}..remove(songId);
+      _expectedSizes.remove(songId);
+      await _prefs?.setString(_keyExpectedSizes, json.encode(_expectedSizes));
 
       return true;
     } catch (e) {
@@ -396,6 +723,14 @@ class OfflineService {
 
   Future<void> deleteAllDownloads() async {
     if (_offlineDir == null) return;
+
+    // Stop any active download before wiping the index, otherwise the running
+    // download will write song IDs back into the cleared set.
+    if (_isBackgroundDownloadActive) {
+      cancelBackgroundDownload();
+      _activePlaylistId = null;
+    }
+    _downloadQueue.clear();
 
     try {
       final dir = Directory(_offlineDir!);
@@ -408,6 +743,16 @@ class OfflineService {
       }
 
       await _prefs?.setStringList(_keyDownloadedSongs, []);
+      await _prefs?.remove(_keyExpectedSizes);
+      await _prefs?.remove(_keyQueuedPlaylists);
+      await _prefs?.remove(_keyQueuedPlaylistData);
+      await _prefs?.remove(_keyDownloadedPlaylists);
+      _expectedSizes = {};
+      _queuedPlaylistData = {};
+      _downloadQueue.clear();
+      queuedPlaylistIds.value = {};
+      downloadedPlaylistIds.value = {};
+      downloadedSongIds.value = {};
     } catch (e) {
       debugPrint('Error deleting all downloads: $e');
     }
@@ -476,7 +821,6 @@ class OfflineService {
   }
 
   String getPlayableUrl(Song song, SubsonicService subsonicService) {
-    
     if (song.isLocal == true && song.path != null) {
       return 'file://${song.path}';
     }

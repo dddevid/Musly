@@ -184,33 +184,42 @@ class SongTile extends StatelessWidget {
   }
 
   Widget _buildTrailing(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (song.starred == true)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Icon(
-              CupertinoIcons.heart_fill,
-              size: 14,
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.7),
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: OfflineService().downloadedSongIds,
+      builder: (context, ids, _) {
+        final isDownloaded = ids.contains(song.id);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isDownloaded)
+              const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.check_circle, size: 14, color: Colors.green),
+              ),
+            if (song.starred == true)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  CupertinoIcons.heart_fill,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                ),
+              ),
+            if (showDuration)
+              Text(
+                song.formattedDuration,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.more_horiz),
+              iconSize: 20,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+              onPressed: () => _showOptions(context),
             ),
-          ),
-        if (showDuration)
-          Text(
-            song.formattedDuration,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: const Icon(Icons.more_horiz),
-          iconSize: 20,
-          color: Theme.of(context).textTheme.bodySmall?.color,
-          onPressed: () => _showOptions(context),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 

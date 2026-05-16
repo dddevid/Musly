@@ -24,12 +24,36 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Album? _album;
   List<Song> _songs = [];
   bool _isLoading = true;
-  bool _isDownloading = false;
+
+  bool _allDownloaded = false;
+  bool _isQueued = false;
 
   @override
   void initState() {
     super.initState();
     _loadAlbum();
+    OfflineService().downloadedPlaylistIds.addListener(_updateDownloadState);
+    OfflineService().queuedPlaylistIds.addListener(_updateDownloadState);
+  }
+
+  @override
+  void dispose() {
+    OfflineService().downloadedPlaylistIds.removeListener(_updateDownloadState);
+    OfflineService().queuedPlaylistIds.removeListener(_updateDownloadState);
+    super.dispose();
+  }
+
+  void _updateDownloadState() {
+    if (!mounted || _album == null) return;
+    final offline = OfflineService();
+    final allDown = offline.downloadedPlaylistIds.value.contains(_album!.id);
+    final queued = offline.queuedPlaylistIds.value.contains(_album!.id);
+    if (allDown != _allDownloaded || queued != _isQueued) {
+      setState(() {
+        _allDownloaded = allDown;
+        _isQueued = queued;
+      });
+    }
   }
 
   Future<void> _loadAlbum() async {
@@ -62,6 +86,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
           _songs = songs;
           _isLoading = false;
         });
+        _updateDownloadState();
       }
     } catch (e) {
       if (mounted) {
@@ -84,39 +109,72 @@ class _AlbumScreenState extends State<AlbumScreen> {
   }
 
   Future<void> _downloadAlbum() async {
-    if (_songs.isEmpty) return;
-
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
+    if (_songs.isEmpty || _album == null) return;
     final offlineService = OfflineService();
+    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
-
-    setState(() => _isDownloading = true);
-
-    offlineService.startBackgroundDownload(_songs, subsonicService).then((_) {
-      if (mounted) {
-        setState(() => _isDownloading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Downloaded ${_songs.length} songs from ${_album!.name}',
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    });
-
+    offlineService.queuePlaylistDownload(_album!.id, _songs, subsonicService);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Downloading ${_songs.length} songs in background…'),
+          content: Text('Queued ${_songs.length} songs for download…'),
           duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  Future<void> _cancelDownload() async {
+    if (_album == null) return;
+    await OfflineService().cancelPlaylistDownload(_album!.id);
+  }
+
+  Future<void> _removeDownloads() async {
+    if (_songs.isEmpty || _album == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove downloads?'),
+        content: Text('Remove all ${_songs.length} downloaded songs from "${_album!.name}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await OfflineService().cancelPlaylistDownload(_album!.id);
+      await OfflineService().deletePlaylistDownloads(_songs);
+    }
+  }
+
+  Widget _buildDownloadButton(BuildContext context) {
+    if (_allDownloaded) {
+      return IconButton(
+        tooltip: 'Downloaded — tap to remove',
+        onPressed: _removeDownloads,
+        icon: const Icon(Icons.cloud_done, color: Colors.green),
+      );
+    }
+    if (_isQueued) {
+      return IconButton(
+        tooltip: 'Downloading — tap to cancel',
+        onPressed: _cancelDownload,
+        icon: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    return IconButton(
+      tooltip: 'Download album',
+      onPressed: _downloadAlbum,
+      icon: const Icon(CupertinoIcons.cloud_download),
+    );
   }
 
   @override
@@ -224,39 +282,50 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + 40,
-                          left: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                          right: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                          bottom: ScreenHelper.isSmallScreen(context) ? 60 : 80,
-                        ),
-                        child: AlbumArtwork(
-                          coverArt: _album!.coverArt,
-                          size: ScreenHelper.isSmallScreen(context) ? 200 : 280,
-                          borderRadius: 10,
-                          preserveAspectRatio: true,
-                        ),
-                      ),
-                    ],
+                  background: ValueListenableBuilder<Set<String>>(
+                    valueListenable: OfflineService().downloadedPlaylistIds,
+                    builder: (context, downloaded, _) {
+                      final allDownloaded = _album != null && downloaded.contains(_album!.id);
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).padding.top + 40,
+                              left: ScreenHelper.isSmallScreen(context) ? 24 : 40,
+                              right: ScreenHelper.isSmallScreen(context) ? 24 : 40,
+                              bottom: ScreenHelper.isSmallScreen(context) ? 60 : 80,
+                            ),
+                            child: AlbumArtwork(
+                              coverArt: _album!.coverArt,
+                              size: ScreenHelper.isSmallScreen(context) ? 200 : 280,
+                              borderRadius: 10,
+                              preserveAspectRatio: true,
+                            ),
+                          ),
+                          if (allDownloaded)
+                            Positioned(
+                              bottom: 86,
+                              right: 46,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 28,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 actions: [
-                  if (!isOffline)
-                    IconButton(
-                      tooltip: 'Download album',
-                      onPressed: _isDownloading ? null : _downloadAlbum,
-                      icon: _isDownloading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(CupertinoIcons.cloud_download),
-                    ),
+                  if (!isOffline) _buildDownloadButton(context),
                 ],
               ),
               SliverToBoxAdapter(
