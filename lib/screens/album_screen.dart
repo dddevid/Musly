@@ -32,37 +32,22 @@ class _AlbumScreenState extends State<AlbumScreen> {
   void initState() {
     super.initState();
     _loadAlbum();
-    OfflineService().downloadedSongIds.addListener(_updateDownloadState);
+    OfflineService().downloadedPlaylistIds.addListener(_updateDownloadState);
     OfflineService().queuedPlaylistIds.addListener(_updateDownloadState);
   }
 
   @override
   void dispose() {
-    OfflineService().downloadedSongIds.removeListener(_updateDownloadState);
+    OfflineService().downloadedPlaylistIds.removeListener(_updateDownloadState);
     OfflineService().queuedPlaylistIds.removeListener(_updateDownloadState);
     super.dispose();
   }
 
   void _updateDownloadState() {
-    if (!mounted || _songs.isEmpty) return;
+    if (!mounted || _album == null) return;
     final offline = OfflineService();
-    final ids = offline.downloadedSongIds.value;
-    bool allDown = _songs.every((s) => ids.contains(s.id));
-    final queued = _album != null &&
-        offline.queuedPlaylistIds.value.contains(_album!.id);
-    if (!allDown && !queued && _isQueued) {
-      allDown = _songs.every((s) => offline.isSongDownloaded(s.id));
-      if (allDown) {
-        final missing = _songs
-            .where((s) => !ids.contains(s.id))
-            .map((s) => s.id)
-            .toSet();
-        if (missing.isNotEmpty) {
-          offline.downloadedSongIds.value = {...ids, ...missing};
-          return;
-        }
-      }
-    }
+    final allDown = offline.downloadedPlaylistIds.value.contains(_album!.id);
+    final queued = offline.queuedPlaylistIds.value.contains(_album!.id);
     if (allDown != _allDownloaded || queued != _isQueued) {
       setState(() {
         _allDownloaded = allDown;
@@ -298,10 +283,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 ),
                 flexibleSpace: FlexibleSpaceBar(
                   background: ValueListenableBuilder<Set<String>>(
-                    valueListenable: OfflineService().downloadedSongIds,
-                    builder: (context, ids, _) {
-                      final allDownloaded = _songs.isNotEmpty &&
-                          _songs.every((s) => ids.contains(s.id));
+                    valueListenable: OfflineService().downloadedPlaylistIds,
+                    builder: (context, downloaded, _) {
+                      final allDownloaded = _album != null && downloaded.contains(_album!.id);
                       return Stack(
                         fit: StackFit.expand,
                         children: [

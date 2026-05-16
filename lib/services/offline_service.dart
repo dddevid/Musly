@@ -112,6 +112,7 @@ class OfflineService {
   final List<({String playlistId, List<Song> songs, SubsonicService service})>
       _downloadQueue = [];
   bool _queueProcessorRunning = false;
+  String? _activePlaylistId;
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -173,11 +174,11 @@ class OfflineService {
     downloadedPlaylistIds.value = downloadedPlaylistList.toSet();
 
     // Unmark any playlists that are now fully on disk
-    _checkAndUnmarkCompleted(merged);
+    await _checkAndUnmarkCompleted(merged);
   }
 
   /// Removes playlists from the queued set if all their songs are now present.
-  void _checkAndUnmarkCompleted(Set<String> presentIds) {
+  Future<void> _checkAndUnmarkCompleted(Set<String> presentIds) async {
     final nowDone = <String>{};
     for (final playlistId in queuedPlaylistIds.value) {
       final data = _queuedPlaylistData[playlistId];
@@ -189,9 +190,9 @@ class OfflineService {
     for (final id in nowDone) { _queuedPlaylistData.remove(id); }
     queuedPlaylistIds.value = queuedPlaylistIds.value.difference(nowDone);
     downloadedPlaylistIds.value = {...downloadedPlaylistIds.value, ...nowDone};
-    _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
-    _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
-    _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
+    await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+    await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
   }
 
   /// Queue a playlist for download. If the processor isn't running, start it.
@@ -212,7 +213,7 @@ class OfflineService {
     // Filter to only songs that still need downloading
     final missing = songs.where((s) => !isSongDownloaded(s.id)).toList();
     if (missing.isEmpty) {
-      _checkAndUnmarkCompleted(downloadedSongIds.value);
+      await _checkAndUnmarkCompleted(downloadedSongIds.value);
       return;
     }
 
@@ -229,8 +230,11 @@ class OfflineService {
   Future<void> _processQueue() async {
     while (_downloadQueue.isNotEmpty) {
       final entry = _downloadQueue.removeAt(0);
+      _activePlaylistId = entry.playlistId;
       await startBackgroundDownload(entry.songs, entry.service);
+      _activePlaylistId = null;
       // If every song in this playlist landed on disk, record it as fully downloaded.
+      // playlistData may be null if cancelPlaylistDownload ran during the download.
       final playlistData = _queuedPlaylistData[entry.playlistId];
       if (playlistData != null && playlistData.isNotEmpty) {
         final presentIds = downloadedSongIds.value;
@@ -242,7 +246,7 @@ class OfflineService {
           await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
         }
       }
-      // Always clear queued state after the attempt.
+      // Always clear queued state after the attempt (cancel may have already done this).
       _queuedPlaylistData.remove(entry.playlistId);
       queuedPlaylistIds.value = queuedPlaylistIds.value.difference({entry.playlistId});
       await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
@@ -612,15 +616,14 @@ class OfflineService {
       downloadState.value = downloadState.value.copyWith(
         failedSongs: retryFailed,
       );
+    }
 
-      // Always disable wake lock when download finishes or fails
-      if (!kIsWeb) {
-        try {
-          await WakelockPlus.disable();
-          debugPrint('Wake lock disabled after download');
-        } catch (e) {
-          debugPrint('Failed to disable wake lock: $e');
-        }
+    if (!kIsWeb) {
+      try {
+        await WakelockPlus.disable();
+        debugPrint('Wake lock disabled after download');
+      } catch (e) {
+        debugPrint('Failed to disable wake lock: $e');
       }
     }
 
@@ -648,12 +651,10 @@ class OfflineService {
   }
 
   Future<void> cancelPlaylistDownload(String playlistId) async {
-    // Check before removing: if it's still in the queue it hasn't started yet.
-    final wasStillQueued = _downloadQueue.any((e) => e.playlistId == playlistId);
     _downloadQueue.removeWhere((e) => e.playlistId == playlistId);
-    // Only cancel the active background download when this playlist is the one
-    // currently running (already popped from the queue and in startBackgroundDownload).
-    if (_isBackgroundDownloadActive && !wasStillQueued) {
+    // Only cancel the active background download when this specific playlist is
+    // the one currently running — not any other playlist that happens to be active.
+    if (_isBackgroundDownloadActive && _activePlaylistId == playlistId) {
       cancelBackgroundDownload();
     }
     queuedPlaylistIds.value = queuedPlaylistIds.value.difference({playlistId});
@@ -668,20 +669,8 @@ class OfflineService {
     for (final song in songs) {
       await deleteSong(song.id);
     }
-    // deleteSong can't reach art_* files (no coverArtId available from songId alone).
-    // Delete them here using the unique coverArtIds in this set of songs.
-    if (_offlineDir == null) return;
-    final coverArtIds = songs
-        .map((s) => s.coverArt)
-        .whereType<String>()
-        .where((id) => id.isNotEmpty)
-        .toSet();
-    for (final artId in coverArtIds) {
-      try {
-        final f = File(_getCoverArtByArtIdPath(artId));
-        if (f.existsSync()) await f.delete();
-      } catch (_) {}
-    }
+    // art_* files (indexed by coverArtId) are intentionally left behind — they
+    // may be shared by songs in other playlists. deleteAllDownloads clears them.
   }
 
   bool get isBackgroundDownloadActive => _isBackgroundDownloadActive;
@@ -734,6 +723,14 @@ class OfflineService {
 
   Future<void> deleteAllDownloads() async {
     if (_offlineDir == null) return;
+
+    // Stop any active download before wiping the index, otherwise the running
+    // download will write song IDs back into the cleared set.
+    if (_isBackgroundDownloadActive) {
+      cancelBackgroundDownload();
+      _activePlaylistId = null;
+    }
+    _downloadQueue.clear();
 
     try {
       final dir = Directory(_offlineDir!);
