@@ -358,6 +358,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       ),
     );
     if (confirmed == true && mounted) {
+      await OfflineService().cancelPlaylistDownload(widget.playlistId);
       await OfflineService().deletePlaylistDownloads(songs);
     }
   }

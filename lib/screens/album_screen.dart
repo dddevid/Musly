@@ -161,6 +161,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
       ),
     );
     if (confirmed == true && mounted) {
+      await OfflineService().cancelPlaylistDownload(_album!.id);
       await OfflineService().deletePlaylistDownloads(_songs);
     }
   }

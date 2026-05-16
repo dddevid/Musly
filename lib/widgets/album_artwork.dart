@@ -196,7 +196,7 @@ class AlbumArtwork extends StatelessWidget {
           File(offlinePath),
           key: ValueKey('offline_natural_$coverArt'),
           fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
+          errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
         );
       }
     }
@@ -251,7 +251,7 @@ class AlbumArtwork extends StatelessWidget {
           fit: BoxFit.cover,
           cacheWidth: cacheSize,
           cacheHeight: cacheSize,
-          errorBuilder: (_, _, _) => _buildPlaceholder(isDark),
+          errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
         );
       }
     }

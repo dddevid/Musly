@@ -87,6 +87,7 @@ class OfflineService {
   static const String _keyExpectedSizes = 'offline_expected_sizes';
   static const String _keyQueuedPlaylists = 'offline_queued_playlists';
   static const String _keyQueuedPlaylistData = 'offline_queued_playlist_data';
+  static const String _keyDownloadedPlaylists = 'offline_downloaded_playlists';
   static const String _keyParallelDownloads = 'parallel_downloads_count';
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
 
@@ -98,6 +99,11 @@ class OfflineService {
   /// Playlist IDs that have been queued for download but aren't fully done.
   /// Drives the outline-check badge in playlist list views.
   final ValueNotifier<Set<String>> queuedPlaylistIds = ValueNotifier({});
+
+  /// Playlist IDs the user explicitly completed downloading (intent-based).
+  /// Drives the solid-check badge — decoupled from individual song file presence
+  /// so cross-playlist songs don't create false positives.
+  final ValueNotifier<Set<String>> downloadedPlaylistIds = ValueNotifier({});
 
   /// playlistId → serialised song list, so we can resume without LibraryProvider.
   Map<String, List<Map<String, dynamic>>> _queuedPlaylistData = {};
@@ -162,6 +168,10 @@ class OfflineService {
     }
     queuedPlaylistIds.value = queuedIds.toSet();
 
+    // Load intent-based downloaded playlist tracking
+    final downloadedPlaylistList = _prefs?.getStringList(_keyDownloadedPlaylists) ?? [];
+    downloadedPlaylistIds.value = downloadedPlaylistList.toSet();
+
     // Unmark any playlists that are now fully on disk
     _checkAndUnmarkCompleted(merged);
   }
@@ -178,8 +188,10 @@ class OfflineService {
     if (nowDone.isEmpty) return;
     for (final id in nowDone) { _queuedPlaylistData.remove(id); }
     queuedPlaylistIds.value = queuedPlaylistIds.value.difference(nowDone);
+    downloadedPlaylistIds.value = {...downloadedPlaylistIds.value, ...nowDone};
     _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
     _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+    _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
   }
 
   /// Queue a playlist for download. If the processor isn't running, start it.
@@ -218,7 +230,23 @@ class OfflineService {
     while (_downloadQueue.isNotEmpty) {
       final entry = _downloadQueue.removeAt(0);
       await startBackgroundDownload(entry.songs, entry.service);
-      _checkAndUnmarkCompleted(downloadedSongIds.value);
+      // If every song in this playlist landed on disk, record it as fully downloaded.
+      final playlistData = _queuedPlaylistData[entry.playlistId];
+      if (playlistData != null && playlistData.isNotEmpty) {
+        final presentIds = downloadedSongIds.value;
+        final allDone = playlistData.every(
+          (s) => presentIds.contains(s['id']?.toString() ?? ''),
+        );
+        if (allDone) {
+          downloadedPlaylistIds.value = {...downloadedPlaylistIds.value, entry.playlistId};
+          await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
+        }
+      }
+      // Always clear queued state after the attempt.
+      _queuedPlaylistData.remove(entry.playlistId);
+      queuedPlaylistIds.value = queuedPlaylistIds.value.difference({entry.playlistId});
+      await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+      await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
     }
     _queueProcessorRunning = false;
   }
@@ -629,8 +657,10 @@ class OfflineService {
       cancelBackgroundDownload();
     }
     queuedPlaylistIds.value = queuedPlaylistIds.value.difference({playlistId});
+    downloadedPlaylistIds.value = downloadedPlaylistIds.value.difference({playlistId});
     _queuedPlaylistData.remove(playlistId);
     await _prefs?.setStringList(_keyQueuedPlaylists, queuedPlaylistIds.value.toList());
+    await _prefs?.setStringList(_keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
     await _prefs?.setString(_keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
   }
 
@@ -719,10 +749,12 @@ class OfflineService {
       await _prefs?.remove(_keyExpectedSizes);
       await _prefs?.remove(_keyQueuedPlaylists);
       await _prefs?.remove(_keyQueuedPlaylistData);
+      await _prefs?.remove(_keyDownloadedPlaylists);
       _expectedSizes = {};
       _queuedPlaylistData = {};
       _downloadQueue.clear();
       queuedPlaylistIds.value = {};
+      downloadedPlaylistIds.value = {};
       downloadedSongIds.value = {};
     } catch (e) {
       debugPrint('Error deleting all downloads: $e');

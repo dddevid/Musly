@@ -157,6 +157,7 @@ class PlaylistsScreen extends StatelessWidget {
                 title: const Text('Delete Playlist'),
                 onTap: () async {
                   Navigator.pop(context);
+                  await OfflineService().cancelPlaylistDownload(playlist.id);
                   await libraryProvider.deletePlaylist(playlist.id);
                 },
               ),
@@ -212,16 +213,12 @@ class _PlaylistTile extends StatelessWidget {
         style: theme.textTheme.bodySmall,
       ),
       trailing: ValueListenableBuilder<Set<String>>(
-        valueListenable: OfflineService().downloadedSongIds,
-        builder: (context, ids, _) {
+        valueListenable: OfflineService().downloadedPlaylistIds,
+        builder: (context, downloaded, _) {
           return ValueListenableBuilder<Set<String>>(
             valueListenable: OfflineService().queuedPlaylistIds,
             builder: (context, queued, _) {
-              final songs = playlist.songs;
-              final allDownloaded = songs != null &&
-                  songs.isNotEmpty &&
-                  songs.every((s) => ids.contains(s.id));
-              if (allDownloaded) {
+              if (downloaded.contains(playlist.id)) {
                 return const Icon(Icons.check_circle, size: 20, color: Colors.green);
               }
               if (queued.contains(playlist.id)) {
