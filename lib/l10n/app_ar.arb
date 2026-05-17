@@ -1,11 +1,3 @@
 {
-  "@@locale": "ar",
-  "appTitle": "Musly",
-  "@appTitle": {
-    "description": "The app title"
-  },
-  "welcome": "مرحباً",
-  "@welcome": {
-    "description": "Welcome message"
-  }
+  "@@locale": "ar"
 }
