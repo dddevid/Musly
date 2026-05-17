@@ -1756,21 +1756,5 @@
   "aboutLinkDiscord": "Únete a la comunidad de Discord",
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
-  },
-
-  "lyricsSection": "LYRICS",
-  "wordByWordSync": "Word-by-Word Sync",
-  "wordByWordSyncSubtitle": "Analyzes audio locally with Whisper AI for precise word highlighting",
-  "whisperModel": "Whisper Model",
-  "whisperModelSubtitle": "Download a model for on-device speech recognition",
-  "whisperModelTiny": "Tiny (~40 MB) — Fast",
-  "whisperModelBase": "Base (~140 MB) — Balanced",
-  "whisperModelSmall": "Small (~470 MB) — Accurate",
-  "downloadModel": "Download",
-  "downloadingModel": "Downloading…",
-  "modelReady": "Ready",
-  "wordSyncProcessing": "Syncing words…",
-  "wordSyncClearCache": "Clear Word Sync Cache",
-  "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform"
+  }
 }
