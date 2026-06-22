@@ -18,7 +18,7 @@ class Song {
   final int? size;
   final String? path;
   final bool? starred;
-  final int? userRating; 
+  final int? userRating;
   final bool isLocal;
   final double? replayGainTrackGain;
   final double? replayGainAlbumGain;
@@ -26,6 +26,7 @@ class Song {
   final double? replayGainAlbumPeak;
   final List<ArtistRef>? artistParticipants;
   final DateTime? created;
+  final bool? hasDolbyAtmos;
 
   Song({
     required this.id,
@@ -53,6 +54,7 @@ class Song {
     this.replayGainAlbumPeak,
     this.artistParticipants,
     this.created,
+    this.hasDolbyAtmos,
   });
 
   factory Song.fromJson(Map<String, dynamic> json) {
@@ -86,6 +88,7 @@ class Song {
       created: json['created'] != null
           ? DateTime.tryParse(json['created'].toString())
           : null,
+      hasDolbyAtmos: json['hasDolbyAtmos'] as bool?,
     );
   }
 
@@ -117,6 +120,7 @@ class Song {
       if (artistParticipants != null)
         'artists': artistParticipants!.map((a) => a.toJson()).toList(),
       'created': created?.toIso8601String(),
+      if (hasDolbyAtmos != null) 'hasDolbyAtmos': hasDolbyAtmos,
     };
   }
 
@@ -153,6 +157,7 @@ class Song {
     double? replayGainAlbumPeak,
     List<ArtistRef>? artistParticipants,
     DateTime? created,
+    bool? hasDolbyAtmos,
   }) {
     return Song(
       id: id ?? this.id,
@@ -180,6 +185,7 @@ class Song {
       replayGainAlbumPeak: replayGainAlbumPeak ?? this.replayGainAlbumPeak,
       artistParticipants: artistParticipants ?? this.artistParticipants,
       created: created ?? this.created,
+      hasDolbyAtmos: hasDolbyAtmos ?? this.hasDolbyAtmos,
     );
   }
 }

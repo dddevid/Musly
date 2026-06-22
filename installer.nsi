@@ -18,7 +18,7 @@
 
 ; Name and file
 Name "Musly"
-OutFile "musly-${MUSLY_VERSION}-setup.exe"
+OutFile "musly-setup.exe"
 
 ; Default installation folder
 InstallDir "$PROGRAMFILES64\Musly"

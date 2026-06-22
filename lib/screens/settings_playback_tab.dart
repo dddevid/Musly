@@ -7,6 +7,7 @@ import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
 import '../services/transcoding_service.dart';
 import '../services/storage_service.dart';
+import '../services/fade_settings_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsPlaybackTab extends StatefulWidget {
@@ -18,6 +19,7 @@ class SettingsPlaybackTab extends StatefulWidget {
 
 class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   final _replayGainService = ReplayGainService();
+  final _fadeSettingsService = FadeSettingsService();
 
   ReplayGainMode _replayGainMode = ReplayGainMode.off;
   double _replayGainPreamp = 0.0;
@@ -26,6 +28,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   bool _lrcLibFallback = false;
   AutoDjMode _autoDjMode = AutoDjMode.off;
   int _autoDjSongsToAdd = 5;
+  bool _fadeEnabled = false;
+  int _fadeDurationMs = 300;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -38,6 +42,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Future<void> _loadSettings() async {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     await _replayGainService.initialize();
+    await _fadeSettingsService.initialize();
 
     final storageService = StorageService();
     final lrcLibFallback = await storageService.getLrcLibFallback();
@@ -49,6 +54,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
       _lrcLibFallback = lrcLibFallback;
       _autoDjMode = playerProvider.autoDjService.mode;
       _autoDjSongsToAdd = playerProvider.autoDjService.songsToAdd;
+      _fadeEnabled = _fadeSettingsService.getFadeEnabled();
+      _fadeDurationMs = _fadeSettingsService.getFadeDurationMs();
     });
   }
 
@@ -69,6 +76,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         ),
         const SizedBox(height: 24),
         _buildGaplessSection(),
+        const SizedBox(height: 24),
+        _buildFadeSection(),
         const SizedBox(height: 24),
         _buildLrcLibSection(),
         const SizedBox(height: 24),
@@ -246,7 +255,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           size: 18,
         ),
       ),
-      title: Text(AppLocalizations.of(context)!.replayGainMode, style: const TextStyle(fontSize: 16)),
+      title: Text(AppLocalizations.of(context)!.replayGainMode,
+          style: const TextStyle(fontSize: 16)),
       trailing: DropdownButton<ReplayGainMode>(
         value: _replayGainMode,
         underline: const SizedBox(),
@@ -283,7 +293,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildReplayGainPreampSlider() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(AppLocalizations.of(context)!.replayGainPreamp(_replayGainPreamp.toStringAsFixed(1))),
+      title: Text(AppLocalizations.of(context)!
+          .replayGainPreamp(_replayGainPreamp.toStringAsFixed(1))),
       subtitle: Slider(
         value: _replayGainPreamp,
         min: -12,
@@ -317,7 +328,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(
-        AppLocalizations.of(context)!.replayGainFallbackGain(_replayGainFallback.toStringAsFixed(1)),
+        AppLocalizations.of(context)!
+            .replayGainFallbackGain(_replayGainFallback.toStringAsFixed(1)),
       ),
       subtitle: Slider(
         value: _replayGainFallback,
@@ -437,6 +449,85 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     );
   }
 
+  Widget _buildFadeSection() {
+    final l10n = AppLocalizations.of(context)!;
+    return _buildSection(
+      title: l10n.sectionFadeInOut,
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.waveform,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: Text(
+            l10n.fadeInOutEnable,
+            style: const TextStyle(fontSize: 16),
+          ),
+          subtitle: Text(
+            l10n.fadeInOutSubtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.5),
+            ),
+          ),
+          trailing: CupertinoSwitch(
+            value: _fadeEnabled,
+            activeTrackColor: Theme.of(context).colorScheme.primary,
+            onChanged: (v) async {
+              await _fadeSettingsService.setFadeEnabled(v);
+              setState(() => _fadeEnabled = v);
+            },
+          ),
+        ),
+        if (_fadeEnabled) ...[
+          _buildDivider(),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            title: Text(
+              l10n.fadeDuration(_fadeDurationMs),
+              style: const TextStyle(fontSize: 16),
+            ),
+            subtitle: Slider(
+              value: _fadeDurationMs.toDouble(),
+              min: 100,
+              max: 1000,
+              divisions: 18,
+              activeColor: Theme.of(context).colorScheme.primary,
+              onChanged: (value) async {
+                final duration = value.round();
+                await _fadeSettingsService.setFadeDurationMs(duration);
+                setState(() => _fadeDurationMs = duration);
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildTranscodingSection() {
     return Consumer<TranscodingService>(
       builder: (context, ts, _) {
@@ -478,7 +569,6 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         return _buildSection(
           title: AppLocalizations.of(context)!.sectionStreamingQuality,
           children: [
-            
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -513,10 +603,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 onChanged: (v) => ts.setEnabled(v),
               ),
             ),
-
             if (ts.enabled) ...[
               _buildDivider(),
-
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -551,7 +639,6 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   onChanged: (v) => ts.setSmartEnabled(v),
                 ),
               ),
-
               if (ts.smartEnabled)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -559,7 +646,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                     children: [
                       Flexible(
                         child: Text(
-                          AppLocalizations.of(context)!.smartTranscodingDetectedNetwork,
+                          AppLocalizations.of(context)!
+                              .smartTranscodingDetectedNetwork,
                           style: TextStyle(fontSize: 12, color: secondaryText),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -568,10 +656,12 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                       const Spacer(),
                       Flexible(
                         child: Text(
-                          AppLocalizations.of(context)!.smartTranscodingActiveBitrate(
+                          AppLocalizations.of(context)!
+                              .smartTranscodingActiveBitrate(
                             ts.getCurrentBitrate() != null
                                 ? '${ts.getCurrentBitrate()} kbps'
-                              : AppLocalizations.of(context)!.transcodingFormatOriginal,
+                                : AppLocalizations.of(context)!
+                                    .transcodingFormatOriginal,
                           ),
                           style: TextStyle(
                             fontSize: 12,
@@ -585,20 +675,21 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                     ],
                   ),
                 ),
-
               _buildDivider(),
-
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,
                 ),
                 leading: const Icon(Icons.wifi_rounded, size: 20),
-                title: Text(AppLocalizations.of(context)!.transcodingWifiQuality),
+                title:
+                    Text(AppLocalizations.of(context)!.transcodingWifiQuality),
                 subtitle: Text(
                   ts.smartEnabled
-                      ? AppLocalizations.of(context)!.transcodingWifiQualitySubtitleSmart
-                      : AppLocalizations.of(context)!.transcodingWifiQualitySubtitle,
+                      ? AppLocalizations.of(context)!
+                          .transcodingWifiQualitySubtitleSmart
+                      : AppLocalizations.of(context)!
+                          .transcodingWifiQualitySubtitle,
                   style: TextStyle(fontSize: 12, color: secondaryText),
                 ),
                 trailing: DropdownButton<int>(
@@ -606,7 +697,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   underline: const SizedBox(),
                   items: TranscodeBitrate.options.map((bitrate) {
                     final label = bitrate == TranscodeBitrate.original
-                        ? AppLocalizations.of(context)!.transcodingBitrateOriginal
+                        ? AppLocalizations.of(context)!
+                            .transcodingBitrateOriginal
                         : '$bitrate kbps';
                     return DropdownMenuItem(value: bitrate, child: Text(label));
                   }).toList(),
@@ -615,9 +707,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   },
                 ),
               ),
-
               _buildDivider(),
-
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -627,11 +717,14 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   Icons.signal_cellular_alt_rounded,
                   size: 20,
                 ),
-                title: Text(AppLocalizations.of(context)!.transcodingMobileQuality),
+                title: Text(
+                    AppLocalizations.of(context)!.transcodingMobileQuality),
                 subtitle: Text(
                   ts.smartEnabled
-                      ? AppLocalizations.of(context)!.transcodingMobileQualitySubtitleSmart
-                      : AppLocalizations.of(context)!.transcodingMobileQualitySubtitle,
+                      ? AppLocalizations.of(context)!
+                          .transcodingMobileQualitySubtitleSmart
+                      : AppLocalizations.of(context)!
+                          .transcodingMobileQualitySubtitle,
                   style: TextStyle(fontSize: 12, color: secondaryText),
                 ),
                 trailing: DropdownButton<int>(
@@ -639,7 +732,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   underline: const SizedBox(),
                   items: TranscodeBitrate.options.map((bitrate) {
                     final label = bitrate == TranscodeBitrate.original
-                        ? AppLocalizations.of(context)!.transcodingBitrateOriginal
+                        ? AppLocalizations.of(context)!
+                            .transcodingBitrateOriginal
                         : '$bitrate kbps';
                     return DropdownMenuItem(value: bitrate, child: Text(label));
                   }).toList(),
@@ -648,9 +742,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   },
                 ),
               ),
-
               _buildDivider(),
-
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -667,7 +759,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   underline: const SizedBox(),
                   items: TranscodeFormat.options.map((format) {
                     final label = format == TranscodeFormat.original
-                        ? AppLocalizations.of(context)!.transcodingFormatOriginal
+                        ? AppLocalizations.of(context)!
+                            .transcodingFormatOriginal
                         : format.toUpperCase();
                     return DropdownMenuItem(value: format, child: Text(label));
                   }).toList(),

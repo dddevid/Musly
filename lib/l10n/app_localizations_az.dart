@@ -4,9 +4,9 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Bengali Bangla (`bn`).
-class AppLocalizationsBn extends AppLocalizations {
-  AppLocalizationsBn([String locale = 'bn']) : super(locale);
+/// The translations for Azerbaijani (`az`).
+class AppLocalizationsAz extends AppLocalizations {
+  AppLocalizationsAz([String locale = 'az']) : super(locale);
 
   @override
   String get appName => 'Musly';

@@ -271,37 +271,125 @@ class _ArtistScreenState extends State<ArtistScreen> {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  if (_albums.isNotEmpty) ...[
-                    Text(
-                      AppLocalizations.of(context)!.albums,
-                      style: theme.textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 180,
-                        childAspectRatio: 0.8,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: _albums.length,
-                      itemBuilder: (context, index) {
-                        final album = _albums[index];
-                        return AlbumCard(
-                          album: album,
-                          size: double.infinity,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => AlbumScreen(albumId: album.id),
+                  Builder(
+                    builder: (context) {
+                      // Categorize albums by song count
+                      final albums = _albums
+                          .where((a) => (a.songCount ?? 0) >= 7)
+                          .toList();
+                      final eps = _albums.where((a) {
+                        final count = a.songCount ?? 0;
+                        return count >= 3 && count <= 6;
+                      }).toList();
+                      final singles = _albums
+                          .where((a) => (a.songCount ?? 0) <= 2)
+                          .toList();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (albums.isNotEmpty) ...[
+                            Text(
+                              AppLocalizations.of(context)!.sectionAlbums,
+                              style: theme.textTheme.headlineSmall,
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                            const SizedBox(height: 8),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 180,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: albums.length,
+                              itemBuilder: (context, index) {
+                                final album = albums[index];
+                                return AlbumCard(
+                                  album: album,
+                                  size: double.infinity,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          AlbumScreen(albumId: album.id),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                          if (eps.isNotEmpty) ...[
+                            Text(
+                              AppLocalizations.of(context)!.sectionEPs,
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 180,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: eps.length,
+                              itemBuilder: (context, index) {
+                                final album = eps[index];
+                                return AlbumCard(
+                                  album: album,
+                                  size: double.infinity,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          AlbumScreen(albumId: album.id),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                          if (singles.isNotEmpty) ...[
+                            Text(
+                              AppLocalizations.of(context)!.sectionSingles,
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 180,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: singles.length,
+                              itemBuilder: (context, index) {
+                                final album = singles[index];
+                                return AlbumCard(
+                                  album: album,
+                                  size: double.infinity,
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          AlbumScreen(albumId: album.id),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
                   const SizedBox(height: 100),
                 ],
               ),

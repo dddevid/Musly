@@ -169,6 +169,18 @@ class SubsonicService {
       }
 
       HttpClient createClient() {
+        HttpClient buildClient(SecurityContext context) {
+          return HttpOverrides.runWithHttpOverrides(() {
+            final client = HttpClient(context: context);
+            client.connectionTimeout = const Duration(seconds: 15);
+            client.idleTimeout = const Duration(seconds: 15);
+            if (allowSelfSigned) {
+              client.badCertificateCallback = (cert, host, port) => true;
+            }
+            return client;
+          }, _RealHttpOverrides());
+        }
+
         try {
           final context = SecurityContext(withTrustedRoots: true);
 
@@ -185,23 +197,10 @@ class SubsonicService {
             context.usePrivateKeyBytes(clientCertBytes, password: password);
           }
 
-          final client = HttpClient(context: context);
-          client.connectionTimeout = const Duration(seconds: 15);
-          client.idleTimeout = const Duration(seconds: 15);
-          if (allowSelfSigned) {
-            client.badCertificateCallback = (cert, host, port) => true;
-          }
-          return client;
+          return buildClient(context);
         } catch (e) {
           debugPrint('Failed to configure TLS: $e');
-
-          final client = HttpClient();
-          client.connectionTimeout = const Duration(seconds: 15);
-          client.idleTimeout = const Duration(seconds: 15);
-          if (allowSelfSigned) {
-            client.badCertificateCallback = (cert, host, port) => true;
-          }
-          return client;
+          return buildClient(SecurityContext(withTrustedRoots: true));
         }
       }
 
@@ -1117,3 +1116,6 @@ class _TlsHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) => _factory();
 }
+
+/// Bypasses [HttpOverrides.global] to create a real [HttpClient].
+class _RealHttpOverrides extends HttpOverrides {}

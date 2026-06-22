@@ -49,6 +49,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Checks if the app is running on an emulator/simulator
 Future<bool> _isRunningOnEmulator() async {
+  if (kDebugMode) return false;
   if (kIsWeb) return false;
   if (!Platform.isAndroid && !Platform.isIOS) return false;
 
@@ -63,55 +64,62 @@ class _EmulatorWarningScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.block_rounded,
-                  size: 80,
-                  color: Colors.red,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.block_rounded,
+                      size: 80,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      l10n.emulatorDetected,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.emulatorNotAllowed,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 48),
+                    FilledButton.icon(
+                      onPressed: () {
+                        // Exit the app
+                        exit(0);
+                      },
+                      icon: const Icon(Icons.exit_to_app),
+                      label: const Text('Exit App'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(200, 50),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 32),
-                const Text(
-                  'Emulator Detected',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'This app cannot run on an emulator.\nPlease use a physical device.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                FilledButton.icon(
-                  onPressed: () {
-                    // Exit the app
-                    exit(0);
-                  },
-                  icon: const Icon(Icons.exit_to_app),
-                  label: const Text('Exit App'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(200, 50),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -120,14 +128,10 @@ class _EmulatorWarningScreen extends StatelessWidget {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Check if running on emulator (mobile only)
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    final isEmulator = await _isRunningOnEmulator();
-    if (isEmulator) {
-      // Show emulator warning and don't load the actual app
-      runApp(const _EmulatorWarningScreen());
-      return;
-    }
+  final isEmulator = await _isRunningOnEmulator();
+  if (isEmulator) {
+    runApp(const _EmulatorWarningScreen());
+    return;
   }
 
   JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
@@ -211,6 +215,9 @@ void main() async {
   // is ready and fully decoupled from the Flutter widget lifecycle on iOS.
   final audioHandler = await initAudioService();
 
+  // Create TranscodingService instance to share across providers
+  final transcodingService = TranscodingService();
+
   final Widget appWithProviders = MultiProvider(
     providers: [
       Provider<StorageService>.value(value: storageService),
@@ -218,8 +225,8 @@ void main() async {
       ChangeNotifierProvider<RecommendationService>.value(
         value: recommendationService,
       ),
-      ChangeNotifierProvider<TranscodingService>(
-        create: (_) => TranscodingService(),
+      ChangeNotifierProvider<TranscodingService>.value(
+        value: transcodingService,
       ),
       ChangeNotifierProvider<LocalMusicService>.value(value: localMusicService),
       ChangeNotifierProvider(
@@ -241,6 +248,7 @@ void main() async {
           upnpService,
           audioHandler,
           jukeboxService,
+          transcodingService,
         ),
       ),
       ChangeNotifierProvider(create: (_) => LibraryProvider(subsonicService)),
@@ -269,13 +277,13 @@ class MuslyApp extends StatelessWidget {
         if (lightDynamic != null && darkDynamic != null) {
           // Override dynamic color scheme with user-selected accent color
           final harmonisedLight = lightDynamic.harmonized().copyWith(
-            primary: accent,
-            secondary: accent.withAlpha(200),
-          );
+                primary: accent,
+                secondary: accent.withAlpha(200),
+              );
           final harmonisedDark = darkDynamic.harmonized().copyWith(
-            primary: accent,
-            secondary: accent.withAlpha(200),
-          );
+                primary: accent,
+                secondary: accent.withAlpha(200),
+              );
           light = AppTheme.lightThemeFromScheme(harmonisedLight);
           dark = AppTheme.darkThemeFromScheme(harmonisedDark);
         } else {
@@ -290,11 +298,9 @@ class MuslyApp extends StatelessWidget {
           darkTheme: dark,
           themeMode: themeService.themeMode,
           navigatorKey: navigatorKey,
-
           locale: localeService.currentLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-
           home: const AuthWrapper(),
           navigatorObservers: [AnalyticsNavigatorObserver()],
         );
@@ -434,10 +440,13 @@ class _ServerUnreachableScreen extends StatelessWidget {
         if (profiles.isEmpty) return const SizedBox.shrink();
 
         final currentConfig = authProvider.config;
-        final otherProfiles = profiles.where((p) =>
-          p.serverUrl != currentConfig?.serverUrl ||
-          p.username != currentConfig?.username,
-        ).toList();
+        final otherProfiles = profiles
+            .where(
+              (p) =>
+                  p.serverUrl != currentConfig?.serverUrl ||
+                  p.username != currentConfig?.username,
+            )
+            .toList();
 
         if (otherProfiles.isEmpty) return const SizedBox.shrink();
 
@@ -453,7 +462,8 @@ class _ServerUnreachableScreen extends StatelessWidget {
     );
   }
 
-  void _showSwitchProfileDialog(BuildContext context, List<ServerConfig> profiles) {
+  void _showSwitchProfileDialog(
+      BuildContext context, List<ServerConfig> profiles) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
 
@@ -498,7 +508,8 @@ class _ServerUnreachableScreen extends StatelessWidget {
                 return ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: Text(label),
-                  subtitle: Text(profile.serverUrl, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(profile.serverUrl,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   onTap: () async {
                     Navigator.pop(ctx);
                     await authProvider.switchProfile(profile);

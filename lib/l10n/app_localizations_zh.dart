@@ -12,6 +12,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appName => 'Musly';
 
   @override
+  String get emulatorDetected => 'Emulator Detected';
+
+  @override
+  String get emulatorNotAllowed =>
+      'This app cannot run on an emulator.\\nPlease use a physical device.';
+
+  @override
   String get goodMorning => '早上好';
 
   @override
@@ -37,6 +44,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get favoritePlaylists => 'Favorite Playlists';
+
+  @override
+  String get sectionAlbums => 'Albums';
+
+  @override
+  String get sectionEPs => 'EPs';
+
+  @override
+  String get sectionSingles => 'Singles';
 
   @override
   String get madeForYou => '为你制作';
@@ -1452,6 +1468,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sectionVolumeNormalization => 'VOLUME NORMALIZATION (REPLAYGAIN)';
+
+  @override
+  String get sectionFadeInOut => 'FADE IN/OUT';
+
+  @override
+  String get fadeInOutEnable => 'Enable Fade In/Out';
+
+  @override
+  String get fadeInOutSubtitle => 'Smoothly fade audio when playing or pausing';
+
+  @override
+  String fadeDuration(int duration) {
+    return 'Fade Duration: ${duration}ms';
+  }
 
   @override
   String get replayGainModeOff => 'Off';

@@ -23,6 +23,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Check if still mounted before accessing context
+      if (!mounted) return;
+
       // Listen for library / profile updates in case data arrives later.
       _libraryProvider = Provider.of<LibraryProvider>(
         context,
@@ -32,6 +35,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
         context,
         listen: false,
       );
+
+      // Check again after provider lookup (widget may have been disposed)
+      if (!mounted) return;
+
       _libraryProvider!.addListener(_onProvidersChanged);
       _recommendationService!.addListener(_onProvidersChanged);
       _loadHistory();

@@ -12,6 +12,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get appName => 'Musly';
 
   @override
+  String get emulatorDetected => 'Emulator Detected';
+
+  @override
+  String get emulatorNotAllowed =>
+      'This app cannot run on an emulator.\\nPlease use a physical device.';
+
+  @override
   String get goodMorning => 'God morgon';
 
   @override
@@ -37,6 +44,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get favoritePlaylists => 'Favorite Playlists';
+
+  @override
+  String get sectionAlbums => 'Albums';
+
+  @override
+  String get sectionEPs => 'EPs';
+
+  @override
+  String get sectionSingles => 'Singles';
 
   @override
   String get madeForYou => 'Skapat För Dig';
@@ -1473,6 +1489,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sectionVolumeNormalization => 'VOLYM NORMALISERING (REPLAYGAIN)';
+
+  @override
+  String get sectionFadeInOut => 'FADE IN/OUT';
+
+  @override
+  String get fadeInOutEnable => 'Enable Fade In/Out';
+
+  @override
+  String get fadeInOutSubtitle => 'Smoothly fade audio when playing or pausing';
+
+  @override
+  String fadeDuration(int duration) {
+    return 'Fade Duration: ${duration}ms';
+  }
 
   @override
   String get replayGainModeOff => 'Av';

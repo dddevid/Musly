@@ -302,16 +302,39 @@ jobs:
       
       - name: Create DMG
         run: |
-          brew install create-dmg
-          create-dmg \
-            --volname "Musly" \
-            --window-pos 200 120 \
-            --window-size 800 400 \
-            --icon-size 100 \
-            --app-drop-link 600 185 \
-            --icon "musly.app" 200 185 \
-            "musly-macos.dmg" \
-            "build/macos/Build/Products/Release/musly.app"
+          set -e
+          APP_PATH="build/macos/Build/Products/Release/musly.app"
+          DMG_NAME="musly-macos"
+
+          echo "Verifying app exists at $APP_PATH..."
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Error: App not found at $APP_PATH"
+            ls -la build/macos/Build/Products/Release/
+            exit 1
+          fi
+
+          echo "Creating temporary directory for DMG contents..."
+          TEMP_DIR=$(mktemp -d)
+          cp -r "$APP_PATH" "$TEMP_DIR/"
+          ln -s /Applications "$TEMP_DIR/Applications"
+
+          echo "Creating DMG with hdiutil..."
+          hdiutil create -srcfolder "$TEMP_DIR" -volname "Musly" -fs HFS+ -format UDRW -size 200M "${DMG_NAME}_temp.dmg"
+
+          echo "Converting to compressed DMG..."
+          hdiutil convert "${DMG_NAME}_temp.dmg" -format UDZO -o "${DMG_NAME}.dmg"
+
+          echo "Cleaning up..."
+          rm -rf "$TEMP_DIR" "${DMG_NAME}_temp.dmg"
+
+          echo "Verifying DMG was created..."
+          if [ ! -f "${DMG_NAME}.dmg" ]; then
+            echo "Error: DMG was not created!"
+            exit 1
+          fi
+
+          ls -lh "${DMG_NAME}.dmg"
+          echo "DMG created successfully!"
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4

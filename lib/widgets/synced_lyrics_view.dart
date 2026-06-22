@@ -176,8 +176,10 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     );
     _bgAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 30),
-    )..repeat(reverse: true);
+      duration: const Duration(seconds: 60), // Slower animation
+    );
+    // Only start animation when playing and visible
+    _startBackgroundAnimation();
 
     _song = widget.song;
     _loadLyrics();
@@ -229,14 +231,9 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
   }
 
   Future<void> _maybeSetHighRefreshRate() async {
-    try {
-      if (!Platform.isAndroid) return;
-      final battery = Battery();
-      final level = await battery.batteryLevel;
-      if (level > 15) await FlutterDisplayMode.setHighRefreshRate();
-    } catch (e) {
-      debugPrint('Display mode change failed: $e');
-    }
+    // Disabled for lyrics view to save battery
+    // High refresh rate causes significant battery drain with scrolling lyrics
+    return;
   }
 
   Future<void> _setWindowFullscreen(bool enable) async {
@@ -264,16 +261,39 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     Duration lastUpdate = Duration.zero;
     _positionSubscription = playerProvider.positionStream.listen((position) {
+      // Throttle updates to 30fps max to reduce battery drain
       final diff = (position - lastUpdate).abs();
       final wentBackwards = position < lastUpdate;
-      if (diff.inMilliseconds >= 16 || wentBackwards) {
+      if (diff.inMilliseconds >= 33 || wentBackwards) {
+        // ~30fps instead of 60fps
         lastUpdate = position;
         _lyricsController.setPosition(position);
       }
-      if (playerProvider.isPlaying != _isPlaying) {
-        _isPlaying = playerProvider.isPlaying;
+      // Handle play/pause state changes
+      final isCurrentlyPlaying = playerProvider.isPlaying;
+      if (isCurrentlyPlaying != _isPlaying) {
+        _isPlaying = isCurrentlyPlaying;
+        // Start/stop background animation based on play state
+        if (_isPlaying) {
+          _startBackgroundAnimation();
+        } else {
+          _stopBackgroundAnimation();
+        }
       }
     });
+  }
+
+  void _startBackgroundAnimation() {
+    if (_bgAnimationController.isAnimating) return;
+    try {
+      _bgAnimationController.repeat(reverse: true);
+    } catch (_) {}
+  }
+
+  void _stopBackgroundAnimation() {
+    try {
+      _bgAnimationController.stop();
+    } catch (_) {}
   }
 
   Future<void> _loadLyrics() async {

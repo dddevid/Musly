@@ -7,6 +7,16 @@
     "description": "Application name"
   },
 
+  "emulatorDetected": "Emulator Detected",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+
+  "emulatorNotAllowed": "This app cannot run on an emulator.\\nPlease use a physical device.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
+
   "goodMorning": "Good morning",
   "@goodMorning": {
     "description": "Morning greeting"
@@ -50,6 +60,21 @@
   "favoritePlaylists": "Favorite Playlists",
   "@favoritePlaylists": {
     "description": "Favorite playlists section title on home screen"
+  },
+
+  "sectionAlbums": "Albums",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+
+  "sectionEPs": "EPs",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+
+  "sectionSingles": "Singles",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
   },
 
   "madeForYou": "Made For You",
@@ -1607,6 +1632,21 @@
 
   "sectionStreamingQuality": "STREAMING QUALITY",
   "@sectionStreamingQuality": { "description": "Playback settings section header for transcoding / streaming quality" },
+
+  "sectionFadeInOut": "FADE IN/OUT",
+  "@sectionFadeInOut": { "description": "Playback settings section header for fade in/out audio" },
+
+  "fadeInOutEnable": "Enable Fade In/Out",
+  "@fadeInOutEnable": { "description": "Toggle label to enable fade in/out audio effect" },
+
+  "fadeInOutSubtitle": "Smoothly fade audio when playing or pausing",
+  "@fadeInOutSubtitle": { "description": "Subtitle explaining fade in/out functionality" },
+
+  "fadeDuration": "Fade Duration: {duration}ms",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": { "duration": { "type": "int" } }
+  },
 
   "replayGainMode": "Mode",
   "@replayGainMode": { "description": "Label for the ReplayGain mode selector" },

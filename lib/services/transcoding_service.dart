@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TranscodeBitrate {
-  static const int original = 0; 
+  static const int original = 0;
   static const int kbps64 = 64;
   static const int kbps128 = 128;
   static const int kbps192 = 192;
@@ -27,7 +27,7 @@ class TranscodeBitrate {
 }
 
 class TranscodeFormat {
-  static const String original = 'raw'; 
+  static const String original = 'raw';
   static const String mp3 = 'mp3';
   static const String opus = 'opus';
   static const String aac = 'aac';
@@ -71,6 +71,11 @@ class TranscodingService extends ChangeNotifier {
 
   int get wifiBitrate => _wifiBitrate;
   int get mobileBitrate => _mobileBitrate;
+  int get currentBitRate => _smartEnabled
+      ? (_currentConnectionType == ConnectionType.wifi
+          ? _wifiBitrate
+          : _mobileBitrate)
+      : _wifiBitrate;
   String get format => _format;
   bool get enabled => _enabled;
   bool get smartEnabled => _smartEnabled;
@@ -99,18 +104,15 @@ class TranscodingService extends ChangeNotifier {
   }
 
   Future<void> _initConnectivityWatcher() async {
-    
     final result = await Connectivity().checkConnectivity();
     _updateConnectionType(result);
 
     _connectivitySub?.cancel();
-    _connectivitySub = Connectivity()
-        .onConnectivityChanged
-        .listen(_updateConnectionType);
+    _connectivitySub =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionType);
   }
 
   void _updateConnectionType(List<ConnectivityResult> results) {
-    
     final newType = results.contains(ConnectivityResult.wifi)
         ? ConnectionType.wifi
         : ConnectionType.mobile;

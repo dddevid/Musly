@@ -20,5 +20,8 @@ class MainActivity : FlutterFragmentActivity() {
 
         // Register pitch plugin for ExoPlayer pitch control
         PitchPlugin.registerWith(flutterEngine)
+
+        // Register Dolby Atmos plugin for device-capability detection
+        DolbyAtmosPlugin.registerWith(flutterEngine, this)
     }
 }

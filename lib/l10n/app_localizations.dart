@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_ar.dart';
+import 'app_localizations_az.dart';
 import 'app_localizations_bn.dart';
 import 'app_localizations_da.dart';
 import 'app_localizations_de.dart';
@@ -119,6 +120,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
+    Locale('az'),
     Locale('bn'),
     Locale('da'),
     Locale('de'),
@@ -151,6 +153,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Musly'**
   String get appName;
+
+  /// Title shown when the app detects it's running on an emulator
+  ///
+  /// In en, this message translates to:
+  /// **'Emulator Detected'**
+  String get emulatorDetected;
+
+  /// Message explaining that the app requires a physical device
+  ///
+  /// In en, this message translates to:
+  /// **'This app cannot run on an emulator.\\nPlease use a physical device.'**
+  String get emulatorNotAllowed;
 
   /// Morning greeting
   ///
@@ -205,6 +219,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Favorite Playlists'**
   String get favoritePlaylists;
+
+  /// Section header for full albums in artist screen
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get sectionAlbums;
+
+  /// Section header for EPs (extended plays) in artist screen
+  ///
+  /// In en, this message translates to:
+  /// **'EPs'**
+  String get sectionEPs;
+
+  /// Section header for singles in artist screen
+  ///
+  /// In en, this message translates to:
+  /// **'Singles'**
+  String get sectionSingles;
 
   /// Made for you section title
   ///
@@ -2828,6 +2860,30 @@ abstract class AppLocalizations {
   /// **'VOLUME NORMALIZATION (REPLAYGAIN)'**
   String get sectionVolumeNormalization;
 
+  /// Playback settings section header for fade in/out audio
+  ///
+  /// In en, this message translates to:
+  /// **'FADE IN/OUT'**
+  String get sectionFadeInOut;
+
+  /// Toggle label to enable fade in/out audio effect
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Fade In/Out'**
+  String get fadeInOutEnable;
+
+  /// Subtitle explaining fade in/out functionality
+  ///
+  /// In en, this message translates to:
+  /// **'Smoothly fade audio when playing or pausing'**
+  String get fadeInOutSubtitle;
+
+  /// Slider label showing fade duration in milliseconds
+  ///
+  /// In en, this message translates to:
+  /// **'Fade Duration: {duration}ms'**
+  String fadeDuration(int duration);
+
   /// ReplayGain mode: disabled
   ///
   /// In en, this message translates to:
@@ -3453,6 +3509,7 @@ class _AppLocalizationsDelegate
   @override
   bool isSupported(Locale locale) => <String>[
         'ar',
+        'az',
         'bn',
         'da',
         'de',
@@ -3489,6 +3546,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'ar':
       return AppLocalizationsAr();
+    case 'az':
+      return AppLocalizationsAz();
     case 'bn':
       return AppLocalizationsBn();
     case 'da':
