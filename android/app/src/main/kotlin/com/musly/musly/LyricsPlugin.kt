@@ -65,48 +65,24 @@ class LyricsPlugin : MethodCallHandler, EventChannel.StreamHandler {
         result.success(mapOf("initialized" to true))
     }
     
-    private var pendingLyricsLine: String? = null
-    
     private fun updateLyrics(line: String?) {
         if (line == null || line == currentLyricsLine) return
-        
+
         currentLyricsLine = line
-        pendingLyricsLine = line
-        
-        // Update the media notification with the lyrics line as subtitle
-        val service = MusicService.getInstance()
-        if (service != null) {
-            service.updateLyrics(line)
-            pendingLyricsLine = null
-            Log.d(TAG, "Updated lyrics via MusicService: $line")
-        } else {
-            Log.d(TAG, "MusicService not ready, buffering lyrics: $line")
-            // Try again in 500ms
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                pendingLyricsLine?.let { pending ->
-                    MusicService.getInstance()?.updateLyrics(pending)
-                    if (MusicService.getInstance() != null) {
-                        Log.d(TAG, "Delayed lyrics update succeeded: $pending")
-                        pendingLyricsLine = null
-                    }
-                }
-            }, 500)
-        }
-        
+
         // Notify Flutter listeners if any
         eventSink?.success(mapOf(
             "event" to "lyricsUpdated",
             "currentLine" to line,
             "timestamp" to System.currentTimeMillis()
         ))
-        
+
         Log.d(TAG, "Updated lyrics: $line")
     }
-    
+
     private fun clearLyrics() {
         currentLyricsLine = null
         hasLyrics = false
-        MusicService.getInstance()?.clearLyrics()
         Log.d(TAG, "Cleared lyrics")
     }
     

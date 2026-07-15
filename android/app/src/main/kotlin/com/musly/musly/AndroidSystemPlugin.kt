@@ -115,28 +115,8 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 result.success(null)
             }
             "updatePlaybackState" -> {
-                val songId = call.argument<String>("songId")
-                val title = call.argument<String>("title") ?: ""
-                val artist = call.argument<String>("artist") ?: ""
-                val album = call.argument<String>("album") ?: ""
-                val artworkUrl = call.argument<String>("artworkUrl")
-                val duration = call.argument<Number>("duration")?.toLong() ?: 0L
-                val position = call.argument<Number>("position")?.toLong() ?: 0L
-                val playing = call.argument<Boolean>("playing") ?: false
-
-                // Ensure the service is running before updating state
-                val pushState = {
-                    MusicService.getInstance()?.updatePlaybackState(
-                        songId, title, artist, album, artworkUrl, duration, position, playing
-                    )
-                }
-                if (MusicService.getInstance() == null) {
-                    Log.d(TAG, "MusicService not running, requesting start via AndroidAutoPlugin")
-                    AndroidAutoPlugin.startMusicService()
-                    handler.postDelayed({ pushState() }, 200)
-                } else {
-                    pushState()
-                }
+                // Media session metadata/state is now handled by audio_service
+                // (MuslyAudioHandler); nothing to do on this channel anymore.
                 result.success(null)
             }
             "setNotificationColor" -> {
@@ -166,17 +146,6 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             }
             "getAndroidSdkVersion" -> {
                 result.success(Build.VERSION.SDK_INT)
-            }
-            "setRemotePlayback" -> {
-                val isRemote = call.argument<Boolean>("isRemote") ?: false
-                val volume = call.argument<Int>("volume") ?: 50
-                MusicService.getInstance()?.setRemoteVolume(isRemote, volume)
-                result.success(null)
-            }
-            "updateRemoteVolume" -> {
-                val volume = call.argument<Int>("volume") ?: 50
-                MusicService.getInstance()?.updateRemoteVolume(volume)
-                result.success(null)
             }
             "dispose" -> {
                 dispose()

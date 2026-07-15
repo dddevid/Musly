@@ -4,11 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../services/audio_handler.dart';
 import '../services/local_music_service.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
-  final AndroidAutoService _androidAutoService = AndroidAutoService();
+  final MuslyAudioHandler _audioHandler;
 
   bool _localOnlyMode = false;
   bool _serverOfflineMode = false;
@@ -40,33 +41,16 @@ class LibraryProvider extends ChangeNotifier {
   static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
 
-  LibraryProvider(this._subsonicService) {
-    // Register callback to push library data when Android Auto service requests it
-    _androidAutoService.onRequestLibraryData = _onRequestLibraryData;
+  LibraryProvider(this._subsonicService, this._audioHandler) {
+    // Serve the Android Auto browse tree: audio_service pulls these lists on
+    // demand, including from the headless engine when the car connects while
+    // the app UI has never been opened.
+    _audioHandler.onGetRecentSongs = _recentSongsForAuto;
+    _audioHandler.onGetLibraryAlbums = _albumsForAuto;
+    _audioHandler.onGetLibraryArtists = _artistsForAuto;
+    _audioHandler.onGetLibraryPlaylists = _playlistsForAuto;
   }
   SubsonicService get subsonicService => _subsonicService;
-
-  void _onRequestLibraryData() {
-    debugPrint('LibraryProvider: Android Auto requested library data');
-    if (_isInitialized) {
-      if (_serverOfflineMode) {
-        _pushOfflineLibraryToAndroidAuto();
-      } else {
-        _pushLibraryToAndroidAuto();
-      }
-    } else {
-      // If not initialized yet, try to initialize and then push
-      if (!_isLoading) {
-        initialize().then((_) {
-          if (_serverOfflineMode) {
-            _pushOfflineLibraryToAndroidAuto();
-          } else {
-            _pushLibraryToAndroidAuto();
-          }
-        });
-      }
-    }
-  }
 
   void setLocalMusicService(LocalMusicService service,
       {bool mergeWithServer = false}) {
@@ -236,19 +220,7 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
       }
 
-      if (_serverOfflineMode) {
-        await _pushOfflineLibraryToAndroidAuto();
-      } else {
-        _pushLibraryToAndroidAuto();
-      }
-
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (_serverOfflineMode) {
-          _pushOfflineLibraryToAndroidAuto();
-        } else {
-          _pushLibraryToAndroidAuto();
-        }
-      });
+      _audioHandler.notifyAutoChildrenChanged();
 
       if (!_serverOfflineMode) {
         try {
@@ -472,63 +444,122 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  void _pushLibraryToAndroidAuto() {
-    if (_artists.isNotEmpty) {
-      _androidAutoService.updateArtists(_artists);
+  /// Make sure the library is loaded before serving Android Auto browse
+  /// requests (the headless engine starts with an empty provider).
+  Future<void> _ensureInitializedForAuto() async {
+    if (_isInitialized) return;
+    if (!_isLoading) {
+      try {
+        await initialize();
+      } catch (e) {
+        debugPrint('LibraryProvider: initialize for Android Auto failed: $e');
+      }
+      return;
     }
-    if (_recentAlbums.isNotEmpty) {
-      _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
-    }
-    if (_playlists.isNotEmpty) {
-      _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
-    }
-    if (_randomSongs.isNotEmpty) {
-      _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
+    // Another initialize() is already in flight; wait for it (bounded).
+    for (var i = 0; i < 100 && _isLoading && !_isInitialized; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
     }
   }
 
-  Future<void> _pushOfflineLibraryToAndroidAuto() async {
+  Future<Set<String>> _downloadedSongIdsForAuto() async {
     final offlineService = OfflineService();
     await offlineService.initialize();
-    final downloadedIds = offlineService.getDownloadedSongIds().toSet();
+    return offlineService.getDownloadedSongIds().toSet();
+  }
 
-    if (downloadedIds.isEmpty) {
-      _pushLibraryToAndroidAuto();
-      return;
+  Future<List<Map<String, dynamic>>> _recentSongsForAuto() async {
+    await _ensureInitializedForAuto();
+    var songs = _randomSongs;
+    if (_serverOfflineMode) {
+      final downloadedIds = await _downloadedSongIdsForAuto();
+      final offlineSongs =
+          _cachedAllSongs.where((s) => downloadedIds.contains(s.id)).toList();
+      if (offlineSongs.isNotEmpty) songs = offlineSongs;
     }
-
-    final offlineSongs =
-        _cachedAllSongs.where((s) => downloadedIds.contains(s.id)).toList();
-    if (offlineSongs.isNotEmpty) {
-      _androidAutoService.updateRecentSongs(offlineSongs, getCoverArtUrl);
-    } else if (_randomSongs.isNotEmpty) {
-      _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
-    }
-
-    final albumIdsWithDownloads =
-        offlineSongs.map((s) => s.albumId).whereType<String>().toSet();
-    final offlineAlbums = _cachedAllAlbums
-        .where((a) => albumIdsWithDownloads.contains(a.id))
+    return songs
+        .take(50)
+        .map(
+          (song) => <String, dynamic>{
+            'id': song.id,
+            'title': song.title,
+            'artist': song.artist ?? '',
+            'album': song.album ?? '',
+            'artworkUrl': getCoverArtUrl(song.coverArt),
+            'duration': song.duration ?? 0,
+          },
+        )
         .toList();
-    if (offlineAlbums.isNotEmpty) {
-      _androidAutoService.updateAlbums(offlineAlbums, getCoverArtUrl);
-    } else if (_recentAlbums.isNotEmpty) {
-      _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
-    }
+  }
 
-    final artistIdsWithDownloads =
-        offlineSongs.map((s) => s.artistId).whereType<String>().toSet();
-    final offlineArtists =
-        _artists.where((a) => artistIdsWithDownloads.contains(a.id)).toList();
-    if (offlineArtists.isNotEmpty) {
-      _androidAutoService.updateArtists(offlineArtists);
-    } else if (_artists.isNotEmpty) {
-      _androidAutoService.updateArtists(_artists);
+  Future<List<Map<String, dynamic>>> _albumsForAuto() async {
+    await _ensureInitializedForAuto();
+    var albums = _recentAlbums;
+    if (_serverOfflineMode) {
+      final downloadedIds = await _downloadedSongIdsForAuto();
+      final albumIdsWithDownloads = _cachedAllSongs
+          .where((s) => downloadedIds.contains(s.id))
+          .map((s) => s.albumId)
+          .whereType<String>()
+          .toSet();
+      final offlineAlbums = _cachedAllAlbums
+          .where((a) => albumIdsWithDownloads.contains(a.id))
+          .toList();
+      if (offlineAlbums.isNotEmpty) albums = offlineAlbums;
     }
+    return albums
+        .take(100)
+        .map(
+          (album) => <String, dynamic>{
+            'id': album.id,
+            'name': album.name,
+            'artist': album.artist ?? '',
+            'artworkUrl': getCoverArtUrl(album.coverArt),
+          },
+        )
+        .toList();
+  }
 
-    if (_playlists.isNotEmpty) {
-      _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
+  Future<List<Map<String, dynamic>>> _artistsForAuto() async {
+    await _ensureInitializedForAuto();
+    var artists = _artists;
+    if (_serverOfflineMode) {
+      final downloadedIds = await _downloadedSongIdsForAuto();
+      final artistIdsWithDownloads = _cachedAllSongs
+          .where((s) => downloadedIds.contains(s.id))
+          .map((s) => s.artistId)
+          .whereType<String>()
+          .toSet();
+      final offlineArtists = _artists
+          .where((a) => artistIdsWithDownloads.contains(a.id))
+          .toList();
+      if (offlineArtists.isNotEmpty) artists = offlineArtists;
     }
+    return artists
+        .take(100)
+        .map(
+          (artist) => <String, dynamic>{
+            'id': artist.id,
+            'name': artist.name,
+            'albumCount': artist.albumCount,
+          },
+        )
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> _playlistsForAuto() async {
+    await _ensureInitializedForAuto();
+    return _playlists
+        .take(50)
+        .map(
+          (playlist) => <String, dynamic>{
+            'id': playlist.id,
+            'name': playlist.name,
+            'songCount': playlist.songCount,
+            'artworkUrl': getCoverArtUrl(playlist.coverArt),
+          },
+        )
+        .toList();
   }
 
   void _preloadCoverArt() {
@@ -566,14 +597,11 @@ class LibraryProvider extends ChangeNotifier {
     try {
       _artists = await _subsonicService.getArtists();
       notifyListeners();
-      _androidAutoService.updateArtists(_artists);
+      _audioHandler
+          .notifyAutoChildrenChanged([MuslyAudioHandler.mediaIdArtists]);
       _saveCachedData();
     } catch (e) {
       debugPrint('Error loading artists: $e');
-
-      if (_artists.isNotEmpty) {
-        _androidAutoService.updateArtists(_artists);
-      }
     }
   }
 
@@ -591,7 +619,8 @@ class LibraryProvider extends ChangeNotifier {
         _recentAlbums = fetched;
       }
       notifyListeners();
-      _androidAutoService.updateAlbums(_recentAlbums, getCoverArtUrl);
+      _audioHandler
+          .notifyAutoChildrenChanged([MuslyAudioHandler.mediaIdAlbums]);
     } catch (e) {
       debugPrint('Error loading recent albums: $e');
     }
@@ -662,16 +691,13 @@ class LibraryProvider extends ChangeNotifier {
       _cachedPlaylists = _playlists;
       _saveCachedData();
       notifyListeners();
-      _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
+      _audioHandler
+          .notifyAutoChildrenChanged([MuslyAudioHandler.mediaIdPlaylists]);
     } catch (e) {
       debugPrint('Error loading playlists: $e');
       if (_playlists.isEmpty && _cachedPlaylists.isNotEmpty) {
         _playlists = _cachedPlaylists;
         notifyListeners();
-      }
-
-      if (_playlists.isNotEmpty) {
-        _androidAutoService.updatePlaylists(_playlists, getCoverArtUrl);
       }
     }
   }
@@ -681,13 +707,10 @@ class LibraryProvider extends ChangeNotifier {
     try {
       _randomSongs = await _subsonicService.getRandomSongs(size: 50);
       notifyListeners();
-      _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
+      _audioHandler
+          .notifyAutoChildrenChanged([MuslyAudioHandler.mediaIdRecent]);
     } catch (e) {
       debugPrint('Error loading random songs: $e');
-
-      if (_randomSongs.isNotEmpty) {
-        _androidAutoService.updateRecentSongs(_randomSongs, getCoverArtUrl);
-      }
     }
   }
 

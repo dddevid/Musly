@@ -218,6 +218,24 @@ void main() async {
   // Create TranscodingService instance to share across providers
   final transcodingService = TranscodingService();
 
+  // Create these providers eagerly (not lazily via `create:`) so their
+  // Android Auto callbacks are registered on the audio handler as soon as the
+  // engine starts. This matters for the headless cold start: when Android
+  // Auto launches the app with no UI, no widget ever reads the providers, so
+  // lazy construction would leave the browse tree and search unwired.
+  final authProvider = AuthProvider(subsonicService, storageService);
+  final playerProvider = PlayerProvider(
+    subsonicService,
+    storageService,
+    castService,
+    upnpService,
+    audioHandler,
+    jukeboxService,
+    transcodingService,
+  );
+  final libraryProvider = LibraryProvider(subsonicService, audioHandler);
+  playerProvider.setLibraryProvider(libraryProvider);
+
   final Widget appWithProviders = MultiProvider(
     providers: [
       Provider<StorageService>.value(value: storageService),
@@ -229,9 +247,7 @@ void main() async {
         value: transcodingService,
       ),
       ChangeNotifierProvider<LocalMusicService>.value(value: localMusicService),
-      ChangeNotifierProvider(
-        create: (_) => AuthProvider(subsonicService, storageService),
-      ),
+      ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
       ChangeNotifierProvider<CastService>.value(value: castService),
       ChangeNotifierProvider<LocaleService>.value(value: localeService),
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
@@ -240,18 +256,8 @@ void main() async {
       ),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
-      ChangeNotifierProvider(
-        create: (_) => PlayerProvider(
-          subsonicService,
-          storageService,
-          castService,
-          upnpService,
-          audioHandler,
-          jukeboxService,
-          transcodingService,
-        ),
-      ),
-      ChangeNotifierProvider(create: (_) => LibraryProvider(subsonicService)),
+      ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
+      ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],
     child: const MuslyApp(),
   );

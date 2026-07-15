@@ -81,24 +81,21 @@
             </intent-filter>
         </activity>
         
-        <!-- Media Browser Service for Android Auto -->
+        <!-- audio_service: media browser service used by Android Auto and
+             the media notification. Hosts a headless Flutter engine when the
+             car connects while the app UI is closed. -->
         <service
-            android:name=".MusicService"
+            android:name="com.ryanheise.audioservice.AudioService"
             android:exported="true"
-            android:enabled="true"
-            android:stopWithTask="false"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService"/>
             </intent-filter>
-            <meta-data
-                android:name="android.media.browse.SEARCH_SUPPORTED"
-                android:value="true"/>
         </service>
-        
-        <!-- Media Button Receiver -->
+
+        <!-- audio_service media button receiver -->
         <receiver
-            android:name="androidx.media.session.MediaButtonReceiver"
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>

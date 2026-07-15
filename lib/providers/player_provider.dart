@@ -13,7 +13,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
-import '../services/android_auto_service.dart';
 import '../services/android_system_service.dart';
 import '../services/windows_system_service.dart';
 import '../services/bluetooth_avrcp_service.dart';
@@ -41,7 +40,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   // Convenience getter — use this everywhere just_audio is accessed directly.
   AudioPlayer get _audioPlayer => _audioHandler.player;
   final OfflineService _offlineService = OfflineService();
-  final AndroidAutoService _androidAutoService = AndroidAutoService();
   final AndroidSystemService _androidSystemService = AndroidSystemService();
   final WindowsSystemService _windowsService = WindowsSystemService();
   final BluetoothAvrcpService _bluetoothService = BluetoothAvrcpService();
@@ -461,34 +459,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _initializeAndroidAuto() {
-    _androidAutoService.initialize();
-
-    _androidAutoService.onPlay = play;
-    _androidAutoService.onPause = pause;
-    _androidAutoService.onStop = stop;
-    _androidAutoService.onSkipNext = skipNext;
-    _androidAutoService.onSkipPrevious = skipPrevious;
-    _androidAutoService.onSeekTo = seek;
-    _androidAutoService.onPlayFromMediaId = _playFromMediaId;
-    _androidAutoService.onSetVolume = _onRemoteVolumeChange;
-
-    _androidAutoService.onGetAlbumSongs = _getAlbumSongsForAndroidAuto;
-    _androidAutoService.onGetArtistAlbums = _getArtistAlbumsForAndroidAuto;
-    _androidAutoService.onGetPlaylistSongs = _getPlaylistSongsForAndroidAuto;
-    _androidAutoService.onSearch = _searchForAndroidAuto;
-    _androidAutoService.onPlayFromSearch = _playFromSearchForAndroidAuto;
-    _androidAutoService.onRequestLibraryData = _onRequestLibraryData;
-  }
-
-  void _onRequestLibraryData() {
-    debugPrint(
-        'PlayerProvider: Android Auto requested library data, delegating to LibraryProvider');
-    // The LibraryProvider handles this in its constructor, but we add this
-    // as a fallback to ensure the request is handled
-    if (_libraryProvider != null) {
-      // Trigger a re-push of library data via the LibraryProvider
-      // This is handled by the callback registered in LibraryProvider's constructor
-    }
+    // Song-level browse data, search and playback for Android Auto are
+    // served through the audio_service handler (see MuslyAudioHandler).
+    _audioHandler.onGetAlbumSongs = _getAlbumSongsForAndroidAuto;
+    _audioHandler.onGetArtistAlbums = _getArtistAlbumsForAndroidAuto;
+    _audioHandler.onGetPlaylistSongs = _getPlaylistSongsForAndroidAuto;
+    _audioHandler.onSearch = _searchForAndroidAuto;
+    _audioHandler.onPlayFromMediaId = _playFromMediaId;
+    _audioHandler.onPlayFromSearch = _playFromSearchForAndroidAuto;
+    _audioHandler.onSetRemoteVolume = _onRemoteVolumeChange;
   }
 
   Future<List<Map<String, String>>> _getAlbumSongsForAndroidAuto(
@@ -864,19 +843,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
 
-    _androidAutoService.updatePlaybackState(
-      songId: _currentSong!.id,
-      title: _currentSong!.title,
-      artist: _currentSong!.artist ?? '',
-      album: _currentSong!.album ?? '',
-      artworkUrl: artworkUrl,
-      duration: effectiveDuration,
-      position: _position,
-      isPlaying: _isPlaying,
-    );
-
-    // Update the audio_service handler so lock screen / Control Center / iOS
-    // Now Playing info stays accurate regardless of the UI lifecycle.
+    // Update the audio_service handler so lock screen / Control Center /
+    // Android Auto Now Playing info stays accurate regardless of the UI
+    // lifecycle.
     _audioHandler.updateNowPlaying(
       id: _currentSong!.id,
       title: _currentSong!.title,
@@ -885,6 +854,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       artworkUrl: artworkUrl,
       duration: effectiveDuration,
     );
+
+    // While rendering on a remote target the local just_audio player is
+    // paused, so push the real playback state to the media session manually.
+    if (_isRenderingRemotely || _jukeboxService.enabled) {
+      _audioHandler.updateRemotePlaybackState(
+        playing: _isPlaying,
+        position: _position,
+      );
+    }
 
     _updateDiscordRpc();
     _updateAllServices();
@@ -2379,7 +2357,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       final actual = await _upnpService.getVolume();
       if (actual >= 0) {
         _volume = actual / 100.0;
-        _androidSystemService.updateRemoteVolume(actual);
+        _audioHandler.updateRemoteVolume(actual);
         notifyListeners();
       }
     } catch (e) {
@@ -2674,9 +2652,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
 
     try {
-      _androidAutoService.dispose();
-    } catch (_) {}
-    try {
       _androidSystemService.dispose();
     } catch (_) {}
     try {
@@ -2777,7 +2752,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     if (_castService.isConnected) {
       _audioPlayer.pause();
-      _androidSystemService.setRemotePlayback(isRemote: true, volume: 50);
+      _audioHandler.setRemotePlayback(isRemote: true, volume: 50);
       if (_currentSong != null) {
         final song = _currentSong!;
         _currentSong = null;
@@ -2785,7 +2760,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     } else {
       _isRenderingRemotely = false;
-      _androidSystemService.setRemotePlayback(isRemote: false);
+      _audioHandler.setRemotePlayback(isRemote: false);
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
@@ -2808,7 +2783,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       final vol = _upnpService.volume;
 
       if (vol >= 0) _volume = vol / 100.0;
-      _androidSystemService.setRemotePlayback(
+      _audioHandler.setRemotePlayback(
         isRemote: true,
         volume: vol >= 0 ? vol : 50,
       );
@@ -2826,7 +2801,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _isRenderingRemotely = false;
       _isPlaying = false;
       // Preserve _position and _duration so the UI shows where we were.
-      _androidSystemService.setRemotePlayback(isRemote: false);
+      _audioHandler.setRemotePlayback(isRemote: false);
       notifyListeners();
       _updateAndroidAuto();
       return;
@@ -2876,7 +2851,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if ((_volume - normalized).abs() > 0.005) {
         _volume = normalized;
         changed = true;
-        _androidSystemService.updateRemoteVolume(vol);
+        _audioHandler.updateRemoteVolume(vol);
       }
     }
 
