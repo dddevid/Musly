@@ -473,9 +473,8 @@ class LibraryProvider extends ChangeNotifier {
     var songs = _randomSongs;
     if (_serverOfflineMode) {
       final downloadedIds = await _downloadedSongIdsForAuto();
-      final offlineSongs =
+      songs =
           _cachedAllSongs.where((s) => downloadedIds.contains(s.id)).toList();
-      if (offlineSongs.isNotEmpty) songs = offlineSongs;
     }
     return songs
         .take(50)
@@ -502,10 +501,9 @@ class LibraryProvider extends ChangeNotifier {
           .map((s) => s.albumId)
           .whereType<String>()
           .toSet();
-      final offlineAlbums = _cachedAllAlbums
+      albums = _cachedAllAlbums
           .where((a) => albumIdsWithDownloads.contains(a.id))
           .toList();
-      if (offlineAlbums.isNotEmpty) albums = offlineAlbums;
     }
     return albums
         .take(100)
@@ -530,10 +528,9 @@ class LibraryProvider extends ChangeNotifier {
           .map((s) => s.artistId)
           .whereType<String>()
           .toSet();
-      final offlineArtists = _artists
+      artists = _artists
           .where((a) => artistIdsWithDownloads.contains(a.id))
           .toList();
-      if (offlineArtists.isNotEmpty) artists = offlineArtists;
     }
     return artists
         .take(100)
@@ -549,7 +546,16 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> _playlistsForAuto() async {
     await _ensureInitializedForAuto();
-    return _playlists
+    var playlists = _playlists;
+    if (_serverOfflineMode) {
+      final downloadedIds = await _downloadedSongIdsForAuto();
+      playlists = _playlists
+          .where(
+            (p) => p.songs?.any((s) => downloadedIds.contains(s.id)) ?? false,
+          )
+          .toList();
+    }
+    return playlists
         .take(50)
         .map(
           (playlist) => <String, dynamic>{

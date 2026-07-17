@@ -2752,7 +2752,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     if (_castService.isConnected) {
       _audioPlayer.pause();
-      _audioHandler.setRemotePlayback(isRemote: true, volume: 50);
+      _audioHandler.setRemotePlayback(
+        isRemote: true,
+        volume: (_castService.mediaState.volume * 100).round().clamp(0, 100),
+      );
       if (_currentSong != null) {
         final song = _currentSong!;
         _currentSong = null;

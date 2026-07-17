@@ -353,6 +353,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
       );
     } else {
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
+      // Replace the stale remote playback state immediately instead of
+      // waiting for the local player to emit its next playback event.
+      playbackState.add(_buildPlaybackState(_player.playbackEvent));
     }
   }
 
@@ -528,8 +531,11 @@ Future<MuslyAudioHandler> initAudioService() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.devid.musly.channel.audio',
         androidNotificationChannelName: 'Musly',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
+        // With androidStopForegroundOnPause=false the service never leaves
+        // the foreground, so androidNotificationOngoing would have no
+        // effect (audio_service asserts against combining the two).
+        androidNotificationOngoing: false,
+        androidStopForegroundOnPause: false,
         androidNotificationIcon: 'mipmap/ic_launcher',
         notificationColor: Color(0xFF1DB954),
         preloadArtwork: false,
