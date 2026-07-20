@@ -396,7 +396,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     };
     _androidSystemService.onAudioFocusGain = () {
       if (isRemotePlayback) return;
-      _smoothVolumeChange(_volume);
+      final pending = _pendingFocusAction;
+      if (pending != null) {
+        _pendingFocusAction = null;
+        pending().catchError(
+          (e) => debugPrint('[Player] Deferred play failed: $e'),
+        );
+      } else {
+        _smoothVolumeChange(_volume);
+      }
     };
     _androidSystemService.onBecomingNoisy = () {
       if (isRemotePlayback) return;
@@ -1268,56 +1276,68 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
   }
 
+  /// Configures the Android AudioAttributes used by the underlying
+  /// AudioTrack/ExoPlayer (music content type/usage). This does NOT drive
+  /// audio focus — `AndroidSystemService`/`AndroidSystemPlugin.kt` is the sole
+  /// owner of focus acquisition/release on Android (see [_ensureAudioFocus],
+  /// [onAudioFocusGain] wiring below, and `audio_handler.dart`, which disables
+  /// just_audio's own automatic session-activation/interruption handling on
+  /// Android to avoid two systems fighting over the same responsibility).
   Future<void> _configureAudioSession() async {
     if (kIsWeb || !Platform.isAndroid) return;
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
       debugPrint('[Player] AudioSession configured for music playback');
-
-      // Listen for audio interruptions (another app takes audio focus)
-      session.interruptionEventStream.listen((event) {
-        if (event.begin) {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _audioPlayer.setVolume(0.3);
-              break;
-            case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
-              if (isRemotePlayback) return;
-              pause();
-              break;
-          }
-        } else {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _audioPlayer.setVolume(_volume);
-              break;
-            case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
-              // Optionally resume after interruption ends
-              break;
-          }
-        }
-      });
-
-      // Listen for headphone disconnection
-      session.becomingNoisyEventStream.listen((_) {
-        if (isRemotePlayback) return;
-        pause();
-      });
     } catch (e) {
       debugPrint('[Player] AudioSession configuration failed: $e');
     }
   }
 
-  Future<void> _ensureAudioFocus() async {
-    if (kIsWeb || !Platform.isAndroid) return;
+  /// Pending play action awaiting a deferred (delayed-gain) audio focus
+  /// grant. Cleared on pause/stop or once the grant arrives and the action
+  /// runs.
+  Future<void> Function()? _pendingFocusAction;
+  bool _audioFocusDenied = false;
+  bool get audioFocusDenied => _audioFocusDenied;
+
+  /// Called when a real audio-focus request from the OS is denied outright
+  /// (not merely delayed). UI layers can surface this to the user.
+  VoidCallback? onAudioFocusDenied;
+
+  /// Requests real Android audio focus, then runs [onGranted] — immediately
+  /// if focus was granted, later (from [onAudioFocusGain]) if the grant was
+  /// delayed, or never if the request failed outright.
+  Future<void> _ensureAudioFocus(Future<void> Function() onGranted) async {
+    if (kIsWeb || !Platform.isAndroid) {
+      await onGranted();
+      return;
+    }
     try {
-      final granted = await _androidSystemService.requestAudioFocus();
-      debugPrint('[Player] Audio focus requested, granted=$granted');
+      final result = await _androidSystemService.requestAudioFocus();
+      debugPrint('[Player] Audio focus requested: $result');
+      switch (result) {
+        case AudioFocusResult.granted:
+          _audioFocusDenied = false;
+          _pendingFocusAction = null;
+          await onGranted();
+          break;
+        case AudioFocusResult.delayed:
+          _audioFocusDenied = false;
+          _pendingFocusAction = onGranted;
+          notifyListeners();
+          break;
+        case AudioFocusResult.failed:
+          _audioFocusDenied = true;
+          _pendingFocusAction = null;
+          notifyListeners();
+          onAudioFocusDenied?.call();
+          break;
+      }
     } catch (e) {
       debugPrint('[Player] Audio focus request failed: $e');
+      _audioFocusDenied = true;
+      notifyListeners();
     }
   }
 
@@ -1524,8 +1544,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           // YouTube: single StreamAudioSource, no gapless
           await _audioPlayer.setAudioSource(youtubeSource);
           await _applyReplayGain(song);
-          await _ensureAudioFocus();
-          await _audioPlayer.play();
+          await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_subsonicService.isYoutube) {
           // All songs are YouTube — can't build ConcatenatingAudioSource easily
           final String playUrl;
@@ -1541,8 +1560,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
           await _audioPlayer.setUrl(playUrl);
           await _applyReplayGain(song);
-          await _ensureAudioFocus();
-          await _audioPlayer.play();
+          await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_gaplessEnabled) {
           // Build ConcatenatingAudioSource for gapless playback
           try {
@@ -1562,8 +1580,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             }
           }
           await _applyReplayGain(song);
-          await _ensureAudioFocus();
-          await _audioPlayer.play();
+          await _ensureAudioFocus(() => _audioPlayer.play());
         } else {
           // Gapless disabled — single-song mode
           final String playUrl;
@@ -1606,8 +1623,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             );
           }
           await _applyReplayGain(song);
-          await _ensureAudioFocus();
-          await _audioPlayer.play();
+          await _ensureAudioFocus(() => _audioPlayer.play());
         }
       }
 
@@ -1683,8 +1699,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _audioPlayer.setVolume(_volume);
 
-      await _ensureAudioFocus();
-      await _audioPlayer.play();
+      await _ensureAudioFocus(() => _audioPlayer.play());
 
       _updateSystemServicesForRadio(station);
     } catch (e) {
@@ -1827,9 +1842,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
               _audioPlayer.duration == Duration.zero)) {
         await _prepareCurrentSong();
       }
-      await _ensureAudioFocus();
-      await _audioPlayer.play();
-      await _fadeIn();
+      await _ensureAudioFocus(() async {
+        await _audioPlayer.play();
+        await _fadeIn();
+      });
     }
   }
 
@@ -1855,9 +1871,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _fadeOut(onComplete: () async {
         await _audioPlayer.pause();
       });
+      _pendingFocusAction = null;
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
+      // Release focus so other apps (e.g. Spotify) can reliably reclaim it.
+      if (!kIsWeb && Platform.isAndroid) {
+        await _androidSystemService.abandonAudioFocus();
+      }
     }
   }
 
@@ -1869,6 +1890,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _upnpService.stop();
     } else {
       await _audioPlayer.stop();
+      _pendingFocusAction = null;
+      if (!kIsWeb && Platform.isAndroid) {
+        await _androidSystemService.abandonAudioFocus();
+      }
     }
 
     _isPlaying = false;

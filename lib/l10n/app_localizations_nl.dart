@@ -1845,4 +1845,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Couldn\'t start playback — another app has audio focus';
 }

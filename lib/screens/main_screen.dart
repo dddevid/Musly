@@ -76,6 +76,15 @@ class _MainScreenState extends State<MainScreen> {
       playerProvider.setLibraryProvider(libraryProvider);
       playerProvider.setRecommendationService(recommendationService);
 
+      playerProvider.onAudioFocusDenied = () {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.audioFocusDenied),
+          ),
+        );
+      };
+
       if (authProvider.isLocalOnlyMode) {
         final localMusicService = Provider.of<LocalMusicService>(
           context,

@@ -168,26 +168,49 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         Log.d(TAG, "AndroidSystemPlugin initialized")
     }
     
-    private fun requestAudioFocus(): Boolean {
-        if (!handleAudioFocus) return true
-        
-        val am = audioManager ?: return false
-        
+    /**
+     * Returns "granted", "delayed", or "failed". "delayed" means the OS will
+     * asynchronously deliver AUDIOFOCUS_GAIN via [audioFocusListener] once the
+     * current focus holder yields (common on Android Auto / automotive audio
+     * routing, which is why [setAcceptsDelayedFocusGain] is set below).
+     */
+    private fun requestAudioFocus(): String {
+        if (!handleAudioFocus) {
+            hasAudioFocus = true
+            return "granted"
+        }
+
+        val am = audioManager ?: return "failed"
+
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
-            
+
             audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(audioAttributes)
                 .setAcceptsDelayedFocusGain(true)
                 .setOnAudioFocusChangeListener(audioFocusListener, handler)
                 .build()
-            
+
             val result = am.requestAudioFocus(audioFocusRequest!!)
-            hasAudioFocus = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-            hasAudioFocus
+            when (result) {
+                AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> {
+                    hasAudioFocus = true
+                    "granted"
+                }
+                AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> {
+                    // Keep audioFocusRequest/listener registered — the deferred
+                    // AUDIOFOCUS_GAIN will arrive later through audioFocusListener.
+                    hasAudioFocus = false
+                    "delayed"
+                }
+                else -> {
+                    hasAudioFocus = false
+                    "failed"
+                }
+            }
         } else {
             @Suppress("DEPRECATION")
             val result = am.requestAudioFocus(
@@ -196,7 +219,7 @@ object AndroidSystemPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 AudioManager.AUDIOFOCUS_GAIN
             )
             hasAudioFocus = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-            hasAudioFocus
+            if (hasAudioFocus) "granted" else "failed"
         }
     }
     

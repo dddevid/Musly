@@ -3,6 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/song.dart';
 
+/// Result of a native audio-focus request.
+///
+/// [delayed] means the OS will asynchronously deliver focus later (fired as
+/// an `onAudioFocusGain` event) once the current holder yields — common when
+/// audio routing needs to be renegotiated, e.g. over Android Auto.
+enum AudioFocusResult { granted, delayed, failed }
+
 class AndroidSystemService {
   static final AndroidSystemService _instance =
       AndroidSystemService._internal();
@@ -38,8 +45,11 @@ class AndroidSystemService {
   VoidCallback? onBecomingNoisy;
 
   bool _showOnLockScreen = true;
-  // Disable custom audio focus handling — audio_session plugin manages it
-  bool _handleAudioFocus = false;
+  // On Android this plugin is the single source of truth for audio focus
+  // (audio_session's own focus path is bypassed — see audio_handler.dart).
+  // On iOS this flag is accepted but ignored by iOSSystemPlugin, which
+  // always activates/deactivates AVAudioSession unconditionally.
+  bool _handleAudioFocus = true;
   bool _handleMediaButtons = true;
   bool _showInQuickSettings = true;
   bool _colorizeNotification = true;
@@ -230,20 +240,37 @@ class AndroidSystemService {
     }
   }
 
-  Future<bool> requestAudioFocus() async {
+  /// Requests real Android audio focus (iOS: activates the audio session).
+  /// Returns [AudioFocusResult.delayed] when the OS will grant focus later —
+  /// callers must wait for [onAudioFocusGain] before actually starting audio.
+  /// On error, fails closed to [AudioFocusResult.failed] rather than assuming
+  /// success.
+  Future<AudioFocusResult> requestAudioFocus() async {
     if (defaultTargetPlatform != TargetPlatform.android &&
         defaultTargetPlatform != TargetPlatform.iOS) {
-      return true;
+      return AudioFocusResult.granted;
     }
 
     try {
-      final result = await _methodChannel.invokeMethod<bool>(
-        'requestAudioFocus',
-      );
-      return result ?? false;
+      final result = await _methodChannel.invokeMethod('requestAudioFocus');
+      if (result is String) {
+        switch (result) {
+          case 'granted':
+            return AudioFocusResult.granted;
+          case 'delayed':
+            return AudioFocusResult.delayed;
+          default:
+            return AudioFocusResult.failed;
+        }
+      }
+      // iOSSystemPlugin returns a raw bool.
+      if (result is bool) {
+        return result ? AudioFocusResult.granted : AudioFocusResult.failed;
+      }
+      return AudioFocusResult.failed;
     } catch (e) {
       debugPrint('Error requesting audio focus: $e');
-      return false;
+      return AudioFocusResult.failed;
     }
   }
 

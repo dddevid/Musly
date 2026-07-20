@@ -27,7 +27,19 @@ import 'package:rxdart/rxdart.dart';
 /// song changes to push metadata up to the lock screen / Control Center /
 /// Android Auto.
 class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer _player = AudioPlayer();
+  // On Android, audio focus is owned entirely by AndroidSystemPlugin.kt (see
+  // PlayerProvider._ensureAudioFocus). just_audio's own automatic
+  // audio_session activation/interruption handling is disabled here so it
+  // can't silently gate play() on a failed focus request, or fire a second,
+  // conflicting pause() on interruption/headphone-unplug. iOS/desktop/web
+  // keep the defaults (audio_session drives Control Center/lock-screen
+  // interruptions there).
+  static bool get _ownsFocusNatively => !kIsWeb && Platform.isAndroid;
+
+  final AudioPlayer _player = AudioPlayer(
+    handleAudioSessionActivation: !_ownsFocusNatively,
+    handleInterruptions: !_ownsFocusNatively,
+  );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
 
   // ---------------------------------------------------------------------------

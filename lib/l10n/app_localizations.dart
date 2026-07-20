@@ -3495,6 +3495,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'by {author}'**
   String themeAuthor(String author);
+
+  /// Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start playback — another app has audio focus'**
+  String get audioFocusDenied;
 }
 
 class _AppLocalizationsDelegate
