@@ -1301,21 +1301,43 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool _audioFocusDenied = false;
   bool get audioFocusDenied => _audioFocusDenied;
 
-  /// Called when a real audio-focus request from the OS is denied outright
-  /// (not merely delayed). UI layers can surface this to the user.
+  /// Called when a real audio-focus request from the OS is denied outright,
+  /// or a delayed grant never resolves within [_delayedFocusTimeout]. UI
+  /// layers can surface this to the user.
   VoidCallback? onAudioFocusDenied;
+
+  // Invalidates an in-flight/pending focus request (from _ensureAudioFocus's
+  // await, or a delayed grant's timeout) when a newer request/pause/stop
+  // supersedes it — avoids racily resurrecting playback the user backed out
+  // of, or double-reporting the same denial.
+  int _focusRequestToken = 0;
+
+  // Some car head units (e.g. when the built-in FM tuner holds the media
+  // audio zone) can leave a delayed focus grant unresolved indefinitely.
+  // Without a timeout, Musly gets stuck silently — Play does nothing and
+  // the only way out is force-stopping the app. See onAudioFocusGain below
+  // for the matching resolution path when the grant does arrive in time.
+  static const _delayedFocusTimeout = Duration(seconds: 5);
+
+  void _cancelPendingAudioFocusAction() {
+    _pendingFocusAction = null;
+    _focusRequestToken++;
+  }
 
   /// Requests real Android audio focus, then runs [onGranted] — immediately
   /// if focus was granted, later (from [onAudioFocusGain]) if the grant was
-  /// delayed, or never if the request failed outright.
+  /// delayed, or never if the request failed outright or the delayed grant
+  /// times out.
   Future<void> _ensureAudioFocus(Future<void> Function() onGranted) async {
     if (kIsWeb || !Platform.isAndroid) {
       await onGranted();
       return;
     }
+    final token = ++_focusRequestToken;
     try {
       final result = await _androidSystemService.requestAudioFocus();
       debugPrint('[Player] Audio focus requested: $result');
+      if (token != _focusRequestToken) return; // superseded meanwhile
       switch (result) {
         case AudioFocusResult.granted:
           _audioFocusDenied = false;
@@ -1326,6 +1348,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           _audioFocusDenied = false;
           _pendingFocusAction = onGranted;
           notifyListeners();
+          Future.delayed(_delayedFocusTimeout, () {
+            if (token != _focusRequestToken) return; // resolved/superseded
+            if (_pendingFocusAction == null) return;
+            _pendingFocusAction = null;
+            _audioFocusDenied = true;
+            notifyListeners();
+            onAudioFocusDenied?.call();
+            debugPrint('[Player] Delayed audio focus grant timed out');
+          });
           break;
         case AudioFocusResult.failed:
           _audioFocusDenied = true;
@@ -1871,14 +1902,18 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _fadeOut(onComplete: () async {
         await _audioPlayer.pause();
       });
-      _pendingFocusAction = null;
+      _cancelPendingAudioFocusAction();
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
-      // Release focus so other apps (e.g. Spotify) can reliably reclaim it.
-      if (!kIsWeb && Platform.isAndroid) {
-        await _androidSystemService.abandonAudioFocus();
-      }
+      // Intentionally do NOT abandon audio focus here: pause() is also
+      // invoked in reaction to a transient OS focus loss (e.g. an incoming
+      // call, via onAudioFocusLossTransient). Abandoning would unregister
+      // our AudioFocusRequest and its listener, so the OS's AUDIOFOCUS_GAIN
+      // callback telling us the call ended — delivered to that SAME
+      // request — would never arrive. Keeping focus while paused matches
+      // standard Android media-app behavior; stop() below is the actual
+      // "done with playback" signal that releases focus for other apps.
     }
   }
 
@@ -1890,7 +1925,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _upnpService.stop();
     } else {
       await _audioPlayer.stop();
-      _pendingFocusAction = null;
+      _cancelPendingAudioFocusAction();
       if (!kIsWeb && Platform.isAndroid) {
         await _androidSystemService.abandonAudioFocus();
       }
