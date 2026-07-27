@@ -46,5 +46,6 @@
   "wordSyncProcessing": "Syncing words…",
   "wordSyncClearCache": "Clear Word Sync Cache",
   "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform"
+  "wordSyncNotSupported": "Not supported on this platform",
+  "audioFocusDenied": "প্লেব্যাক শুরু করা যায়নি — অন্য একটি অ্যাপ অডিও ফোকাস ব্যবহার করছে"
 }

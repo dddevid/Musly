@@ -1848,5 +1848,5 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'Không thể bắt đầu phát — một ứng dụng khác đang giữ quyền âm thanh';
 }

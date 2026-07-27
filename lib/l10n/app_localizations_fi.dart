@@ -1848,5 +1848,5 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'Toistoa ei voitu käynnistää — toisella sovelluksella on äänen tarkennus';
 }

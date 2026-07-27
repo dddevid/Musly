@@ -1334,41 +1334,44 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     final token = ++_focusRequestToken;
+    AudioFocusResult result;
     try {
-      final result = await _androidSystemService.requestAudioFocus();
+      result = await _androidSystemService.requestAudioFocus();
       debugPrint('[Player] Audio focus requested: $result');
-      if (token != _focusRequestToken) return; // superseded meanwhile
-      switch (result) {
-        case AudioFocusResult.granted:
-          _audioFocusDenied = false;
-          _pendingFocusAction = null;
-          await onGranted();
-          break;
-        case AudioFocusResult.delayed:
-          _audioFocusDenied = false;
-          _pendingFocusAction = onGranted;
-          notifyListeners();
-          Future.delayed(_delayedFocusTimeout, () {
-            if (token != _focusRequestToken) return; // resolved/superseded
-            if (_pendingFocusAction == null) return;
-            _pendingFocusAction = null;
-            _audioFocusDenied = true;
-            notifyListeners();
-            onAudioFocusDenied?.call();
-            debugPrint('[Player] Delayed audio focus grant timed out');
-          });
-          break;
-        case AudioFocusResult.failed:
-          _audioFocusDenied = true;
-          _pendingFocusAction = null;
-          notifyListeners();
-          onAudioFocusDenied?.call();
-          break;
-      }
     } catch (e) {
       debugPrint('[Player] Audio focus request failed: $e');
       _audioFocusDenied = true;
+      _pendingFocusAction = null;
       notifyListeners();
+      return;
+    }
+    if (token != _focusRequestToken) return; // superseded meanwhile
+    switch (result) {
+      case AudioFocusResult.granted:
+        _audioFocusDenied = false;
+        _pendingFocusAction = null;
+        await onGranted(); // outside the focus-request try/catch
+        break;
+      case AudioFocusResult.delayed:
+        _audioFocusDenied = false;
+        _pendingFocusAction = onGranted;
+        notifyListeners();
+        Future.delayed(_delayedFocusTimeout, () {
+          if (token != _focusRequestToken) return; // resolved/superseded
+          if (_pendingFocusAction == null) return;
+          _pendingFocusAction = null;
+          _audioFocusDenied = true;
+          notifyListeners();
+          onAudioFocusDenied?.call();
+          debugPrint('[Player] Delayed audio focus grant timed out');
+        });
+        break;
+      case AudioFocusResult.failed:
+        _audioFocusDenied = true;
+        _pendingFocusAction = null;
+        notifyListeners();
+        onAudioFocusDenied?.call();
+        break;
     }
   }
 

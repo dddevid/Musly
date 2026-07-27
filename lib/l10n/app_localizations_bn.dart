@@ -1848,5 +1848,5 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'প্লেব্যাক শুরু করা যায়নি — অন্য একটি অ্যাপ অডিও ফোকাস ব্যবহার করছে';
 }

@@ -1787,5 +1787,6 @@
   "supportWayShare": "Parla di Musly ai tuoi amici",
   "supportWayBugs": "Segnala bug o suggerisci funzionalità",
   "supportWayEnjoy": "Semplicemente goditi la musica! 🎵",
-  "supportMadeWithLove": "Fatto con 💙 in Italia"
+  "supportMadeWithLove": "Fatto con 💙 in Italia",
+  "audioFocusDenied": "Impossibile avviare la riproduzione — un'altra app ha il focus audio"
 }

@@ -1861,5 +1861,5 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'Не удалось начать воспроизведение — аудиофокус занят другим приложением';
 }

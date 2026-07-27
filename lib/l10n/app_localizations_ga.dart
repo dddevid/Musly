@@ -1848,5 +1848,5 @@ class AppLocalizationsGa extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'Níorbh fhéidir an athsheinm a thosú — tá fócas fuaime ag aip eile';
 }

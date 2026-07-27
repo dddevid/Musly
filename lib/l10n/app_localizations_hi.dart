@@ -1848,5 +1848,5 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'प्लेबैक शुरू नहीं हो सका — किसी अन्य ऐप के पास ऑडियो फ़ोकस है';
 }

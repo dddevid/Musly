@@ -1849,5 +1849,5 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Couldn\'t start playback — another app has audio focus';
+      'Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio';
 }
