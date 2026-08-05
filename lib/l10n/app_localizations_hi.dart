@@ -1845,4 +1845,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'प्लेबैक शुरू नहीं हो सका — किसी अन्य ऐप के पास ऑडियो फ़ोकस है';
 }

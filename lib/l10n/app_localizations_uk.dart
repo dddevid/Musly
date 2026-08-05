@@ -1845,4 +1845,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Не вдалося почати відтворення — аудіофокус зайнятий іншою програмою';
 }

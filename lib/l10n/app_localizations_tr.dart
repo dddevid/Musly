@@ -1845,4 +1845,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Oynatma başlatılamadı — ses odağı başka bir uygulamada';
 }

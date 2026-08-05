@@ -1772,5 +1772,6 @@
   "wordSyncProcessing": "Syncing words…",
   "wordSyncClearCache": "Clear Word Sync Cache",
   "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform"
+  "wordSyncNotSupported": "Not supported on this platform",
+  "audioFocusDenied": "Não foi possível iniciar a reprodução — outro aplicativo tem o foco de áudio"
 }

@@ -1845,4 +1845,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Toistoa ei voitu käynnistää — toisella sovelluksella on äänen tarkennus';
 }

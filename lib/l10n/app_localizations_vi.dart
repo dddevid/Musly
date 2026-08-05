@@ -1845,4 +1845,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Không thể bắt đầu phát — một ứng dụng khác đang giữ quyền âm thanh';
 }

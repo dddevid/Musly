@@ -1981,5 +1981,7 @@
   "themeAnimBadge": "ANIM",
   "@themeAnimBadge": { "description": "Badge shown on theme cards that have animations enabled" },
   "themeAuthor": "by {author}",
-  "@themeAuthor": { "description": "Author attribution shown on theme preview card", "placeholders": { "author": { "type": "String" } } }
+  "@themeAuthor": { "description": "Author attribution shown on theme preview card", "placeholders": { "author": { "type": "String" } } },
+  "audioFocusDenied": "Couldn't start playback — another app has audio focus",
+  "@audioFocusDenied": { "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)" }
 }

@@ -7,5 +7,6 @@
   "welcome": "مرحباً",
   "@welcome": {
     "description": "Welcome message"
-  }
+  },
+  "audioFocusDenied": "تعذر بدء التشغيل — تطبيق آخر يستخدم صوت الجهاز"
 }

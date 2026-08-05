@@ -2,7 +2,6 @@ export 'subsonic_service.dart';
 export 'jellyfin_service.dart';
 export 'youtube_service.dart';
 export 'storage_service.dart';
-export 'android_auto_service.dart';
 export 'android_system_service.dart';
 export 'windows_system_service.dart';
 export 'bluetooth_avrcp_service.dart';

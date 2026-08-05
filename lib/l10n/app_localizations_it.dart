@@ -1856,4 +1856,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Impossibile avviare la riproduzione — un\'altra app ha il focus audio';
 }

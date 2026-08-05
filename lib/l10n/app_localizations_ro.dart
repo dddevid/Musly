@@ -1846,4 +1846,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio';
 }

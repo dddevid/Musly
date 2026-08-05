@@ -1845,4 +1845,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'تعذر بدء التشغيل — تطبيق آخر يستخدم صوت الجهاز';
 }

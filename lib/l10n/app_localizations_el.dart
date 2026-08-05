@@ -1845,4 +1845,8 @@ class AppLocalizationsEl extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Δεν ήταν δυνατή η έναρξη της αναπαραγωγής — μια άλλη εφαρμογή έχει την εστίαση ήχου';
 }

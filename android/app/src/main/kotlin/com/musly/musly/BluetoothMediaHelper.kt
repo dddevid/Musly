@@ -255,10 +255,6 @@ class BluetoothMediaHelper(private val context: Context) {
         currentPosition = position
         isPlaying = playing
         
-        MusicService.getInstance()?.apply {
-            updatePlaybackState(songId, title, artist, album, artworkUrl, duration, position, playing)
-        }
-        
         artworkUrl?.let { url ->
             loadArtworkAsync(url)
         }

@@ -335,9 +335,6 @@ class AuthProvider extends ChangeNotifier {
       await offlineService.deleteAllDownloads();
     } catch (_) {}
     try {
-      await AndroidAutoService().dispose();
-    } catch (_) {}
-    try {
       await AndroidSystemService().dispose();
     } catch (_) {}
     try {

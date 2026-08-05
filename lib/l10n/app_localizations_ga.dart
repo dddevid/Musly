@@ -1845,4 +1845,8 @@ class AppLocalizationsGa extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Níorbh fhéidir an athsheinm a thosú — tá fócas fuaime ag aip eile';
 }

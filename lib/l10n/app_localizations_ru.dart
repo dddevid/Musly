@@ -1858,4 +1858,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'Не удалось начать воспроизведение — аудиофокус занят другим приложением';
 }

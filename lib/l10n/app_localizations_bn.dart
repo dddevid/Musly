@@ -1845,4 +1845,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String themeAuthor(String author) {
     return 'by $author';
   }
+
+  @override
+  String get audioFocusDenied =>
+      'প্লেব্যাক শুরু করা যায়নি — অন্য একটি অ্যাপ অডিও ফোকাস ব্যবহার করছে';
 }
