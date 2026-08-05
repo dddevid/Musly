@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/player_ui_settings_service.dart';
+import '../services/offline_service.dart';
 
 bool isLocalFilePath(String? s) {
   if (s == null || s.isEmpty) return false;
@@ -188,6 +189,18 @@ class AlbumArtwork extends StatelessWidget {
       );
     }
 
+    if (OfflineService().downloadedSongIds.value.isNotEmpty) {
+      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      if (offlinePath != null) {
+        return Image.file(
+          File(offlinePath),
+          key: ValueKey('offline_natural_$coverArt'),
+          fit: BoxFit.contain,
+          errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
+        );
+      }
+    }
+
     return Builder(
       builder: (context) {
         final imageUrl = _ImageUrlCache.getUrl(
@@ -227,6 +240,20 @@ class AlbumArtwork extends StatelessWidget {
         cacheHeight: cacheSize,
         errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
       );
+    }
+
+    if (OfflineService().downloadedSongIds.value.isNotEmpty) {
+      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      if (offlinePath != null) {
+        return Image.file(
+          File(offlinePath),
+          key: ValueKey('offline_$coverArt'),
+          fit: BoxFit.cover,
+          cacheWidth: cacheSize,
+          cacheHeight: cacheSize,
+          errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
+        );
+      }
     }
 
     return Builder(
