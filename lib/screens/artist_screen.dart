@@ -141,6 +141,41 @@ class _ArtistScreenState extends State<ArtistScreen> {
     }
   }
 
+  Future<void> _downloadArtistAlbums() async {
+    if (_albums.isEmpty) return;
+
+    final offlineService = OfflineService();
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final subsonicService = libraryProvider.subsonicService;
+
+    await offlineService.initialize();
+
+    final messenger = ScaffoldMessenger.of(context);
+    int queuedSongs = 0;
+
+    for (final album in _albums) {
+      final albumSongs = libraryProvider.isLocalOnlyMode
+          ? libraryProvider.cachedAllSongs
+              .where((s) => s.albumId == album.id)
+              .toList()
+          : await subsonicService.getAlbumSongs(album.id);
+
+      if (albumSongs.isNotEmpty) {
+        offlineService.queuePlaylistDownload(album.id, albumSongs, subsonicService);
+        queuedSongs += albumSongs.length;
+      }
+    }
+
+    if (mounted && queuedSongs > 0) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Queued $queuedSongs songs from ${_albums.length} albums for download…'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   void _playTopSongs({bool shuffle = false}) {
     if (_topSongs.isEmpty) return;
 
@@ -211,6 +246,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
                     ),
             ),
             actions: [
+              IconButton(
+                icon: const Icon(CupertinoIcons.cloud_download),
+                tooltip: 'Download All Albums', // Can use localized string if available
+                onPressed: _albums.isEmpty ? null : () => _downloadArtistAlbums(),
+              ),
               IconButton(
                 icon: const Icon(Icons.queue_music_rounded),
                 tooltip: AppLocalizations.of(context)!.addToQueue,
