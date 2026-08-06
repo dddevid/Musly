@@ -21,6 +21,7 @@ import 'library_search_delegate.dart';
 import 'artist_screen.dart';
 import 'radio_screen.dart';
 import 'all_songs_screen.dart';
+import 'downloads_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
 import '../widgets/album_artwork.dart' show isLocalFilePath;
@@ -205,6 +206,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     subtitle: AppLocalizations.of(context)!.internetRadio,
                     isGradient: false,
                     onTap: () => _navigate(context, const RadioScreen()),
+                  ),
+                  // Downloads folder
+                  _SpotifyLibraryTile(
+                    icon: CupertinoIcons.arrow_down_circle_fill,
+                    iconColor: const Color(0xFF00C7BE),
+                    title: 'Downloads',
+                    subtitle: 'Downloaded music',
+                    isGradient: false,
+                    onTap: () => _navigate(context, const DownloadsScreen()),
                   ),
                 ],
               ],

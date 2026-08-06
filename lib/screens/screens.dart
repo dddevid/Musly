@@ -16,3 +16,4 @@ export 'settings_screen.dart';
 export 'fantasy_screen.dart';
 export 'theme_manager_screen.dart';
 export 'theme_editor_screen.dart';
+export 'downloads_screen.dart';
