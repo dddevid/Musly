@@ -415,7 +415,11 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   }) {
     Uri? artUri;
     if (artworkUrl != null) {
-      artUri = Uri.tryParse(artworkUrl);
+      if (artworkUrl.startsWith('/') || (artworkUrl.length > 2 && artworkUrl[1] == ':')) {
+        artUri = Uri.file(artworkUrl);
+      } else {
+        artUri = Uri.tryParse(artworkUrl);
+      }
     }
     mediaItem.add(
       MediaItem(
