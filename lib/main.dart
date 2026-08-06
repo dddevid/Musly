@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:safe_device/safe_device.dart';
@@ -349,9 +350,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
           onDisconnect: () => authProvider.disconnect(),
         );
       case AuthState.authenticating:
-        return const Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(child: CircularProgressIndicator()),
+        return _AuthenticatingScreen(
+          hasOfflineContent: authProvider.hasOfflineContent,
+          onEnterOfflineMode: () => authProvider.enterOfflineMode(),
         );
       case AuthState.unauthenticated:
       case AuthState.error:
@@ -526,6 +527,79 @@ class _ServerUnreachableScreen extends StatelessWidget {
               const SizedBox(height: 8),
             ],
           ),
+    );
+  }
+}
+
+class _AuthenticatingScreen extends StatefulWidget {
+  final bool hasOfflineContent;
+  final VoidCallback onEnterOfflineMode;
+
+  const _AuthenticatingScreen({
+    required this.hasOfflineContent,
+    required this.onEnterOfflineMode,
+  });
+
+  @override
+  State<_AuthenticatingScreen> createState() => _AuthenticatingScreenState();
+}
+
+class _AuthenticatingScreenState extends State<_AuthenticatingScreen> {
+  bool _showSlowWarning = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showSlowWarning = true;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            if (_showSlowWarning) ...[
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Text(
+                  'La connessione ci sta mettendo un po\'...',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if (widget.hasOfflineContent) ...[
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: widget.onEnterOfflineMode,
+                  icon: const Icon(Icons.offline_pin_rounded),
+                  label: Text('Modalità offline?'),
+                ),
+              ],
+            ],
+          ],
         ),
       ),
     );
