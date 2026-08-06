@@ -5,6 +5,7 @@ import '../models/playlist.dart';
 import '../providers/library_provider.dart';
 import '../screens/playlist_screen.dart';
 import '../services/favorite_playlists_service.dart';
+import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'album_artwork.dart';
@@ -29,10 +30,20 @@ class FavoritePlaylistsSection extends StatelessWidget {
         
         return Consumer<LibraryProvider>(
           builder: (context, libraryProvider, child) {
+            final offlineService = OfflineService();
+            final isOffline = offlineService.isOfflineMode;
+            final downloadedPlaylistIds = offlineService.downloadedPlaylistIds.value.toSet();
+
             // Get favorite playlists that exist in the library
-            final favoritePlaylists = libraryProvider.playlists
+            var favoritePlaylists = libraryProvider.playlists
                 .where((p) => favoriteIds.contains(p.id))
                 .toList();
+            
+            if (isOffline) {
+              favoritePlaylists = favoritePlaylists
+                  .where((p) => downloadedPlaylistIds.contains(p.id))
+                  .toList();
+            }
             
             // If no playlists are loaded yet or favorites don't match loaded playlists
             if (favoritePlaylists.isEmpty) {

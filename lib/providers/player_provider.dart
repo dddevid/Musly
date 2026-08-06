@@ -1474,12 +1474,32 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     try {
       if (playlist != null) {
-        final isNewQueue = !identical(playlist, _queue);
+        bool isSameQueue = _queue.length == playlist.length;
+        if (isSameQueue) {
+          for (int i = 0; i < _queue.length; i++) {
+            if (_queue[i].id != playlist[i].id) {
+              isSameQueue = false;
+              break;
+            }
+          }
+        }
+
+        if (isSameQueue) {
+          final targetIndex =
+              startIndex ?? playlist.indexWhere((s) => s.id == song.id);
+          if (targetIndex != -1 && targetIndex != _currentIndex) {
+            await skipToIndex(targetIndex);
+          } else if (targetIndex == _currentIndex && !_isPlaying) {
+            await play();
+          }
+          return;
+        }
+
         _queue = List.from(playlist);
         _currentIndex =
             startIndex ?? playlist.indexWhere((s) => s.id == song.id);
         if (_currentIndex == -1) _currentIndex = 0;
-        if (isNewQueue) _shuffleHistory.clear();
+        _shuffleHistory.clear();
       } else if (_queue.isEmpty || !_queue.any((s) => s.id == song.id)) {
         _queue = [song];
         _currentIndex = 0;
@@ -1487,7 +1507,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         _currentIndex = _queue.indexWhere((s) => s.id == song.id);
       }
-
       _currentSong = song;
       _resolvedArtworkUrl = null;
       _position = Duration.zero;

@@ -108,24 +108,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   _lastRandomKey = '';
                 }
 
-                final mixes = _cachedMixes;
-                final personalizedFeed = _cachedPersonalized;
+                Map<String, List<Song>> mixes = _cachedMixes;
+                List<Song> personalizedFeed = _cachedPersonalized;
+                List<Album> recentAlbums = libraryProvider.recentAlbums;
+                List<Playlist> playlists = libraryProvider.playlists;
+
+                if (isOffline) {
+                  final downloadedIds =
+                      offlineService.getDownloadedSongIds().toSet();
+                  final downloadedPlaylistIds =
+                      offlineService.downloadedPlaylistIds.value.toSet();
+
+                  final allSongs = libraryProvider.cachedAllSongs;
+                  final Set<String> downloadedAlbumIds = {};
+                  for (final song in allSongs) {
+                    if (downloadedIds.contains(song.id) &&
+                        song.albumId != null) {
+                      downloadedAlbumIds.add(song.albumId!);
+                    }
+                  }
+
+                  recentAlbums = recentAlbums
+                      .where((a) => downloadedAlbumIds.contains(a.id))
+                      .toList();
+                  playlists = playlists
+                      .where((p) => downloadedPlaylistIds.contains(p.id))
+                      .toList();
+
+                  final Map<String, List<Song>> offlineMixes = {};
+                  for (final entry in mixes.entries) {
+                    final filtered = entry.value
+                        .where((s) => downloadedIds.contains(s.id))
+                        .toList();
+                    if (filtered.isNotEmpty) {
+                      offlineMixes[entry.key] = filtered;
+                    }
+                  }
+                  mixes = offlineMixes;
+
+                  personalizedFeed = personalizedFeed
+                      .where((s) => downloadedIds.contains(s.id))
+                      .toList();
+                }
 
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (libraryProvider.recentAlbums.isNotEmpty ||
-                          libraryProvider.playlists.isNotEmpty) ...[
+                      if (recentAlbums.isNotEmpty || playlists.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         _QuickAccessGrid(
-                          albums: libraryProvider.recentAlbums
-                              .take(isDesktop ? 6 : 4)
-                              .toList(),
-                          playlists: libraryProvider.playlists
-                              .take(isDesktop ? 3 : 2)
-                              .toList(),
+                          albums:
+                              recentAlbums.take(isDesktop ? 6 : 4).toList(),
+                          playlists:
+                              playlists.take(isDesktop ? 3 : 2).toList(),
                           isDesktop: isDesktop,
                           hPad: hPad,
                         ),
