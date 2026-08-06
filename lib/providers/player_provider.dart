@@ -2698,6 +2698,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sleepTimer?.cancel();
     _sleepTimerFadeTimer?.cancel();
     _sleepTimerFadePeriodicTimer?.cancel();

@@ -12,6 +12,9 @@ import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'theme_manager_screen.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
 
 class SettingsDisplayTab extends StatefulWidget {
   const SettingsDisplayTab({super.key});
@@ -41,8 +44,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     if (kIsWeb) return false;
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   }
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -78,71 +79,71 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.appearanceSection.toUpperCase(),
           children: [_buildAppearanceEditor()],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.language.toUpperCase(),
           children: [
             _buildLanguageSelector(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildTranslationCredit(),
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.playerInterface.toUpperCase(),
           children: [
             _buildVolumeSliderToggle(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildStarRatingsToggle(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildMiniPlayerHeartToggle(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildMiniPlayerRepeatToggle(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildMiniPlayerShuffleToggle(),
             if (_isDesktop) ...[
-              _buildDivider(),
+              const SettingsDivider(),
               _buildDiscordRpcToggle(),
-              _buildDivider(),
+              const SettingsDivider(),
               _buildDiscordRpcStateStyleSelector(),
             ],
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: 'NOW PLAYING THEMES',
           children: [
             _buildNowPlayingThemesButton(),
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.liveSearchSection.toUpperCase(),
           children: [
             _buildLiveSearchToggle(),
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(
             context,
           )!.artworkStyleSection.toUpperCase(),
           children: [_buildArtworkStyleEditor()],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(
             context,
           )!.smartRecommendations.toUpperCase(),
           children: [
             _buildRecommendationsToggle(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildRecommendationsStats(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildClearRecommendationsButton(),
           ],
         ),
@@ -153,7 +154,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
   Widget _buildAppearanceEditor() {
     final themeService = Provider.of<ThemeService>(context, listen: false);
-    final isDark = _isDark;
+    final isDark = context.isDark;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -231,69 +232,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _isDark
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: _isDark ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(children: children),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 56),
-      child: Container(
-        height: 0.5,
-        color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-      ),
-    );
-  }
-
   Widget _buildVolumeSliderToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.speaker_2,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+        icon: CupertinoIcons.speaker_2,
       ),
       title: Text(
         AppLocalizations.of(context)!.showVolumeSlider,
@@ -303,7 +247,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.showVolumeSliderSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -322,20 +266,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildStarRatingsToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.star_fill,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFFD700), Color(0xFFFFA500)],
+        icon: CupertinoIcons.star_fill,
       ),
       title: Text(
         AppLocalizations.of(context)!.showStarRatings,
@@ -345,7 +278,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.showStarRatingsSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -364,20 +297,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildMiniPlayerHeartToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.heart_fill,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+        icon: CupertinoIcons.heart_fill,
       ),
       title: Text(
         AppLocalizations.of(context)!.showMiniPlayerHeart,
@@ -387,7 +309,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.showMiniPlayerHeartSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -406,20 +328,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildMiniPlayerRepeatToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF34C759), Color(0xFF30D158)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.repeat,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.repeat,
       ),
       title: Text(
         AppLocalizations.of(context)!.showMiniPlayerRepeat,
@@ -429,7 +340,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.showMiniPlayerRepeatSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -448,20 +359,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildMiniPlayerShuffleToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.shuffle,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+        icon: CupertinoIcons.shuffle,
       ),
       title: Text(
         AppLocalizations.of(context)!.showMiniPlayerShuffle,
@@ -471,7 +371,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.showMiniPlayerShuffleSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -490,20 +390,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildNowPlayingThemesButton() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF8B5CF6), Color(0xFFFA243C)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.paintbrush,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF8B5CF6), Color(0xFFFA243C)],
+        icon: CupertinoIcons.paintbrush,
       ),
       title: const Text(
         'Customize Now Playing Screen (Beta)',
@@ -535,20 +424,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildLiveSearchToggle() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF9500), Color(0xFFFFCC00)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.search,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF9500), Color(0xFFFFCC00)],
+        icon: CupertinoIcons.search,
       ),
       title: Text(
         AppLocalizations.of(context)!.liveSearch,
@@ -558,7 +436,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.liveSearchSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -598,17 +476,17 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     Offset offset;
     switch (_artworkShadow) {
       case 'medium':
-        opacity = _isDark ? 0.35 : 0.25;
+        opacity = context.isDark ? 0.35 : 0.25;
         blur = previewSize / 6;
         offset = Offset(0, previewSize / 20);
         break;
       case 'strong':
-        opacity = _isDark ? 0.55 : 0.40;
+        opacity = context.isDark ? 0.55 : 0.40;
         blur = previewSize / 4;
         offset = Offset(0, previewSize / 12);
         break;
       default: 
-        opacity = _isDark ? 0.22 : 0.14;
+        opacity = context.isDark ? 0.22 : 0.14;
         blur = previewSize / 10;
         offset = Offset(0, previewSize / 30);
     }
@@ -640,7 +518,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: _isDark
+                    color: context.isDark
                         ? AppTheme.darkSecondaryText
                         : AppTheme.lightSecondaryText,
                     letterSpacing: 0.5,
@@ -720,7 +598,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: Theme.of(context).colorScheme.primary,
-                            inactiveTrackColor: _isDark
+                            inactiveTrackColor: context.isDark
                                 ? AppTheme.darkDivider
                                 : AppTheme.lightDivider,
                             thumbColor: Theme.of(context).colorScheme.primary,
@@ -865,7 +743,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             decoration: BoxDecoration(
               color: isSelected
                   ? Theme.of(context).colorScheme.primary
-                  : (_isDark
+                  : (context.isDark
                         ? Colors.white.withValues(alpha: 0.08)
                         : Colors.black.withValues(alpha: 0.06)),
               borderRadius: BorderRadius.circular(20),
@@ -880,7 +758,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
                     ? Colors.white
-                    : (_isDark ? Colors.white70 : Colors.black87),
+                    : (context.isDark ? Colors.white70 : Colors.black87),
               ),
             ),
           ),
@@ -897,21 +775,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             horizontal: 16,
             vertical: 4,
           ),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.sparkles,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
+          leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+        icon: CupertinoIcons.sparkles,
+      ),
           title: Text(
             AppLocalizations.of(context)!.enableRecommendations,
             style: const TextStyle(fontSize: 16),
@@ -920,7 +787,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             AppLocalizations.of(context)!.enableRecommendationsSubtitle,
             style: TextStyle(
               fontSize: 13,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -954,7 +821,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             AppLocalizations.of(context)!.totalPlays(totalPlays),
             style: TextStyle(
               fontSize: 13,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -963,7 +830,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             AppLocalizations.of(context)!.songsCount(uniqueSongs),
             style: TextStyle(
               fontSize: 14,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -1047,7 +914,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             AppLocalizations.of(context)!.discordStatusSubtitle,
             style: TextStyle(
               fontSize: 13,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -1098,7 +965,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             l10n.discordStatusTextSubtitle,
             style: TextStyle(
               fontSize: 13,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -1136,21 +1003,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             horizontal: 16,
             vertical: 4,
           ),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF34C759), Color(0xFF30D158)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.globe,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
+          leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.globe,
+      ),
           title: Text(
             AppLocalizations.of(context)!.language,
             style: const TextStyle(fontSize: 16),
@@ -1159,7 +1015,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             currentLanguageName,
             style: TextStyle(
               fontSize: 13,
-              color: _isDark
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             ),
@@ -1195,7 +1051,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         AppLocalizations.of(context)!.communityTranslationsSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -1220,7 +1076,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
-          color: _isDark ? AppTheme.darkSurface : Colors.white,
+          color: context.isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -1231,7 +1087,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: _isDark ? Colors.grey[600] : Colors.grey[300],
+                color: context.isDark ? Colors.grey[600] : Colors.grey[300],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

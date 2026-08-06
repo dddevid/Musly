@@ -98,6 +98,7 @@ class _FantasyScreenState extends State<FantasyScreen>
 
   @override
   void dispose() {
+    _controller.removeListener(_onTick);
     _controller.dispose();
     super.dispose();
   }

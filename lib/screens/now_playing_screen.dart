@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:volume_controller/volume_controller.dart';
-import 'package:palette_generator/palette_generator.dart';
+import '../widgets/animated_mesh_background.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../models/song.dart';
@@ -529,13 +529,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         body: Stack(
                           fit: StackFit.expand,
                           children: [
-                            _DynamicBackground(
+                            AnimatedMeshBackground(
                               imageUrl: _cachedImageUrl ?? '',
                             ),
                             IgnorePointer(
                               ignoring: _showLyrics,
                               child: AnimatedOpacity(
-                                opacity: _showLyrics ? 0.12 : 1.0,
+                                opacity: _showLyrics ? 0.0 : 1.0,
                                 duration: const Duration(milliseconds: 400),
                                 curve: Curves.easeOutCubic,
                                 child: SafeArea(
@@ -734,6 +734,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                       child: SyncedLyricsView(
                                         song: song,
                                         imageUrl: _cachedImageUrl,
+                                        renderBackground: false,
                                         onClose: () {
                                           setState(() {
                                             _showLyrics = false;
@@ -1018,265 +1019,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Palette cache: avoids re-extracting colors for the same cover every rebuild.
-// ─────────────────────────────────────────────────────────────────────────────
-final _paletteCache = <String, List<Color>>{};
-
-// Default fallback colors (Apple Music deep-dark aesthetic).
-const _kDefaultMeshColors = [
-  Color(0xFF1A0A2E),
-  Color(0xFF0D1B3E),
-  Color(0xFF0A1628),
-  Color(0xFF160A2A),
-];
-
-Future<List<Color>> _extractPaletteColors(String imageUrl) async {
-  if (_paletteCache.containsKey(imageUrl)) {
-    return _paletteCache[imageUrl]!;
-  }
-
-  try {
-    ImageProvider provider;
-    if (isLocalFilePath(imageUrl)) {
-      provider = FileImage(File(imageUrl));
-    } else {
-      provider = NetworkImage(imageUrl);
-    }
-
-    final generator = await PaletteGenerator.fromImageProvider(
-      provider,
-      size: const Size(112, 112),
-      maximumColorCount: 8,
-    );
-
-    final colors = <Color>[];
-
-    // Prioritise vibrant then muted swatches for a rich mesh.
-    final candidates = [
-      generator.vibrantColor,
-      generator.darkVibrantColor,
-      generator.mutedColor,
-      generator.darkMutedColor,
-      generator.lightVibrantColor,
-      generator.lightMutedColor,
-    ].whereType<PaletteColor>().map((s) => s.color).toList();
-
-    if (candidates.isEmpty) {
-      final top = generator.colors.take(6).toList();
-      colors.addAll(top);
-    } else {
-      colors.addAll(candidates);
-    }
-
-    // Always ensure 4 colors for AnimatedMeshGradient.
-    while (colors.length < 4) {
-      colors.add(colors.isNotEmpty ? colors.last : const Color(0xFF1A0A2E));
-    }
-
-    final result = [
-      colors[0].withValues(alpha: 1.0),
-      colors[1 % colors.length].withValues(alpha: 1.0),
-      colors[2 % colors.length].withValues(alpha: 1.0),
-      colors[3 % colors.length].withValues(alpha: 1.0),
-    ];
-
-    _paletteCache[imageUrl] = result;
-
-    // Keep cache bounded.
-    if (_paletteCache.length > 20) {
-      _paletteCache.remove(_paletteCache.keys.first);
-    }
-
-    return result;
-  } catch (_) {
-    return _kDefaultMeshColors;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// _DynamicBackground: Animated Mesh Gradient background extracted from artwork.
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _DynamicBackground extends StatefulWidget {
-  final String imageUrl;
-
-  const _DynamicBackground({required this.imageUrl});
-
-  @override
-  State<_DynamicBackground> createState() => _DynamicBackgroundState();
-}
-
-class _DynamicBackgroundState extends State<_DynamicBackground> {
-  List<Color> _meshColors = _kDefaultMeshColors;
-  List<Color> _prevColors = _kDefaultMeshColors;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadColors(widget.imageUrl);
-  }
-
-  @override
-  void didUpdateWidget(_DynamicBackground oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageUrl != widget.imageUrl) {
-      _loadColors(widget.imageUrl);
-    }
-  }
-
-  Future<void> _loadColors(String imageUrl) async {
-    if (imageUrl.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _prevColors = _meshColors;
-          _meshColors = _kDefaultMeshColors;
-        });
-      }
-      return;
-    }
-
-    // Serve from cache immediately if available to avoid a flash.
-    if (_paletteCache.containsKey(imageUrl)) {
-      if (mounted) {
-        setState(() {
-          _prevColors = _meshColors;
-          _meshColors = _paletteCache[imageUrl]!;
-        });
-      }
-      return;
-    }
-
-    final colors = await _extractPaletteColors(imageUrl);
-    if (mounted && imageUrl == widget.imageUrl) {
-      setState(() {
-        _prevColors = _meshColors;
-        _meshColors = colors;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ThemeAwareBuilder(
-      builder: (ctx, theme, isCustom) {
-        if (isCustom) {
-          final bgType = theme.background.type;
-          if (bgType == 'solid') {
-            return ColoredBox(color: theme.background.getColor(0));
-          } else if (bgType == 'gradient') {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.background.getColor(0),
-                    theme.background.getColor(1),
-                  ],
-                ),
-              ),
-            );
-          }
-          // bgType == 'dynamic' falls through to default mesh below
-        }
-
-        return RepaintBoundary(
-          child: TweenAnimationBuilder<List<Color>>(
-            tween: _ColorListTween(begin: _prevColors, end: _meshColors),
-            duration: const Duration(milliseconds: 900),
-            builder: (context, colors, _) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  ColoredBox(color: colors[3]),
-                  _GradientBlob(
-                    color: colors[0],
-                    alignment: const Alignment(-0.8, -0.8),
-                    radius: 0.9,
-                  ),
-                  _GradientBlob(
-                    color: colors[1],
-                    alignment: const Alignment(0.8, -0.6),
-                    radius: 0.8,
-                  ),
-                  _GradientBlob(
-                    color: colors[2],
-                    alignment: const Alignment(0.0, 0.9),
-                    radius: 0.85,
-                  ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color.fromRGBO(0, 0, 0, 0.42),
-                          Color.fromRGBO(0, 0, 0, 0.70),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-// Smoothly interpolates between two color lists.
-class _ColorListTween extends Tween<List<Color>> {
-  _ColorListTween({required List<Color> begin, required List<Color> end})
-      : super(begin: begin, end: end);
-
-  @override
-  List<Color> lerp(double t) {
-    final b = begin!;
-    final e = end!;
-    return List.generate(
-      b.length,
-      (i) => Color.lerp(b[i], e[i], t)!,
-    );
-  }
-}
-
-// A single radial gradient color blob.
-class _GradientBlob extends StatelessWidget {
-  final Color color;
-  final Alignment alignment;
-  final double radius;
-
-  const _GradientBlob({
-    required this.color,
-    required this.alignment,
-    required this.radius,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: alignment,
-      child: FractionallySizedBox(
-        widthFactor: radius * 1.4,
-        heightFactor: radius * 1.4,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                color.withValues(alpha: 0.85),
-                color.withValues(alpha: 0.0),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Background color extraction, animation and quality-adaptive rendering have
+// been moved to lib/widgets/animated_mesh_background.dart.
 
 class _PlayerHeader extends StatelessWidget {
   final String albumName;

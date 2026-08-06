@@ -1,8 +1,17 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 import '../models/server_config.dart';
 
 class StorageService {
+  static final StorageService _instance = StorageService._internal();
+  factory StorageService() => _instance;
+  StorageService._internal();
+
+  SharedPreferences? _prefsInstance;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
   static const String _serverConfigKey = 'server_config';
   static const String _serverProfilesKey = 'server_profiles';
   static const String _lastPlayedKey = 'last_played';
@@ -14,18 +23,46 @@ class StorageService {
   static const String _lrcLibFallbackKey = 'lrclib_fallback';
   static const String _volumeKey = 'volume';
 
-  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
+  Future<void> init() async {
+    _prefsInstance = await SharedPreferences.getInstance();
+  }
+
+  Future<SharedPreferences> get _prefs async {
+    _prefsInstance ??= await SharedPreferences.getInstance();
+    return _prefsInstance!;
+  }
 
   Future<void> saveServerConfig(ServerConfig config) async {
     final prefs = await _prefs;
-    await prefs.setString(_serverConfigKey, json.encode(config.toJson()));
+    
+    // Save password securely
+    if (config.password.isNotEmpty) {
+      await _secureStorage.write(key: 'server_pwd_active', value: config.password);
+    }
+    
+    // Strip password from plain text storage
+    final map = config.toJson();
+    map['password'] = ''; 
+    await prefs.setString(_serverConfigKey, json.encode(map));
   }
 
   Future<ServerConfig?> getServerConfig() async {
     final prefs = await _prefs;
     final configJson = prefs.getString(_serverConfigKey);
     if (configJson != null) {
-      return ServerConfig.fromJson(json.decode(configJson));
+      final map = json.decode(configJson);
+      
+      // Load password from secure storage
+      final securePwd = await _secureStorage.read(key: 'server_pwd_active');
+      
+      // Migrate existing plaintext password to secure storage if found
+      if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
+        await _secureStorage.write(key: 'server_pwd_active', value: map['password']);
+      } else if (securePwd != null) {
+        map['password'] = securePwd;
+      }
+      
+      return ServerConfig.fromJson(map);
     }
     return null;
   }
@@ -33,16 +70,29 @@ class StorageService {
   Future<void> clearServerConfig() async {
     final prefs = await _prefs;
     await prefs.remove(_serverConfigKey);
+    await _secureStorage.delete(key: 'server_pwd_active');
   }
 
   Future<List<ServerConfig>> getSavedProfiles() async {
     final prefs = await _prefs;
-    final json = prefs.getString(_serverProfilesKey);
-    if (json == null) return [];
-    final list = jsonDecode(json) as List<dynamic>;
-    return list
-        .map((e) => ServerConfig.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final jsonStr = prefs.getString(_serverProfilesKey);
+    if (jsonStr == null) return [];
+    
+    final list = jsonDecode(jsonStr) as List<dynamic>;
+    final profiles = <ServerConfig>[];
+    
+    for (int i = 0; i < list.length; i++) {
+      final map = list[i] as Map<String, dynamic>;
+      // Read secure password for each profile using its index or unique key
+      final securePwd = await _secureStorage.read(key: 'server_profile_pwd_$i');
+      if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
+        await _secureStorage.write(key: 'server_profile_pwd_$i', value: map['password']);
+      } else if (securePwd != null) {
+        map['password'] = securePwd;
+      }
+      profiles.add(ServerConfig.fromJson(map));
+    }
+    return profiles;
   }
 
   Future<void> saveProfile(ServerConfig config) async {
@@ -50,28 +100,59 @@ class StorageService {
     final idx = profiles.indexWhere(
       (p) => p.serverUrl == config.serverUrl && p.username == config.username,
     );
+    
     if (idx >= 0) {
       profiles[idx] = config;
+      if (config.password.isNotEmpty) {
+        await _secureStorage.write(key: 'server_profile_pwd_$idx', value: config.password);
+      }
     } else {
       profiles.add(config);
+      if (config.password.isNotEmpty) {
+        await _secureStorage.write(key: 'server_profile_pwd_${profiles.length - 1}', value: config.password);
+      }
     }
+    
     final prefs = await _prefs;
-    await prefs.setString(
-      _serverProfilesKey,
-      jsonEncode(profiles.map((p) => p.toJson()).toList()),
-    );
+    final safeProfiles = profiles.map((p) {
+      final map = p.toJson();
+      map['password'] = '';
+      return map;
+    }).toList();
+    
+    await prefs.setString(_serverProfilesKey, jsonEncode(safeProfiles));
   }
 
   Future<void> deleteProfile(ServerConfig config) async {
     final profiles = await getSavedProfiles();
-    profiles.removeWhere(
+    final idx = profiles.indexWhere(
       (p) => p.serverUrl == config.serverUrl && p.username == config.username,
     );
-    final prefs = await _prefs;
-    await prefs.setString(
-      _serverProfilesKey,
-      jsonEncode(profiles.map((p) => p.toJson()).toList()),
-    );
+    
+    if (idx >= 0) {
+      profiles.removeAt(idx);
+      await _secureStorage.delete(key: 'server_profile_pwd_$idx');
+      
+      // Shift remaining secure passwords to match new indices
+      for (int i = idx; i < profiles.length; i++) {
+        final nextPwd = await _secureStorage.read(key: 'server_profile_pwd_${i + 1}');
+        if (nextPwd != null) {
+          await _secureStorage.write(key: 'server_profile_pwd_$i', value: nextPwd);
+        } else {
+          await _secureStorage.delete(key: 'server_profile_pwd_$i');
+        }
+      }
+      // Delete the last one since we shifted everything down
+      await _secureStorage.delete(key: 'server_profile_pwd_${profiles.length}');
+      
+      final prefs = await _prefs;
+      final safeProfiles = profiles.map((p) {
+        final map = p.toJson();
+        map['password'] = '';
+        return map;
+      }).toList();
+      await prefs.setString(_serverProfilesKey, jsonEncode(safeProfiles));
+    }
   }
 
   Future<void> saveLastPlayed(String songId) async {
@@ -166,7 +247,7 @@ class StorageService {
 
   Future<bool> getDiscordRpcEnabled() async {
     final prefs = await _prefs;
-    return prefs.getBool('discord_rpc_enabled') ?? true; 
+    return prefs.getBool('discord_rpc_enabled') ?? false; 
   }
 
   Future<void> saveDiscordRpcStateStyle(String style) async {
@@ -179,8 +260,20 @@ class StorageService {
     return prefs.getString('discord_rpc_state_style') ?? 'artist';
   }
 
+  Future<String> getOrCreateSubsonicSalt() async {
+    final prefs = await _prefs;
+    String? salt = prefs.getString('subsonic_client_salt');
+    if (salt == null || salt.isEmpty) {
+      salt = const Uuid().v4().substring(0, 16);
+      await prefs.setString('subsonic_client_salt', salt);
+    }
+    return salt;
+  }
+
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();
+    await _secureStorage.deleteAll();
   }
 }
+

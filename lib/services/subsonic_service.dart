@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 import 'jellyfin_service.dart';
 import 'youtube_service.dart';
+import 'storage_service.dart';
 
 class PingResult {
   final bool success;
@@ -103,6 +104,9 @@ class SubsonicService {
         clientCertPassword: config.clientCertificatePassword,
       );
     }
+    
+    _clientSalt = await StorageService().getOrCreateSubsonicSalt();
+    _stableAuthParams = null; // Reset stable params on new config
   }
 
   bool get isYoutube => _youtube != null;
@@ -241,6 +245,7 @@ class SubsonicService {
   }
 
   Map<String, String>? _stableAuthParams;
+  String? _clientSalt;
 
   void _ensureStableAuthParams() {
     if (_stableAuthParams != null) return;
@@ -256,7 +261,7 @@ class SubsonicService {
     if (_config!.useLegacyAuth) {
       params['p'] = _config!.password;
     } else {
-      const salt = 'musly_stable';
+      final salt = _clientSalt ?? 'fallback_salt';
       final token =
           md5.convert(utf8.encode('${_config!.password}$salt')).toString();
       params['t'] = token;

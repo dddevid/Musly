@@ -11,6 +11,9 @@ import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'jukebox_screen.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
 
 class SettingsServerTab extends StatefulWidget {
   const SettingsServerTab({super.key});
@@ -20,7 +23,6 @@ class SettingsServerTab extends StatefulWidget {
 }
 
 class _SettingsServerTabState extends State<SettingsServerTab> {
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildSection(
+        SettingsSectionCard(
           title: l10n.sectionServerConnection,
           children: [
             _buildInfoTile(
@@ -49,14 +51,14 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               title: l10n.serverType,
               subtitle: serverSubtitle,
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildInfoTile(
               icon: CupertinoIcons.link,
               iconColor: const Color(0xFF007AFF),
               title: l10n.serverUrl,
               subtitle: authProvider.config?.serverUrl ?? l10n.notConnected,
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildInfoTile(
               icon: CupertinoIcons.person,
               iconColor: const Color(0xFF34C759),
@@ -68,68 +70,22 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         const SizedBox(height: 24),
         _buildSavedProfilesSection(),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: l10n.sectionMusicFolders,
           children: [_buildMusicFoldersButton()],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: l10n.sectionJukebox,
           children: [_buildJukeboxSection()],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: l10n.sectionAccount,
           children: [_buildLogoutButton()],
         ),
         const SizedBox(height: 40),
       ],
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _isDark
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: _isDark ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(children: children),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 56),
-      child: Container(
-        height: 0.5,
-        color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-      ),
     );
   }
 
@@ -155,7 +111,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         subtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -186,7 +142,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
       trailing: Icon(
         CupertinoIcons.chevron_right,
         size: 16,
-        color: _isDark
+        color: context.isDark
             ? AppTheme.darkSecondaryText
             : AppTheme.lightSecondaryText,
       ),
@@ -231,27 +187,16 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               horizontal: 16,
               vertical: 4,
             ),
-            secondary: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF9500), Color(0xFFFF6000)],
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                CupertinoIcons.speaker_2,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
+            secondary: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6000)],
+        icon: CupertinoIcons.speaker_2,
+      ),
             title: Text(l10n.jukeboxMode, style: const TextStyle(fontSize: 16)),
             subtitle: Text(
               l10n.jukeboxModeSubtitle,
               style: TextStyle(
                 fontSize: 13,
-                color: _isDark
+                color: context.isDark
                     ? AppTheme.darkSecondaryText
                     : AppTheme.lightSecondaryText,
               ),
@@ -265,7 +210,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               padding: const EdgeInsets.only(left: 56),
               child: Container(
                 height: 0.5,
-                color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
+                color: context.isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
               ),
             ),
             ListTile(
@@ -281,7 +226,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               trailing: Icon(
                 CupertinoIcons.chevron_right,
                 size: 16,
-                color: _isDark
+                color: context.isDark
                     ? AppTheme.darkSecondaryText
                     : AppTheme.lightSecondaryText,
               ),
@@ -297,20 +242,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
   Widget _buildLogoutButton() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF3B30), Color(0xFFFF453A)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.square_arrow_right,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
+        icon: CupertinoIcons.square_arrow_right,
       ),
       title: Text(
         AppLocalizations.of(context)!.logout,
@@ -368,7 +302,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
-                  color: _isDark
+                  color: context.isDark
                       ? AppTheme.darkSecondaryText
                       : AppTheme.lightSecondaryText,
                   letterSpacing: 0.2,
@@ -378,7 +312,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: _isDark ? AppTheme.darkSurface : Colors.white,
+                color: context.isDark ? AppTheme.darkSurface : Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -400,7 +334,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                               : CupertinoIcons.person_crop_circle,
                           color: isActive
                               ? const Color(0xFF34C759)
-                              : (_isDark
+                              : (context.isDark
                                   ? AppTheme.darkSecondaryText
                                   : AppTheme.lightSecondaryText),
                         ),
@@ -419,7 +353,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12,
-                            color: _isDark
+                            color: context.isDark
                                 ? AppTheme.darkSecondaryText
                                 : AppTheme.lightSecondaryText,
                           ),
@@ -449,7 +383,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                   ),
                                 );
                                 if (confirmed == true) {
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   final playerProvider =
                                       Provider.of<PlayerProvider>(context, listen: false);
                                   await playerProvider.stop();
@@ -458,7 +392,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                               },
                       );
                     }),
-                    Divider(height: 1, color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                    Divider(height: 1, color: context.isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       leading: Icon(

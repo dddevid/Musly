@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:musly/main.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/services.dart';
-import 'package:musly/services/locale_service.dart';
-import 'package:musly/services/theme_service.dart';
 import '../bootstrap.dart';
 
 void main() {

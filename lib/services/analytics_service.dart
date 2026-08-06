@@ -104,7 +104,7 @@ class AnalyticsService {
     if (enabled && !_initialized) {
       await initialize();
     } else if (!enabled && _initialized) {
-      await Countly.giveConsent([
+      await Countly.removeConsent([
         'sessions',
         'crashes',
         'location',

@@ -133,12 +133,14 @@ class SyncedLyricsView extends StatefulWidget {
   final Song song;
   final String? imageUrl;
   final VoidCallback? onClose;
+  final bool renderBackground;
 
   const SyncedLyricsView({
     super.key,
     required this.song,
     this.imageUrl,
     this.onClose,
+    this.renderBackground = true,
   });
 
   @override
@@ -482,17 +484,19 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: widget.renderBackground ? Colors.black : Colors.transparent,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          RepaintBoundary(child: _buildAnimatedBackground(imageUrl)),
-          RepaintBoundary(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-              child: Container(color: Colors.black.withValues(alpha: 0.6)),
+          if (widget.renderBackground) ...[
+            RepaintBoundary(child: _buildAnimatedBackground(imageUrl)),
+            RepaintBoundary(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                child: Container(color: Colors.black.withValues(alpha: 0.6)),
+              ),
             ),
-          ),
+          ],
           if (_isDesktop)
             _isFullscreen
                 ? _buildFullscreenContent(context, imageUrl)
@@ -661,11 +665,23 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
 
   Widget _buildMobileContent(BuildContext context) {
     return SafeArea(
-      child: Column(
+      child: Stack(
         children: [
-          _buildHeader(context),
-          Expanded(child: _buildLyricsContent()),
-          _buildBottomControls(context),
+          Positioned.fill(
+            child: _buildLyricsContent(),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _buildHeader(context),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomControls(context),
+          ),
         ],
       ),
     );
@@ -843,6 +859,37 @@ class _SyncedLyricsViewState extends State<SyncedLyricsView>
             ),
           ),
           const SizedBox(width: 16),
+          if (widget.imageUrl != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: isLocalFilePath(widget.imageUrl!)
+                      ? Image.file(
+                          File(widget.imageUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: widget.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => Container(color: Colors.grey[900]),
+                        ),
+                ),
+              ),
+            ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1131,18 +1178,12 @@ class _AMLLLyricsWidgetState extends State<AMLLLyricsWidget>
   double _calculateOpacity(int itemIndex, int activeIndex) {
     if (activeIndex < 0) return 0.55;
     if (itemIndex == activeIndex) return 1.0;
-    // Past lines (already read)
-    if (itemIndex < activeIndex) {
-      final distance = activeIndex - itemIndex;
-      if (distance == 1) return 0.38;
-      if (distance <= 3) return 0.22;
-      return 0.12;
-    }
-    // Future lines (not yet read) — Apple Music dims these aggressively
-    final distance = itemIndex - activeIndex;
-    if (distance == 1) return 0.28;
-    if (distance <= 3) return 0.16;
-    return 0.08;
+    
+    final distance = (itemIndex - activeIndex).abs();
+    if (distance == 1) return 0.55;
+    if (distance == 2) return 0.35;
+    if (distance <= 4) return 0.25;
+    return 0.15;
   }
 
   @override

@@ -7,6 +7,9 @@ import '../theme/app_theme.dart';
 import '../services/analytics_service.dart';
 import '../widgets/support_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -37,16 +40,12 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     });
   }
 
-  bool _isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildSection(
-          context,
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutInformation,
           children: [
             _buildInfoTile(
@@ -67,14 +66,12 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
-          context,
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutDeveloper,
           children: [_buildDeveloperInfo(context)],
         ),
         const SizedBox(height: 24),
-        _buildSection(
-          context,
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutLinks,
           children: [
             _buildLinkTile(
@@ -107,8 +104,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
-          context,
+        SettingsSectionCard(
           title: 'Analytics & Privacy',
           children: [
             SwitchListTile(
@@ -116,21 +112,10 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 horizontal: 16,
                 vertical: 4,
               ),
-              secondary: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF34C759), Color(0xFF30D158)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  CupertinoIcons.chart_bar,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
+              secondary: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.chart_bar,
+      ),
               title: const Text(
                 'Anonymous Analytics',
                 style: TextStyle(fontSize: 16),
@@ -151,21 +136,10 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 horizontal: 16,
                 vertical: 4,
               ),
-              leading: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  CupertinoIcons.device_phone_portrait,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
+              leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+        icon: CupertinoIcons.device_phone_portrait,
+      ),
               title: const Text('Device ID', style: TextStyle(fontSize: 16)),
               subtitle: Text(
                 _analyticsEnabled
@@ -198,21 +172,10 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 horizontal: 16,
                 vertical: 4,
               ),
-              leading: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  CupertinoIcons.info,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
+              leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+        icon: CupertinoIcons.info,
+      ),
               title: const Text(
                 'About Device ID',
                 style: TextStyle(fontSize: 16),
@@ -225,8 +188,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
-          context,
+        SettingsSectionCard(
           title: 'Support',
           children: [
             _buildActionTile(
@@ -255,49 +217,13 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     );
   }
 
-  Widget _buildSection(
-    BuildContext context, {
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _isDark(context)
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: _isDark(context) ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(children: children),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildDivider(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 56),
       child: Container(
         height: 0.5,
-        color: _isDark(context) ? AppTheme.darkDivider : AppTheme.lightDivider,
+        color: context.isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
       ),
     );
   }
@@ -325,7 +251,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         subtitle,
         style: TextStyle(
           fontSize: 16,
-          color: _isDark(context)
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -385,7 +311,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
       trailing: Icon(
         Icons.open_in_new_rounded,
         size: 18,
-        color: _isDark(context)
+        color: context.isDark
             ? AppTheme.darkSecondaryText
             : AppTheme.lightSecondaryText,
       ),
@@ -477,7 +403,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ratingController.text,
       );
       await AnalyticsService().markAppAsRated();
-      if (mounted) {
+      if (context.mounted) {
         setState(() => _hasRated = true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Thank you for your feedback!')),
@@ -513,7 +439,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         subtitle,
         style: TextStyle(
           fontSize: 12,
-          color: _isDark(context)
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -522,7 +448,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           ? Icon(
               CupertinoIcons.chevron_forward,
               size: 18,
-              color: _isDark(context)
+              color: context.isDark
                   ? AppTheme.darkSecondaryText
                   : AppTheme.lightSecondaryText,
             )

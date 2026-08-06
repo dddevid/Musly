@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   dart_discord_rpc
   dynamic_color
+  flutter_secure_storage_windows
   just_audio_windows
   local_notifier
   permission_handler_windows

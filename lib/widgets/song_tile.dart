@@ -208,6 +208,11 @@ class SongTile extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                 ),
               ),
+            if (song.hasDolbyAtmos == true)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: DolbyAtmosBadge(),
+              ),
             if (showDuration)
               Text(
                 song.formattedDuration,
@@ -223,27 +228,9 @@ class SongTile extends StatelessWidget {
           ],
         );
       },
-          ),
-        if (song.hasDolbyAtmos == true)
-          const Padding(
-            padding: EdgeInsets.only(right: 6),
-            child: DolbyAtmosBadge(),
-          ),
-        if (showDuration)
-          Text(
-            song.formattedDuration,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: const Icon(Icons.more_horiz),
-          iconSize: 20,
-          color: Theme.of(context).textTheme.bodySmall?.color,
-          onPressed: () => _showOptions(context),
-        ),
-      ],
     );
   }
+
 
   void _playSong(BuildContext context) {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);

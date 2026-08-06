@@ -11,6 +11,9 @@ import '../services/local_music_service.dart';
 import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import 'download_playlist_status_screen.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
 
 class SettingsStorageTab extends StatefulWidget {
   const SettingsStorageTab({super.key});
@@ -34,8 +37,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   String _downloadedSize = '0 B';
   int _parallelDownloads = 3;
   bool _keepScreenOn = true;
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -92,7 +93,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionCacheSettings,
           children: [
             _buildCacheToggle(
@@ -103,7 +104,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               value: _imageCacheEnabled,
               onChanged: _toggleImageCache,
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildCacheToggle(
               icon: CupertinoIcons.music_note,
               iconGradient: const [Color(0xFF34C759), Color(0xFF30D158)],
@@ -112,7 +113,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               value: _musicCacheEnabled,
               onChanged: _toggleMusicCache,
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildCacheToggle(
               icon: CupertinoIcons.speedometer,
               iconGradient: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
@@ -124,33 +125,33 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           ],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionCacheCleanup,
           children: [_buildClearAllCacheButton()],
         ),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionOfflineDownloads,
           children: [
             _buildParallelDownloadsTile(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildKeepScreenOnTile(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildOfflineInfo(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildActiveDownloadsRow(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildPlaylistStatusRow(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildDownloadAllLibraryButton(),
-            _buildDivider(),
+            const SettingsDivider(),
             _buildDeleteDownloadsButton(),
           ],
         ),
         const SizedBox(height: 24),
         _buildLocalMusicSection(),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionBpmAnalysis,
           children: [
             _buildBPMCacheInfo(),
@@ -161,52 +162,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         ),
         const SizedBox(height: 40),
       ],
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _isDark
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: _isDark ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(children: children),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 56),
-      child: Container(
-        height: 0.5,
-        color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-      ),
     );
   }
 
@@ -234,7 +189,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         subtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -270,7 +225,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         final l10n = AppLocalizations.of(context)!;
         final customPaths = localMusic.customScanPaths;
 
-        return _buildSection(
+        return SettingsSectionCard(
           title: l10n.localMusicLibrary,
           children: [
             // Merge toggle
@@ -292,7 +247,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 l10n.mergeLocalLibrarySubtitle,
                 style: TextStyle(
                   fontSize: 13,
-                  color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
                 ),
               ),
               value: context.watch<LibraryProvider>().mergeLocalLibrary,
@@ -307,7 +262,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 }
               },
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             // Local music stats
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -327,14 +282,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 '${localMusic.songCount} ${l10n.songs.toLowerCase()}',
                 style: TextStyle(
                   fontSize: 14,
-                  color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
                 ),
               ),
               subtitle: localMusic.isScanning
                 ? Text(localMusic.scanStatus, style: const TextStyle(fontSize: 12))
                 : null,
             ),
-            _buildDivider(),
+            const SettingsDivider(),
             // Add folder button
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -354,7 +309,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             ),
             // Show custom paths
             if (customPaths.isNotEmpty) ...[
-              _buildDivider(),
+              const SettingsDivider(),
               ...customPaths.map((path) => ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 leading: Container(
@@ -378,7 +333,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   path,
                   style: TextStyle(
                     fontSize: 12,
-                    color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                    color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -389,7 +344,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 ),
               )),
             ],
-            _buildDivider(),
+            const SettingsDivider(),
             // Rescan button
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -417,7 +372,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   Future<void> _addMusicFolder(BuildContext context, LocalMusicService service) async {
     final path = await service.pickMusicDirectory();
     if (path == null) return;
-    if (!mounted) return;
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Added folder: $path')),
     );
@@ -449,7 +404,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
     if (confirmed != true) return;
     await service.removeCustomScanPath(path);
-    if (!mounted) return;
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Folder removed')),
     );
@@ -475,7 +430,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         l10n.keepScreenOnDuringDownloadSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: CupertinoSwitch(
@@ -509,7 +464,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         l10n.parallelDownloadsSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: Row(
@@ -527,7 +482,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           Icon(
             CupertinoIcons.chevron_right,
             size: 16,
-            color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
           ),
         ],
       ),
@@ -583,7 +538,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     // Request permission first
     final hasPermission = await service.requestPermission();
     if (!hasPermission) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Storage permission required')),
         );
@@ -634,20 +589,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   Widget _buildOfflineInfo() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.arrow_down_circle,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+        icon: CupertinoIcons.arrow_down_circle,
       ),
       title: Text(
         AppLocalizations.of(context)!.downloadedSongs,
@@ -659,7 +603,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         )!.downloadedStats(_downloadedCount, _downloadedSize),
         style: TextStyle(
           fontSize: 14,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -702,7 +646,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -721,27 +665,16 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       builder: (context, ids, _) {
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.music_note_list,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
+          leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+        icon: CupertinoIcons.music_note_list,
+      ),
           title: const Text('Playlist Downloads', style: TextStyle(fontSize: 16)),
           subtitle: Text(
             '${ids.length} songs downloaded',
             style: TextStyle(
               fontSize: 12,
-              color: _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
             ),
           ),
           trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
@@ -772,21 +705,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   horizontal: 16,
                   vertical: 4,
                 ),
-                leading: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF34C759), Color(0xFF30D158)],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    CupertinoIcons.arrow_down_circle_fill,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
+                leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.arrow_down_circle_fill,
+      ),
                 title: Text(
                   AppLocalizations.of(context)!.downloadingLibrary(
                     downloadState.currentProgress,
@@ -805,7 +727,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: _isDark
+                  backgroundColor: context.isDark
                       ? AppTheme.darkCard
                       : AppTheme.lightDivider,
                   valueColor: const AlwaysStoppedAnimation<Color>(
@@ -822,21 +744,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             horizontal: 16,
             vertical: 4,
           ),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF34C759), Color(0xFF30D158)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.cloud_download,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
+          leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.cloud_download,
+      ),
           title: Text(
             AppLocalizations.of(context)!.downloadAllLibrary,
             style: const TextStyle(fontSize: 16, color: Color(0xFF34C759)),
@@ -900,6 +811,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         return;
       }
 
+      if (!mounted) return;
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -989,20 +901,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     final cachedCount = _bpmAnalyzer.getCachedCount();
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.speedometer,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+        icon: CupertinoIcons.speedometer,
       ),
       title: Text(
         AppLocalizations.of(context)!.cachedBpms,
@@ -1012,7 +913,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         '$cachedCount',
         style: TextStyle(
           fontSize: 16,
-          color: _isDark
+          color: context.isDark
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
@@ -1026,7 +927,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       padding: const EdgeInsets.all(16),
       child: LinearProgressIndicator(
         value: progress,
-        backgroundColor: _isDark ? AppTheme.darkCard : AppTheme.lightDivider,
+        backgroundColor: context.isDark ? AppTheme.darkCard : AppTheme.lightDivider,
         valueColor: AlwaysStoppedAnimation<Color>(
           Theme.of(context).colorScheme.primary,
         ),
@@ -1037,7 +938,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   Widget _buildCacheAllButton() {
     return Column(
       children: [
-        _buildDivider(),
+        const SettingsDivider(),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -1063,7 +964,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   Widget _buildClearCacheButton() {
     return Column(
       children: [
-        _buildDivider(),
+        const SettingsDivider(),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,

@@ -9,6 +9,9 @@ import '../services/transcoding_service.dart';
 import '../services/storage_service.dart';
 import '../services/fade_settings_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
 
 class SettingsPlaybackTab extends StatefulWidget {
   const SettingsPlaybackTab({super.key});
@@ -30,8 +33,6 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   int _autoDjSongsToAdd = 5;
   bool _fadeEnabled = false;
   int _fadeDurationMs = 300;
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -64,12 +65,12 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAutoDj,
           children: [
             _buildAutoDjModeSelector(),
             if (_autoDjMode != AutoDjMode.off) ...[
-              _buildDivider(),
+              const SettingsDivider(),
               _buildAutoDjSongsSlider(),
             ],
           ],
@@ -81,16 +82,16 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         const SizedBox(height: 24),
         _buildLrcLibSection(),
         const SizedBox(height: 24),
-        _buildSection(
+        SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionVolumeNormalization,
           children: [
             _buildReplayGainModeSelector(),
             if (_replayGainMode != ReplayGainMode.off) ...[
-              _buildDivider(),
+              const SettingsDivider(),
               _buildReplayGainPreampSlider(),
-              _buildDivider(),
+              const SettingsDivider(),
               _buildReplayGainClippingToggle(),
-              _buildDivider(),
+              const SettingsDivider(),
               _buildReplayGainFallbackSlider(),
             ],
           ],
@@ -102,69 +103,12 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: _isDark
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: _isDark ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(children: children),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 56),
-      child: Container(
-        height: 0.5,
-        color: _isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-      ),
-    );
-  }
-
   Widget _buildAutoDjModeSelector() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.wand_stars,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+        icon: CupertinoIcons.wand_stars,
       ),
       title: Text(
         AppLocalizations.of(context)!.autoDjMode,
@@ -199,20 +143,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildAutoDjSongsSlider() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.music_note_list,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+        icon: CupertinoIcons.music_note_list,
       ),
       title: Text(
         AppLocalizations.of(context)!.autoDjSongsToAdd(_autoDjSongsToAdd),
@@ -240,20 +173,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildReplayGainModeSelector() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF34C759), Color(0xFF30D158)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          CupertinoIcons.speaker_2,
-          color: Colors.white,
-          size: 18,
-        ),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+        icon: CupertinoIcons.speaker_2,
       ),
       title: Text(AppLocalizations.of(context)!.replayGainMode,
           style: const TextStyle(fontSize: 16)),
@@ -347,7 +269,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
   Widget _buildLrcLibSection() {
     final accent = Theme.of(context).colorScheme.primary;
-    return _buildSection(
+    return SettingsSectionCard(
       title: 'Lyrics',
       children: [
         ListTile(
@@ -401,7 +323,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return Consumer<PlayerProvider>(
       builder: (context, player, _) {
         final accent = Theme.of(context).colorScheme.primary;
-        return _buildSection(
+        return SettingsSectionCard(
           title: 'Gapless Playback',
           children: [
             ListTile(
@@ -451,7 +373,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
   Widget _buildFadeSection() {
     final l10n = AppLocalizations.of(context)!;
-    return _buildSection(
+    return SettingsSectionCard(
       title: l10n.sectionFadeInOut,
       children: [
         ListTile(
@@ -500,7 +422,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           ),
         ),
         if (_fadeEnabled) ...[
-          _buildDivider(),
+          const SettingsDivider(),
           ListTile(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -533,7 +455,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
       builder: (context, ts, _) {
         final accent = Theme.of(context).colorScheme.primary;
         final secondaryText =
-            _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+            context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
 
         Widget connectionBadge() {
           final isWifi = ts.currentConnectionType == ConnectionType.wifi;
@@ -566,7 +488,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           );
         }
 
-        return _buildSection(
+        return SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionStreamingQuality,
           children: [
             ListTile(
@@ -574,21 +496,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 horizontal: 16,
                 vertical: 4,
               ),
-              leading: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9500), Color(0xFFFF3B30)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  CupertinoIcons.waveform,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
+              leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
+        icon: CupertinoIcons.waveform,
+      ),
               title: Text(
                 AppLocalizations.of(context)!.transcodingEnable,
                 style: const TextStyle(fontSize: 16),
@@ -604,7 +515,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
               ),
             ),
             if (ts.enabled) ...[
-              _buildDivider(),
+              const SettingsDivider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -675,7 +586,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                     ],
                   ),
                 ),
-              _buildDivider(),
+              const SettingsDivider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -707,7 +618,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   },
                 ),
               ),
-              _buildDivider(),
+              const SettingsDivider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -742,7 +653,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   },
                 ),
               ),
-              _buildDivider(),
+              const SettingsDivider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,

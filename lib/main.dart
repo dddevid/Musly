@@ -36,9 +36,10 @@ Future<void> _showPrivacyPolicyIfNeeded() async {
         barrierDismissible: false,
       );
 
-      // If user declined, mark as accepted anyway to not show again
-      // but we could handle this differently if needed
+      // If user declined, exit the application
       if (result == false) {
+        exit(0);
+      } else {
         await PrivacyPolicyDialog.markAccepted();
       }
     }

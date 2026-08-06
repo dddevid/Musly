@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dart_eval/dart_eval.dart';
-import 'package:dart_eval/stdlib/core.dart';
 import '../models/now_playing_theme.dart';
 
 /// A widget that executes custom Dart code from themes using dart_eval

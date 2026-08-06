@@ -5,6 +5,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/services.dart';
 import 'package:musly/services/audio_handler.dart';
+import 'package:musly/services/transcoding_service.dart';
 import 'package:provider/provider.dart';
 
 import '../test_helpers.dart';
@@ -26,6 +27,7 @@ void main() {
         UpnpService(),
         MuslyAudioHandler(),
         JukeboxService(),
+        TranscodingService(),
       );
 
       await tester.pumpWidget(
@@ -62,7 +64,7 @@ void main() {
       WidgetTester tester,
     ) async {
       final subsonic = SubsonicService();
-      final provider = LibraryProvider(subsonic);
+      final provider = LibraryProvider(subsonic, MuslyAudioHandler());
 
       await tester.pumpWidget(
         ChangeNotifierProvider<LibraryProvider>.value(

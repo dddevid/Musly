@@ -1,15 +1,15 @@
-/// Test configuration loader for Navidrome integration tests.
-///
-/// Reads the server URL from (in order of priority):
-///   1. `NAVIDROME_TEST_URL` environment variable
-///   2. `test_server_config.json` in the project root
-///   3. Default fallback `http://localhost:4533`
-///
-/// Usage:
-///   flutter test --dart-define=NAVIDROME_TEST_URL=http://192.168.1.100:4533
-///
-/// Or create `test_server_config.json`:
-///   {"url": "http://192.168.1.100:4533", "username": "admin", "password": "admin"}
+// Test configuration loader for Navidrome integration tests.
+//
+// Reads the server URL from (in order of priority):
+//   1. `NAVIDROME_TEST_URL` environment variable
+//   2. `test_server_config.json` in the project root
+//   3. Default fallback `http://localhost:4533`
+//
+// Usage:
+//   flutter test --dart-define=NAVIDROME_TEST_URL=http://192.168.1.100:4533
+//
+// Or create `test_server_config.json`:
+//   {"url": "http://192.168.1.100:4533", "username": "admin", "password": "admin"}
 
 import 'dart:convert';
 import 'dart:io';
