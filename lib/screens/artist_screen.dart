@@ -7,6 +7,7 @@ import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
+import '../services/offline_service.dart';
 
 class ArtistScreen extends StatefulWidget {
   final String artistId;
