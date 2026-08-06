@@ -19,6 +19,7 @@ class ArtistScreen extends StatefulWidget {
 
 class _ArtistScreenState extends State<ArtistScreen> {
   Artist? _artist;
+  ArtistInfo? _artistInfo;
   List<Song> _topSongs = [];
   List<Album> _albums = [];
   bool _isLoading = true;
@@ -52,7 +53,12 @@ class _ArtistScreenState extends State<ArtistScreen> {
             .where((s) => s.artistId == widget.artistId)
             .toList();
       } else {
-        artist = await subsonicService.getArtist(widget.artistId);
+        final artistFuture = subsonicService.getArtist(widget.artistId);
+        final artistInfoFuture = subsonicService.getArtistInfo(widget.artistId);
+        
+        artist = await artistFuture;
+        _artistInfo = await artistInfoFuture;
+
         topSongs = await subsonicService.getArtistTopSongs(widget.artistId);
         albums = await subsonicService.getArtistAlbums(widget.artistId);
         if (albums.isNotEmpty) {
@@ -424,6 +430,23 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                   ),
                                 );
                               },
+                            ),
+                          ],
+                          if (_artistInfo?.biography != null &&
+                              _artistInfo!.biography!.isNotEmpty) ...[
+                            const SizedBox(height: 32),
+                            Text(
+                              'About ${_artist!.name}',
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _artistInfo!.biography!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.textTheme.bodyMedium?.color
+                                    ?.withValues(alpha: 0.8),
+                                height: 1.5,
+                              ),
                             ),
                           ],
                         ],

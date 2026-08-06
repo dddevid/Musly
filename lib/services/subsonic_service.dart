@@ -477,6 +477,18 @@ class SubsonicService {
     return Artist.fromJson(response['artist'] as Map<String, dynamic>);
   }
 
+  Future<ArtistInfo?> getArtistInfo(String id) async {
+    try {
+      final response = await _request('getArtistInfo2', {'id': id});
+      if (response['artistInfo2'] != null) {
+        return ArtistInfo.fromJson(response['artistInfo2'] as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<List<Album>> getAlbumList({
     String type = 'recent',
     int size = 20,
