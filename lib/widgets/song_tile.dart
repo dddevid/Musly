@@ -197,7 +197,7 @@ class SongTile extends StatelessWidget {
             if (isDownloaded)
               const Padding(
                 padding: EdgeInsets.only(right: 4),
-                child: Icon(Icons.check_circle, size: 14, color: Colors.green),
+                child: Icon(CupertinoIcons.arrow_down_circle_fill, size: 14, color: Colors.grey),
               ),
             if (song.starred == true)
               Padding(

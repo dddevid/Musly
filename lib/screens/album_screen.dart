@@ -313,8 +313,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
+                                  CupertinoIcons.arrow_down_circle_fill,
+                                  color: Colors.grey,
                                   size: 28,
                                 ),
                               ),

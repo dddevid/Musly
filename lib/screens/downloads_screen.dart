@@ -4,6 +4,7 @@ import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../services/offline_service.dart';
 import '../widgets/widgets.dart';
+import 'album_screen.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
@@ -117,10 +118,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       itemCount: _downloadedSongs.length,
       itemBuilder: (context, index) {
         final song = _downloadedSongs[index];
-        return SongListTile(
+        return SongTile(
           song: song,
-          songs: _downloadedSongs,
+          playlist: _downloadedSongs,
           index: index,
+          showArtwork: true,
+          showArtist: true,
+          showAlbum: true,
         );
       },
     );
@@ -150,7 +154,17 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       ),
       itemCount: _downloadedAlbums.length,
       itemBuilder: (context, index) {
-        return AlbumGridItem(album: _downloadedAlbums[index]);
+        final album = _downloadedAlbums[index];
+        return AlbumCard(
+          album: album,
+          size: double.infinity,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AlbumScreen(albumId: album.id),
+            ),
+          ),
+        );
       },
     );
   }

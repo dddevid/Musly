@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../models/album.dart';
 import '../theme/app_theme.dart';
+import '../services/offline_service.dart';
 import 'album_artwork.dart';
 import 'multi_artist_widget.dart';
 
@@ -78,11 +80,33 @@ class _AlbumCardState extends State<AlbumCard> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                widget.album.name,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.album.name,
+                      style: theme.textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  ValueListenableBuilder<Set<String>>(
+                    valueListenable: OfflineService().downloadedPlaylistIds,
+                    builder: (context, downloadedIds, _) {
+                      if (downloadedIds.contains(widget.album.id)) {
+                        return const Padding(
+                          padding: EdgeInsets.only(left: 4),
+                          child: Icon(
+                            CupertinoIcons.arrow_down_circle_fill,
+                            size: 14,
+                            color: Colors.grey,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
               ),
               if (widget.album.artist != null ||
                   widget.album.artistParticipants != null)
