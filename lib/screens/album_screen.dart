@@ -177,6 +177,50 @@ class _AlbumScreenState extends State<AlbumScreen> {
     );
   }
 
+  Future<void> _toggleLike() async {
+    if (_album == null) return;
+    
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final isStarred = _album!.starred == true;
+    
+    setState(() {
+      _album!.starred = !isStarred;
+    });
+
+    try {
+      if (isStarred) {
+        await libraryProvider.unstar(albumId: _album!.id);
+      } else {
+        await libraryProvider.star(albumId: _album!.id);
+      }
+    } catch (e) {
+      // Revert on failure
+      setState(() {
+        _album!.starred = isStarred;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update liked status')),
+        );
+      }
+    }
+  }
+
+  Widget _buildLikeButton(BuildContext context) {
+    if (_album == null) return const SizedBox.shrink();
+    final isStarred = _album!.starred == true;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    
+    return IconButton(
+      tooltip: isStarred ? 'Unlike' : 'Like',
+      onPressed: _toggleLike,
+      icon: Icon(
+        isStarred ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+        color: isStarred ? primaryColor : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -325,6 +369,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   ),
                 ),
                 actions: [
+                  if (!isOffline) _buildLikeButton(context),
                   if (!isOffline) _buildDownloadButton(context),
                 ],
               ),

@@ -13,6 +13,7 @@ class Album {
   final DateTime? created;
   final bool isLocal;
   final List<ArtistRef>? artistParticipants;
+  bool? starred;
 
   Album({
     required this.id,
@@ -27,6 +28,7 @@ class Album {
     this.created,
     this.isLocal = false,
     this.artistParticipants,
+    this.starred,
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class Album {
           ? DateTime.tryParse(json['created'].toString())
           : null,
       artistParticipants: ArtistRef.parseList(json['artists']),
+      starred: json['starred'] != null ? true : false,
     );
   }
 
@@ -59,8 +62,9 @@ class Album {
       'year': year,
       'genre': genre,
       'created': created?.toIso8601String(),
-      if (artistParticipants != null)
-        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
+      'isLocal': isLocal,
+      'artists': artistParticipants?.map((a) => a.toJson()).toList(),
+      if (starred != null) 'starred': starred! ? 'starred' : null,
     };
   }
 
