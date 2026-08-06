@@ -2453,18 +2453,23 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _transcodingService.enabled ? _transcodingService.format : null;
     final url = _subsonicService.getStreamUrl(song.id,
         maxBitRate: maxBitRate, format: format);
-    // Cache remote streams locally so seeking works even when the server
-    // transcodes and doesn't support HTTP range requests (issue #170).
-    final cacheDir = await getTemporaryDirectory();
-    final cacheFile = File(
-      '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
-    );
-    // ignore: experimental_member_use
-    return LockCachingAudioSource(
-      Uri.parse(url),
-      cacheFile: cacheFile,
-      tag: song.id,
-    );
+    if (_transcodingService.enabled) {
+      final cacheDir = await getTemporaryDirectory();
+      final cacheFile = File(
+        '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
+      );
+      // ignore: experimental_member_use
+      return LockCachingAudioSource(
+        Uri.parse(url),
+        cacheFile: cacheFile,
+        tag: song.id,
+      );
+    } else {
+      return AudioSource.uri(
+        Uri.parse(url),
+        tag: song.id,
+      );
+    }
   }
 
   Future<void> _buildAndSetConcatenatingSource(
@@ -2502,19 +2507,28 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             _offlineService.getLocalPath(_currentSong!.id) != null) {
           await _audioPlayer.setUrl(playUrl);
         } else {
-          final cacheDir = await getTemporaryDirectory();
-          final cacheFile = File(
-            '${cacheDir.path}/musly_stream_${_currentSong!.id.hashCode}.tmp',
-          );
-          // ignore: experimental_member_use
-          await _audioPlayer.setAudioSource(
+          if (_transcodingService.enabled) {
+            final cacheDir = await getTemporaryDirectory();
+            final cacheFile = File(
+              '${cacheDir.path}/musly_stream_${_currentSong!.id.hashCode}.tmp',
+            );
             // ignore: experimental_member_use
-            LockCachingAudioSource(
-              Uri.parse(playUrl),
-              cacheFile: cacheFile,
-              tag: _currentSong!.id,
-            ),
-          );
+            await _audioPlayer.setAudioSource(
+              // ignore: experimental_member_use
+              LockCachingAudioSource(
+                Uri.parse(playUrl),
+                cacheFile: cacheFile,
+                tag: _currentSong!.id,
+              ),
+            );
+          } else {
+            await _audioPlayer.setAudioSource(
+              AudioSource.uri(
+                Uri.parse(playUrl),
+                tag: _currentSong!.id,
+              ),
+            );
+          }
         }
       }
       // Seek to the restored position after the source is loaded
