@@ -14,14 +14,19 @@ import '../services/update_service.dart';
 import '../services/usage_time_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
+
+import '../widgets/widgets.dart';
 import '../widgets/widgets.dart';
 import '../widgets/support_dialog.dart';
 import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
-import 'now_playing_screen.dart';
 import 'fantasy_screen.dart';
+
+class PlayPauseIntent extends Intent {
+  const PlayPauseIntent();
+}
 
 class MainScreen extends StatefulWidget {
   final bool isOfflineMode;
@@ -316,45 +321,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _openNowPlaying() {
-    Navigator.of(context)
-        .push(
-      PageRouteBuilder(
-        opaque: true,
-        barrierColor: Colors.black,
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return const NowPlayingScreen();
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.easeOutCubic;
-
-          var tween = Tween(
-            begin: begin,
-            end: end,
-          ).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    )
-        .then((_) async {
-      if (!mounted) return;
-      if (Platform.isIOS) {
-        // Wait longer for the transition to complete and audio session to stabilize
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (!mounted) return;
-        Provider.of<PlayerProvider>(context, listen: false)
-            .reactivateAudioSession();
-      }
-    });
-  }
-
   bool get _isDesktop {
     if (kIsWeb) return false;
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -366,7 +332,7 @@ class _MainScreenState extends State<MainScreen> {
     final isLocalMode = authProvider.isLocalOnlyMode;
 
     if (_isDesktop) {
-      return Scaffold(
+      final content = Scaffold(
         body: Column(
           children: [
             Expanded(
@@ -424,6 +390,27 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
           ],
+        ),
+      );
+
+      return Shortcuts(
+        shortcuts: <ShortcutActivator, Intent>{
+          const SingleActivator(LogicalKeyboardKey.space): const PlayPauseIntent(),
+        },
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            PlayPauseIntent: CallbackAction<PlayPauseIntent>(
+              onInvoke: (PlayPauseIntent intent) {
+                final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                playerProvider.togglePlayPause();
+                return null;
+              },
+            ),
+          },
+          child: Focus(
+            autofocus: true,
+            child: content,
+          ),
         ),
       );
     }
@@ -550,7 +537,7 @@ class _MainScreenState extends State<MainScreen> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (hasCurrentSong) MiniPlayer(onTap: _openNowPlaying),
+                    if (hasCurrentSong) const MiniPlayer(),
                     liquidGlass
                         ? _buildGlassBottomNav(context)
                         : _buildBottomNav(context),

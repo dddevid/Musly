@@ -1849,4 +1849,16 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Δεν ήταν δυνατή η έναρξη της αναπαραγωγής — μια άλλη εφαρμογή έχει την εστίαση ήχου';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

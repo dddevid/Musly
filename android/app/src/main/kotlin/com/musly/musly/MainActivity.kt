@@ -13,14 +13,5 @@ class MainActivity : AudioServiceFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // FlutterPlugin-based plugins (use the plugin registry).
-        flutterEngine.plugins.add(AndroidSystemPlugin)
-        flutterEngine.plugins.add(BluetoothAvrcpPlugin)
-        flutterEngine.plugins.add(SamsungIntegrationPlugin)
-
-        // Legacy companion-object registerWith() plugins.
-        DolbyAtmosPlugin.registerWith(flutterEngine, applicationContext)
-        LyricsPlugin.registerWith(flutterEngine)
-        PitchPlugin.registerWith(flutterEngine)
     }
 }

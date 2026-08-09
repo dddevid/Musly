@@ -6,8 +6,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/recommendation_service.dart';
+import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
@@ -113,6 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 List<Album> recentAlbums = libraryProvider.recentAlbums;
                 List<Playlist> playlists = libraryProvider.playlists;
 
+                final isOffline = Provider.of<AuthProvider>(context, listen: false).state == AuthState.offlineMode;
+                final offlineService = OfflineService();
+
                 if (isOffline) {
                   final downloadedIds =
                       offlineService.getDownloadedSongIds().toSet();
@@ -175,142 +180,60 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 24),
 
                       if (recommendationService.enabled &&
-                          personalizedFeed.isNotEmpty) ...[
-                        _SectionTitle(
+                          personalizedFeed.isNotEmpty)
+                        _buildMixSection(
+                          context: context,
                           title: AppLocalizations.of(context)!.forYou,
                           icon: Icons.stars_rounded,
+                          songs: personalizedFeed,
+                          isDesktop: isDesktop,
                           hPad: hPad,
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...personalizedFeed.take(5).map((song) {
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: personalizedFeed,
-                              index: personalizedFeed.indexOf(song),
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: personalizedFeed,
-                            index: personalizedFeed.indexOf(song),
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
 
-                      if (mixes.containsKey('Quick Picks')) ...[
-                        _SectionTitle(
+                      if (mixes.containsKey('Quick Picks'))
+                        _buildMixSection(
+                          context: context,
                           title: AppLocalizations.of(context)!.quickPicks,
                           icon: Icons.bolt_rounded,
+                          songs: mixes['Quick Picks']!,
+                          isDesktop: isDesktop,
                           hPad: hPad,
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...mixes['Quick Picks']!.take(5).map((song) {
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: mixes['Quick Picks']!,
-                              index: mixes['Quick Picks']!.indexOf(song),
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: mixes['Quick Picks']!,
-                            index: mixes['Quick Picks']!.indexOf(song),
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
 
-                      if (mixes.containsKey('Discover Mix')) ...[
-                        _SectionTitle(
+                      if (mixes.containsKey('Discover Mix'))
+                        _buildMixSection(
+                          context: context,
                           title: AppLocalizations.of(context)!.discoverMix,
                           icon: Icons.explore_rounded,
+                          songs: mixes['Discover Mix']!,
+                          isDesktop: isDesktop,
                           hPad: hPad,
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...mixes['Discover Mix']!.take(5).map((song) {
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: mixes['Discover Mix']!,
-                              index: mixes['Discover Mix']!.indexOf(song),
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: mixes['Discover Mix']!,
-                            index: mixes['Discover Mix']!.indexOf(song),
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
 
                       for (final entry in mixes.entries.where(
                         (e) =>
-                            e.key != 'Quick Picks' &&
-                            e.key != 'Discover Mix' &&
-                            !e.key.contains('Vibes'),
-                      )) ...[
-                        _SectionTitle(
+                            e.key != 'Quick Picks' && e.key != 'Discover Mix',
+                      ))
+                        _buildMixSection(
+                          context: context,
                           title: entry.key,
-                          icon: Icons.album_rounded,
+                          icon: Icons.auto_awesome,
+                          songs: entry.value,
+                          isDesktop: isDesktop,
                           hPad: hPad,
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...entry.value.take(5).map((song) {
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: entry.value,
-                              index: entry.value.indexOf(song),
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: entry.value,
-                            index: entry.value.indexOf(song),
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
 
                       for (final entry in mixes.entries.where(
                         (e) => e.key.contains('Vibes'),
-                      )) ...[
-                        _SectionTitle(
+                      ))
+                        _buildMixSection(
+                          context: context,
                           title: entry.key,
                           icon: Icons.nightlight_round,
+                          songs: entry.value,
+                          isDesktop: isDesktop,
                           hPad: hPad,
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...entry.value.take(5).map((song) {
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: entry.value,
-                              index: entry.value.indexOf(song),
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: entry.value,
-                            index: entry.value.indexOf(song),
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
 
                       if (libraryProvider.recentAlbums.isNotEmpty) ...[
                         HorizontalScrollSection(
@@ -480,6 +403,52 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openAlbum(BuildContext context, String albumId) {
     NavigationHelper.push(context, AlbumScreen(albumId: albumId));
+  }
+
+  Widget _buildMixSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required List<Song> songs,
+    required bool isDesktop,
+    required double hPad,
+  }) {
+    if (isDesktop) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          HorizontalScrollSection(
+            title: title,
+            padding: EdgeInsets.symmetric(horizontal: hPad),
+            cardSize: 180,
+            children: songs.take(10).map((song) => _DesktopSongCard(
+              song: song,
+              playlist: songs,
+              index: songs.indexOf(song),
+              size: 180,
+            )).toList(),
+          ),
+          const SizedBox(height: 24),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: title,
+          icon: icon,
+          hPad: hPad,
+        ),
+        ...songs.take(5).map((song) => SongTile(
+          song: song,
+          playlist: songs,
+          index: songs.indexOf(song),
+          showAlbum: true,
+        )),
+        const SizedBox(height: 24),
+      ],
+    );
   }
 }
 
@@ -1098,6 +1067,112 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                 ),
               ),
               const SizedBox(width: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopSongCard extends StatefulWidget {
+  final Song song;
+  final List<Song> playlist;
+  final int index;
+  final double size;
+
+  const _DesktopSongCard({
+    required this.song,
+    required this.playlist,
+    required this.index,
+    required this.size,
+  });
+
+  @override
+  State<_DesktopSongCard> createState() => _DesktopSongCardState();
+}
+
+class _DesktopSongCardState extends State<_DesktopSongCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: () {
+          final p = context.read<PlayerProvider>();
+          p.playSong(widget.song, playlist: widget.playlist, startIndex: widget.index);
+        },
+        child: SizedBox(
+          width: widget.size,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedScale(
+                scale: _isHovered ? 1.04 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: _isHovered
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Stack(
+                    children: [
+                      AlbumArtwork(
+                        coverArt: widget.song.coverArt,
+                        size: widget.size,
+                        borderRadius: 8,
+                      ),
+                      if (_isHovered)
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: AppTheme.appleMusicRed,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.song.title,
+                style: theme.textTheme.bodyMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                widget.song.artist ?? '',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),

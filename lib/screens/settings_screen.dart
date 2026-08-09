@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../l10n/app_localizations.dart';
@@ -19,13 +21,26 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _selectedIndex = 0;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+
+  bool get _isDesktop {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _selectedIndex = _tabController.index;
+        });
+      }
+    });
   }
 
   @override
@@ -37,6 +52,85 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    
+    final tabs = [
+      (icon: CupertinoIcons.play_circle, text: l10n.tabPlayback),
+      (icon: CupertinoIcons.folder, text: l10n.tabStorage),
+      (icon: CupertinoIcons.cloud, text: l10n.tabServer),
+      (icon: CupertinoIcons.paintbrush, text: l10n.tabDisplay),
+      (icon: CupertinoIcons.heart_fill, text: l10n.tabSupport),
+      (icon: CupertinoIcons.info, text: l10n.tabAbout),
+    ];
+    
+    final tabViews = const [
+      SettingsPlaybackTab(),
+      SettingsStorageTab(),
+      SettingsServerTab(),
+      SettingsDisplayTab(),
+      SettingsSupportTab(),
+      SettingsAboutTab(),
+    ];
+
+    if (_isDesktop) {
+      return Scaffold(
+        backgroundColor: _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+        appBar: AppBar(
+          title: Text(l10n.settingsTitle),
+          centerTitle: false,
+          backgroundColor: _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Row(
+          children: [
+            Container(
+              width: 250,
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                itemCount: tabs.length,
+                itemBuilder: (context, index) {
+                  final isSelected = _selectedIndex == index;
+                  return ListTile(
+                    leading: Icon(
+                      tabs[index].icon,
+                      color: isSelected ? Theme.of(context).colorScheme.primary : (_isDark ? Colors.white70 : Colors.black87),
+                    ),
+                    title: Text(
+                      tabs[index].text,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Theme.of(context).colorScheme.primary : (_isDark ? Colors.white : Colors.black),
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    onTap: () {
+                      setState(() => _selectedIndex = index);
+                      _tabController.animateTo(index);
+                    },
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: tabViews.map((v) => Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 800), child: v))).toList(),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: _isDark
           ? AppTheme.darkBackground
@@ -66,44 +160,12 @@ class _SettingsScreenState extends State<SettingsScreen>
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
-          tabs: [
-            Tab(
-              icon: const Icon(CupertinoIcons.play_circle, size: 20),
-              text: l10n.tabPlayback,
-            ),
-            Tab(
-              icon: const Icon(CupertinoIcons.folder, size: 20),
-              text: l10n.tabStorage,
-            ),
-            Tab(
-              icon: const Icon(CupertinoIcons.cloud, size: 20),
-              text: l10n.tabServer,
-            ),
-            Tab(
-              icon: const Icon(CupertinoIcons.paintbrush, size: 20),
-              text: l10n.tabDisplay,
-            ),
-            Tab(
-              icon: const Icon(CupertinoIcons.heart_fill, size: 20),
-              text: l10n.tabSupport,
-            ),
-            Tab(
-              icon: const Icon(CupertinoIcons.info, size: 20),
-              text: l10n.tabAbout,
-            ),
-          ],
+          tabs: tabs.map((t) => Tab(icon: Icon(t.icon, size: 20), text: t.text)).toList(),
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          SettingsPlaybackTab(),
-          SettingsStorageTab(),
-          SettingsServerTab(),
-          SettingsDisplayTab(),
-          SettingsSupportTab(),
-          SettingsAboutTab(),
-        ],
+        children: tabViews,
       ),
     );
   }

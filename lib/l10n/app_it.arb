@@ -1788,5 +1788,9 @@
   "supportWayBugs": "Segnala bug o suggerisci funzionalità",
   "supportWayEnjoy": "Semplicemente goditi la musica! 🎵",
   "supportMadeWithLove": "Fatto con 💙 in Italia",
-  "audioFocusDenied": "Impossibile avviare la riproduzione — un'altra app ha il focus audio"
+  "audioFocusDenied": "Impossibile avviare la riproduzione — un'altra app ha il focus audio",
+  "addToLibrary": "Aggiungi alla libreria",
+  "alreadyInLibrary": "Brano già presente nella libreria del server",
+  "selectPlaylist": "Seleziona Playlist",
+  "endOfSong": "Fine Brano"
 }

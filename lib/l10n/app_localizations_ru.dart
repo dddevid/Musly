@@ -1862,4 +1862,16 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Не удалось начать воспроизведение — аудиофокус занят другим приложением';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

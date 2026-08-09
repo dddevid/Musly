@@ -11,7 +11,6 @@ import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
-import 'theme_manager_screen.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../widgets/settings/settings_icon_badge.dart';
 import '../utils/context_extensions.dart';
@@ -113,13 +112,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ],
           ],
         ),
-        const SizedBox(height: 24),
-        SettingsSectionCard(
-          title: 'NOW PLAYING THEMES',
-          children: [
-            _buildNowPlayingThemesButton(),
-          ],
-        ),
+
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.liveSearchSection.toUpperCase(),
@@ -387,39 +380,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     );
   }
 
-  Widget _buildNowPlayingThemesButton() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF8B5CF6), Color(0xFFFA243C)],
-        icon: CupertinoIcons.paintbrush,
-      ),
-      title: const Text(
-        'Customize Now Playing Screen (Beta)',
-        style: TextStyle(fontSize: 16),
-      ),
-      subtitle: const Text(
-        'Create and manage custom themes',
-        style: TextStyle(
-          fontSize: 13,
-          color: Colors.grey,
-        ),
-      ),
-      trailing: const Icon(
-        CupertinoIcons.chevron_right,
-        color: Colors.grey,
-        size: 18,
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const ThemeManagerScreen(),
-          ),
-        );
-      },
-    );
-  }
+
 
   Widget _buildLiveSearchToggle() {
     return ListTile(

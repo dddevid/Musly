@@ -13,10 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
-import '../services/android_system_service.dart';
 import '../services/windows_system_service.dart';
-import '../services/bluetooth_avrcp_service.dart';
-import '../services/samsung_integration_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
@@ -27,7 +24,7 @@ import '../services/upnp_service.dart';
 import '../services/jukebox_service.dart';
 import '../services/audio_handler.dart';
 import '../services/fade_settings_service.dart';
-import '../services/lock_screen_lyrics_service.dart';
+
 import '../services/transcoding_service.dart';
 import '../providers/library_provider.dart';
 
@@ -40,16 +37,13 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   // Convenience getter — use this everywhere just_audio is accessed directly.
   AudioPlayer get _audioPlayer => _audioHandler.player;
   final OfflineService _offlineService = OfflineService();
-  final AndroidSystemService _androidSystemService = AndroidSystemService();
   final WindowsSystemService _windowsService = WindowsSystemService();
-  final BluetoothAvrcpService _bluetoothService = BluetoothAvrcpService();
-  final SamsungIntegrationService _samsungService = SamsungIntegrationService();
   final ReplayGainService _replayGainService = ReplayGainService();
   final AutoDjService _autoDjService = AutoDjService();
   late final DiscordRpcService _discordRpcService;
   final CastService _castService;
   late final UpnpService _upnpService;
-  final LockScreenLyricsService _lyricsService = LockScreenLyricsService();
+
   LibraryProvider? _libraryProvider;
   RecommendationService? _recommendationService;
 
@@ -133,9 +127,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     } catch (_) {}
     _initializeAutoDj();
     _wireAudioHandlerCallbacks();
-    try {
-      _initializeLyricsService();
-    } catch (_) {}
 
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -342,34 +333,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   AutoDjService get autoDjService => _autoDjService;
-  LockScreenLyricsService get lyricsService => _lyricsService;
+
 
   Future<void> _initializeAutoDj() async {
     await _autoDjService.initialize();
     _autoDjService.setServices(_subsonicService, _recommendationService);
   }
 
-  Future<void> _initializeLyricsService() async {
-    await _lyricsService.initialize();
-  }
+
 
   Future<void> _initializeSystemServices() async {
-    await _androidSystemService.initialize();
-    _androidSystemService.onPlay = play;
-    _androidSystemService.onPause = pause;
-    _androidSystemService.onStop = stop;
-    _androidSystemService.onSkipNext = skipNext;
-    _androidSystemService.onSkipPrevious = skipPrevious;
-    _androidSystemService.onSeekTo = seek;
-    _androidSystemService.onSeekForward =
-        (interval) => seek(_position + interval);
-    _androidSystemService.onSeekBackward = (interval) {
-      final target = _position - interval;
-      seek(target.isNegative ? Duration.zero : target);
-    };
-    _androidSystemService.onHeadsetHook = togglePlayPause;
-    _androidSystemService.onHeadsetDoubleClick = skipNext;
-
     await _windowsService.initialize();
     _windowsService.onPlay = play;
     _windowsService.onPause = pause;
@@ -377,93 +350,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _windowsService.onSkipNext = skipNext;
     _windowsService.onSkipPrevious = skipPrevious;
     _windowsService.onSeekTo = seek;
-
-    // Audio focus and noisy callbacks must be no-ops in remote-playback mode.
-    // The audio is playing on the renderer device, not on this phone, so
-    // Android reassigning audio focus at screen-off (or a noisy event) must
-    // not pause the renderer.
-    _androidSystemService.onAudioFocusLoss = () {
-      if (isRemotePlayback) return;
-      pause();
-    };
-    _androidSystemService.onAudioFocusLossTransient = () {
-      if (isRemotePlayback) return;
-      pause();
-    };
-    _androidSystemService.onAudioFocusLossTransientCanDuck = () {
-      if (isRemotePlayback) return;
-      _smoothVolumeChange(0.3);
-    };
-    _androidSystemService.onAudioFocusGain = () {
-      if (isRemotePlayback) return;
-      final pending = _pendingFocusAction;
-      if (pending != null) {
-        _pendingFocusAction = null;
-        pending().catchError(
-          (e) => debugPrint('[Player] Deferred play failed: $e'),
-        );
-      } else {
-        _smoothVolumeChange(_volume);
-      }
-    };
-    _androidSystemService.onBecomingNoisy = () {
-      if (isRemotePlayback) return;
-      pause();
-    };
-
-    await _bluetoothService.initialize();
-    _bluetoothService.onPlay = play;
-    _bluetoothService.onPause = pause;
-    _bluetoothService.onStop = stop;
-    _bluetoothService.onSkipNext = skipNext;
-    _bluetoothService.onSkipPrevious = skipPrevious;
-    _bluetoothService.onSeekTo = seek;
-    _bluetoothService.onDeviceConnected = (device) {
-      debugPrint('Bluetooth device connected: ${device.name}');
-      // AVRCP support means the device can handle audio controls, which is
-      // a reliable proxy for A2DP audio output (watches/controllers don't
-      // advertise AVRCP). Re-query isA2dpConnected for ground truth.
-      _bluetoothService.isA2dpConnected().then((active) {
-        _isA2dpAudioActive = active;
-        debugPrint('Bluetooth A2DP audio active: $_isA2dpAudioActive');
-      });
-      _updateAllServices();
-    };
-    _bluetoothService.onDeviceDisconnected = (device) {
-      debugPrint('Bluetooth device disconnected: ${device.name}');
-      _bluetoothService.isA2dpConnected().then((active) {
-        _isA2dpAudioActive = active;
-        debugPrint('Bluetooth A2DP audio active: $_isA2dpAudioActive');
-      });
-    };
-
-    _bluetoothService.registerAbsoluteVolumeControl();
-
-    _samsungService.initialize();
-    _samsungService.onDexModeEnter = () {
-      debugPrint('Entered Samsung DeX mode');
-      notifyListeners();
-    };
-    _samsungService.onDexModeExit = () {
-      debugPrint('Exited Samsung DeX mode');
-      notifyListeners();
-    };
-    _samsungService.onEdgePanelAction = (action) {
-      switch (action) {
-        case 'play':
-          play();
-          break;
-        case 'pause':
-          pause();
-          break;
-        case 'next':
-          skipNext();
-          break;
-        case 'previous':
-          skipPrevious();
-          break;
-      }
-    };
   }
 
   void _initializeAndroidAuto() {
@@ -885,16 +771,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         ? _duration
         : Duration(seconds: _currentSong!.duration ?? 0);
 
-    _androidSystemService.updateFromSong(
-      song: _currentSong!,
-      artworkUrl: artworkUrl,
-      duration: effectiveDuration,
-      position: _position,
-      isPlaying: _isPlaying,
-      currentIndex: _currentIndex,
-      queueLength: _queue.length,
-    );
-
     _windowsService.updatePlaybackState(
       song: _currentSong!,
       artworkUrl: artworkUrl,
@@ -903,32 +779,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       isPlaying: _isPlaying,
     );
 
-    _bluetoothService.updateFromSong(
-      song: _currentSong!,
-      artworkUrl: artworkUrl,
-      duration: effectiveDuration,
-      position: _position,
-      isPlaying: _isPlaying,
-      currentIndex: _currentIndex,
-      queueLength: _queue.length,
-    );
-
-    if (_samsungService.isSamsungDevice) {
-      _samsungService.updateFromSong(
-        song: _currentSong!,
-        artworkUrl: artworkUrl,
-        duration: effectiveDuration,
-        position: _position,
-        isPlaying: _isPlaying,
-      );
-    }
   }
-
-  bool get isSamsungDevice => _samsungService.isSamsungDevice;
-  bool get isDexMode => _samsungService.isDexMode;
-  bool get hasBluetoothDevice => _bluetoothService.hasConnectedDevices;
-  List<BluetoothDeviceInfo> get connectedBluetoothDevices =>
-      _bluetoothService.connectedDevices;
 
   List<Song> get queue => _queue;
   int get currentIndex => _currentIndex;
@@ -1318,67 +1169,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   // of, or double-reporting the same denial.
   int _focusRequestToken = 0;
 
-  // Some car head units (e.g. when the built-in FM tuner holds the media
-  // audio zone) can leave a delayed focus grant unresolved indefinitely.
-  // Without a timeout, Musly gets stuck silently — Play does nothing and
-  // the only way out is force-stopping the app. See onAudioFocusGain below
-  // for the matching resolution path when the grant does arrive in time.
-  static const _delayedFocusTimeout = Duration(seconds: 5);
-
-  void _cancelPendingAudioFocusAction() {
-    _pendingFocusAction = null;
-    _focusRequestToken++;
-  }
-
-  /// Requests real Android audio focus, then runs [onGranted] — immediately
-  /// if focus was granted, later (from [onAudioFocusGain]) if the grant was
-  /// delayed, or never if the request failed outright or the delayed grant
-  /// times out.
   Future<void> _ensureAudioFocus(Future<void> Function() onGranted) async {
-    if (kIsWeb || !Platform.isAndroid) {
-      await onGranted();
-      return;
-    }
-    final token = ++_focusRequestToken;
-    AudioFocusResult result;
-    try {
-      result = await _androidSystemService.requestAudioFocus();
-      debugPrint('[Player] Audio focus requested: $result');
-    } catch (e) {
-      debugPrint('[Player] Audio focus request failed: $e');
-      _audioFocusDenied = true;
-      _pendingFocusAction = null;
-      notifyListeners();
-      return;
-    }
-    if (token != _focusRequestToken) return; // superseded meanwhile
-    switch (result) {
-      case AudioFocusResult.granted:
-        _audioFocusDenied = false;
-        _pendingFocusAction = null;
-        await onGranted(); // outside the focus-request try/catch
-        break;
-      case AudioFocusResult.delayed:
-        _audioFocusDenied = false;
-        _pendingFocusAction = onGranted;
-        notifyListeners();
-        Future.delayed(_delayedFocusTimeout, () {
-          if (token != _focusRequestToken) return; // resolved/superseded
-          if (_pendingFocusAction == null) return;
-          _pendingFocusAction = null;
-          _audioFocusDenied = true;
-          notifyListeners();
-          onAudioFocusDenied?.call();
-          debugPrint('[Player] Delayed audio focus grant timed out');
-        });
-        break;
-      case AudioFocusResult.failed:
-        _audioFocusDenied = true;
-        _pendingFocusAction = null;
-        notifyListeners();
-        onAudioFocusDenied?.call();
-        break;
-    }
+    await onGranted();
   }
 
   Future<void> _onSongComplete() async {
@@ -1515,15 +1307,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _refreshArtworkUrl();
 
-      // Load lyrics for lock screen sync
-      await _loadAndSyncLyrics(song);
 
-      // Update song info for iOS Live Activity
-      await _lyricsService.updateSongInfo(
-        title: song.title,
-        artist: song.artist ?? 'Unknown Artist',
-        artworkUrl: _resolvedArtworkUrl ?? song.coverArt,
-      );
 
       if (_castService.isConnected) {
         if (_audioPlayer.playing) await _audioPlayer.stop();
@@ -1778,81 +1562,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _isPlayingRadio = false;
       _currentRadioStation = null;
       _isPlaying = false;
-      // Clear lyrics when stopping radio
-      _lyricsService.stopSync();
-      _lyricsService.loadLyrics(null);
+
       notifyListeners();
     }
   }
 
-  /// Load and sync lyrics for the given song
-  Future<void> _loadAndSyncLyrics(Song song) async {
-    try {
-      // Stop any previous sync
-      _lyricsService.stopSync();
 
-      // Fetch lyrics from Subsonic API
-      final lyricsResponse = await _subsonicService.getLyricsBySongId(song.id);
-
-      if (lyricsResponse != null) {
-        // Extract lyrics content from response
-        // Subsonic returns lyrics in various formats
-        String? lyricsContent;
-
-        if (lyricsResponse.containsKey('lyrics')) {
-          // Standard Subsonic format
-          lyricsContent = lyricsResponse['lyrics'] as String?;
-        } else if (lyricsResponse.containsKey('structuredLyrics')) {
-          // Jellyfin format - convert to LRC
-          final structured =
-              lyricsResponse['structuredLyrics'] as List<dynamic>?;
-          if (structured != null && structured.isNotEmpty) {
-            lyricsContent = _convertStructuredToLrc(structured);
-          }
-        }
-
-        if (lyricsContent != null && lyricsContent.isNotEmpty) {
-          // Load lyrics into the service
-          await _lyricsService.loadLyrics(lyricsContent);
-
-          // Start syncing with position stream
-          _lyricsService.startSync(_audioPlayer.positionStream);
-
-          debugPrint('[Lyrics] Loaded and started sync for "${song.title}"');
-        } else {
-          // No lyrics available - clear any existing
-          await _lyricsService.loadLyrics(null);
-          debugPrint('[Lyrics] No lyrics available for "${song.title}"');
-        }
-      } else {
-        // No lyrics available - clear any existing
-        await _lyricsService.loadLyrics(null);
-        debugPrint('[Lyrics] No lyrics available for "${song.title}"');
-      }
-    } catch (e) {
-      debugPrint('[Lyrics] Failed to load lyrics for "${song.title}": $e');
-      // Don't block playback if lyrics fail
-      await _lyricsService.loadLyrics(null);
-    }
-  }
-
-  /// Convert Jellyfin structured lyrics to LRC format
-  String _convertStructuredToLrc(List<dynamic> structured) {
-    final buffer = StringBuffer();
-    for (final line in structured) {
-      if (line is Map<String, dynamic>) {
-        final text = line['text'] as String? ?? '';
-        final startTicks = line['startTicks'] as int? ?? 0;
-        final startMs = startTicks ~/ 10000; // Convert to milliseconds
-        final minutes = startMs ~/ 60000;
-        final seconds = (startMs % 60000) ~/ 1000;
-        final centiseconds = (startMs % 1000) ~/ 10;
-        buffer.writeln(
-            '[$minutes:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}]$text');
-      }
-    }
-    return buffer.toString();
-  }
 
   void _updateSystemServicesForRadio(RadioStation station) {
     _windowsService.updatePlaybackState(
@@ -1861,17 +1576,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       position: Duration.zero,
       duration: Duration.zero,
       artworkUrl: null,
-    );
-
-    _androidSystemService.updatePlaybackState(
-      songId: station.id,
-      title: station.name,
-      artist: 'Internet Radio',
-      album: station.homePageUrl ?? '',
-      artworkUrl: null,
-      duration: Duration.zero,
-      position: Duration.zero,
-      isPlaying: true,
     );
   }
 
@@ -1930,7 +1634,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _fadeOut(onComplete: () async {
         await _audioPlayer.pause();
       });
-      _cancelPendingAudioFocusAction();
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
@@ -1953,10 +1656,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _upnpService.stop();
     } else {
       await _audioPlayer.stop();
-      _cancelPendingAudioFocusAction();
-      if (!kIsWeb && Platform.isAndroid) {
-        await _androidSystemService.abandonAudioFocus();
-      }
     }
 
     _isPlaying = false;
@@ -2235,7 +1934,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> skipToIndex(int index) async {
     if (index >= 0 && index < _queue.length) {
-      if (_concatenatingSource != null) {
+      if (_concatenatingSource != null && !_isRenderingRemotely) {
         await _audioPlayer.seek(Duration.zero, index: index);
       } else {
         await playSong(_queue[index], playlist: _queue, startIndex: index);
@@ -2369,14 +2068,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     try {
       _discordRpcService.clearPresence();
     } catch (_) {}
-    // Clear lyrics when clearing queue
-    try {
-      _lyricsService.stopSync();
-    } catch (_) {}
     _clearPersistedQueue();
-    try {
-      _lyricsService.loadLyrics(null);
-    } catch (_) {}
     _audioPlayer.stop();
     _isPlaying = false;
     _position = Duration.zero;
@@ -2606,12 +2298,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     await _refreshArtworkUrl();
     if (_currentSong != null) {
-      await _loadAndSyncLyrics(_currentSong!);
-      await _lyricsService.updateSongInfo(
-        title: _currentSong!.title,
-        artist: _currentSong!.artist ?? 'Unknown Artist',
-        artworkUrl: _resolvedArtworkUrl ?? _currentSong!.coverArt,
-      );
       await _applyReplayGain(_currentSong);
     }
 
@@ -2699,7 +2385,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> reactivateAudioSession() async {
-    await _androidSystemService.requestAudioFocus();
 
     if (_currentSong != null) {
       _updateAllServices();
@@ -2755,21 +2440,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
 
     try {
-      _androidSystemService.dispose();
-    } catch (_) {}
-    try {
       _windowsService.dispose();
-    } catch (_) {}
-    try {
-      _bluetoothService.dispose();
-    } catch (_) {}
-    try {
-      _samsungService.dispose();
-    } catch (_) {}
-
-    // Dispose lyrics service
-    try {
-      _lyricsService.dispose();
     } catch (_) {}
 
     try {
@@ -2942,7 +2613,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _position = pos;
       changed = true;
     }
-    if (dur != _duration) {
+    if (dur != Duration.zero && dur != _duration) {
       _duration = dur;
       changed = true;
     }

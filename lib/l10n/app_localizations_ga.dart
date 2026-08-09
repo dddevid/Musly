@@ -1849,4 +1849,16 @@ class AppLocalizationsGa extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Níorbh fhéidir an athsheinm a thosú — tá fócas fuaime ag aip eile';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

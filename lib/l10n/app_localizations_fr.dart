@@ -1868,4 +1868,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Impossible de démarrer la lecture — une autre application utilise le focus audio';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

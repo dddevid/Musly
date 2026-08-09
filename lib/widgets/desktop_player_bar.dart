@@ -6,7 +6,7 @@ import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import '../screens/artist_screen.dart';
-import '../widgets/synced_lyrics_view.dart';
+
 import 'album_artwork.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
@@ -19,7 +19,6 @@ class DesktopPlayerBar extends StatefulWidget {
 }
 
 class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
-  bool _lyricsOpen = false;
 
   void _navigateToArtist(BuildContext context, String artistId) {
     if (widget.navigatorKey?.currentState != null) {
@@ -37,31 +36,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     }
   }
 
-  void _toggleLyrics(BuildContext context, Song song) {
-    final rootNav = Navigator.of(context, rootNavigator: true);
-    if (_lyricsOpen) {
-      rootNav.pop();
-      setState(() => _lyricsOpen = false);
-    } else {
-      rootNav
-          .push(
-        MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (ctx) => SyncedLyricsView(
-            song: song,
-            onClose: () {
-              Navigator.of(ctx, rootNavigator: true).pop();
-              setState(() => _lyricsOpen = false);
-            },
-          ),
-        ),
-      )
-          .then((_) {
-        if (mounted) setState(() => _lyricsOpen = false);
-      });
-      setState(() => _lyricsOpen = true);
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -338,21 +313,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.lyrics_rounded,
-                    size: 20,
-                    color: _lyricsOpen
-                        ? AppTheme.appleMusicRed
-                        : (isDark
-                            ? const Color(0xFFB3B3B3)
-                            : const Color(0xFF6B6B6B)),
-                  ),
-                  onPressed: () => _toggleLyrics(context, currentSong),
-                  tooltip: _lyricsOpen
-                      ? AppLocalizations.of(context)!.closeLyrics
-                      : AppLocalizations.of(context)!.lyrics,
-                ),
+
                 IconButton(
                   icon: const Icon(Icons.queue_music_rounded, size: 20),
                   onPressed: () {},

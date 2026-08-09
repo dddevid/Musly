@@ -32,7 +32,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 import 'album_artwork.dart' show isLocalFilePath;
-import 'themed_now_playing_elements.dart';
+
 import '../services/performance_monitor.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -508,40 +508,12 @@ class _AnimatedMeshBackgroundState extends State<AnimatedMeshBackground>
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return ThemeAwareBuilder(
-      builder: (ctx, theme, isCustom) {
-        // ── Custom user-defined theme backgrounds ─────────────────────────
-        if (isCustom) {
-          final bgType = theme.background.type;
-          if (bgType == 'solid') {
-            return ColoredBox(color: theme.background.getColor(0));
-          }
-          if (bgType == 'gradient') {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.background.getColor(0),
-                    theme.background.getColor(1),
-                  ],
-                ),
-              ),
-            );
-          }
-          // bgType == 'dynamic' falls through to the animated mesh below.
-        }
-
-        // ── Animated mesh (default) ───────────────────────────────────────
-        return RepaintBoundary(
-          child: TweenAnimationBuilder<List<Color>>(
-            tween: _ColorListTween(begin: _prevColors, end: _colors),
-            duration: const Duration(milliseconds: 900),
-            builder: (ctx, colors, _) => _buildAdaptive(ctx, colors),
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: TweenAnimationBuilder<List<Color>>(
+        tween: _ColorListTween(begin: _prevColors, end: _colors),
+        duration: const Duration(milliseconds: 900),
+        builder: (ctx, colors, _) => _buildAdaptive(ctx, colors),
+      ),
     );
   }
 

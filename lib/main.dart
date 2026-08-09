@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:async';
@@ -24,6 +25,15 @@ import 'theme/theme.dart';
 import 'utils/image_cache.dart';
 
 // Global instance for analytics (to be shown after auth)
+
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
+}
 
 /// Shows the privacy policy dialog on first launch
 Future<void> _showPrivacyPolicyIfNeeded() async {
@@ -167,7 +177,6 @@ void main() async {
   final upnpService = UpnpService();
   final jukeboxService = JukeboxService();
   final themeService = ThemeService();
-  final nowPlayingThemeService = NowPlayingThemeService();
 
   BpmAnalyzerService().initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -190,9 +199,7 @@ void main() async {
   jukeboxService.initialize().catchError((e) {
     debugPrint('Failed to initialize jukebox service: $e');
   });
-  nowPlayingThemeService.initialize().catchError((e) {
-    debugPrint('Failed to initialize now playing theme service: $e');
-  });
+
 
   // Initialize favorite playlists service
   FavoritePlaylistsService().initialize().catchError((e) {
@@ -253,9 +260,6 @@ void main() async {
       ChangeNotifierProvider<CastService>.value(value: castService),
       ChangeNotifierProvider<LocaleService>.value(value: localeService),
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
-      ChangeNotifierProvider<NowPlayingThemeService>.value(
-        value: nowPlayingThemeService,
-      ),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
@@ -305,6 +309,7 @@ class MuslyApp extends StatelessWidget {
           theme: light,
           darkTheme: dark,
           themeMode: themeService.themeMode,
+          scrollBehavior: AppScrollBehavior(),
           navigatorKey: navigatorKey,
           locale: localeService.currentLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -478,14 +483,16 @@ class _ServerUnreachableScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(ctx).brightness == Brightness.dark
-              ? AppTheme.darkSurface
-              : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: SafeArea(
+      builder: (ctx) => Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(ctx).brightness == Brightness.dark
+                ? AppTheme.darkSurface
+                : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -527,6 +534,9 @@ class _ServerUnreachableScreen extends StatelessWidget {
               const SizedBox(height: 8),
             ],
           ),
+        ),
+      ),
+      ),
     );
   }
 }
@@ -569,8 +579,7 @@ class _AuthenticatingScreenState extends State<_AuthenticatingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(

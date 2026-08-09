@@ -131,6 +131,12 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
+  Future<void> onTaskRemoved() async {
+    await stop();
+    await super.onTaskRemoved();
+  }
+
+  @override
   Future<void> skipToNext() => onSkipNext?.call() ?? Future.value();
 
   @override
@@ -541,7 +547,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 /// On desktop/web the handler is created directly (audio_service has no
 /// backend there).
 Future<MuslyAudioHandler> initAudioService() async {
-  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid || Platform.isMacOS)) {
     return AudioService.init(
       builder: () => MuslyAudioHandler(),
       config: const AudioServiceConfig(
@@ -554,7 +560,7 @@ Future<MuslyAudioHandler> initAudioService() async {
         androidStopForegroundOnPause: false,
         androidNotificationIcon: 'mipmap/ic_launcher',
         notificationColor: Color(0xFF1DB954),
-        preloadArtwork: false,
+        preloadArtwork: true,
         androidBrowsableRootExtras: {
           'android.media.browse.SEARCH_SUPPORTED': true,
         },

@@ -1849,4 +1849,16 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'প্লেব্যাক শুরু করা যায়নি — অন্য একটি অ্যাপ অডিও ফোকাস ব্যবহার করছে';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

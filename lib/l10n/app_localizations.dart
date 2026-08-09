@@ -3501,6 +3501,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t start playback — another app has audio focus'**
   String get audioFocusDenied;
+
+  /// Add to library option in menu
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Library'**
+  String get addToLibrary;
+
+  /// Snackbar message when trying to add a song to the library that is already there
+  ///
+  /// In en, this message translates to:
+  /// **'Song already in server library'**
+  String get alreadyInLibrary;
+
+  /// Title for playlist selection bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Select Playlist'**
+  String get selectPlaylist;
+
+  /// Sleep timer option to end at the end of the current song
+  ///
+  /// In en, this message translates to:
+  /// **'End of Song'**
+  String get endOfSong;
 }
 
 class _AppLocalizationsDelegate

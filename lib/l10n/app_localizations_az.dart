@@ -1849,4 +1849,16 @@ class AppLocalizationsAz extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Oxutma başladıla bilmədi — audio fokusu başqa tətbiqdədir';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

@@ -11,7 +11,10 @@ import '../services/player_ui_settings_service.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/screen_helper.dart';
+import '../services/subsonic_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'album_artwork.dart';
+import '../screens/now_playing_screen.dart';
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onTap;
@@ -29,6 +32,38 @@ class MiniPlayer extends StatelessWidget {
           (p.currentSong, p.currentRadioStation, p.isPlayingRadio),
       builder: (context, data, _) {
         final (currentSong, currentRadioStation, isPlayingRadio) = data;
+
+        void handleTap() {
+          if (onTap != null) {
+            onTap!();
+            return;
+          }
+          if (currentSong != null) {
+            final subsonic = Provider.of<SubsonicService>(context, listen: false);
+            final coverUrl = currentSong.coverArt != null ? subsonic.getCoverArtUrl(currentSong.coverArt, size: 600) : null;
+            final imageProvider = coverUrl != null 
+                ? CachedNetworkImageProvider(coverUrl) as ImageProvider
+                : const AssetImage('assets/default_cover.png') as ImageProvider;
+            final topPadding = MediaQuery.of(context).padding.top;    
+
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              useRootNavigator: true,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => NowPlayingScreen(
+                topPadding: topPadding,
+                image: imageProvider,
+                title: currentSong.title,
+                artist: (currentSong.artistParticipants?.isNotEmpty == true
+                    ? currentSong.artistParticipants!.map((a) => a.name).join(', ')
+                    : currentSong.artist) ?? '',
+                heroTag: 'cover_${currentSong.id}',
+                song: currentSong,
+              ),
+            );
+          }
+        }
 
         if (currentSong == null && !isPlayingRadio) {
           return const SizedBox.shrink();
@@ -85,7 +120,7 @@ class MiniPlayer extends StatelessWidget {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                   child: GestureDetector(
-                    onTap: onTap,
+                    onTap: handleTap,
                     child: Container(
                       height: 64,
                       decoration: BoxDecoration(
@@ -111,7 +146,7 @@ class MiniPlayer extends StatelessWidget {
 
         return RepaintBoundary(
           child: GestureDetector(
-            onTap: onTap,
+            onTap: handleTap,
             child: Container(
               height: 64,
               decoration: BoxDecoration(

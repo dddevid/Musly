@@ -1849,4 +1849,16 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Не вдалося почати відтворення — аудіофокус зайнятий іншою програмою';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

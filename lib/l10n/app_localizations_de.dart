@@ -1860,4 +1860,16 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'Wiedergabe konnte nicht gestartet werden — eine andere App hat den Audiofokus';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

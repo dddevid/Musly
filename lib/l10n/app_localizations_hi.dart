@@ -1849,4 +1849,16 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get audioFocusDenied =>
       'प्लेबैक शुरू नहीं हो सका — किसी अन्य ऐप के पास ऑडियो फ़ोकस है';
+
+  @override
+  String get addToLibrary => 'Add to Library';
+
+  @override
+  String get alreadyInLibrary => 'Song already in server library';
+
+  @override
+  String get selectPlaylist => 'Select Playlist';
+
+  @override
+  String get endOfSong => 'End of Song';
 }

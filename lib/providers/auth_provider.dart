@@ -334,16 +334,6 @@ class AuthProvider extends ChangeNotifier {
     try {
       await offlineService.deleteAllDownloads();
     } catch (_) {}
-    try {
-      await AndroidSystemService().dispose();
-    } catch (_) {}
-    try {
-      await SamsungIntegrationService().dispose();
-    } catch (_) {}
-    try {
-      await BluetoothAvrcpService().dispose();
-    } catch (_) {}
-
     await _storageService.clearAll();
 
     _config = null;
