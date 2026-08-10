@@ -95,16 +95,6 @@ If you find Musly useful and want to support its development
   <img src="screenshots/Screenshot_20260101_024803.png" width="200" />
 </p>
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=dddevid%2Fmusly&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=dddevid/musly&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=dddevid/musly&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=dddevid/musly&type=date&legend=top-left" />
- </picture>
-</a>
-
 ## Installation
 
 1. Install dependencies:
