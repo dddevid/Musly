@@ -854,6 +854,51 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
                     final l10n = AppLocalizations.of(context)!;
                     final messenger = ScaffoldMessenger.of(context);
 
+                    // Check if song already exists in the playlist
+                    bool isDuplicate = false;
+                    try {
+                      final fullPlaylist =
+                          await subsonicService.getPlaylist(playlist.id);
+                      final existingSongs =
+                          fullPlaylist.songs ?? playlist.songs ?? [];
+                      isDuplicate = existingSongs.any(
+                        (s) =>
+                            s.id == song.id ||
+                            (s.title.trim().toLowerCase() ==
+                                    song.title.trim().toLowerCase() &&
+                                (s.artist ?? '').trim().toLowerCase() ==
+                                    (song.artist ?? '').trim().toLowerCase()),
+                      );
+                    } catch (_) {
+                      if (playlist.songs != null) {
+                        isDuplicate = playlist.songs!.any((s) => s.id == song.id);
+                      }
+                    }
+
+                    if (isDuplicate) {
+                      if (!context.mounted) return;
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Already in playlist'),
+                          content: Text(
+                            '"${song.title}" is already in "${playlist.name}". Do you still want to add it?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Add anyway'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                    }
+
                     try {
                       debugPrint(
                         'Attempting to add song ${song.id} (${song.title}) to playlist ${playlist.id} (${playlist.name})',

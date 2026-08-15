@@ -262,6 +262,52 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                     onTap: () async {
                       Navigator.of(context).pop();
                       final subsonic = Provider.of<SubsonicService>(context, listen: false);
+
+                      // Check if song already exists in the playlist
+                      bool isDuplicate = false;
+                      try {
+                        final fullPlaylist =
+                            await subsonic.getPlaylist(playlist.id);
+                        final existingSongs =
+                            fullPlaylist.songs ?? playlist.songs ?? [];
+                        isDuplicate = existingSongs.any(
+                          (s) =>
+                              s.id == widget.song.id ||
+                              (s.title.trim().toLowerCase() ==
+                                      widget.song.title.trim().toLowerCase() &&
+                                  (s.artist ?? '').trim().toLowerCase() ==
+                                      (widget.song.artist ?? '').trim().toLowerCase()),
+                        );
+                      } catch (_) {
+                        if (playlist.songs != null) {
+                          isDuplicate = playlist.songs!.any((s) => s.id == widget.song.id);
+                        }
+                      }
+
+                      if (isDuplicate) {
+                        if (!context.mounted) return;
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Already in playlist'),
+                            content: Text(
+                              '"${widget.song.title}" is already in "${playlist.name}". Do you still want to add it?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Add anyway'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true) return;
+                      }
+
                       try {
                         await subsonic.updatePlaylist(playlistId: playlist.id, songIdsToAdd: [widget.song.id]);
                         if (context.mounted) {
