@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
+import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
+import 'album_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -218,7 +220,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       itemCount: _favoriteAlbums.length,
       itemBuilder: (context, index) {
         final album = _favoriteAlbums[index];
-        return AlbumCard(album: album, size: double.infinity, onTap: () {});
+        return AlbumCard(
+          album: album,
+          size: double.infinity,
+          onTap: () => NavigationHelper.push(
+            context,
+            AlbumScreen(albumId: album.id),
+          ),
+        );
       },
     );
   }
