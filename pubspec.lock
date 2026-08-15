@@ -161,14 +161,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.1"
-  change_case:
-    dependency: transitive
-    description:
-      name: change_case
-      sha256: e41ef3df58521194ef8d7649928954805aeb08061917cf658322305e61568003
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   characters:
     dependency: transitive
     description:
@@ -305,14 +297,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
-  dart_eval:
-    dependency: "direct main"
-    description:
-      name: dart_eval
-      sha256: "0a955d7b1a54bf9f3f7d0de64ba07992beb28e2938e9991892801c17a42c8e6e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.8.4"
   dart_style:
     dependency: transitive
     description:
@@ -345,14 +329,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  directed_graph:
-    dependency: transitive
-    description:
-      name: directed_graph
-      sha256: "6582283519fc08a6a14172d8a3798238f09275a1147e7599baf09c6245e3104a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.5"
   dynamic_color:
     dependency: "direct main"
     description:
@@ -361,14 +337,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.1"
-  exception_templates:
-    dependency: transitive
-    description:
-      name: exception_templates
-      sha256: "57adef649aa2a99a5b324a921355ee9214472a007ca257cbec2f3abae005c93e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.2"
   fading_edge_scrollview:
     dependency: transitive
     description:
@@ -438,14 +406,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  flutter_colorpicker:
-    dependency: "direct main"
-    description:
-      name: flutter_colorpicker
-      sha256: "969de5f6f9e2a570ac660fb7b501551451ea2a1ab9e2097e89475f60e07816ea"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   flutter_displaymode:
     dependency: "direct main"
     description:
@@ -544,22 +504,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  flutter_shaders:
-    dependency: transitive
-    description:
-      name: flutter_shaders
-      sha256: "34794acadd8275d971e02df03afee3dee0f98dbfb8c4837082ad0034f612a3e2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.3"
-  flutter_sliding_up_panel:
-    dependency: "direct main"
-    description:
-      name: flutter_sliding_up_panel
-      sha256: "94f928973d83e146bbc52051e2d9f2a7ed7a5c9e7f04b54d835fff2e41d6cb99"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -700,14 +644,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
-  lazy_memo:
-    dependency: transitive
-    description:
-      name: lazy_memo
-      sha256: f3f4afe9c4ccf0f29082213c5319a3711041446fc41cd325a9bf91724d4ea9c8
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.5"
   leak_tracker:
     dependency: transitive
     description:
@@ -796,14 +732,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
-  mesh_gradient:
-    dependency: "direct main"
-    description:
-      name: mesh_gradient
-      sha256: "3dc7a7195d90f164e69aa805f4dea876eee54aed6b271ee22ae792d7b9c1fedb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.8"
   meta:
     dependency: transitive
     description:
@@ -1052,22 +980,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  pubspec_parse:
-    dependency: transitive
-    description:
-      name: pubspec_parse
-      sha256: "0560ba233314abbed0a48a2956f7f022cce7c3e1e73df540277da7544cad4082"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.0"
-  quote_buffer:
-    dependency: transitive
-    description:
-      name: quote_buffer
-      sha256: "5be4662a87aac8152aa05cdcf467e421aa2edc3b147f069798e2d26539b7ed0a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.7"
   rxdart:
     dependency: "direct main"
     description:

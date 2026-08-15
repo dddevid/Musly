@@ -135,8 +135,8 @@ class _QueueItemState extends State<_QueueItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           color: _isHovered
               ? (isDark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05))
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05))
               : Colors.transparent,
           child: Row(
             children: [

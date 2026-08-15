@@ -181,9 +181,11 @@ class _GenreScreenState extends State<GenreScreen>
       );
     }
     return ListView.builder(
-      itemCount: _songs!.length + 1,
+      padding: const EdgeInsets.only(bottom: 100),
+      itemExtent: 68.0,
+      cacheExtent: 300,
+      itemCount: _songs!.length,
       itemBuilder: (context, index) {
-        if (index == _songs!.length) return const SizedBox(height: 100);
         return SongTile(
           song: _songs![index],
           playlist: _songs,

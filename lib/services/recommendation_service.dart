@@ -49,7 +49,7 @@ class RecommendationService extends ChangeNotifier {
   List<String> _recentlyPlayed = [];
   Set<String> _starredSongs = {};
 
-  Map<String, int> _recentIndex = {};
+  final Map<String, int> _recentIndex = {};
 
   DateTime _lastDecayApplied = DateTime.fromMillisecondsSinceEpoch(0);
 

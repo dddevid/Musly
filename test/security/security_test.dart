@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/models.dart';
 import 'package:musly/services/subsonic_service.dart';
+import '../bootstrap.dart';
 
 void main() {
+  initializeTestEnvironment();
   group('Security Tests', () {
     group('ServerConfig input validation', () {
       test('should reject empty server URL', () {

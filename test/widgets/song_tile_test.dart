@@ -13,6 +13,8 @@ import 'package:musly/widgets/song_tile.dart';
 import '../test_helpers.dart';
 import '../bootstrap.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 void main() {
   initializeTestEnvironment();
   group('SongTile', () {
@@ -20,7 +22,7 @@ void main() {
     late PlayerProvider playerProvider;
 
     setUp(() {
-      subsonicService = SubsonicService();
+      SharedPreferences.setMockInitialValues({});
       subsonicService = SubsonicService();
       playerProvider = PlayerProvider(
         subsonicService,

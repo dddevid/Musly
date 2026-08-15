@@ -94,7 +94,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     setState(() => _isLoadingLyrics = true);
     try {
       final subsonic = Provider.of<SubsonicService>(context, listen: false);
-      final offlineService = Provider.of<OfflineService>(context, listen: false);
+      final offlineService = OfflineService();
       
       Map<String, dynamic>? rawLyrics;
       
@@ -102,9 +102,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         rawLyrics = await offlineService.getLocalLyrics(_lastSong!.id);
       }
       
-      if (rawLyrics == null && !offlineService.isOfflineMode && !_lastSong!.isLocal) {
+      if (rawLyrics == null && !offlineService.isOfflineMode) {
         rawLyrics = await subsonic.getLyricsBySongId(_lastSong!.id) ?? 
-                    await subsonic.getLyrics(artist: _lastSong!.artist, title: _lastSong!.title);
+                    await subsonic.getLyrics(
+                      artist: _lastSong!.artist, 
+                      title: _lastSong!.title,
+                      duration: _lastSong!.duration,
+                    );
       }
       
       if (rawLyrics != null) {
@@ -204,40 +208,48 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             children: [
               // 1. Shared Animated Background
               Positioned.fill(
-                child: BlurredGradientBackground(
-                  colors: _bgColors,
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                    },
-                    children: [
-                      // Page 0: Main Cover Art View
-                      _buildMainView(accentColor),
-                      
-                      // Page 1: Lyrics View
-                      _fetchedLyrics.isNotEmpty
-                          ? LyricsScreen(
-                              lyrics: _fetchedLyrics,
-                              currentTime: Provider.of<PlayerProvider>(context).position,
-                              onSeek: (duration) {
-                                Provider.of<PlayerProvider>(context, listen: false).seek(duration);
-                              },
-                            )
-                          : Center(
-                              child: _isLoadingLyrics 
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text(
-                                      "Testo non disponibile",
-                                      style: TextStyle(color: Colors.white70, fontSize: 18),
-                                    ),
-                            ),
-                      
-                      // Page 2: Queue View
-                      const QueueView(),
-                    ],
+                child: RepaintBoundary(
+                  child: BlurredGradientBackground(
+                    colors: _bgColors,
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
+                      children: [
+                        // Page 0: Main Cover Art View
+                        _buildMainView(accentColor),
+                        
+                        // Page 1: Lyrics View
+                        _fetchedLyrics.isNotEmpty
+                            ? StreamBuilder<Duration>(
+                                stream: Provider.of<PlayerProvider>(context, listen: false).positionStream,
+                                initialData: Provider.of<PlayerProvider>(context, listen: false).position,
+                                builder: (context, snapshot) {
+                                  return LyricsScreen(
+                                    lyrics: _fetchedLyrics,
+                                    currentTime: snapshot.data ?? Duration.zero,
+                                    onSeek: (duration) {
+                                      Provider.of<PlayerProvider>(context, listen: false).seek(duration);
+                                    },
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: _isLoadingLyrics 
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text(
+                                        "Testo non disponibile",
+                                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                                      ),
+                              ),
+                        
+                        // Page 2: Queue View
+                        const QueueView(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -394,12 +406,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: PlaybackProgressSlider(
-              position: provider.position,
-              duration: provider.duration,
-              accentColor: Colors.white,
-              onChanged: (val) {
-                provider.seek(val);
+            child: StreamBuilder<Duration>(
+              stream: provider.positionStream,
+              initialData: provider.position,
+              builder: (context, snapshot) {
+                return PlaybackProgressSlider(
+                  position: snapshot.data ?? Duration.zero,
+                  duration: provider.duration,
+                  accentColor: Colors.white,
+                  onChanged: (val) {
+                    provider.seek(val);
+                  },
+                );
               },
             ),
           ),

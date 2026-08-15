@@ -80,7 +80,7 @@ class _PlaybackProgressSliderState extends State<PlaybackProgressSlider> {
                 progress: progress,
                 isDragging: _isDragging,
                 activeColor: widget.accentColor,
-                inactiveColor: Colors.white.withOpacity(0.3),
+                inactiveColor: Colors.white.withValues(alpha: 0.3),
               ),
             ),
           ),
@@ -92,7 +92,7 @@ class _PlaybackProgressSliderState extends State<PlaybackProgressSlider> {
             Text(
               _formatDuration(Duration(milliseconds: currentDuration.toInt())),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -100,7 +100,7 @@ class _PlaybackProgressSliderState extends State<PlaybackProgressSlider> {
             Text(
               "-${_formatDuration(widget.duration - Duration(milliseconds: currentDuration.toInt()))}",
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

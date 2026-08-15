@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,8 +13,6 @@ import '../services/update_service.dart';
 import '../services/usage_time_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
-
-import '../widgets/widgets.dart';
 import '../widgets/widgets.dart';
 import '../widgets/support_dialog.dart';
 import '../l10n/app_localizations.dart';
@@ -41,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   int _searchTapCount = 0;
   DateTime _lastSearchTap = DateTime.fromMillisecondsSinceEpoch(0);
-  bool _showRightSidebar = true;
+  final bool _showRightSidebar = true;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -352,7 +349,7 @@ class _MainScreenState extends State<MainScreen> {
                       key: NavigationHelper.desktopNavigatorKey,
                       onGenerateRoute: (settings) {
                         return PageRouteBuilder(
-                          pageBuilder: (ctx, anim, _) => IndexedStack(
+                          pageBuilder: (ctx, anim, _) => LazyIndexedStack(
                             index: _currentIndex,
                             children: _screens,
                           ),
@@ -526,7 +523,7 @@ class _MainScreenState extends State<MainScreen> {
                     key: NavigationHelper.mobileNavigatorKey,
                     onGenerateRoute: (settings) {
                       return MaterialPageRoute(
-                        builder: (_) => IndexedStack(
+                        builder: (_) => LazyIndexedStack(
                           index: _currentIndex,
                           children: _screens,
                         ),
@@ -593,35 +590,27 @@ class _MainScreenState extends State<MainScreen> {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 4, 12, safeBottom > 0 ? safeBottom : 12),
-      child: DecoratedBox(
+      child: Container(
+        height: 62,
         decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xF018181A)
+              : const Color(0xF5FFFFFF),
           borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.08),
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.14),
-              blurRadius: 28,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Container(
-              height: 62,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.5)
-                    : Colors.white.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.8),
-                  width: 0.8,
-                ),
-              ),
               child: Row(
                 children: List.generate(items.length, (idx) {
                   final item = items[idx];
@@ -689,9 +678,6 @@ class _MainScreenState extends State<MainScreen> {
                   );
                 }),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

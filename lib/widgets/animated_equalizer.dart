@@ -77,25 +77,27 @@ class _AnimatedEqualizerState extends State<AnimatedEqualizer>
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _controllers[index],
-          builder: (context, child) {
-            return Container(
-              width: 3,
-              height: 12 * _controllers[index].value + 4,
-              margin: const EdgeInsets.symmetric(horizontal: 1),
-              decoration: BoxDecoration(
-                color: widget.color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            );
-          },
-        );
-      }),
+    return RepaintBoundary(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(3, (index) {
+          return AnimatedBuilder(
+            animation: _controllers[index],
+            builder: (context, child) {
+              return Container(
+                width: 3,
+                height: 12 * _controllers[index].value + 4,
+                margin: const EdgeInsets.symmetric(horizontal: 1),
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              );
+            },
+          );
+        }),
+      ),
     );
   }
 }

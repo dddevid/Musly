@@ -10,6 +10,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/models.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
@@ -17,6 +18,8 @@ import '../services/windows_system_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/replay_gain_service.dart';
 import '../services/auto_dj_service.dart';
+import '../services/ytdlp_service.dart';
+import '../services/lrclib_service.dart';
 import '../services/discord_rpc_service.dart';
 import '../services/storage_service.dart';
 import '../services/cast_service.dart';
@@ -563,6 +566,36 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           )
           .toList();
     }
+
+    // For YT Stream, also do a fast local-DB search on already-cached songs
+    // before hitting the network, to make Auto browsing feel snappier.
+    if (_subsonicService.isYoutube && _libraryProvider != null) {
+      final lowerQuery = query.toLowerCase();
+      final localHits = _libraryProvider!.cachedAllSongs
+          .where(
+            (s) =>
+                s.title.toLowerCase().contains(lowerQuery) ||
+                (s.artist?.toLowerCase().contains(lowerQuery) ?? false),
+          )
+          .take(20)
+          .toList();
+      if (localHits.isNotEmpty) {
+        return localHits
+            .map(
+              (song) => {
+                'id': song.id,
+                'title': song.title,
+                'artist': song.artist ?? '',
+                'album': song.album ?? '',
+                // YouTube songs store the thumbnail URL directly in coverArt
+                'artworkUrl': song.coverArt ?? '',
+                'duration': (song.duration ?? 0).toString(),
+              },
+            )
+            .toList();
+      }
+    }
+
     try {
       debugPrint(
           'PlayerProvider: Calling subsonicService.search with query="$query"');
@@ -581,10 +614,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
               'title': song.title,
               'artist': song.artist ?? '',
               'album': song.album ?? '',
-              'artworkUrl': _subsonicService.getCoverArtUrl(
-                song.coverArt,
-                size: 300,
-              ),
+              'artworkUrl': _subsonicService.isYoutube
+                  ? (song.coverArt ?? '')
+                  : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
               'duration': (song.duration ?? 0).toString(),
             },
           )
@@ -602,7 +634,17 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (query.trim().isEmpty) {
         if (_currentSong != null) {
           await play();
-        } else if (_libraryProvider != null &&
+          return;
+        }
+        // In YT Stream mode play from cached songs when no query is given.
+        if (_subsonicService.isYoutube &&
+            _libraryProvider != null &&
+            _libraryProvider!.cachedAllSongs.isNotEmpty) {
+          final songs = _libraryProvider!.cachedAllSongs;
+          await playSong(songs.first, playlist: songs, startIndex: 0);
+          return;
+        }
+        if (_libraryProvider != null &&
             _libraryProvider!.randomSongs.isNotEmpty) {
           final songs = _libraryProvider!.randomSongs;
           await playSong(songs.first, playlist: songs, startIndex: 0);
@@ -633,25 +675,49 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _playFromMediaId(String mediaId) async {
     debugPrint('Android Auto: playFromMediaId called with: $mediaId');
 
+    // 1. Check the current queue first (works for all server types).
     final queueIndex = _queue.indexWhere((song) => song.id == mediaId);
     if (queueIndex != -1) {
       await skipToIndex(queueIndex);
       return;
     }
 
+    // 2. Check the in-memory library (randomSongs for Subsonic/Jellyfin;
+    //    cachedAllSongs for YT Stream which keeps track in its local DB).
     if (_libraryProvider != null) {
-      final randomSongs = _libraryProvider!.randomSongs;
-      final songIndex = randomSongs.indexWhere((song) => song.id == mediaId);
+      final allSongs = _subsonicService.isYoutube
+          ? _libraryProvider!.cachedAllSongs
+          : _libraryProvider!.randomSongs;
+      final songIndex = allSongs.indexWhere((song) => song.id == mediaId);
       if (songIndex != -1) {
         await playSong(
-          randomSongs[songIndex],
-          playlist: randomSongs,
+          allSongs[songIndex],
+          playlist: allSongs,
           startIndex: songIndex,
         );
         return;
       }
     }
 
+    // 3. In YT Stream mode the mediaId IS the YouTube video ID – play it
+    //    directly without a round-trip search.
+    if (_subsonicService.isYoutube) {
+      try {
+        // Build a minimal Song object so playSong can resolve the stream.
+        final tempSong = Song(
+          id: mediaId,
+          title: mediaId, // title will be updated once stream metadata loads
+          duration: 0,
+        );
+        await playSong(tempSong);
+        return;
+      } catch (e) {
+        debugPrint('Android Auto: YT Stream playFromMediaId error: $e');
+      }
+      return;
+    }
+
+    // 4. Fallback: search by ID for Subsonic / Jellyfin.
     try {
       final searchResults = await _subsonicService.search(
         mediaId,
@@ -832,6 +898,115 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   // Fallback timer for Windows where positionStream may not emit reliably
   Timer? _windowsPositionTimer;
   Duration? _lastPolledPosition;
+
+  // Preloading state: tracks the last preloaded song ID to avoid redundant work
+  String? _lastPreloadedSongId;
+
+  /// Checks if the currently playing song is nearing its end, and if so,
+  /// triggers background preloading for the next song in the queue.
+  void _checkAndPreloadNextSong(Duration position) {
+    if (_queue.isEmpty || _currentSong == null || _isRenderingRemotely) return;
+    final totalSeconds = _duration.inSeconds > 0
+        ? _duration.inSeconds
+        : (_currentSong?.duration ?? 0);
+    if (totalSeconds <= 5) return;
+
+    final secondsRemaining = totalSeconds - position.inSeconds;
+    final progressRatio = position.inSeconds / totalSeconds;
+
+    // Start preloading when <= 25 seconds remain, or when 75% of the song has played
+    final shouldPreload = (secondsRemaining <= 25 && secondsRemaining > 0) ||
+        (progressRatio >= 0.75 && position.inSeconds >= 5);
+
+    if (!shouldPreload) return;
+
+    final nextSong = _getNextSongToPreload();
+    if (nextSong == null ||
+        nextSong.id == _lastPreloadedSongId ||
+        nextSong.id == _currentSong?.id) {
+      return;
+    }
+
+    _lastPreloadedSongId = nextSong.id;
+    _preloadSong(nextSong);
+  }
+
+  Song? _getNextSongToPreload() {
+    if (_queue.isEmpty || _currentIndex < 0) return null;
+    if (_repeatMode == RepeatMode.one) return _currentSong;
+    if (_shuffleEnabled && _queue.length > 1) {
+      for (int i = 0; i < _queue.length; i++) {
+        if (i != _currentIndex) return _queue[i];
+      }
+    }
+    if (_currentIndex < _queue.length - 1) {
+      return _queue[_currentIndex + 1];
+    }
+    if (_repeatMode == RepeatMode.all && _queue.isNotEmpty) {
+      return _queue[0];
+    }
+    return null;
+  }
+
+  Future<void> _preloadSong(Song nextSong) async {
+    debugPrint(
+      '[Player Preload] ⚡ Pre-buffering next song: "${nextSong.title}" (${nextSong.id})',
+    );
+
+    // 1. Preload stream URL / YouTube Direct Stream Info
+    if (nextSong.isLocal != true) {
+      final cleanId = nextSong.id.replaceFirst('ytmusic://', '');
+      if (_subsonicService.isYoutube ||
+          nextSong.id.startsWith('ytmusic://') ||
+          nextSong.id.length == 11) {
+        unawaited(
+          YtDlpService().resolveStreamInfo(cleanId).catchError((e) {
+            debugPrint('[Player Preload] YtDlp pre-resolve error (harmless): $e');
+            return YtStreamInfo(url: '', headers: {});
+          }),
+        );
+      } else {
+        unawaited(
+          _subsonicService.resolveStreamUrlAsync(nextSong).catchError((e) {
+            debugPrint('[Player Preload] Subsonic pre-resolve error (harmless): $e');
+            return '';
+          }),
+        );
+      }
+    }
+
+    // 2. Preload synced lyrics in cache
+    if (nextSong.title.isNotEmpty) {
+      LrcLibService()
+          .searchLyrics(
+            artist: nextSong.artist,
+            title: nextSong.title,
+            durationSeconds: nextSong.duration,
+          )
+          .catchError((_) => null);
+    }
+
+    // 3. Preload cover artwork into Flutter image cache
+    if (nextSong.coverArt != null) {
+      final coverUrl =
+          _subsonicService.getCoverArtUrl(nextSong.coverArt, size: 300);
+      if (coverUrl.isNotEmpty) {
+        try {
+          CachedNetworkImageProvider(coverUrl).resolve(ImageConfiguration.empty);
+        } catch (_) {}
+      }
+    }
+
+    // 4. Preload next YouTube radio tracks if near queue end
+    if (_subsonicService.isYoutube &&
+        _currentIndex >= _queue.length - 2 &&
+        _currentSong != null) {
+      _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
+    }
+    if (_autoDjService.shouldAddSongs(_currentIndex + 1, _queue.length)) {
+      _addAutoDjSongs().catchError((_) {});
+    }
+  }
 
   double get progress {
     if (_duration.inMilliseconds == 0) return 0;
@@ -1033,6 +1208,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
                   _lastPolledPosition = pos;
                   _position = pos;
                   _positionController.add(pos);
+                  _checkAndPreloadNextSong(pos);
                   notifyListeners();
                   _updateAllServices();
                 }
@@ -1067,7 +1243,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       },
     );
 
-    Duration? lastNotified;
     Duration? lastSystemUpdate;
     _positionSub = _audioPlayer.positionStream.listen(
       (position) {
@@ -1075,25 +1250,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         // ignore its ticks so they don't overwrite the UPnP/Cast position.
         if (_isRenderingRemotely) return;
 
-        final positionJumpedBack = _position.inMilliseconds > 0 &&
-            position.inMilliseconds < _position.inMilliseconds - 1000;
-
         _position = position;
         _positionController.add(position);
-
-        if (positionJumpedBack ||
-            lastNotified == null ||
-            position.inMilliseconds - lastNotified!.inMilliseconds > 250) {
-          lastNotified = position;
-          notifyListeners();
-        }
+        _checkAndPreloadNextSong(position);
 
         if (lastSystemUpdate == null ||
-            (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() >
-                1000) {
+            (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() > 1000) {
           lastSystemUpdate = position;
           _updateAllServices();
-          _saveQueueState();
         }
       },
       onError: (error) {
@@ -1151,23 +1315,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  /// Pending play action awaiting a deferred (delayed-gain) audio focus
-  /// grant. Cleared on pause/stop or once the grant arrives and the action
-  /// runs.
-  Future<void> Function()? _pendingFocusAction;
-  bool _audioFocusDenied = false;
+  final bool _audioFocusDenied = false;
   bool get audioFocusDenied => _audioFocusDenied;
 
-  /// Called when a real audio-focus request from the OS is denied outright,
-  /// or a delayed grant never resolves within [_delayedFocusTimeout]. UI
-  /// layers can surface this to the user.
   VoidCallback? onAudioFocusDenied;
-
-  // Invalidates an in-flight/pending focus request (from _ensureAudioFocus's
-  // await, or a delayed grant's timeout) when a newer request/pause/stop
-  // supersedes it — avoids racily resurrecting playback the user backed out
-  // of, or double-reporting the same denial.
-  int _focusRequestToken = 0;
 
   Future<void> _ensureAudioFocus(Future<void> Function() onGranted) async {
     await onGranted();
@@ -1210,7 +1361,22 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     } else if (_currentIndex < _queue.length - 1 ||
         _repeatMode == RepeatMode.all ||
         _shuffleEnabled) {
+      if (_subsonicService.isYoutube && _currentIndex >= _queue.length - 2 && _currentSong != null) {
+        _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
+      }
       await skipNext();
+    } else if (_subsonicService.isYoutube && _currentSong != null) {
+      final moreSimilar = await _subsonicService.getSimilarSongs(_currentSong!.id, count: 20);
+      final existingIds = _queue.map((s) => s.id).toSet();
+      final toAdd = moreSimilar.where((s) => !existingIds.contains(s.id)).toList();
+      if (toAdd.isNotEmpty) {
+        _queue.addAll(toAdd);
+        notifyListeners();
+        _saveQueueState();
+        await skipNext();
+      } else {
+        await _handleEndOfQueue();
+      }
     } else {
       await _handleEndOfQueue();
     }
@@ -1223,6 +1389,34 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_currentIndex < _queue.length - 1) {
         await skipToIndex(_currentIndex + 1);
       }
+    }
+  }
+
+  /// Plays a single song immediately and automatically populates the queue with similar / radio songs in the background.
+  Future<void> playSongWithRadio(Song song) async {
+    await playSong(song);
+
+    _fetchAndQueueRadioTracks(song).catchError((e) {
+      debugPrint('[Player] _fetchAndQueueRadioTracks error: $e');
+    });
+  }
+
+  Future<void> _fetchAndQueueRadioTracks(Song song) async {
+    if (_currentSong?.id != song.id) return;
+    try {
+      final similar = await _subsonicService.getSimilarSongs(song.id, count: 25);
+      if (similar.isNotEmpty && _currentSong?.id == song.id) {
+        final existingIds = _queue.map((s) => s.id).toSet();
+        final toAdd = similar.where((s) => !existingIds.contains(s.id)).toList();
+        if (toAdd.isNotEmpty) {
+          _queue.addAll(toAdd);
+          notifyListeners();
+          _saveQueueState();
+          debugPrint('[Player] Radio queue populated with ${toAdd.length} similar songs for "${song.title}"');
+        }
+      }
+    } catch (e) {
+      debugPrint('[Player] _fetchAndQueueRadioTracks failed: $e');
     }
   }
 
@@ -1276,15 +1470,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
         }
 
-        if (isSameQueue) {
+        if (isSameQueue && _concatenatingSource != null && !_isRenderingRemotely) {
           final targetIndex =
               startIndex ?? playlist.indexWhere((s) => s.id == song.id);
           if (targetIndex != -1 && targetIndex != _currentIndex) {
-            await skipToIndex(targetIndex);
+            await _audioPlayer.seek(Duration.zero, index: targetIndex);
+            return;
           } else if (targetIndex == _currentIndex && !_isPlaying) {
             await play();
+            return;
           }
-          return;
         }
 
         _queue = List.from(playlist);
@@ -1297,15 +1492,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _currentIndex = 0;
         _shuffleHistory.clear();
       } else {
-        _currentIndex = _queue.indexWhere((s) => s.id == song.id);
+        _currentIndex = startIndex ?? _queue.indexWhere((s) => s.id == song.id);
       }
       _currentSong = song;
+      _lastPreloadedSongId = null;
       _resolvedArtworkUrl = null;
       _position = Duration.zero;
       notifyListeners();
       _saveQueueState();
 
-      await _refreshArtworkUrl();
+      _refreshArtworkUrl().catchError((_) {});
 
 
 
@@ -1385,11 +1581,13 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
         if (youtubeSource != null) {
           // YouTube: single StreamAudioSource, no gapless
+          _concatenatingSource = null;
           await _audioPlayer.setAudioSource(youtubeSource);
           await _applyReplayGain(song);
           await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_subsonicService.isYoutube) {
           // All songs are YouTube — can't build ConcatenatingAudioSource easily
+          _concatenatingSource = null;
           final String playUrl;
           if (song.isLocal == true && song.path != null) {
             playUrl = Uri.file(song.path!).toString();
@@ -1734,32 +1932,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
-  void _smoothVolumeChange(double targetVolume, {int durationMs = 150}) {
-    _stopFade();
 
-    final currentVolume = _audioPlayer.volume;
-    if ((currentVolume - targetVolume).abs() < 0.01) return;
-
-    final steps = 10;
-    final stepDurationMs = durationMs ~/ steps;
-    final volumeDiff = targetVolume - currentVolume;
-    final volumeStep = volumeDiff / steps;
-
-    _isFading = true;
-
-    var currentStep = 0;
-    _fadeTimer =
-        Timer.periodic(Duration(milliseconds: stepDurationMs), (timer) async {
-      if (!_isFading || currentStep >= steps) {
-        timer.cancel();
-        _isFading = false;
-        return;
-      }
-      currentStep++;
-      final newVolume = currentVolume + (volumeStep * currentStep);
-      await _audioPlayer.setVolume(newVolume.clamp(0.0, 1.0));
-    });
-  }
 
   Future<void> togglePlayPause() async {
     if (_isPlaying) {
@@ -1842,7 +2015,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       } while (next == _currentIndex);
       await skipToIndex(next);
     } else if (_currentIndex < _queue.length - 1) {
+      if (_subsonicService.isYoutube && _currentIndex >= _queue.length - 2 && _currentSong != null) {
+        _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
+      }
       await skipToIndex(_currentIndex + 1);
+    } else if (_subsonicService.isYoutube && _currentSong != null) {
+      final moreSimilar = await _subsonicService.getSimilarSongs(_currentSong!.id, count: 20);
+      final existingIds = _queue.map((s) => s.id).toSet();
+      final toAdd = moreSimilar.where((s) => !existingIds.contains(s.id)).toList();
+      if (toAdd.isNotEmpty) {
+        _queue.addAll(toAdd);
+        notifyListeners();
+        _saveQueueState();
+        await skipToIndex(_currentIndex + 1);
+      }
     } else if (_repeatMode == RepeatMode.all) {
       if (_queue.length == 1) {
         await seek(Duration.zero);
@@ -2157,6 +2343,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (offlinePath != null) {
       return AudioSource.uri(Uri.file(offlinePath));
     }
+    if (_subsonicService.isYoutube) {
+      final ytSource = await _subsonicService.getYoutubeAudioSource(song);
+      if (ytSource != null) return ytSource;
+    }
     // Apply transcoding settings if enabled
     final maxBitRate =
         _transcodingService.enabled ? _transcodingService.currentBitRate : null;
@@ -2199,6 +2389,17 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     // When jukebox mode is active, the server handles playback.
     if (_jukeboxService.enabled) return;
     try {
+      if (_subsonicService.isYoutube && _currentSong!.isLocal != true) {
+        final ytSource =
+            await _subsonicService.getYoutubeAudioSource(_currentSong!);
+        if (ytSource != null) {
+          await _audioPlayer.setAudioSource(ytSource);
+          if (_position.inMilliseconds > 0) {
+            await _audioPlayer.seek(_position);
+          }
+          return;
+        }
+      }
       if (_gaplessEnabled && _queue.isNotEmpty) {
         await _buildAndSetConcatenatingSource(initialIndex: _currentIndex);
       } else {
@@ -2291,6 +2492,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     _currentIndex = newIndex;
     _currentSong = _queue[_currentIndex];
+    _lastPreloadedSongId = null;
     _position = Duration.zero;
     _resolvedArtworkUrl = null;
     notifyListeners();
@@ -2548,7 +2750,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool _upnpWasPlaying = false;
   // True when an A2DP audio-output device (car, speaker) is connected.
   // Control-only devices (Garmin watch, etc.) don't set this flag.
-  bool _isA2dpAudioActive = false;
+  final bool _isA2dpAudioActive = false;
 
   void _onUpnpStateChanged() {
     final connected = _upnpService.isConnected;

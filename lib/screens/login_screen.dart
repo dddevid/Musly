@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../models/server_config.dart';
 import '../providers/auth_provider.dart';
 import '../services/local_music_service.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/screen_helper.dart';
 
@@ -63,6 +64,16 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.addListener(_clearError);
     _passwordController.addListener(_clearError);
     _profileNameController.addListener(_clearError);
+    _loadSavedServerFamily();
+  }
+
+  Future<void> _loadSavedServerFamily() async {
+    final family = await StorageService().getLastSelectedFamily();
+    if (family != null && family.isNotEmpty && mounted) {
+      setState(() {
+        _serverFamily = family;
+      });
+    }
   }
 
   void _clearError() {
@@ -548,10 +559,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   _ServerFamilyToggle(
                     serverFamily: _serverFamily,
-                    onChanged: (v) => setState(() {
-                      _serverFamily = v;
-                      _useLegacyAuth = false;
-                    }),
+                    onChanged: (v) {
+                      setState(() {
+                        _serverFamily = v;
+                        _useLegacyAuth = false;
+                      });
+                      StorageService().saveLastSelectedFamily(v);
+                    },
                   ),
                   const SizedBox(height: 16),
 
@@ -575,7 +589,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'YouTube Music streams music directly from YouTube. No account required — tap Connect to start.',
+                              'YT Stream streams music directly from YouTube. No account required — tap Connect to start.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Theme.of(context).brightness == Brightness.dark
@@ -1227,12 +1241,12 @@ class _ServerFamilyToggle extends StatelessWidget {
         icon: CupertinoIcons.tv,
         activeColor: const Color(0xFF6366F1),
       ),
-      // (
-      //   label: 'YouTube Music',
-      //   family: 'youtube',
-      //   icon: CupertinoIcons.play_rectangle,
-      //   activeColor: const Color(0xFFFF0000),
-      // ),
+      (
+        label: 'YT Stream',
+        family: 'youtube',
+        icon: CupertinoIcons.play_rectangle,
+        activeColor: const Color(0xFFFF0000),
+      ),
     ];
 
     return Column(

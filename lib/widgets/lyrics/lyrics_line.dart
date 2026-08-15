@@ -39,38 +39,38 @@ class LyricsLineWidget extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     switch (state) {
       case LyricLineState.past:
-        return Container(
+        return SizedBox(
           key: const ValueKey('past'),
           width: double.infinity,
           child: Text(
             line.text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ).copyWith(color: Colors.white.withOpacity(0.32)),
+              color: Colors.white.withValues(alpha: 0.32),
+            ),
           ),
         );
       case LyricLineState.future:
         // Calculate blur based on distance
         final double sigma = (distance * 0.8).clamp(0.0, 3.0);
-        return Container(
+        return SizedBox(
           key: const ValueKey('future'),
           width: double.infinity,
           child: ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
             child: Text(
               line.text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ).copyWith(color: Colors.white.withOpacity(0.22)),
+                color: Colors.white.withValues(alpha: 0.22),
+              ),
             ),
           ),
         );
       case LyricLineState.current:
-        return Container(
+        return SizedBox(
           key: const ValueKey('current'),
           width: double.infinity,
           child: TweenAnimationBuilder<double>(
@@ -125,7 +125,7 @@ class LyricsLineWidget extends StatelessWidget {
                 return LinearGradient(
                   colors: [
                     Colors.white,
-                    Colors.white.withOpacity(0.4),
+                    Colors.white.withValues(alpha: 0.4),
                   ],
                   stops: [progress, progress],
                 ).createShader(bounds);

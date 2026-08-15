@@ -52,7 +52,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
 
     // Get albums that have at least one downloaded song
     final List<Album> dAlbums = allAlbums.where((a) => albumIds.contains(a.id)).toList();
-    dAlbums.sort((a, b) => (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase()));
+    dAlbums.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     if (mounted) {
       setState(() {
@@ -115,6 +115,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 120),
+      itemExtent: 68.0,
+      cacheExtent: 300,
       itemCount: _downloadedSongs.length,
       itemBuilder: (context, index) {
         final song = _downloadedSongs[index];

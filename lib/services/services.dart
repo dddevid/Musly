@@ -16,3 +16,5 @@ export 'upnp_service.dart';
 export 'jukebox_service.dart';
 export 'theme_service.dart';
 export 'library_database_service.dart';
+export 'ytdlp_service.dart';
+export 'lrclib_service.dart';

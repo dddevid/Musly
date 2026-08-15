@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/models/server_config.dart';
 import 'package:musly/services/subsonic_service.dart';
 
@@ -7,6 +8,8 @@ void main() {
     late SubsonicService service;
 
     setUp(() {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
       service = SubsonicService();
     });
 
@@ -15,28 +18,28 @@ void main() {
       expect(service.config, isNull);
     });
 
-    test('should configure with ServerConfig', () {
+    test('should configure with ServerConfig', () async {
       final config = ServerConfig(
         serverUrl: 'https://demo.navidrome.org',
         username: 'demo',
         password: 'demo',
       );
 
-      service.configure(config);
+      await service.configure(config);
 
       expect(service.isConfigured, true);
       expect(service.config, isNotNull);
       expect(service.config?.serverUrl, config.serverUrl);
     });
 
-    test('should build cover art URL', () {
+    test('should build cover art URL', () async {
       final config = ServerConfig(
         serverUrl: 'https://demo.navidrome.org',
         username: 'demo',
         password: 'demo',
       );
 
-      service.configure(config);
+      await service.configure(config);
 
       final url = service.getCoverArtUrl('art123', size: 300);
 
@@ -45,27 +48,27 @@ void main() {
       expect(url, contains('size=300'));
     });
 
-    test('should return empty URL when coverArt is null', () {
+    test('should return empty URL when coverArt is null', () async {
       final config = ServerConfig(
         serverUrl: 'https://demo.navidrome.org',
         username: 'demo',
         password: 'demo',
       );
 
-      service.configure(config);
+      await service.configure(config);
 
       final url = service.getCoverArtUrl(null);
       expect(url, '');
     });
 
-    test('should build stream URL', () {
+    test('should build stream URL', () async {
       final config = ServerConfig(
         serverUrl: 'https://demo.navidrome.org',
         username: 'demo',
         password: 'demo',
       );
 
-      service.configure(config);
+      await service.configure(config);
 
       final url = service.getStreamUrl('song123');
 
@@ -73,14 +76,14 @@ void main() {
       expect(url, contains('id=song123'));
     });
 
-    test('should include maxBitRate in stream URL when specified', () {
+    test('should include maxBitRate in stream URL when specified', () async {
       final config = ServerConfig(
         serverUrl: 'https://demo.navidrome.org',
         username: 'demo',
         password: 'demo',
       );
 
-      service.configure(config);
+      await service.configure(config);
 
       final url = service.getStreamUrl('song123', maxBitRate: 320);
 

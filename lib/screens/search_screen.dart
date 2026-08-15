@@ -109,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 450), () {
       if (_liveSearch) {
         _search(value);
       } else {
@@ -328,16 +328,57 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
 
         if (result.songs.isNotEmpty) ...[
-          SectionHeader(title: AppLocalizations.of(context)!.songs),
-          ...result.songs.asMap().entries.map(
-            (entry) => SongTile(
-              song: entry.value,
-              playlist: result.songs,
-              index: entry.key,
-              showArtist: true,
-              showAlbum: true,
-            ),
+          SectionHeader(
+            title: (result.youtubeVideos != null && result.youtubeVideos!.isNotEmpty)
+                ? 'YT Stream'
+                : AppLocalizations.of(context)!.songs,
           ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemExtent: 68.0,
+            cacheExtent: 300,
+            itemCount: result.songs.length,
+            itemBuilder: (context, index) {
+              final song = result.songs[index];
+              return SongTile(
+                song: song,
+                index: index,
+                showArtist: true,
+                showAlbum: true,
+                onTap: () {
+                  final player = Provider.of<PlayerProvider>(context, listen: false);
+                  player.playSongWithRadio(song);
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        if (result.youtubeVideos != null && result.youtubeVideos!.isNotEmpty) ...[
+          const SectionHeader(title: 'YouTube'),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemExtent: 68.0,
+            cacheExtent: 300,
+            itemCount: result.youtubeVideos!.length,
+            itemBuilder: (context, index) {
+              final song = result.youtubeVideos![index];
+              return SongTile(
+                song: song,
+                index: index,
+                showArtist: true,
+                showAlbum: true,
+                onTap: () {
+                  final player = Provider.of<PlayerProvider>(context, listen: false);
+                  player.playSongWithRadio(song);
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 16),
         ],
 
         const SizedBox(height: 150),

@@ -27,7 +27,7 @@ class NowPlayingBottomActions extends StatelessWidget {
         children: [
           CastButton(
             iconSize: 24,
-            iconColor: Colors.white.withOpacity(0.5),
+            iconColor: Colors.white.withValues(alpha: 0.5),
           ),
           _ActionButton(
             icon: Icons.chat_bubble_outline_rounded,
@@ -66,12 +66,12 @@ class _ActionButton extends StatelessWidget {
       icon: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          color: isActive ? activeColor.withOpacity(0.2) : Colors.transparent,
+          color: isActive ? activeColor.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Icon(
           icon,
-          color: isActive ? activeColor : Colors.white.withOpacity(0.5),
+          color: isActive ? activeColor : Colors.white.withValues(alpha: 0.5),
           size: 24,
         ),
       ),

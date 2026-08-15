@@ -133,7 +133,17 @@ class LibraryDatabaseService {
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_song_artistId ON songs(artistId)');
     await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_song_title ON songs(title)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_song_starred ON songs(starred)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_song_isLocal ON songs(isLocal)');
+    await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_album_artistId ON albums(artistId)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_album_name ON albums(name)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_album_isLocal ON albums(isLocal)');
   }
 
   // ── Batch inserts ───────────────────────────────────────────────────────
@@ -243,6 +253,114 @@ class LibraryDatabaseService {
   Future<List<Playlist>> getAllPlaylists() async {
     final db = await database;
     final maps = await db.query('playlists');
+    return maps.map((m) => _playlistFromMap(m)).toList();
+  }
+
+  // ── Targeted single-item & query operations ─────────────────────────
+
+  Future<void> insertOrUpdateSong(Song song) async {
+    final db = await database;
+    await db.insert(
+      'songs',
+      _songToMap(song),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Song?> getSong(String id) async {
+    final db = await database;
+    final maps = await db.query('songs', where: 'id = ?', whereArgs: [id], limit: 1);
+    if (maps.isEmpty) return null;
+    return _songFromMap(maps.first);
+  }
+
+  Future<List<Song>> getSongs(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final db = await database;
+    final placeholders = List.filled(ids.length, '?').join(',');
+    final maps = await db.query(
+      'songs',
+      where: 'id IN ($placeholders)',
+      whereArgs: ids,
+    );
+    final songMap = {for (final m in maps) m['id'] as String: _songFromMap(m)};
+    // Preserve requested order and create fallback for missing IDs
+    return ids.map((id) => songMap[id] ?? Song(id: id, title: 'Unknown Track')).toList();
+  }
+
+  Future<void> insertOrUpdatePlaylist(Playlist playlist) async {
+    final db = await database;
+    await db.insert(
+      'playlists',
+      _playlistToMap(playlist),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Playlist?> getPlaylist(String id) async {
+    final db = await database;
+    final maps = await db.query('playlists', where: 'id = ?', whereArgs: [id], limit: 1);
+    if (maps.isEmpty) return null;
+    final playlist = _playlistFromMap(maps.first);
+    final songIds = playlist.songs?.map((s) => s.id).toList() ?? [];
+    if (songIds.isNotEmpty) {
+      final fullSongs = await getSongs(songIds);
+      return playlist.copyWith(songs: fullSongs);
+    }
+    return playlist;
+  }
+
+  Future<void> deletePlaylist(String playlistId) async {
+    final db = await database;
+    await db.delete('playlists', where: 'id = ?', whereArgs: [playlistId]);
+  }
+
+  Future<void> setSongStarred(String songId, bool starred) async {
+    final db = await database;
+    await db.update(
+      'songs',
+      {'starred': starred ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [songId],
+    );
+  }
+
+  Future<void> setAlbumStarred(String albumId, bool starred) async {
+    // Albums can be queried or tagged as needed
+  }
+
+  Future<List<Song>> getStarredSongs() async {
+    final db = await database;
+    final maps = await db.query('songs', where: 'starred = 1');
+    return maps.map((m) => _songFromMap(m)).toList();
+  }
+
+  Future<List<Album>> getStarredAlbums() async {
+    final db = await database;
+    final maps = await db.query('albums');
+    return maps.map((m) => _albumFromMap(m)).toList();
+  }
+
+  Future<List<Song>> searchSongs(String query, {int limit = 50}) async {
+    final db = await database;
+    final pattern = '%$query%';
+    final maps = await db.query(
+      'songs',
+      where: 'title LIKE ? OR artist LIKE ? OR album LIKE ?',
+      whereArgs: [pattern, pattern, pattern],
+      limit: limit,
+    );
+    return maps.map((m) => _songFromMap(m)).toList();
+  }
+
+  Future<List<Playlist>> searchPlaylists(String query) async {
+    final db = await database;
+    final pattern = '%$query%';
+    final maps = await db.query(
+      'playlists',
+      where: 'name LIKE ? OR comment LIKE ?',
+      whereArgs: [pattern, pattern],
+    );
     return maps.map((m) => _playlistFromMap(m)).toList();
   }
 

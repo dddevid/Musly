@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../theme/app_theme.dart';
@@ -96,8 +95,8 @@ class _GradientHeaderState extends State<GradientHeader> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        _dominantColor.withOpacity(0.8),
-                        _dominantColor.withOpacity(0.3),
+                        _dominantColor.withValues(alpha: 0.8),
+                        _dominantColor.withValues(alpha: 0.3),
                         isDark ? AppTheme.darkBackground : Colors.white,
                       ],
                       stops: const [0.0, 0.5, 1.0],

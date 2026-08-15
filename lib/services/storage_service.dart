@@ -61,7 +61,7 @@ class StorageService {
   Future<void> _safeSecureDeleteAll() async {
     try {
       await _secureStorage.deleteAll();
-    } on PlatformException catch (e) {
+    } on PlatformException catch (_) {
       // Ignored for fallback
     }
   }
@@ -311,6 +311,16 @@ class StorageService {
       await prefs.setString('subsonic_client_salt', salt);
     }
     return salt;
+  }
+
+  Future<void> saveLastSelectedFamily(String family) async {
+    final prefs = await _prefs;
+    await prefs.setString('last_selected_server_family', family);
+  }
+
+  Future<String?> getLastSelectedFamily() async {
+    final prefs = await _prefs;
+    return prefs.getString('last_selected_server_family');
   }
 
   Future<void> clearAll() async {

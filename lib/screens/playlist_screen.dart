@@ -752,7 +752,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               ),
             )
           else
-            SliverList(
+            SliverFixedExtentList(
+              itemExtent: 68.0,
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final song = _playlist!.songs![index];

@@ -1,5 +1,4 @@
 import '../models/lyric_line.dart';
-import '../models/lyric_word.dart';
 
 class LrcParser {
   /// Parses standard LRC content: [mm:ss.xx]Text

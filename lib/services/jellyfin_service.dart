@@ -436,8 +436,9 @@ class JellyfinService {
     int albumCount = 20,
     int artistCount = 20,
   }) async {
-    if (_userId == null)
+    if (_userId == null) {
       return SearchResult(songs: [], albums: [], artists: []);
+    }
     try {
       Future<List<T>> fetch<T>(
         String types,
@@ -495,8 +496,9 @@ class JellyfinService {
   }
 
   Future<SearchResult> getStarred() async {
-    if (_userId == null)
+    if (_userId == null) {
       return SearchResult(songs: [], albums: [], artists: []);
+    }
     try {
       Future<List<T>> fetch<T>(
         String types,

@@ -60,6 +60,8 @@ class PlaylistsScreen extends StatelessWidget {
             )
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 150),
+              itemExtent: 72.0,
+              cacheExtent: 300,
               itemCount: libraryProvider.playlists.length,
               itemBuilder: (context, index) {
                 final playlist = libraryProvider.playlists[index];

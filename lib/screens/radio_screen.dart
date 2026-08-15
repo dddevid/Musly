@@ -269,6 +269,8 @@ class _RadioScreenState extends State<RadioScreen> {
       onRefresh: _loadStations,
       child: ListView.builder(
         padding: const EdgeInsets.only(bottom: 100),
+        itemExtent: 72.0,
+        cacheExtent: 300,
         itemCount: _stations.length,
         itemBuilder: (context, index) {
           final station = _stations[index];

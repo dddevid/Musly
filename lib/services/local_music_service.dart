@@ -335,6 +335,7 @@ class LocalMusicService extends ChangeNotifier {
         if (i % 10 == 0) {
           _scanStatus = 'Processing: ${i + 1} / $totalFiles';
           notifyListeners();
+          await Future<void>.delayed(Duration.zero);
         }
       }
 

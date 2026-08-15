@@ -156,6 +156,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
     final subsonicService = libraryProvider.subsonicService;
 
     await offlineService.initialize();
+    if (!mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     int queuedSongs = 0;
@@ -305,6 +306,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
+                      itemExtent: 68.0,
+                      cacheExtent: 300,
                       itemCount: _topSongs.take(5).length,
                       itemBuilder: (context, index) {
                         final song = _topSongs[index];

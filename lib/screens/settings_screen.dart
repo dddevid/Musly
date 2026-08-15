@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               decoration: BoxDecoration(
                 border: Border(
                   right: BorderSide(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                     ),
                     selected: isSelected,
-                    selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    selectedTileColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                     onTap: () {
                       setState(() => _selectedIndex = index);
                       _tabController.animateTo(index);

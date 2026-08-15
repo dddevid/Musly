@@ -147,6 +147,8 @@ class AuthProvider extends ChangeNotifier {
     // YouTube Music: no server URL / credentials required
     if (serverFamily == 'youtube') {
       serverUrl = 'https://music.youtube.com';
+      if (username.isEmpty) username = 'YT Stream';
+      if (password.isEmpty) password = 'youtube';
     }
 
     final isJellyfin = serverFamily == 'jellyfin';
@@ -209,6 +211,7 @@ class AuthProvider extends ChangeNotifier {
         );
         _config = updatedConfig;
         await _storageService.saveServerConfig(updatedConfig);
+        await _storageService.saveLastSelectedFamily(serverFamily);
         _state = AuthState.authenticated;
         notifyListeners();
 

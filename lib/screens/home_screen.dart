@@ -39,8 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _computeRandomKey(List<Song> songs) {
     if (songs.isEmpty) return '';
-
-    return songs.map((s) => s.id).join('|');
+    return '${songs.length}_${songs.first.id}_${songs.last.id}';
   }
 
   bool get _isDesktop =>
@@ -414,6 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required double hPad,
   }) {
     if (isDesktop) {
+      final topSongs = songs.take(10).toList();
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -421,10 +421,10 @@ class _HomeScreenState extends State<HomeScreen> {
             title: title,
             padding: EdgeInsets.symmetric(horizontal: hPad),
             cardSize: 180,
-            children: songs.take(10).map((song) => _DesktopSongCard(
-              song: song,
+            children: topSongs.asMap().entries.map((entry) => _DesktopSongCard(
+              song: entry.value,
               playlist: songs,
-              index: songs.indexOf(song),
+              index: entry.key,
               size: 180,
             )).toList(),
           ),
@@ -432,6 +432,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     }
+    final top5 = songs.take(5).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -440,10 +441,10 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: icon,
           hPad: hPad,
         ),
-        ...songs.take(5).map((song) => SongTile(
-          song: song,
+        ...top5.asMap().entries.map((entry) => SongTile(
+          song: entry.value,
           playlist: songs,
-          index: songs.indexOf(song),
+          index: entry.key,
           showAlbum: true,
         )),
         const SizedBox(height: 24),
@@ -604,7 +605,7 @@ class _QuickAccessTileState extends State<_QuickAccessTile> {
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -641,6 +642,8 @@ class _QuickAccessTileState extends State<_QuickAccessTile> {
                             : CachedNetworkImage(
                                 imageUrl: widget.imageUrl!,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 300,
+                                memCacheHeight: 300,
                                 placeholder: (ctx, e) =>
                                     Container(color: Colors.grey[800]),
                                 errorWidget: (ctx, e, _) => Container(
@@ -727,6 +730,8 @@ class _PlaylistCard extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: coverArtUrl,
                         fit: BoxFit.cover,
+                        memCacheWidth: 300,
+                        memCacheHeight: 300,
                         placeholder: (ctx, url) => Container(
                           color: isDark
                               ? const Color(0xFF2C2C2E)
@@ -968,6 +973,8 @@ class _DesktopSongRowState extends State<_DesktopSongRow> {
                             size: 80,
                           ),
                           fit: BoxFit.cover,
+                          memCacheWidth: 100,
+                          memCacheHeight: 100,
                           placeholder: (ctx, url) =>
                               Container(color: Colors.grey[800]),
                           errorWidget: (ctx, err, stack) => Container(
@@ -1123,7 +1130,7 @@ class _DesktopSongCardState extends State<_DesktopSongCard> {
                     boxShadow: _isHovered
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 16,
                               offset: const Offset(0, 8),
                             ),
@@ -1168,7 +1175,7 @@ class _DesktopSongCardState extends State<_DesktopSongCard> {
               Text(
                 widget.song.artist ?? '',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

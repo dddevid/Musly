@@ -37,6 +37,8 @@ class ServerConfig {
   });
 
   bool get isJellyfin => serverFamily == 'jellyfin';
+  bool get isYoutube => serverFamily == 'youtube';
+  bool get isLocal => serverType == 'local' || serverFamily == 'local';
 
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
     return ServerConfig(
@@ -135,6 +137,9 @@ class ServerConfig {
   }
 
   bool get isValid {
+    if (isYoutube || isLocal) {
+      return serverUrl.isNotEmpty;
+    }
     return serverUrl.isNotEmpty && username.isNotEmpty && password.isNotEmpty;
   }
 }

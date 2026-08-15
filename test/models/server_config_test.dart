@@ -40,6 +40,24 @@ void main() {
       );
 
       expect(invalidConfig2.isValid, false);
+
+      final ytConfig = ServerConfig(
+        serverUrl: 'https://music.youtube.com',
+        username: '',
+        password: '',
+        serverFamily: 'youtube',
+      );
+      expect(ytConfig.isValid, true);
+      expect(ytConfig.isYoutube, true);
+
+      final localConfig = ServerConfig(
+        serverUrl: 'local',
+        username: '',
+        password: '',
+        serverFamily: 'local',
+      );
+      expect(localConfig.isValid, true);
+      expect(localConfig.isLocal, true);
     });
 
     test('should normalize URL correctly', () {

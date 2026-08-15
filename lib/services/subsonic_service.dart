@@ -10,6 +10,9 @@ import '../models/models.dart';
 import 'jellyfin_service.dart';
 import 'youtube_service.dart';
 import 'storage_service.dart';
+import 'lrclib_service.dart';
+import 'library_database_service.dart';
+import 'ytdlp_service.dart';
 
 class PingResult {
   final bool success;
@@ -90,9 +93,9 @@ class SubsonicService {
       _jellyfin!.configure(config);
       _youtube?.dispose();
       _youtube = null;
-      // } else if (config.serverFamily == 'youtube') {
-      //   _youtube ??= YoutubeService();
-      //   _jellyfin = null;
+    } else if (config.serverFamily == 'youtube') {
+      _youtube ??= YoutubeService();
+      _jellyfin = null;
     } else {
       _jellyfin = null;
       _youtube?.dispose();
@@ -113,10 +116,9 @@ class SubsonicService {
 
   bool get isJellyfin => _jellyfin != null;
 
-  /// For YouTube songs, returns a pre-warmed [StreamAudioSource] that proxies
-  /// audio through youtube_explode_dart's HTTP client (avoids ExoPlayer's 403).
+  /// For YouTube songs, returns a playable [AudioSource] resolved via yt-dlp.
   /// Returns null for Subsonic / Jellyfin (use [resolveStreamUrlAsync]).
-  Future<StreamAudioSource?> getYoutubeAudioSource(Song song) async {
+  Future<AudioSource?> getYoutubeAudioSource(Song song) async {
     if (_youtube != null) return _youtube!.buildAudioSource(song.id);
     return null;
   }
@@ -335,13 +337,16 @@ class SubsonicService {
               'Cannot connect to server. Check the URL and your internet connection.');
         case DioExceptionType.badResponse:
           final status = e.response?.statusCode;
-          if (status == 401 || status == 403)
+          if (status == 401 || status == 403) {
             throw Exception('Invalid username or password.');
-          if (status == 404)
+          }
+          if (status == 404) {
             throw Exception('Server not found. Check your URL path.');
-          if (status != null && status >= 500)
+          }
+          if (status != null && status >= 500) {
             throw Exception(
                 'Server error ($status). The server failed to process the request.');
+          }
           throw Exception('Request failed (HTTP $status).');
         default:
           throw Exception('Network error. Check your connection.');
@@ -394,8 +399,9 @@ class SubsonicService {
   }
 
   String getCoverArtUrl(String? coverArt, {int size = 300}) {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getCoverArtUrl(coverArt, size: size);
+    }
     if (_youtube != null) return _youtube!.getCoverArtUrl(coverArt, size: size);
     if (coverArt == null || _config == null) {
       return '';
@@ -431,9 +437,10 @@ class SubsonicService {
   }
 
   String getStreamUrl(String songId, {int? maxBitRate, String? format}) {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!
           .getStreamUrl(songId, maxBitRate: maxBitRate, format: format);
+    }
     if (_youtube != null) return _youtube!.getStreamUrl(songId);
     final params = <String, String>{'id': songId};
     if (maxBitRate != null) {
@@ -494,10 +501,12 @@ class SubsonicService {
     int size = 20,
     int offset = 0,
   }) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getAlbumList(type: type, size: size, offset: offset);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.getAlbumList(type: type, size: size, offset: offset);
+    }
     final response = await _request('getAlbumList2', {
       'type': type,
       'size': size.toString(),
@@ -617,6 +626,16 @@ class SubsonicService {
     List<String>? songIdsToAdd,
     List<int>? songIndexesToRemove,
   }) async {
+    if (_youtube != null) {
+      await _youtube!.updatePlaylist(
+        playlistId: playlistId,
+        name: name,
+        comment: comment,
+        songIdsToAdd: songIdsToAdd,
+        songIndexesToRemove: songIndexesToRemove,
+      );
+      return;
+    }
     final params = <String, String>{'playlistId': playlistId};
     if (name != null) params['name'] = name;
     if (comment != null) params['comment'] = comment;
@@ -655,9 +674,10 @@ class SubsonicService {
       debugPrint('updatePlaylist successful');
     } on DioException catch (e) {
       final status = e.response?.statusCode;
-      if (status != null && status >= 500)
+      if (status != null && status >= 500) {
         throw Exception(
             'Server error ($status). The server failed to process the request.');
+      }
       throw Exception('Network error. Check your connection.');
     }
   }
@@ -680,16 +700,18 @@ class SubsonicService {
     int albumCount = 20,
     int songCount = 20,
   }) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.search(query,
           songCount: songCount,
           albumCount: albumCount,
           artistCount: artistCount);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.search(query,
           songCount: songCount,
           albumCount: albumCount,
           artistCount: artistCount);
+    }
     final response = await _request('search3', {
       'query': query,
       'artistCount': artistCount.toString(),
@@ -737,10 +759,12 @@ class SubsonicService {
   }
 
   Future<List<Song>> getRandomSongs({int size = 20, String? genre}) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getRandomSongs(size: size, genre: genre);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.getRandomSongs(size: size, genre: genre);
+    }
     final params = <String, String>{'size': size.toString()};
     if (genre != null) params['genre'] = genre;
 
@@ -833,10 +857,24 @@ class SubsonicService {
     String? artist,
     String? title,
     String? id,
+    int? duration,
   }) async {
     if (_jellyfin != null && id != null) {
       final result = await _jellyfin!.getLyrics(id);
       if (result != null && result.containsKey('value')) return result;
+    }
+    if (_youtube != null) {
+      if (title != null && title.isNotEmpty) {
+        final lrc = await LrcLibService().searchLyrics(
+          artist: artist,
+          title: title,
+          durationSeconds: duration,
+        );
+        if (lrc != null) return lrc;
+      }
+      if (id != null && id.isNotEmpty) {
+        return await getLyricsBySongId(id);
+      }
       return null;
     }
     try {
@@ -845,17 +883,50 @@ class SubsonicService {
       if (title != null) params['title'] = title;
 
       final response = await _request('getLyrics', params);
-      return response['lyrics'] as Map<String, dynamic>?;
+      final lyrics = response['lyrics'] as Map<String, dynamic>?;
+      if (lyrics != null && lyrics.isNotEmpty) return lyrics;
     } catch (e) {
-      return null;
+      // Fallback to LRCLIB
     }
+
+    if (title != null && title.isNotEmpty) {
+      return await LrcLibService().searchLyrics(
+        artist: artist,
+        title: title,
+        durationSeconds: duration,
+      );
+    }
+    return null;
   }
 
   Future<Map<String, dynamic>?> getLyricsBySongId(String songId) async {
     if (_jellyfin != null) {
       final result = await _jellyfin!.getLyrics(songId);
-      if (result != null && result.containsKey('structuredLyrics'))
+      if (result != null && result.containsKey('structuredLyrics')) {
         return result;
+      }
+      return null;
+    }
+    if (_youtube != null) {
+      final song = await LibraryDatabaseService().getSong(songId);
+      if (song != null && song.title.isNotEmpty) {
+        final lrc = await LrcLibService().searchLyrics(
+          artist: song.artist,
+          title: song.title,
+          durationSeconds: song.duration,
+        );
+        if (lrc != null) return lrc;
+      }
+      final info = await YtDlpService().getVideoInfo(songId);
+      if (info != null && (info['title'] != null || info['fulltitle'] != null)) {
+        final title = (info['title'] ?? info['fulltitle']) as String;
+        final artist = info['artist'] ?? info['uploader'] ?? info['channel'];
+        return await LrcLibService().searchLyrics(
+          artist: artist as String?,
+          title: title,
+          durationSeconds: info['duration'] as int?,
+        );
+      }
       return null;
     }
     try {
@@ -886,10 +957,12 @@ class SubsonicService {
     int count = 50,
     int offset = 0,
   }) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getSongsByGenre(genre, size: count, offset: offset);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.getSongsByGenre(genre, size: count, offset: offset);
+    }
     final response = await _request('getSongsByGenre', {
       'genre': genre,
       'count': count.toString(),
@@ -909,10 +982,12 @@ class SubsonicService {
     int size = 50,
     int offset = 0,
   }) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getAlbumsByGenre(genre, size: size, offset: offset);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.getAlbumsByGenre(genre, size: size, offset: offset);
+    }
     try {
       final response = await _request('getAlbumList2', {
         'type': 'byGenre',
@@ -965,9 +1040,10 @@ class SubsonicService {
           {};
     } on DioException catch (e) {
       final status = e.response?.statusCode;
-      if (status != null && status >= 500)
+      if (status != null && status >= 500) {
         throw Exception(
             'Server error ($status). The server failed to process the request.');
+      }
       throw Exception('Network error. Check your connection.');
     }
   }
@@ -1074,10 +1150,12 @@ class SubsonicService {
     String artistId, {
     int count = 50,
   }) async {
-    if (_jellyfin != null)
+    if (_jellyfin != null) {
       return _jellyfin!.getArtistTopSongs(artistId, count: count);
-    if (_youtube != null)
+    }
+    if (_youtube != null) {
       return _youtube!.getArtistTopSongs(artistId, count: count);
+    }
     try {
       final artist = await getArtist(artistId);
 
@@ -1115,14 +1193,20 @@ class SearchResult {
   final List<Artist> artists;
   final List<Album> albums;
   final List<Song> songs;
+  final List<Song>? youtubeVideos;
 
   SearchResult({
     required this.artists,
     required this.albums,
     required this.songs,
+    this.youtubeVideos,
   });
 
-  bool get isEmpty => artists.isEmpty && albums.isEmpty && songs.isEmpty;
+  bool get isEmpty =>
+      artists.isEmpty &&
+      albums.isEmpty &&
+      songs.isEmpty &&
+      (youtubeVideos == null || youtubeVideos!.isEmpty);
 }
 
 class _TlsHttpOverrides extends HttpOverrides {

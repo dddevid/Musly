@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:safe_device/safe_device.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 import 'l10n/app_localizations.dart';
 import 'models/server_config.dart';
@@ -144,6 +145,14 @@ void main() async {
   if (isEmulator) {
     runApp(const _EmulatorWarningScreen());
     return;
+  }
+
+  if (!kIsWeb && Platform.isAndroid) {
+    try {
+      await FlutterDisplayMode.setHighRefreshRate();
+    } catch (e) {
+      debugPrint('Error enabling high refresh rate: $e');
+    }
   }
 
   JustAudioMediaKit.ensureInitialized(linux: true, windows: false);

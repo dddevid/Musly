@@ -49,8 +49,7 @@ class _LyricsListViewState extends State<LyricsListView> {
   bool _isManualScrolling = false;
   Timer? _resumeAutoScrollTimer;
 
-  // The approximate height of a lyric line to help with scrolling calculations
-  static const double _estimatedLineHeight = 60.0;
+
 
   @override
   void initState() {
@@ -266,18 +265,20 @@ class _LyricsListViewState extends State<LyricsListView> {
 
             return Container(
               key: _keys[index],
-              child: LyricsLineWidget(
-                line: line,
-                state: state,
-                currentTime: widget.currentTime,
-                distance: distance,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  widget.onSeek(line.startTime);
-                  
-                  setState(() => _isManualScrolling = false);
-                  _resumeAutoScrollTimer?.cancel();
-                },
+              child: RepaintBoundary(
+                child: LyricsLineWidget(
+                  line: line,
+                  state: state,
+                  currentTime: widget.currentTime,
+                  distance: distance,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    widget.onSeek(line.startTime);
+                    
+                    setState(() => _isManualScrolling = false);
+                    _resumeAutoScrollTimer?.cancel();
+                  },
+                ),
               ),
             );
           }),

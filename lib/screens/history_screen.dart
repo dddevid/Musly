@@ -141,6 +141,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 )
               : ListView.builder(
+                  itemExtent: 68.0,
+                  cacheExtent: 300,
                   itemCount: _recentSongs.length,
                   itemBuilder: (context, index) {
                     return SongTile(

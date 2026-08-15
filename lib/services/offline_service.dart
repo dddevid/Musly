@@ -340,10 +340,7 @@ class OfflineService {
   }
 
   bool isSongDownloaded(String songId) {
-    if (_offlineDir == null) return false;
-    final file = File(_getSongPath(songId));
-    if (!file.existsSync()) return false;
-    return _isFileValid(songId, file);
+    return downloadedSongIds.value.contains(songId);
   }
 
   List<String> getDownloadedSongIds() {

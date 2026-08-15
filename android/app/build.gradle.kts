@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.chaquo.python")
 }
 
 import java.util.Properties
@@ -35,6 +36,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64", "armeabi-v7a")
+        }
     }
 
     // Configure signing with custom keystore or debug fallback
@@ -63,6 +68,15 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+        }
+    }
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.11"
+        pip {
+            install("yt-dlp")
         }
     }
 }

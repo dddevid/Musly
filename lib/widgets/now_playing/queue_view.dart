@@ -72,7 +72,7 @@ class QueueView extends StatelessWidget {
                       ),
               ),
               title: Text(
-                song.title ?? 'Sconosciuto',
+                song.title,
                 style: TextStyle(
                   color: isPlaying ? Theme.of(context).colorScheme.primary : (isPast ? Colors.white38 : Colors.white),
                   fontWeight: isPlaying ? FontWeight.bold : FontWeight.normal,

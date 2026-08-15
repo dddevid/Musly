@@ -67,6 +67,8 @@ class _SongsScreenState extends State<SongsScreen> {
           ? Center(child: Text(AppLocalizations.of(context)!.noSongsFound))
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 150),
+              itemExtent: 68.0,
+              cacheExtent: 300,
               itemCount: libraryProvider.randomSongs.length,
               itemBuilder: (context, index) {
                 final song = libraryProvider.randomSongs[index];

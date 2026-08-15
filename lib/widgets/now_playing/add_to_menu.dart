@@ -250,7 +250,7 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                               borderRadius: BorderRadius.circular(4),
                               child: CachedNetworkImage(
                                 imageUrl: Provider.of<SubsonicService>(context, listen: false)
-                                    .getCoverArtUrl(playlist.coverArt!, size: 100) ?? '',
+                                    .getCoverArtUrl(playlist.coverArt!, size: 100),
                                 fit: BoxFit.cover,
                                 errorWidget: (context, url, error) => const Icon(Icons.queue_music_rounded, color: Colors.grey),
                               ),

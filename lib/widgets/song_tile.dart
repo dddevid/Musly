@@ -50,34 +50,36 @@ class SongTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Selector<PlayerProvider, String?>(
-      selector: (_, provider) => provider.currentSong?.id,
-      builder: (context, currentSongId, _) {
-        final isCurrentSong = currentSongId == song.id;
+    return RepaintBoundary(
+      child: Selector<PlayerProvider, String?>(
+        selector: (_, provider) => provider.currentSong?.id,
+        builder: (context, currentSongId, _) {
+          final isCurrentSong = currentSongId == song.id;
 
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: _buildLeading(context, isCurrentSong),
-          title: Text(
-            song.title,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color:
-                  isCurrentSong ? Theme.of(context).colorScheme.primary : null,
-              fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle:
-              showArtist || showAlbum ? _buildSubtitleWidget(theme) : null,
-          trailing: _buildTrailing(context),
-          onTap: onTap ?? () => _playSong(context),
-          onLongPress: onLongPress ?? () => _showOptions(context),
-        );
-      },
+            leading: _buildLeading(context, isCurrentSong),
+            title: Text(
+              song.title,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color:
+                    isCurrentSong ? Theme.of(context).colorScheme.primary : null,
+                fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.normal,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle:
+                showArtist || showAlbum ? _buildSubtitleWidget(theme) : null,
+            trailing: _buildTrailing(context),
+            onTap: onTap ?? () => _playSong(context),
+            onLongPress: onLongPress ?? () => _showOptions(context),
+          );
+        },
+      ),
     );
   }
 
@@ -105,37 +107,33 @@ class SongTile extends StatelessWidget {
     }
 
     if (showArtwork) {
-      return ValueListenableBuilder<double>(
-        valueListenable: PlayerUiSettingsService().albumArtCornerRadiusNotifier,
-        builder: (context, radius, _) {
-          return Stack(
-            children: [
-              AlbumArtwork(
-                coverArt: song.coverArt,
-                size: 50,
-                preserveAspectRatio: true,
-              ),
-              if (isCurrentSong)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(radius),
-                    ),
-                    child: Center(
-                      child: Selector<PlayerProvider, bool>(
-                        selector: (ctx, p) => p.isPlaying,
-                        builder: (ctx, isPlaying, __) => AnimatedEqualizer(
-                          color: Colors.white,
-                          isPlaying: isPlaying,
-                        ),
-                      ),
+      final radius = PlayerUiSettingsService().getAlbumArtCornerRadius();
+      return Stack(
+        children: [
+          AlbumArtwork(
+            coverArt: song.coverArt,
+            size: 50,
+            preserveAspectRatio: true,
+          ),
+          if (isCurrentSong)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(radius),
+                ),
+                child: Center(
+                  child: Selector<PlayerProvider, bool>(
+                    selector: (ctx, p) => p.isPlaying,
+                    builder: (ctx, isPlaying, __) => AnimatedEqualizer(
+                      color: Colors.white,
+                      isPlaying: isPlaying,
                     ),
                   ),
                 ),
-            ],
-          );
-        },
+              ),
+            ),
+        ],
       );
     }
 

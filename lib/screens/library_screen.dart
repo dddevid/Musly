@@ -435,12 +435,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ? Image.file(
                     File(coverArtUrl),
                     fit: BoxFit.cover,
+                    cacheWidth: 120,
+                    cacheHeight: 120,
                     errorBuilder: (ctx, err, stack) =>
                         _buildPlaceholder(item.type, isDark),
                   )
                 : CachedNetworkImage(
                     imageUrl: coverArtUrl,
                     fit: BoxFit.cover,
+                    memCacheWidth: 120,
+                    memCacheHeight: 120,
                     placeholder: (ctx, url) =>
                         Container(color: Colors.grey[800]),
                     errorWidget: (ctx, url, err) =>

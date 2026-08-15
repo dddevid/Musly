@@ -47,38 +47,23 @@ class AlbumArtwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final svc = PlayerUiSettingsService();
-    return ValueListenableBuilder<String>(
-      valueListenable: svc.artworkShapeNotifier,
-      builder: (context, shape, _) {
-        return ValueListenableBuilder<double>(
-          valueListenable: svc.albumArtCornerRadiusNotifier,
-          builder: (context, globalRadius, _) {
-            return ValueListenableBuilder<String>(
-              valueListenable: svc.artworkShadowNotifier,
-              builder: (context, shadowLevel, _) {
-                return ValueListenableBuilder<String>(
-                  valueListenable: svc.artworkShadowColorNotifier,
-                  builder: (context, shadowColor, _) {
-                    final resolvedRadius =
-                        borderRadius ??
-                        (shape == 'circle'
-                            ? 9999.0
-                            : shape == 'square'
-                            ? 0.0
-                            : globalRadius);
-                    return _buildContent(
-                      context,
-                      resolvedRadius,
-                      shadowLevel,
-                      shadowColor,
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
+    final shape = svc.getArtworkShape();
+    final globalRadius = svc.getAlbumArtCornerRadius();
+    final shadowLevel = svc.getArtworkShadow();
+    final shadowColor = svc.getArtworkShadowColor();
+
+    final resolvedRadius = borderRadius ??
+        (shape == 'circle'
+            ? 9999.0
+            : shape == 'square'
+                ? 0.0
+                : globalRadius);
+
+    return _buildContent(
+      context,
+      resolvedRadius,
+      shadowLevel,
+      shadowColor,
     );
   }
 
@@ -134,7 +119,7 @@ class AlbumArtwork extends StatelessWidget {
     final validSize = size.isFinite && !size.isNaN ? size : 150.0;
 
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheSize = (validSize * dpr).toInt().clamp(200, 800);
+    final cacheSize = (validSize * dpr).toInt().clamp(100, 600);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final resolvedShadow = _resolvedShadow(
@@ -185,6 +170,8 @@ class AlbumArtwork extends StatelessWidget {
         artFile,
         key: ValueKey(coverArt),
         fit: BoxFit.contain,
+        cacheWidth: cacheSize,
+        cacheHeight: cacheSize,
         errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
       );
     }
@@ -196,6 +183,8 @@ class AlbumArtwork extends StatelessWidget {
           File(offlinePath),
           key: ValueKey('offline_natural_$coverArt'),
           fit: BoxFit.contain,
+          cacheWidth: cacheSize,
+          cacheHeight: cacheSize,
           errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
         );
       }
@@ -214,7 +203,11 @@ class AlbumArtwork extends StatelessWidget {
           cacheKey: '${coverArt}_natural_$cacheSize',
           key: ValueKey('${coverArt}_natural_$cacheSize'),
           fit: BoxFit.contain,
-          fadeInDuration: const Duration(milliseconds: 100),
+          memCacheWidth: cacheSize,
+          memCacheHeight: cacheSize,
+          maxWidthDiskCache: cacheSize,
+          maxHeightDiskCache: cacheSize,
+          fadeInDuration: Duration.zero,
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
           placeholder: (ctx, url) => _buildPlaceholder(isDark),
@@ -273,7 +266,7 @@ class AlbumArtwork extends StatelessWidget {
           memCacheHeight: cacheSize,
           maxWidthDiskCache: cacheSize,
           maxHeightDiskCache: cacheSize,
-          fadeInDuration: const Duration(milliseconds: 100),
+          fadeInDuration: Duration.zero,
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
           placeholder: (ctx, url) => _buildPlaceholder(isDark),

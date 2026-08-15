@@ -41,7 +41,7 @@ class _VolumeSliderState extends State<VolumeSlider> {
       children: [
         Icon(
           Icons.volume_mute_rounded,
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           size: 20,
         ),
         const SizedBox(width: 12),

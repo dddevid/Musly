@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -50,7 +49,7 @@ class _BlurredGradientBackgroundState extends State<BlurredGradientBackground>
       
     // Ensure we have at least 3 colors for the blobs
     while (safeColors.length < 3) {
-      safeColors.add(safeColors.last.withOpacity(0.8));
+      safeColors.add(safeColors.last.withValues(alpha: 0.8));
     }
 
     return Stack(
@@ -59,71 +58,73 @@ class _BlurredGradientBackgroundState extends State<BlurredGradientBackground>
         Container(color: Colors.black),
         
         // Animated blobs
-        AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            final value = _animation.value;
-            return Stack(
-              children: [
-                // Blob 1 (Top Left moving towards Bottom Right)
-                Positioned(
-                  top: -100 + (100 * value),
-                  left: -100 + (50 * math.sin(value * math.pi)),
-                  width: 400,
-                  height: 400,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          safeColors[0].withOpacity(0.8),
-                          safeColors[0].withOpacity(0.0),
-                        ],
+        RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              final value = _animation.value;
+              return Stack(
+                children: [
+                  // Blob 1 (Top Left moving towards Bottom Right)
+                  Positioned(
+                    top: -100 + (100 * value),
+                    left: -100 + (50 * math.sin(value * math.pi)),
+                    width: 400,
+                    height: 400,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            safeColors[0].withValues(alpha: 0.8),
+                            safeColors[0].withValues(alpha: 0.0),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                
-                // Blob 2 (Bottom Right moving towards Top Left)
-                Positioned(
-                  bottom: -150 + (100 * (1 - value)),
-                  right: -100 + (80 * math.cos(value * math.pi)),
-                  width: 500,
-                  height: 500,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          safeColors[1].withOpacity(0.8),
-                          safeColors[1].withOpacity(0.0),
-                        ],
+                  
+                  // Blob 2 (Bottom Right moving towards Top Left)
+                  Positioned(
+                    bottom: -150 + (100 * (1 - value)),
+                    right: -100 + (80 * math.cos(value * math.pi)),
+                    width: 500,
+                    height: 500,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            safeColors[1].withValues(alpha: 0.8),
+                            safeColors[1].withValues(alpha: 0.0),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                
-                // Blob 3 (Center moving around)
-                Positioned(
-                  top: MediaQuery.of(context).size.height / 2 - 200 + (150 * math.sin(value * math.pi * 2)),
-                  left: MediaQuery.of(context).size.width / 2 - 200 + (100 * math.cos(value * math.pi * 2)),
-                  width: 400,
-                  height: 400,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          safeColors[2].withOpacity(0.7),
-                          safeColors[2].withOpacity(0.0),
-                        ],
+                  
+                  // Blob 3 (Center moving around)
+                  Positioned(
+                    top: MediaQuery.of(context).size.height / 2 - 200 + (150 * math.sin(value * math.pi * 2)),
+                    left: MediaQuery.of(context).size.width / 2 - 200 + (100 * math.cos(value * math.pi * 2)),
+                    width: 400,
+                    height: 400,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            safeColors[2].withValues(alpha: 0.7),
+                            safeColors[2].withValues(alpha: 0.0),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
 
         // Dark overlay for text contrast and to blend the colors better

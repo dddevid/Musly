@@ -375,6 +375,8 @@ class _AllSongsScreenState extends State<AllSongsScreen> {
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.only(bottom: 100),
+                        itemExtent: 68.0,
+                        cacheExtent: 300,
                         itemCount: _sortedSongs.length,
                         itemBuilder: (context, index) {
                           return SongTile(

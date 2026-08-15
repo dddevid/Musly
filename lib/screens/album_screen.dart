@@ -442,7 +442,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   ),
                 ),
               ),
-              SliverList(
+              SliverFixedExtentList(
+                itemExtent: 58.0,
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final song = _songs[index];
                   return SongTile(

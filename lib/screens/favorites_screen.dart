@@ -99,6 +99,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 150),
+      itemExtent: 68.0,
+      cacheExtent: 300,
       itemCount: _favoriteSongs.length,
       itemBuilder: (context, index) {
         final song = _favoriteSongs[index];
