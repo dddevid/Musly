@@ -1,9 +1,11 @@
-## GitAds Sponsored
-[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
 
 # Musly - Best Free Navidrome Client & Subsonic Music Player
 
 **Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful Apple Music-inspired interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
+
+## GitAds Sponsored
+[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
+
 
 🌐 **Website:** [musly.devid.lol](https://musly.devid.lol/)
 
