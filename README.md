@@ -1,8 +1,5 @@
-<div align="center">
-  <a href="https://www.youtube.com/watch?v=JvHzI9AZM0A">
-    <img src="https://github.com/dddevid/Musly/blob/master/musly-promo.gif?raw=true" alt="Musly App Demo" width="100%">
-  </a>
-</div>
+## GitAds Sponsored
+[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
 
 # Musly - Best Free Navidrome Client & Subsonic Music Player
 
@@ -148,8 +145,4 @@ This project is open source and available under the **Creative Commons Attributi
 
 <div align="center">
 
-[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
-
-
-</div>
-<!-- GitAds-Verify: ST2UC9337CIFAZPEVD6W1PEZCNS4MXLI -->
+[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
