@@ -51,7 +51,7 @@ class PlaylistsScreen extends StatelessWidget {
                     icon: const Icon(CupertinoIcons.add),
                     label: const Text('New Playlist'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.appleMusicRed,
+                      backgroundColor: AppTheme.brandRed,
                       foregroundColor: Colors.white,
                     ),
                   ),

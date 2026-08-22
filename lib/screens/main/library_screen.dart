@@ -109,7 +109,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 child: const Icon(Icons.dns_rounded, color: Color(0xFF6366F1), size: 22),
               ),
               title: const Text('Add Music Source', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Connect Navidrome, Jellyfin, or YT Stream', style: TextStyle(fontSize: 12)),
+              subtitle: const Text('Connect Navidrome, Jellyfin, or Web Stream', style: TextStyle(fontSize: 12)),
               onTap: () {
                 Navigator.pop(ctx);
                 NavigationHelper.push(context, const AddServerScreen());
@@ -315,7 +315,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               ),
 
-              // 2. Spotify Sort & View Mode Controls Bar
+              // Modern music player design
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 8),

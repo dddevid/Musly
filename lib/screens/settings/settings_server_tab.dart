@@ -78,13 +78,13 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     final isDark = context.isDark;
 
     final (IconData icon, List<Color> gradient, String serviceLabel) = isYoutube
-        ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)], 'YT Stream')
+        ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)], 'Web Stream')
         : config?.isJellyfin == true
             ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)], 'Jellyfin')
             : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)], config?.serverType ?? 'Navidrome / Subsonic');
 
     final serverName = config?.displayServerName ?? serviceLabel;
-    final displayUrl = config?.displayUrl ?? (isYoutube ? 'YT Stream' : 'Not Connected');
+    final displayUrl = config?.displayUrl ?? (isYoutube ? 'Web Stream' : 'Not Connected');
 
     final isConnected = authProvider.state == AuthState.authenticated;
     final isAuthenticating = authProvider.state == AuthState.authenticating;

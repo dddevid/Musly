@@ -805,7 +805,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     key: ValueKey('sel_${song.id}_$index'),
                     value: isSelected,
                     onChanged: (_) => _toggleSelection(index),
-                    activeColor: AppTheme.appleMusicRed,
+                    activeColor: AppTheme.brandRed,
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: const EdgeInsets.only(
                       left: 4,

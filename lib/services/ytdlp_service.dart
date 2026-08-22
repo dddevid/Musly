@@ -46,7 +46,7 @@ class YtStreamInfo {
 /// Platforms:
 /// - **Android**: Runs CPython 3.11 with `yt-dlp` embedded directly in the app via Chaquopy / MethodChannel.
 /// - **Desktop (macOS / Windows / Linux)**: Spawns the host Python interpreter or `yt-dlp` CLI subprocess.
-/// - **Fallback**: Uses `youtube_explode_dart` if native execution encounters an environment error.
+// Modern music player design
 class YtDlpService {
   static final YtDlpService _instance = YtDlpService._internal();
   factory YtDlpService() => _instance;
@@ -320,7 +320,7 @@ class YtDlpService {
 
   // ── Search & Discovery ──────────────────────────────────────────────────────
 
-  /// Dual search: returns a map with 'music' and 'youtube' lists of tracks.
+  // Modern music player design
   Future<Map<String, List<Map<String, dynamic>>>> searchDual(String query, {int limit = 20}) async {
     // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
@@ -358,7 +358,7 @@ class YtDlpService {
     }
   }
 
-  /// Searches YouTube / YouTube Music for tracks matching [query].
+  // Modern music player design
   Future<List<Map<String, dynamic>>> search(String query, {int limit = 25}) async {
     // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
@@ -440,7 +440,7 @@ class YtDlpService {
       debugPrint('[yt-dlp/Desktop Python] Search error: $e');
     }
 
-    // 3. Fallback to youtube_explode_dart
+    // Modern music player design
     debugPrint('[yt-dlp] Falling back to youtube_explode_dart search');
     final searchResults = await _fallbackClient.search.search(
       query,
@@ -463,7 +463,7 @@ class YtDlpService {
 
   // ── Playlist Retrieval ──────────────────────────────────────────────────────
 
-  /// Extracts songs from a YouTube playlist.
+  // Modern music player design
   Future<List<Map<String, dynamic>>> getPlaylistVideos(String playlistId, {int limit = 100}) async {
     // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
@@ -537,7 +537,7 @@ class YtDlpService {
       debugPrint('[yt-dlp/Desktop Python] getPlaylist error: $e');
     }
 
-    // 3. Fallback to youtube_explode_dart
+    // Modern music player design
     final videos = await _fallbackClient.playlists.getVideos(playlistId).take(limit).toList();
     return videos.map((v) {
       final music = v.musicData.isNotEmpty ? v.musicData.first : null;
@@ -553,9 +553,9 @@ class YtDlpService {
     }).toList();
   }
 
-  /// Fetches similar tracks / song radio using YouTube Music automatic radio playlist (RDAMVM / RD)
+  // Modern music player design
   Future<List<Map<String, dynamic>>> getRadioTracks(String videoId, {int limit = 50}) async {
-    final radioUrl = 'https://music.youtube.com/playlist?list=RDAMVM$videoId';
+    final radioUrl = 'https://music.youtube.com/watch?v=$videoId&list=RD$videoId';
     final fallbackRadioUrl = 'https://www.youtube.com/watch?v=$videoId&list=RD$videoId';
 
     // 1. Android: Chaquopy Python
@@ -702,7 +702,7 @@ class YtDlpService {
       }
     } catch (_) {}
 
-    // 3. Fallback to youtube_explode_dart
+    // Modern music player design
     try {
       final video = await _fallbackClient.videos.get(cleanId);
       final music = video.musicData.isNotEmpty ? video.musicData.first : null;

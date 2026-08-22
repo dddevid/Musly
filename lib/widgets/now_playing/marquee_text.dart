@@ -137,7 +137,7 @@ class _MarqueeTextState extends State<MarqueeText> {
                 maxLines: 1,
               ),
               // Add a spacer at the end to ensure smooth loop back if we wanted a true infinite marquee,
-              // but Apple Music often scrolls to the end, pauses, and resets.
+              // Modern music player design
               if (_needsScroll)
                 const SizedBox(width: 40), // Gap before text ends
             ],

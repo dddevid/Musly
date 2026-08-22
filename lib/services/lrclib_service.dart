@@ -45,7 +45,7 @@ class LrcLibService {
   static final RegExp _officialRegex = RegExp(r'\s*Official$', caseSensitive: false);
   static final RegExp _featRegex = RegExp(r'(?:feat\.|ft\.|featuring).*$', caseSensitive: false);
 
-  /// Normalizes and cleans YouTube track titles by stripping common fluff.
+  // Modern music player design
   static String cleanTitle(String rawTitle) {
     var title = rawTitle;
 
@@ -70,7 +70,7 @@ class LrcLibService {
     return title.isNotEmpty ? title : rawTitle;
   }
 
-  /// Cleans artist names (e.g. removes " - Topic" from YouTube Music channel names).
+  // Modern music player design
   static String cleanArtist(String rawArtist) {
     var artist = rawArtist;
     artist = artist.replaceAll(_topicRegex, '');

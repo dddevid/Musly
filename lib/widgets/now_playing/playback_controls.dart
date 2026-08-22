@@ -101,7 +101,7 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
           height: widget.size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.2), // Apple Music uses a slightly translucent white/grey fill
+            color: Colors.white.withValues(alpha: 0.2), // Modern music player design
           ),
           child: Icon(
             widget.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,

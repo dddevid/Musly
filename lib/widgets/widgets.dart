@@ -2,10 +2,10 @@
 // Cards
 export 'cards/album_card.dart';
 export 'cards/artist_card.dart';
-export 'cards/spotify_like_card.dart';
-export 'cards/spotify_top_result_card.dart';
-export 'cards/spotify_browse_card.dart';
-export 'cards/spotify_quick_access_tile.dart';
+export 'cards/media_card.dart';
+export 'cards/top_result_card.dart';
+export 'cards/browse_category_card.dart';
+export 'cards/quick_access_tile.dart';
 
 // Common UI Elements
 export 'common/album_artwork.dart';

@@ -31,7 +31,7 @@ export default function Hero() {
 
                     <FadeIn delay={0.25}>
                         <p className="hero-desc">
-                            The ultimate <strong>Navidrome &amp; Subsonic client</strong> with an Apple Music-inspired interface. Stream your self-hosted library beautifully, on every device.
+                            The ultimate <strong>Navidrome &amp; Subsonic client</strong> with an modern and elegant interface. Stream your self-hosted library beautifully, on every device.
                         </p>
                     </FadeIn>
 
@@ -140,7 +140,7 @@ export default function Hero() {
                             </div>
                             <div className="hero-float-text">
                                 <span className="hero-float-title">Now Playing</span>
-                                <span className="hero-float-sub">Apple Music-like UI</span>
+                                <span className="hero-float-sub">modern and elegant UI</span>
                             </div>
                             <div className="hero-float-bars">
                                 {[1, 2, 3, 4].map(i => (

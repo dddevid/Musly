@@ -320,7 +320,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                   isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                                   size: ScreenHelper.miniPlayerIconSize(context),
                                 ),
-                                color: isStarred ? AppTheme.appleMusicRed : color,
+                                color: isStarred ? AppTheme.brandRed : color,
                               );
                             },
                           ),

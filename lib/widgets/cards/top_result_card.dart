@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
-class SpotifyTopResultCard extends StatefulWidget {
+class TopResultCard extends StatefulWidget {
   final String title;
   final String subtitle;
   final String typeLabel; // e.g. "Song", "Artist", "Album", "Playlist"
@@ -11,7 +11,7 @@ class SpotifyTopResultCard extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback onPlayPressed;
 
-  const SpotifyTopResultCard({
+  const TopResultCard({
     super.key,
     required this.title,
     required this.subtitle,
@@ -23,10 +23,10 @@ class SpotifyTopResultCard extends StatefulWidget {
   });
 
   @override
-  State<SpotifyTopResultCard> createState() => _SpotifyTopResultCardState();
+  State<TopResultCard> createState() => _TopResultCardState();
 }
 
-class _SpotifyTopResultCardState extends State<SpotifyTopResultCard> {
+class _TopResultCardState extends State<TopResultCard> {
   bool _isHovered = false;
 
   @override
@@ -114,7 +114,7 @@ class _SpotifyTopResultCardState extends State<SpotifyTopResultCard> {
                 ],
               ),
 
-              // Spotify Circular Green Play Button on Bottom Right
+              // Modern music player design
               Positioned(
                 bottom: 0,
                 right: 0,

@@ -38,7 +38,7 @@ class UiFeedback {
       icon: Icons.info_outline_rounded,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.grey[900]!,
       textColor: Colors.white,
-      iconColor: AppTheme.spotifyGreen,
+      iconColor: AppTheme.brandGreen,
     );
   }
 

@@ -116,14 +116,14 @@ class SubsonicService {
 
   bool get isJellyfin => _jellyfin != null;
 
-  /// For YouTube songs, returns a playable [AudioSource] resolved via yt-dlp.
+  // Modern music player design
   /// Returns null for Subsonic / Jellyfin (use [resolveStreamUrlAsync]).
   Future<AudioSource?> getYoutubeAudioSource(Song song) async {
     if (_youtube != null) return _youtube!.buildAudioSource(song.id);
     return null;
   }
 
-  /// Resolves the playable URL for [song]. For YouTube this calls the async
+  // Modern music player design
   /// manifest extraction; for other families it returns the pre-built URL.
   Future<String> resolveStreamUrlAsync(Song song) async {
     if (_youtube != null) {

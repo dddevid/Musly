@@ -67,17 +67,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive Test Suite** — Unit, widget, integration, security, and memory-leak tests with configurable Navidrome server support via `test_server_config.json`
 - **Android Audio Session Configuration** — Explicit `AudioSession` setup for music playback on Android, ensuring proper audio focus and routing on car head units
 - **Lyrics Wake Lock** — Screen stays on while lyrics view is visible to prevent display timeout during active listening
-- **Spotify-Style Desktop UX Redesign** — Complete overhaul of desktop interface emulating Spotify's design system
+- **modern desktop Desktop UX Redesign** — Complete overhaul of desktop interface emulating Musly's design system
   - **3-Column Layout**: Fixed left sidebar (280px), expandable center content area, optional right sidebar (320px) for queue
-  - **Spotify-like Dark Mode**: Deep black backgrounds (#000000, #121212, #181818) with consistent color palette
+  - **modern Dark Mode**: Deep black backgrounds (#000000, #121212, #181818) with consistent color palette
   - **Right Sidebar Queue**: Dedicated sidebar showing current playback queue with song artwork and metadata
-  - **Enhanced Player Bar**: Improved 90px fixed bottom bar with Spotify color scheme (#181818) and border (#282828)
+  - **Enhanced Player Bar**: Improved 90px fixed bottom bar with Musly color scheme (#181818) and border (#282828)
   - **Micro-Interactions**: Smooth hover effects on all cards (1.04x scale, 16px elevation shadow, 200ms animations)
-  - **Green Play Button**: Spotify-signature green (#1DB954) circular play button appears on hover for albums and artists
-  - **Quick Access Grid**: Spotify-style quick access tiles with hover states and background transitions
+  - **Green Play Button**: signature green (#1DB954) circular play button appears on hover for albums and artists
+  - **Quick Access Grid**: modern desktop quick access tiles with hover states and background transitions
   - **Gradient Header Widget**: Dynamic gradient headers that extract dominant colors from album artwork
-  - **Updated Navigation Sidebar**: 280px width (expanded) with improved Spotify-like colors and hover states
-  - **New Widgets**: `SpotifyLikeCard`, `RightSidebar`, `QuickAccessGrid`, `GradientHeader` for reusable Spotify-style components
+  - **Updated Navigation Sidebar**: 280px width (expanded) with improved modern colors and hover states
+  - **New Widgets**: `MuslyLikeCard`, `RightSidebar`, `QuickAccessGrid`, `GradientHeader` for reusable modern desktop components
 
 ### Fixed
 - **History Screen Loading** - Improved history loading and listener management
@@ -102,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed ReorderableListView null crash with drag handle
   - Fixed syntax error causing build failure in `_buildRadioPlayer`
   - Status-bar icons now forced to white on dark background so they remain visible
-- **Apple Music-Style Sliders** — Progress and volume bars redesigned with Apple Music aesthetics
+- **modern and elegant Sliders** — Progress and volume bars redesigned with Musly aesthetics
   - Invisible thumb on mobile that grows to 28px with smooth animation when dragged
   - Track height animates from 3px to 5px during interaction with white glow effect
   - Desktop: thinner 3px tracks, smaller 5px thumbs, darker inactive track (#3A3A3A)
@@ -273,7 +273,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.7] - 2026-02-22
 
 ### Added
-- **Spotify-style Desktop UX**: Complete redesign of the PC layout
+- **modern desktop Desktop UX**: Complete redesign of the PC layout
   - New collapsible sidebar (`DesktopNavigationSidebar`) with 260 px expanded / 72 px collapsed states
   - Sidebar sections: Home, Search, Your Library (scrollable playlist list with Liked Songs shortcut), Settings, Collapse/Expand toggle
   - Settings navigation item restored directly in the sidebar
@@ -347,7 +347,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **React Marketing Website**: Added under `react-website/`, deployed to GitHub Pages via Actions workflow
 
 ### Improved
-- **Google Cast Display**: Receiver now shows album art like Spotify
+- **Google Cast Display**: Receiver now shows album art like Musly
   - Switched from raw audio streaming to a video-style Cast session with artwork
   - Uses `GenericMediaMetadata` for broader Cast receiver compatibility
 - **Support Dialog**: Streamlined post-login dialog

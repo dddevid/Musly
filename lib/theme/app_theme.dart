@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 class AppTheme {
-  static const Color appleMusicRed = Color(0xFFFA243C);
-  static const Color appleMusicPink = Color(0xFFFC5C65);
+  static const Color brandRed = Color(0xFFFA243C);
+  static const Color brandPink = Color(0xFFFC5C65);
 
-  static const Color spotifyGreen = Color(0xFF1DB954);
-  static const Color spotifyGreenDim = Color(0xFF158A3E);
+  static const Color brandGreen = Color(0xFF1DB954);
+  static const Color brandGreenDim = Color(0xFF158A3E);
 
   static const Color lightBackground = Color(0xFFF2F2F7);
   static const Color lightSurface = Colors.white;
@@ -14,7 +14,7 @@ class AppTheme {
   static const Color lightDivider = Color(0xFFE5E5EA);
   static const Color lightSecondaryText = Color(0xFF8E8E93);
 
-  // Spotify-like Dark Mode Colors
+  // Modern music player design
   static const Color darkBackground = Color(0xFF000000);
   static const Color darkSurface = Color(0xFF121212);
   static const Color darkCard = Color(0xFF181818);
@@ -42,9 +42,9 @@ class AppTheme {
   static ThemeData darkThemeFromScheme(ColorScheme scheme) =>
       _buildFromScheme(scheme);
 
-  static ThemeData get lightTheme => _buildLightTheme(appleMusicRed);
+  static ThemeData get lightTheme => _buildLightTheme(brandRed);
 
-  static ThemeData get darkTheme => _buildDarkTheme(appleMusicRed);
+  static ThemeData get darkTheme => _buildDarkTheme(brandRed);
 
   static ThemeData _buildLightTheme(Color accent) => ThemeData(
         useMaterial3: true,

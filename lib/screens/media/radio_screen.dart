@@ -113,7 +113,7 @@ class _RadioScreenState extends State<RadioScreen> {
               ListTile(
                 leading: Icon(
                   CupertinoIcons.play_fill,
-                  color: AppTheme.appleMusicRed,
+                  color: AppTheme.brandRed,
                 ),
                 title: Text(
                   'Play Station',
@@ -319,8 +319,8 @@ class _RadioStationTile extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: isPlaying
                     ? [
-                        AppTheme.appleMusicRed,
-                        AppTheme.appleMusicRed.withValues(alpha: 0.7),
+                        AppTheme.brandRed,
+                        AppTheme.brandRed.withValues(alpha: 0.7),
                       ]
                     : [const Color(0xFF5856D6), const Color(0xFF007AFF)],
               ),
@@ -340,7 +340,7 @@ class _RadioStationTile extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: isPlaying
-                  ? AppTheme.appleMusicRed
+                  ? AppTheme.brandRed
                   : (isDark ? Colors.white : Colors.black),
             ),
             maxLines: 1,
@@ -362,7 +362,7 @@ class _RadioStationTile extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.appleMusicRed.withValues(alpha: 0.1),
+                    color: AppTheme.brandRed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -370,14 +370,14 @@ class _RadioStationTile extends StatelessWidget {
                     children: [
                       Icon(
                         CupertinoIcons.waveform,
-                        color: AppTheme.appleMusicRed,
+                        color: AppTheme.brandRed,
                         size: 16,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'LIVE',
                         style: TextStyle(
-                          color: AppTheme.appleMusicRed,
+                          color: AppTheme.brandRed,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),

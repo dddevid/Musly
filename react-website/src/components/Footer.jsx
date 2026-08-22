@@ -55,7 +55,7 @@ export default function Footer({ onPrivacyClick }) {
                             <span className="footer-logo-name">Musly</span>
                         </a>
                         <p className="footer-tagline">
-                            The best free Navidrome &amp; Subsonic client with an Apple Music-inspired interface.
+                            The best free Navidrome &amp; Subsonic client with an modern and elegant interface.
                         </p>
                         <div className="footer-socials">
                             <a href="https://github.com/dddevid/Musly" target="_blank" rel="noopener noreferrer" className="footer-social" aria-label="GitHub">

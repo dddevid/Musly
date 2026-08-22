@@ -218,7 +218,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         Expanded(
                           child: Slider(
                             value: status.gain.clamp(0.0, 1.0),
-                            activeColor: AppTheme.appleMusicRed,
+                            activeColor: AppTheme.brandRed,
                             onChanged: (v) {
                               final subsonic = context.read<SubsonicService>();
                               jukebox.setGain(subsonic, v);
@@ -301,7 +301,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         leading: isCurrent
                             ? Icon(
                                 CupertinoIcons.speaker_2_fill,
-                                color: AppTheme.appleMusicRed,
+                                color: AppTheme.brandRed,
                                 size: 20,
                               )
                             : Text(
@@ -318,7 +318,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                             fontWeight: isCurrent
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            color: isCurrent ? AppTheme.appleMusicRed : null,
+                            color: isCurrent ? AppTheme.brandRed : null,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -389,7 +389,7 @@ class _ControlButton extends StatelessWidget {
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
-            backgroundColor: AppTheme.appleMusicRed,
+            backgroundColor: AppTheme.brandRed,
             foregroundColor: Colors.white,
             padding: EdgeInsets.zero,
           ),

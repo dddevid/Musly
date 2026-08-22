@@ -25,7 +25,7 @@ class GradientHeader extends StatefulWidget {
 }
 
 class _GradientHeaderState extends State<GradientHeader> {
-  Color _dominantColor = AppTheme.appleMusicRed;
+  Color _dominantColor = AppTheme.brandRed;
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _GradientHeaderState extends State<GradientHeader> {
         setState(() {
           _dominantColor = paletteGenerator.dominantColor?.color ??
               paletteGenerator.vibrantColor?.color ??
-              AppTheme.appleMusicRed;
+              AppTheme.brandRed;
         });
       }
     } catch (e) {

@@ -42,14 +42,14 @@ class ServerConfig {
 
   String get displayServerName {
     if (name != null && name!.trim().isNotEmpty) return name!.trim();
-    if (isYoutube) return 'YT Stream';
+    if (isYoutube) return 'Web Stream';
     if (isJellyfin) return 'Jellyfin';
     if (serverType != null && serverType!.isNotEmpty) return serverType!;
     return 'Navidrome / Subsonic';
   }
 
   String get displayUrl {
-    if (isYoutube) return 'YT Stream';
+    if (isYoutube) return 'Web Stream';
     if (serverUrl.isEmpty) return 'Not configured';
     try {
       final uri = Uri.parse(serverUrl);

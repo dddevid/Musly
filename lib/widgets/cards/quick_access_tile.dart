@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
-class SpotifyQuickAccessTile extends StatefulWidget {
+class QuickAccessTile extends StatefulWidget {
   final String title;
   final String? imageUrl;
   final Widget? customArtwork;
   final VoidCallback onTap;
   final VoidCallback? onPlayPressed;
 
-  const SpotifyQuickAccessTile({
+  const QuickAccessTile({
     super.key,
     required this.title,
     this.imageUrl,
@@ -18,10 +18,10 @@ class SpotifyQuickAccessTile extends StatefulWidget {
   });
 
   @override
-  State<SpotifyQuickAccessTile> createState() => _SpotifyQuickAccessTileState();
+  State<QuickAccessTile> createState() => _QuickAccessTileState();
 }
 
-class _SpotifyQuickAccessTileState extends State<SpotifyQuickAccessTile> {
+class _QuickAccessTileState extends State<QuickAccessTile> {
   bool _isHovered = false;
 
   @override

@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 1. Iconic Spotify 6-Item Quick Access Top Grid
+                        // Modern music player design
                         if (_selectedCategory == 'All' || _selectedCategory == 'Music') ...[
                           const SizedBox(height: 8),
                           _buildSpotifyTopGrid(
@@ -253,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: EdgeInsets.symmetric(horizontal: hPad),
                             cardSize: isDesktop ? 180 : 155,
                             children: recentAlbums.take(12).map((album) {
-                              return SpotifyLikeCard(
+                              return MediaCard(
                                 title: album.name,
                                 subtitle: album.artist,
                                 coverArt: album.coverArt,
@@ -317,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: EdgeInsets.symmetric(horizontal: hPad),
                             cardSize: isDesktop ? 180 : 155,
                             children: playlists.take(12).map((playlist) {
-                              return SpotifyLikeCard(
+                              return MediaCard(
                                 title: playlist.name,
                                 subtitle: 'Playlist • Musly',
                                 coverArt: playlist.coverArt,
@@ -345,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                         ],
 
-                        // 8. Popular Artists (Spotify Circular Cards)
+                        // Modern music player design
                         if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
                             artists.isNotEmpty) ...[
                           HorizontalScrollSection(
@@ -356,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               final coverArt = artist.coverArt ??
                                   artist.artistImageUrl ??
                                   (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
-                              return SpotifyLikeCard(
+                              return MediaCard(
                                 title: artist.name,
                                 subtitle: 'Artist',
                                 coverArt: coverArt,
@@ -427,10 +427,10 @@ class _HomeScreenState extends State<HomeScreen> {
             spacing: spacing,
             runSpacing: spacing,
             children: [
-              // 1. Liked Songs tile (Iconic Spotify Violet Box)
+              // Modern music player design
               SizedBox(
                 width: cardWidth,
-                child: SpotifyQuickAccessTile(
+                child: QuickAccessTile(
                   title: 'Liked Songs',
                   customArtwork: Container(
                     decoration: const BoxDecoration(
@@ -452,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ...playlists.take(2).map((playlist) {
                 return SizedBox(
                   width: cardWidth,
-                  child: SpotifyQuickAccessTile(
+                  child: QuickAccessTile(
                     title: playlist.name,
                     imageUrl: playlist.coverArt,
                     onTap: () => _openPlaylist(context, playlist),
@@ -463,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ...recentAlbums.take(cols == 4 ? 5 : 3).map((album) {
                 return SizedBox(
                   width: cardWidth,
-                  child: SpotifyQuickAccessTile(
+                  child: QuickAccessTile(
                     title: album.name,
                     imageUrl: album.coverArt,
                     onTap: () => _openAlbum(context, album.id),
@@ -493,7 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.symmetric(horizontal: hPad),
       cardSize: cardSize,
       children: songs.take(12).map((song) {
-        return SpotifyLikeCard(
+        return MediaCard(
           title: song.title,
           subtitle: song.artist,
           coverArt: song.coverArt,

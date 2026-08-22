@@ -144,10 +144,10 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    // YouTube Music: no server URL / credentials required
+    // Modern music player design
     if (serverFamily == 'youtube') {
       serverUrl = 'https://music.youtube.com';
-      if (username.isEmpty) username = 'YT Stream';
+      if (username.isEmpty) username = 'Web Stream';
       if (password.isEmpty) password = 'youtube';
     }
 
@@ -333,10 +333,10 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> connectYtStream() async {
     return await login(
       serverUrl: 'https://music.youtube.com',
-      username: 'YT Stream',
+      username: 'Web Stream',
       password: 'youtube',
       serverFamily: 'youtube',
-      profileName: 'YT Stream',
+      profileName: 'Web Stream',
     );
   }
 

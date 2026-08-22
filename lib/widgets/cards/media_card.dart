@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
-class SpotifyLikeCard extends StatefulWidget {
+class MediaCard extends StatefulWidget {
   final String? coverArt;
   final String title;
   final String? subtitle;
@@ -11,7 +11,7 @@ class SpotifyLikeCard extends StatefulWidget {
   final double size;
   final bool isRound;
 
-  const SpotifyLikeCard({
+  const MediaCard({
     super.key,
     this.coverArt,
     required this.title,
@@ -23,10 +23,10 @@ class SpotifyLikeCard extends StatefulWidget {
   });
 
   @override
-  State<SpotifyLikeCard> createState() => _SpotifyLikeCardState();
+  State<MediaCard> createState() => _MediaCardState();
 }
 
-class _SpotifyLikeCardState extends State<SpotifyLikeCard> {
+class _MediaCardState extends State<MediaCard> {
   bool _isHovered = false;
 
   @override
@@ -172,7 +172,7 @@ class _PlayButtonState extends State<_PlayButton>
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppTheme.spotifyGreen,
+            color: AppTheme.brandGreen,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(

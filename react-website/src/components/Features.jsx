@@ -20,8 +20,8 @@ import './Features.css'
 const features = [
     {
         icon: Music,
-        title: 'Apple Music UI',
-        description: 'A beautiful, modern interface inspired by Apple Music — smooth animations, intuitive navigation, and a premium feel on every screen.',
+        title: 'Modern Music Player UI',
+        description: 'A beautiful, modern interface inspired by Musly — smooth animations, intuitive navigation, and a premium feel on every screen.',
         size: 'wide',
         accent: '#ff2d55',
     },

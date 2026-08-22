@@ -99,7 +99,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
     final hasYt = await authProvider.hasYoutubeProfile();
     if (hasYt) {
       setState(() {
-        _errorMessage = 'YT Stream is already configured in your music sources.';
+        _errorMessage = 'Web Stream is already configured in your music sources.';
       });
       return;
     }
@@ -122,7 +122,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
               children: [
                 Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
                 SizedBox(width: 10),
-                Text('Connected to YT Stream', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text('Connected to Web Stream', style: TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
             duration: const Duration(seconds: 2),
@@ -133,7 +133,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
       } else {
         setState(() {
           _isConnecting = false;
-          _errorMessage = authProvider.error ?? 'Failed to connect to YT Stream';
+          _errorMessage = authProvider.error ?? 'Failed to connect to Web Stream';
         });
       }
     } catch (e) {
@@ -297,7 +297,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
 
                 _buildProviderCard(
                   family: 'youtube',
-                  title: 'YT Stream',
+                  title: 'Web Stream',
                   subtitle: hasYtStream
                       ? 'Already configured in your music sources'
                       : 'Stream music online without account setup',
@@ -580,7 +580,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                     )
                   : Text(
-                      hasYtStream ? 'YT Stream is Already Added' : 'Connect YT Stream',
+                      hasYtStream ? 'Web Stream is Already Added' : 'Connect Web Stream',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
             ),

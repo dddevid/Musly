@@ -1,7 +1,7 @@
 
 # Musly - Best Free Navidrome Client & Subsonic Music Player
 
-**Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful Apple Music-inspired interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
+**Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful modern and elegant interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
 
 ## GitAds Sponsored
 [![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
@@ -18,7 +18,7 @@
 Musly is the best Navidrome client for 2026, offering:
 
 - 🎵 **Music Streaming** - Stream music from your Subsonic server
-- 🎨 **Apple Music UI** - Beautiful, modern interface inspired by Apple Music
+- 🎨 **Modern Music Player UI** - Beautiful, modern interface inspired by Musly
 - 🌙 **Dark/Light Mode** - Automatic theme switching based on system settings
 - 📱 **Responsive Design** - Works on phones and tablets
 - 🔍 **Search** - Search artists, albums, and songs
@@ -28,7 +28,7 @@ Musly is the best Navidrome client for 2026, offering:
 - 🔀 **Shuffle & Repeat** - Control playback modes
 - 📊 **Queue Management** - View and modify the play queue
 - 🚗 **Android Auto** - Full support for Android Auto integration
-- 🎧 **Synced Lyrics** - Time-synced lyrics with Apple Music–style desktop fullscreen mode
+- 🎧 **Synced Lyrics** - Time-synced lyrics with Musly–style desktop fullscreen mode
 - 🧠 **Smart Recommendations** - Personalized mixes, "For You" feed, and listening history
 
 ### Prerequisites
@@ -77,7 +77,7 @@ If you find Musly useful and want to support its development
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
-- [x] **Desktop Lyrics & Fullscreen Mode**: Apple Music–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
+- [x] **Desktop Lyrics & Fullscreen Mode**: Musly–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
 - [-] **CarPlay Support**: Add a dedicated browsing interface for CarPlay. (Carplay needs a signed certificate, until the app is available on the appstore carplay wont work, only if selfsigned and with carplay enabled in the code)
 - [X] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
@@ -147,4 +147,5 @@ This project is open source and available under the **Creative Commons Attributi
 
 <div align="center">
 
-[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
+[![Views](https://komarev.com/ghpvc/?username=dddevid-Musly&label=VIEWS&color=fa243c&style=for-the-badge)](https://github.com/dddevid/Musly)
+

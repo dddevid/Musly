@@ -130,11 +130,11 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
-                color: AppTheme.appleMusicRed.withValues(alpha: 0.2),
+                color: AppTheme.brandRed.withValues(alpha: 0.2),
               ),
               child: const Icon(
                 CupertinoIcons.music_note_list,
-                color: AppTheme.appleMusicRed,
+                color: AppTheme.brandRed,
               ),
             ),
             title: Text(playlist.name),

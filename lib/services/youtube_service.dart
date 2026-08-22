@@ -10,7 +10,7 @@ import 'library_database_service.dart';
 import 'subsonic_service.dart';
 import 'ytdlp_service.dart';
 
-/// Proxies and caches the YouTube audio stream via Dart's HttpClient to provide
+// Modern music player design
 /// matching headers (User-Agent, Range), eliminate HTTP 403 on ExoPlayer / Media3,
 /// and provide resilient offline / weak-connection playback.
 class _YoutubeStreamAudioSource extends StreamAudioSource {
@@ -74,7 +74,7 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
       final isWebm = cachedFile.path.endsWith('.webm') || cachedFile.path.endsWith('.opus');
       final type = isWebm ? 'audio/webm' : 'audio/mp4';
 
-      debugPrint('[YouTube Stream] Serving "$cleanId" from local disk cache ($s-$e of $fileLength bytes)');
+      debugPrint('[Web Stream] Serving "$cleanId" from local disk cache ($s-$e of $fileLength bytes)');
       return StreamAudioResponse(
         sourceLength: fileLength,
         contentLength: contentLength > 0 ? contentLength : null,
@@ -109,7 +109,7 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
         final resp = await req.close();
 
         if (resp.statusCode == 403 || resp.statusCode == 429) {
-          debugPrint('[YouTube Stream] Stream rejected (${resp.statusCode}) for $cleanId, refreshing...');
+          debugPrint('[Web Stream] Stream rejected (${resp.statusCode}) for $cleanId, refreshing...');
           _ytdlp.invalidateCache(cleanId);
           if (retries < 2) {
             retries++;
@@ -161,7 +161,7 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
                   final tempDir = await getTemporaryDirectory();
                   final target = File('${tempDir.path}/musly_yt_cache/yt_$safeId.audio');
                   await partFile.rename(target.path);
-                  debugPrint('[YouTube Stream] Cached complete audio for "$cleanId" to disk');
+                  debugPrint('[Web Stream] Cached complete audio for "$cleanId" to disk');
                 }
               } catch (_) {}
             },
@@ -187,11 +187,11 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
       } catch (e) {
         if (retries < 2) {
           retries++;
-          debugPrint('[YouTube Stream] Retrying request for $cleanId (attempt $retries): $e');
+          debugPrint('[Web Stream] Retrying request for $cleanId (attempt $retries): $e');
           await Future.delayed(Duration(milliseconds: 400 * retries));
           continue;
         }
-        debugPrint('[YouTube Stream] StreamAudioSource request failed for $cleanId: $e');
+        debugPrint('[Web Stream] StreamAudioSource request failed for $cleanId: $e');
         rethrow;
       }
     }
@@ -218,7 +218,7 @@ class YoutubeService {
       await res.drain<void>();
       return PingResult(
         success: res.statusCode < 400,
-        serverType: 'YT Stream (yt-dlp)',
+        serverType: 'Web Stream (yt-dlp)',
         serverVersion: '1.0',
       );
     } catch (e) {
@@ -228,19 +228,19 @@ class YoutubeService {
 
   // ── Cover art & stream ────────────────────────────────────────────────────
 
-  /// Returns high-resolution album/cover art URL for YouTube tracks and videos.
+  // Modern music player design
   /// Automatically upgrades Google thumbnail parameters and video thumbnail URLs.
   String getCoverArtUrl(String? id, {int size = 800}) {
     if (id == null || id.isEmpty) return '';
     final effectiveSize = size > 0 ? size : 800;
 
     if (id.startsWith('http://') || id.startsWith('https://')) {
-      // 1. Google user content / YouTube Music thumbnail:
+      // Modern music player design
       if (id.contains('googleusercontent.com') || id.contains('ggpht.com')) {
         final base = id.split('=')[0];
         return '$base=w$effectiveSize-h$effectiveSize-l90-rj';
       }
-      // 2. YouTube Video image CDN:
+      // Modern music player design
       if (id.contains('i.ytimg.com') || id.contains('img.youtube.com')) {
         final match = RegExp(r'/vi/([a-zA-Z0-9_-]{11})').firstMatch(id);
         if (match != null) {
@@ -251,7 +251,7 @@ class YoutubeService {
       return id;
     }
 
-    // 3. YouTube 11-char Video ID:
+    // Modern music player design
     if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(id)) {
       return 'https://i.ytimg.com/vi/$id/hqdefault.jpg';
     }
@@ -259,8 +259,7 @@ class YoutubeService {
   }
 
   /// Returns a lightweight stream URL.
-  String getStreamUrl(String videoId) =>
-      'https://www.youtube.com/watch?v=${videoId.replaceFirst('ytmusic://', '')}';
+  String getStreamUrl(String videoId) => 'ytmusic://$videoId';
 
   /// Resolves the actual direct audio stream URL.
   Future<String> resolveStreamUrl(String videoId) async {
@@ -493,7 +492,7 @@ class YoutubeService {
       final songs = items.map(_mapDictToSong).toList();
       return Playlist(
         id: id,
-        name: 'YT Stream Playlist',
+        name: 'Web Stream Playlist',
         songCount: songs.length,
         songs: songs,
       );

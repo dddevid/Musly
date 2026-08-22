@@ -160,7 +160,7 @@ class _QueueItemState extends State<_QueueItem> {
                             ? FontWeight.w600
                             : FontWeight.normal,
                         color: widget.isPlaying
-                            ? AppTheme.appleMusicRed
+                            ? AppTheme.brandRed
                             : (isDark ? Colors.white : Colors.black),
                       ),
                       maxLines: 1,
@@ -186,7 +186,7 @@ class _QueueItemState extends State<_QueueItem> {
                 Icon(
                   Icons.volume_up_rounded,
                   size: 16,
-                  color: AppTheme.appleMusicRed,
+                  color: AppTheme.brandRed,
                 ),
             ],
           ),

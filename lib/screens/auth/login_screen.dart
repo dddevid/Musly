@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       case _LoginErrorType.credentials:
         icon = CupertinoIcons.person_badge_minus;
-        color = AppTheme.appleMusicRed;
+        color = AppTheme.brandRed;
         hint = 'Check your username and password and try again.';
       case _LoginErrorType.notFound:
         icon = CupertinoIcons.question_circle;
@@ -155,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
         hint = 'URL must start with http:// or https://';
       case _LoginErrorType.generic:
         icon = CupertinoIcons.exclamationmark_triangle;
-        color = AppTheme.appleMusicRed;
+        color = AppTheme.brandRed;
         hint = null;
     }
 
@@ -328,7 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    // YouTube Music requires no credentials — skip form validation
+    // Modern music player design
     if (_serverFamily != 'youtube') {
       if (!_formKey.currentState!.validate()) return;
     }
@@ -495,7 +495,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.appleMusicRed.withValues(
+                            color: AppTheme.brandRed.withValues(
                               alpha: 0.4,
                             ),
                             blurRadius: 20,
@@ -589,7 +589,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'YT Stream streams music directly online. No account required — tap Connect to start.',
+                              'Web Stream streams music directly online. No account required — tap Connect to start.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Theme.of(context).brightness == Brightness.dark
@@ -692,7 +692,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       CupertinoSwitch(
                         value: _useLegacyAuth,
-                        activeTrackColor: AppTheme.appleMusicRed,
+                        activeTrackColor: AppTheme.brandRed,
                         onChanged: (value) {
                           setState(() {
                             _useLegacyAuth = value;
@@ -723,7 +723,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       CupertinoSwitch(
                         value: _allowSelfSignedCertificates,
-                        activeTrackColor: AppTheme.appleMusicRed,
+                        activeTrackColor: AppTheme.brandRed,
                         onChanged: (value) {
                           setState(() {
                             _allowSelfSignedCertificates = value;
@@ -828,7 +828,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const Icon(
                                     CupertinoIcons.doc_fill,
                                     size: 20,
-                                    color: AppTheme.appleMusicRed,
+                                    color: AppTheme.brandRed,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -867,9 +867,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   )!.selectCertificateFile,
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.appleMusicRed,
+                                  foregroundColor: AppTheme.brandRed,
                                   side: BorderSide(
-                                    color: AppTheme.appleMusicRed.withValues(
+                                    color: AppTheme.brandRed.withValues(
                                       alpha: 0.5,
                                     ),
                                   ),
@@ -911,7 +911,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const Icon(
                                     Icons.security_rounded,
                                     size: 20,
-                                    color: AppTheme.appleMusicRed,
+                                    color: AppTheme.brandRed,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -983,9 +983,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   )!.selectClientCertificate,
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.appleMusicRed,
+                                  foregroundColor: AppTheme.brandRed,
                                   side: BorderSide(
-                                    color: AppTheme.appleMusicRed.withValues(
+                                    color: AppTheme.brandRed.withValues(
                                       alpha: 0.5,
                                     ),
                                   ),
@@ -1009,7 +1009,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.appleMusicRed,
+                        backgroundColor: AppTheme.brandRed,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1069,7 +1069,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppTheme.appleMusicRed,
+                                  AppTheme.brandRed,
                                 ),
                               ),
                             )
@@ -1083,8 +1083,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.appleMusicRed,
-                        side: const BorderSide(color: AppTheme.appleMusicRed),
+                        foregroundColor: AppTheme.brandRed,
+                        side: const BorderSide(color: AppTheme.brandRed),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -1096,10 +1096,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     LinearProgressIndicator(
                       value: _scanProgress > 0 ? _scanProgress : null,
-                      backgroundColor: AppTheme.appleMusicRed.withValues(
+                      backgroundColor: AppTheme.brandRed.withValues(
                         alpha: 0.2,
                       ),
-                      color: AppTheme.appleMusicRed,
+                      color: AppTheme.brandRed,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ],
@@ -1242,7 +1242,7 @@ class _ServerFamilyToggle extends StatelessWidget {
         activeColor: const Color(0xFF6366F1),
       ),
       (
-        label: 'YT Stream',
+        label: 'Web Stream',
         family: 'youtube',
         icon: CupertinoIcons.play_rectangle,
         activeColor: const Color(0xFFFF0000),

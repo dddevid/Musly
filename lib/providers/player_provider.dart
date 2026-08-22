@@ -567,7 +567,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           .toList();
     }
 
-    // For YT Stream, also do a fast local-DB search on already-cached songs
+    // For Web Stream, also do a fast local-DB search on already-cached songs
     // before hitting the network, to make Auto browsing feel snappier.
     if (_subsonicService.isYoutube && _libraryProvider != null) {
       final lowerQuery = query.toLowerCase();
@@ -587,7 +587,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
                 'title': song.title,
                 'artist': song.artist ?? '',
                 'album': song.album ?? '',
-                // YouTube songs store the thumbnail URL directly in coverArt
+                // Modern music player design
                 'artworkUrl': song.coverArt ?? '',
                 'duration': (song.duration ?? 0).toString(),
               },
@@ -636,7 +636,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           await play();
           return;
         }
-        // In YT Stream mode play from cached songs when no query is given.
+        // In Web Stream mode play from cached songs when no query is given.
         if (_subsonicService.isYoutube &&
             _libraryProvider != null &&
             _libraryProvider!.cachedAllSongs.isNotEmpty) {
@@ -652,7 +652,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         return;
       }
 
-      // For YT Stream, use the internal search which returns full Song objects
+      // For Web Stream, use the internal search which returns full Song objects
       // (with title, artist, coverArt) so Auto shows proper metadata.
       if (_subsonicService.isYoutube) {
         final ytResults = await _searchForAndroidAuto(query);
@@ -711,7 +711,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     // 2. Check the in-memory library (randomSongs for Subsonic/Jellyfin;
-    //    cachedAllSongs for YT Stream which keeps track in its local DB).
+    //    cachedAllSongs for Web Stream which keeps track in its local DB).
     if (_libraryProvider != null) {
       final allSongs = _subsonicService.isYoutube
           ? _libraryProvider!.cachedAllSongs
@@ -727,7 +727,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     }
 
-    // 3. In YT Stream mode the mediaId IS the YouTube video ID.
+    // Modern music player design
     //    Push a placeholder MediaItem immediately so Auto doesn't show a blank
     //    screen, then resolve the real metadata in background and update.
     if (_subsonicService.isYoutube) {
@@ -749,7 +749,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       try {
         await playSong(tempSong);
       } catch (e) {
-        debugPrint('Android Auto: YT Stream playFromMediaId error: $e');
+        debugPrint('Android Auto: Web Stream playFromMediaId error: $e');
         return;
       }
 
@@ -1078,7 +1078,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       '[Player Preload] ⚡ Pre-buffering next song: "${nextSong.title}" (${nextSong.id})',
     );
 
-    // 1. Preload stream URL / YouTube Direct Stream Info
+    // Modern music player design
     if (nextSong.isLocal != true) {
       final cleanId = nextSong.id.replaceFirst('ytmusic://', '');
       if (_subsonicService.isYoutube ||
@@ -1123,7 +1123,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     }
 
-    // 4. Preload next YouTube radio tracks if near queue end
+    // Modern music player design
     if (_subsonicService.isYoutube &&
         _currentIndex >= _queue.length - 2 &&
         _currentSong != null) {
@@ -1718,20 +1718,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         _isRenderingRemotely = false;
 
-        // For YouTube, pre-fetch the manifest then hand a StreamAudioSource
-        // to just_audio so ExoPlayer never touches the YouTube URL directly.
+        // Modern music player design
+        // Modern music player design
         final youtubeSource = song.isLocal != true
             ? await _subsonicService.getYoutubeAudioSource(song)
             : null;
 
         if (youtubeSource != null) {
-          // YouTube: single StreamAudioSource, no gapless
+          // Modern music player design
           _concatenatingSource = null;
           await _audioPlayer.setAudioSource(youtubeSource);
           _applyReplayGain(song).catchError((_) {});
           await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_subsonicService.isYoutube) {
-          // All songs are YouTube — can't build ConcatenatingAudioSource easily
+          // Modern music player design
           _concatenatingSource = null;
           final String playUrl;
           if (song.isLocal == true && song.path != null) {

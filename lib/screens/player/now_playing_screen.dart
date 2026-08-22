@@ -198,7 +198,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     final accentColor = _bgColors.isNotEmpty ? _bgColors.first : Colors.white;
 
     return Theme(
-      // Force dark mode for Now Playing as per Apple Music
+      // Modern music player design
       data: ThemeData.dark(),
       child: Scaffold(
         backgroundColor: Colors.black, // Fallback background

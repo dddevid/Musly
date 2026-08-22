@@ -55,7 +55,7 @@ void main() {
       );
     });
 
-    test('cleans artist names from YouTube Music channels', () {
+    test('cleans artist names from Web Music channels', () {
       expect(
         LrcLibService.cleanArtist('The Weeknd - Topic'),
         equals('The Weeknd'),

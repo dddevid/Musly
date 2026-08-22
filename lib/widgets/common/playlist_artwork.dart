@@ -7,7 +7,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/playlist_cover_service.dart';
 import 'album_artwork.dart';
 
-/// A Spotify-style 1:1 playlist artwork widget that generates a 2x2 dynamic collage
+// Modern music player design
 /// from the songs inside the playlist if multiple distinct album covers are present.
 class PlaylistArtwork extends StatelessWidget {
   final Playlist? playlist;
@@ -74,7 +74,7 @@ class PlaylistArtwork extends StatelessWidget {
           }
         }
 
-        // 2. Dynamic Spotify-style collage from songs if 2 or more distinct covers exist
+        // Modern music player design
         if (distinctCovers.length >= 4) {
           return _build2x2Grid(
             validSize,
@@ -124,14 +124,14 @@ class PlaylistArtwork extends StatelessWidget {
           width: validSize,
           height: validSize,
           decoration: BoxDecoration(
-            color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
+            color: AppTheme.brandRed.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: shadow != null ? [shadow!] : null,
           ),
           child: Center(
             child: Icon(
               CupertinoIcons.music_note_list,
-              color: AppTheme.appleMusicRed,
+              color: AppTheme.brandRed,
               size: validSize * 0.4,
             ),
           ),

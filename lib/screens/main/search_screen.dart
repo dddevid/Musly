@@ -134,7 +134,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Spotify Large Search Header
+          // Modern music player design
           SliverAppBar(
             automaticallyImplyLeading: false,
             pinned: true,
@@ -339,7 +339,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 16),
 
-          // 2-Column Responsive Spotify Grid of Angled Category Cards
+          // Modern music player design
           LayoutBuilder(
             builder: (context, constraints) {
               final cols = _isDesktop ? 4 : 2;
@@ -352,7 +352,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Made For You',
                       gradientColors: const [Color(0xFF1E3264), Color(0xFF283EA3)],
                       icon: CupertinoIcons.sparkles,
@@ -361,7 +361,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'New Releases',
                       gradientColors: const [Color(0xFFE8115B), Color(0xFFFF4081)],
                       icon: CupertinoIcons.flame_fill,
@@ -370,7 +370,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Top Rated',
                       gradientColors: const [Color(0xFF8D67AB), Color(0xFFBA68C8)],
                       icon: CupertinoIcons.star_fill,
@@ -380,7 +380,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   if (!isYoutube)
                     SizedBox(
                       width: cardWidth,
-                      child: SpotifyBrowseCard(
+                      child: BrowseCategoryCard(
                         title: 'Radio Stations',
                         gradientColors: const [Color(0xFF148A08), Color(0xFF43A047)],
                         icon: CupertinoIcons.antenna_radiowaves_left_right,
@@ -389,7 +389,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Genres & Moods',
                       gradientColors: const [Color(0xFFE91429), Color(0xFFFF5252)],
                       icon: CupertinoIcons.music_albums_fill,
@@ -398,7 +398,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Liked Songs',
                       gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
                       icon: CupertinoIcons.heart_fill,
@@ -407,7 +407,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Pop & Hits',
                       gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
                       icon: CupertinoIcons.music_mic,
@@ -419,7 +419,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Hip-Hop & Rap',
                       gradientColors: const [Color(0xFFBC5900), Color(0xFFFB8C00)],
                       icon: CupertinoIcons.speaker_3_fill,
@@ -431,7 +431,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Rock & Alt',
                       gradientColors: const [Color(0xFF7358FF), Color(0xFF9575CD)],
                       icon: CupertinoIcons.guitars,
@@ -443,7 +443,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: SpotifyBrowseCard(
+                    child: BrowseCategoryCard(
                       title: 'Chill & Relax',
                       gradientColors: const [Color(0xFF503750), Color(0xFF8E24AA)],
                       icon: CupertinoIcons.moon_stars_fill,
@@ -503,7 +503,7 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Top Result Card (Signature Spotify Search feature)
+          // Modern music player design
           if (_selectedFilter == 'All' || _selectedFilter == 'Songs') ...[
             if (songs.isNotEmpty || artists.isNotEmpty || albums.isNotEmpty) ...[
               const Text(
@@ -549,7 +549,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 final coverArt = artist.coverArt ??
                     artist.artistImageUrl ??
                     (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
-                return SpotifyLikeCard(
+                return MediaCard(
                   title: artist.name,
                   subtitle: 'Artist',
                   coverArt: coverArt,
@@ -572,7 +572,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.zero,
               cardSize: _isDesktop ? 175 : 150,
               children: albums.map((album) {
-                return SpotifyLikeCard(
+                return MediaCard(
                   title: album.name,
                   subtitle: album.artist,
                   coverArt: album.coverArt,
@@ -594,7 +594,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.zero,
               cardSize: _isDesktop ? 175 : 150,
               children: playlists.map((playlist) {
-                return SpotifyLikeCard(
+                return MediaCard(
                   title: playlist.name,
                   subtitle: 'Playlist • Musly',
                   coverArt: playlist.coverArt,
@@ -613,7 +613,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSongTopResult(Song song, List<Song> queue, SubsonicService subsonicService) {
-    return SpotifyTopResultCard(
+    return TopResultCard(
       title: song.title,
       subtitle: song.artist ?? 'Unknown Artist',
       typeLabel: 'Song',
@@ -627,7 +627,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final coverArt = artist.coverArt ??
         artist.artistImageUrl ??
         (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
-    return SpotifyTopResultCard(
+    return TopResultCard(
       title: artist.name,
       subtitle: 'Artist',
       typeLabel: 'Artist',
@@ -645,7 +645,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildAlbumTopResult(Album album, SubsonicService subsonicService) {
-    return SpotifyTopResultCard(
+    return TopResultCard(
       title: album.name,
       subtitle: 'Album • ${album.artist}',
       typeLabel: 'Album',

@@ -251,7 +251,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             : Icons.favorite_border_rounded,
                         size: 20,
                         color: isStarred
-                            ? AppTheme.appleMusicRed
+                            ? AppTheme.brandRed
                             : (isDark
                                 ? const Color(0xFFB3B3B3)
                                 : const Color(0xFF6B6B6B)),
@@ -334,7 +334,7 @@ class _PlayerControls extends StatelessWidget {
                 Icons.shuffle_rounded,
                 size: 20,
                 color: shuffleEnabled
-                    ? AppTheme.appleMusicRed
+                    ? AppTheme.brandRed
                     : (isDark
                         ? const Color(0xFFB3B3B3)
                         : const Color(0xFF6B6B6B)),
@@ -387,7 +387,7 @@ class _PlayerControls extends StatelessWidget {
                     : Icons.repeat_rounded,
                 size: 20,
                 color: repeatMode != RepeatMode.off
-                    ? AppTheme.appleMusicRed
+                    ? AppTheme.brandRed
                     : (isDark
                         ? const Color(0xFFB3B3B3)
                         : const Color(0xFF6B6B6B)),
@@ -444,11 +444,11 @@ class _ProgressBar extends StatelessWidget {
                       overlayShape: const RoundSliderOverlayShape(
                         overlayRadius: 14,
                       ),
-                      activeTrackColor: AppTheme.appleMusicRed,
+                      activeTrackColor: AppTheme.brandRed,
                       inactiveTrackColor:
                           isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                       thumbColor: Colors.white,
-                      overlayColor: AppTheme.appleMusicRed.withValues(
+                      overlayColor: AppTheme.brandRed.withValues(
                         alpha: 0.2,
                       ),
                     ),
@@ -516,11 +516,11 @@ class _VolumeControl extends StatelessWidget {
                   overlayShape: const RoundSliderOverlayShape(
                     overlayRadius: 14,
                   ),
-                  activeTrackColor: AppTheme.appleMusicRed,
+                  activeTrackColor: AppTheme.brandRed,
                   inactiveTrackColor:
                       isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                   thumbColor: Colors.white,
-                  overlayColor: AppTheme.appleMusicRed.withValues(alpha: 0.2),
+                  overlayColor: AppTheme.brandRed.withValues(alpha: 0.2),
                 ),
                 child: Slider(
                   value: volume,

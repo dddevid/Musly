@@ -25,7 +25,7 @@ class LyricsScreen extends StatelessWidget {
           children: [
             // Header is handled by NowPlayingScreen in a Stack so it persists across page views,
             // or we could put a specific header here if needed.
-            // For Apple Music style, the chevron down and more icon stay pinned at the top.
+            // Modern music player design
             const SizedBox(height: 56), // Space for header
             
             Expanded(

@@ -18,7 +18,7 @@
 - `lib/widgets/right_sidebar.dart`
 - `lib/widgets/section_header.dart`
 - `lib/widgets/shimmer_loading.dart`
-- `lib/widgets/spotify_like_card.dart`
+- `lib/widgets/Musly_like_card.dart`
 - `packages/flutter_chrome_cast/lib/_discovery_manager/_discovery_manager.dart`
 - `packages/flutter_chrome_cast/lib/_discovery_manager/android_discovery_manager.dart`
 - `packages/flutter_chrome_cast/lib/_discovery_manager/discovery_manager.dart`

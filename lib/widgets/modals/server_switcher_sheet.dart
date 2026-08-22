@@ -597,7 +597,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           ),
           child: const Icon(CupertinoIcons.play_rectangle_fill, color: Color(0xFFFF3B30), size: 18),
         ),
-        title: const Text('Add YT Stream', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        title: const Text('Add Web Stream', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         subtitle: const Text('Instant streaming with no login required', style: TextStyle(fontSize: 12)),
         trailing: FilledButton.tonal(
           onPressed: () => _openAddServerScreen(family: 'youtube'),

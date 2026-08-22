@@ -167,7 +167,7 @@ class _MainScreenState extends State<MainScreen> {
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppTheme.appleMusicRed, AppTheme.appleMusicPink],
+                    colors: [AppTheme.brandRed, AppTheme.brandPink],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -299,7 +299,7 @@ class _MainScreenState extends State<MainScreen> {
                         label: Text(l10n.downloadUpdate),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: AppTheme.appleMusicRed,
+                          backgroundColor: AppTheme.brandRed,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

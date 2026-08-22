@@ -50,7 +50,7 @@ class LibraryProvider extends ChangeNotifier {
     _audioHandler.onGetLibraryAlbums = _albumsForAuto;
     _audioHandler.onGetLibraryArtists = _artistsForAuto;
     _audioHandler.onGetLibraryPlaylists = _playlistsForAuto;
-    // Tell the audio handler whether we are in YT Stream mode so it can
+    // Tell the audio handler whether we are in Web Stream mode so it can
     // adapt the Android Auto root browse tree accordingly.
     _audioHandler.onIsYoutubeMode = () => _subsonicService.isYoutube;
   }
@@ -493,7 +493,7 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> _recentSongsForAuto() async {
     await _ensureInitializedForAuto();
-    // In YT Stream mode there is no classic "recent albums" concept;
+    // In Web Stream mode there is no classic "recent albums" concept;
     // use the locally cached songs from the SQLite DB (populated by previous
     // sessions) as the "Recent" section so the browse tree is not empty.
     var songs = _subsonicService.isYoutube
@@ -638,7 +638,7 @@ class LibraryProvider extends ChangeNotifier {
     notifyListeners();
     await initialize();
 
-    // Force immediate full background refresh if server is reachable and not YT Stream.
+    // Force immediate full background refresh if server is reachable and not Web Stream.
     if (!_serverOfflineMode && !_localOnlyMode && !_subsonicService.isYoutube) {
       _refreshAllDataInBackground();
     }

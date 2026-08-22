@@ -98,7 +98,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The argument is a volume percentage (0–100).
   void Function(int volumePercent)? onSetRemoteVolume;
 
-  /// Returns true when the app is running in YT Stream (YouTube) mode.
+  // Modern music player design
   /// Used by the Android Auto browse tree to show only the sections that
   /// make sense without a pre-loaded album/artist catalog.
   bool Function()? onIsYoutubeMode;
@@ -315,7 +315,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   List<MediaItem> _rootItems() {
     final isYoutube = onIsYoutubeMode?.call() ?? false;
-    // In YT Stream mode Albums/Artists are omitted because there is no
+    // In Web Stream mode Albums/Artists are omitted because there is no
     // pre-loaded catalog; the user can still browse Playlists and Recent
     // tracks, and use voice/keyboard search.
     if (isYoutube) {

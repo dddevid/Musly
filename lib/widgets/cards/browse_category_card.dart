@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class SpotifyBrowseCard extends StatefulWidget {
+class BrowseCategoryCard extends StatefulWidget {
   final String title;
   final List<Color> gradientColors;
   final IconData? icon;
   final String? imageUrl;
   final VoidCallback onTap;
 
-  const SpotifyBrowseCard({
+  const BrowseCategoryCard({
     super.key,
     required this.title,
     required this.gradientColors,
@@ -18,10 +18,10 @@ class SpotifyBrowseCard extends StatefulWidget {
   });
 
   @override
-  State<SpotifyBrowseCard> createState() => _SpotifyBrowseCardState();
+  State<BrowseCategoryCard> createState() => _BrowseCategoryCardState();
 }
 
-class _SpotifyBrowseCardState extends State<SpotifyBrowseCard> {
+class _BrowseCategoryCardState extends State<BrowseCategoryCard> {
   bool _isHovered = false;
 
   @override

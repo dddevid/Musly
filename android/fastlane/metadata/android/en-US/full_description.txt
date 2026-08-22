@@ -1,9 +1,9 @@
 
-Musly is a beautiful Flutter client for Subsonic-compatible music servers (Subsonic, Navidrome, Airsonic, Gonic). Stream music from your own server using an Apple Music-inspired UI that adapts to phones and tablets.
+Musly is a beautiful Flutter client for Subsonic-compatible music servers (Subsonic, Navidrome, Airsonic, Gonic). Stream music from your own server using an modern and elegant UI that adapts to phones and tablets.
 
 Features:
 - Stream music from Subsonic-compatible servers
-- Apple Music-style UI with automatic dark/light theming
+- modern and elegant UI with automatic dark/light theming
 - Powerful search, library browsing, and playlist management
 - Full-featured Now Playing screen with shuffle, repeat, and queue controls
 - Android Auto support and hardware media controls
