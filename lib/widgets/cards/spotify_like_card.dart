@@ -42,12 +42,13 @@ class _SpotifyLikeCardState extends State<SpotifyLikeCard> {
           onTap: widget.onTap,
           child: Container(
             width: widget.size,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AnimatedScale(
@@ -74,7 +75,7 @@ class _SpotifyLikeCardState extends State<SpotifyLikeCard> {
                           borderRadius: BorderRadius.circular(widget.isRound ? 999 : 4),
                           child: AlbumArtwork(
                             coverArt: widget.coverArt,
-                            size: widget.size - 32,
+                            size: widget.size - 24,
                             borderRadius: widget.isRound ? 999 : 4,
                           ),
                         ),

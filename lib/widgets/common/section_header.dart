@@ -24,7 +24,7 @@ class HorizontalScrollSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final listHeight = (cardSize ?? 150) + 60; 
+    final listHeight = (cardSize ?? 150) + 84; 
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
