@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
-import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
 import '../services/offline_service.dart';
@@ -225,33 +224,43 @@ class _ArtistScreenState extends State<ArtistScreen> {
             expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(_artist!.name),
-              background: _artist!.coverArt != null
-                  ? ShaderMask(
-                      shaderCallback: (rect) {
-                        return LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.black, Colors.transparent],
-                        ).createShader(
-                          Rect.fromLTRB(0, 0, rect.width, rect.height),
-                        );
-                      },
-                      blendMode: BlendMode.dstIn,
-                      child: AlbumArtwork(
-                        coverArt: _artist!.coverArt,
-                        size: 200,
-                      ),
-                    )
-                  : Container(
-                      color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
-                      child: const Center(
+              background: Builder(
+                builder: (context) {
+                  final art = _artist!.coverArt ??
+                      _artistInfo?.largeImageUrl ??
+                      _artistInfo?.mediumImageUrl ??
+                      _artist!.artistImageUrl ??
+                      (_artist!.id.isNotEmpty ? 'ar-${_artist!.id}' : null);
+                  if (art == null) {
+                    return Container(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                      child: Center(
                         child: Icon(
                           CupertinoIcons.mic_fill,
                           size: 64,
-                          color: AppTheme.appleMusicRed,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
+                    );
+                  }
+                  return ShaderMask(
+                    shaderCallback: (rect) {
+                      return const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.black, Colors.transparent],
+                      ).createShader(
+                        Rect.fromLTRB(0, 0, rect.width, rect.height),
+                      );
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: AlbumArtwork(
+                      coverArt: art,
+                      size: 200,
                     ),
+                  );
+                },
+              ),
             ),
             actions: [
               IconButton(

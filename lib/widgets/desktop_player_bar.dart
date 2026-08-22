@@ -5,8 +5,7 @@ import '../models/song.dart';
 import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
-import '../screens/artist_screen.dart';
-
+import 'multi_artist_widget.dart';
 import 'album_artwork.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
@@ -19,22 +18,6 @@ class DesktopPlayerBar extends StatefulWidget {
 }
 
 class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
-
-  void _navigateToArtist(BuildContext context, String artistId) {
-    if (widget.navigatorKey?.currentState != null) {
-      widget.navigatorKey!.currentState!.push(
-        MaterialPageRoute(
-          builder: (context) => ArtistScreen(artistId: artistId),
-        ),
-      );
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ArtistScreen(artistId: artistId),
-        ),
-      );
-    }
-  }
 
 
 
@@ -243,27 +226,16 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      if (currentSong.artist != null)
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (currentSong.artistId != null) {
-                                _navigateToArtist(
-                                    context, currentSong.artistId!);
-                              }
-                            },
-                            child: Text(
-                              currentSong.artist!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: isDark
-                                    ? Colors.grey[400]
-                                    : Colors.grey[600],
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      if (currentSong.artist != null || currentSong.artistParticipants != null)
+                        MultiArtistWidget(
+                          artists: currentSong.artistParticipants,
+                          artistFallback: currentSong.artist,
+                          artistIdFallback: currentSong.artistId,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            fontSize: 12,
                           ),
                         ),
                     ],

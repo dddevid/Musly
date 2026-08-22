@@ -117,6 +117,13 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     // This drives the iOS Control Center / lock screen widget and the
     // Android media notification automatically.
     _player.playbackEventStream.map(_buildPlaybackState).pipe(playbackState);
+
+    // Ensure Android Auto always sees LocalAndroidPlaybackInfo at startup.
+    // Without this, Auto can inherit a stale RemoteAndroidPlaybackInfo from a
+    // previous session and the hardware volume keys stop working.
+    if (!kIsWeb && Platform.isAndroid) {
+      androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -238,8 +245,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     try {
       final results = await onSearch?.call(query) ?? const [];
       return _songItems(results);
-    } catch (e) {
-      debugPrint('AudioHandler: search("$query") failed: $e');
+    } catch (e, st) {
+      debugPrint('AudioHandler: search("$query") failed: $e\n$st');
       return const [];
     }
   }
@@ -249,7 +256,16 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String mediaId, [
     Map<String, dynamic>? extras,
   ]) async {
-    await onPlayFromMediaId?.call(mediaId);
+    // Push a "loading" state immediately so Android Auto shows a spinner
+    // instead of a blank/black screen while the track is being resolved.
+    _pushLoadingState();
+    try {
+      await onPlayFromMediaId?.call(mediaId);
+    } catch (e, st) {
+      debugPrint('AudioHandler: playFromMediaId($mediaId) failed: $e\n$st');
+      // Restore idle state so Auto doesn't stay stuck on the loading screen.
+      _pushIdleState();
+    }
   }
 
   @override
@@ -257,7 +273,44 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String query, [
     Map<String, dynamic>? extras,
   ]) async {
-    await onPlayFromSearch?.call(query.trim());
+    _pushLoadingState();
+    try {
+      await onPlayFromSearch?.call(query.trim());
+    } catch (e, st) {
+      debugPrint('AudioHandler: playFromSearch("$query") failed: $e\n$st');
+      _pushIdleState();
+    }
+  }
+
+  /// Pushes a buffering/loading playback state so Android Auto shows a spinner
+  /// immediately when the user taps a track, preventing the black screen.
+  void _pushLoadingState() {
+    playbackState.add(
+      playbackState.value.copyWith(
+        processingState: AudioProcessingState.loading,
+        playing: false,
+        controls: const [
+          MediaControl.skipToPrevious,
+          MediaControl.play,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {
+          MediaAction.playFromMediaId,
+          MediaAction.playFromSearch,
+        },
+        androidCompactActionIndices: const [0, 1, 2],
+      ),
+    );
+  }
+
+  /// Restores idle state after a failed playFromMediaId/playFromSearch.
+  void _pushIdleState() {
+    playbackState.add(
+      playbackState.value.copyWith(
+        processingState: AudioProcessingState.idle,
+        playing: false,
+      ),
+    );
   }
 
   List<MediaItem> _rootItems() {
@@ -362,6 +415,10 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   static Uri? _tryParseUri(String? url) {
     if (url == null || url.isEmpty) return null;
+    if (url.startsWith('file://')) return Uri.parse(url);
+    if (url.startsWith('/') || (url.length > 2 && url[1] == ':')) {
+      return Uri.file(url);
+    }
     return Uri.tryParse(url);
   }
 
@@ -442,14 +499,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String? artworkUrl,
     Duration? duration,
   }) {
-    Uri? artUri;
-    if (artworkUrl != null) {
-      if (artworkUrl.startsWith('/') || (artworkUrl.length > 2 && artworkUrl[1] == ':')) {
-        artUri = Uri.file(artworkUrl);
-      } else {
-        artUri = Uri.tryParse(artworkUrl);
-      }
-    }
+    final artUri = _tryParseUri(artworkUrl);
     mediaItem.add(
       MediaItem(
         id: id,
@@ -554,6 +604,10 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'dispose') {
+      for (final sub in _childrenSubjects.values) {
+        await sub.close();
+      }
+      _childrenSubjects.clear();
       await _player.dispose();
     }
   }

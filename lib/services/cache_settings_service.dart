@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'bpm_analyzer_service.dart';
 
 class CacheSettingsService {
   static const String _keyImageCacheEnabled = 'cache_images_enabled';
@@ -69,5 +73,114 @@ class CacheSettingsService {
     return getImageCacheEnabled() &&
         getMusicCacheEnabled() &&
         getBpmCacheEnabled();
+  }
+
+  // ── Cache Size Calculation ───────────────────────────────────────────────────
+
+  /// Calculates total size of cached audio files in bytes (YT streams + Subsonic stream tmp files).
+  Future<int> getAudioCacheSizeBytes() async {
+    int total = 0;
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final ytCacheDir = Directory('${tempDir.path}/musly_yt_cache');
+      if (ytCacheDir.existsSync()) {
+        await for (final entity in ytCacheDir.list(recursive: true, followLinks: false)) {
+          if (entity is File) {
+            try {
+              total += await entity.length();
+            } catch (_) {}
+          }
+        }
+      }
+
+      // Check temporary stream files (musly_stream_*.tmp)
+      if (tempDir.existsSync()) {
+        await for (final entity in tempDir.list(followLinks: false)) {
+          if (entity is File && entity.path.contains('musly_stream_')) {
+            try {
+              total += await entity.length();
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+    return total;
+  }
+
+  /// Calculates total size of cached images/artwork from DefaultCacheManager.
+  Future<int> getImageCacheSizeBytes() async {
+    int total = 0;
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final imageCacheDir = Directory('${tempDir.path}/libCachedImageData');
+      if (imageCacheDir.existsSync()) {
+        await for (final entity in imageCacheDir.list(recursive: true, followLinks: false)) {
+          if (entity is File) {
+            try {
+              total += await entity.length();
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+    return total;
+  }
+
+  /// Calculates the total cache size across audio and images.
+  Future<int> getTotalCacheSizeBytes() async {
+    final audio = await getAudioCacheSizeBytes();
+    final image = await getImageCacheSizeBytes();
+    return audio + image;
+  }
+
+  /// Formats byte count to human-readable string (B, KB, MB, GB).
+  String formatBytes(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = 0;
+    double d = bytes.toDouble();
+    while (d >= 1024 && i < suffixes.length - 1) {
+      d /= 1024;
+      i++;
+    }
+    return '${d.toStringAsFixed(d < 10 && i > 0 ? 1 : 0)} ${suffixes[i]}';
+  }
+
+  // ── Cache Clearing ───────────────────────────────────────────────────────────
+
+  /// Deletes all cached audio files (YT streams and temp streams).
+  Future<void> clearAudioCache() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final ytCacheDir = Directory('${tempDir.path}/musly_yt_cache');
+      if (ytCacheDir.existsSync()) {
+        await ytCacheDir.delete(recursive: true);
+      }
+      if (tempDir.existsSync()) {
+        await for (final entity in tempDir.list(followLinks: false)) {
+          if (entity is File && entity.path.contains('musly_stream_')) {
+            try {
+              await entity.delete();
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  /// Deletes all cached images/artwork.
+  Future<void> clearImageCache() async {
+    try {
+      await DefaultCacheManager().emptyCache();
+    } catch (_) {}
+  }
+
+  /// Clears all audio, image, and BPM caches.
+  Future<void> clearAllCache() async {
+    await Future.wait([
+      clearAudioCache(),
+      clearImageCache(),
+      BpmAnalyzerService().clearCache(),
+    ]);
   }
 }

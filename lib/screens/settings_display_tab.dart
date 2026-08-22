@@ -11,6 +11,7 @@ import '../services/locale_service.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/subsonic_service.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../widgets/settings/settings_icon_badge.dart';
 import '../utils/context_extensions.dart';
@@ -75,6 +76,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isYoutube =
+        Provider.of<SubsonicService>(context, listen: false).isYoutube;
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -96,8 +100,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           title: AppLocalizations.of(context)!.playerInterface.toUpperCase(),
           children: [
             _buildVolumeSliderToggle(),
-            const SettingsDivider(),
-            _buildStarRatingsToggle(),
+            if (!isYoutube) ...[
+              const SettingsDivider(),
+              _buildStarRatingsToggle(),
+            ],
             const SettingsDivider(),
             _buildMiniPlayerHeartToggle(),
             const SettingsDivider(),

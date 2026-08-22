@@ -1,3 +1,5 @@
+import 'artist_ref.dart';
+
 class Artist {
   final String id;
   final String name;
@@ -5,6 +7,7 @@ class Artist {
   final int? albumCount;
   final String? artistImageUrl;
   final bool isLocal;
+  final List<ArtistRef>? artistParticipants;
 
   Artist({
     required this.id,
@@ -13,6 +16,7 @@ class Artist {
     this.albumCount,
     this.artistImageUrl,
     this.isLocal = false,
+    this.artistParticipants,
   });
 
   factory Artist.fromJson(Map<String, dynamic> json) {
@@ -22,6 +26,7 @@ class Artist {
       coverArt: json['coverArt']?.toString(),
       albumCount: json['albumCount'] as int?,
       artistImageUrl: json['artistImageUrl']?.toString(),
+      artistParticipants: ArtistRef.parseList(json['artists']),
     );
   }
 
@@ -32,6 +37,8 @@ class Artist {
       'coverArt': coverArt,
       'albumCount': albumCount,
       'artistImageUrl': artistImageUrl,
+      if (artistParticipants != null)
+        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
     };
   }
 }

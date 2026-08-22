@@ -55,13 +55,11 @@ class MultiArtistWidget extends StatelessWidget {
   }
 
   List<ArtistRef> _effectiveArtists() {
-    if (artists != null && artists!.isNotEmpty) return artists!;
-    final name = artistFallback;
-    final id = artistIdFallback;
-    if (name != null || id != null) {
-      return [ArtistRef(id: id ?? '', name: name ?? '')];
-    }
-    return [];
+    return ArtistRef.fromListOrFallback(
+      artists,
+      fallbackName: artistFallback,
+      fallbackId: artistIdFallback,
+    );
   }
 
   void _navigate(BuildContext context, ArtistRef artist) {

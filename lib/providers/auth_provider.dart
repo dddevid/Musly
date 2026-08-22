@@ -303,12 +303,48 @@ class AuthProvider extends ChangeNotifier {
   Future<List<ServerConfig>> getSavedProfiles() =>
       _storageService.getSavedProfiles();
 
-  Future<void> deleteProfile(ServerConfig profile) =>
-      _storageService.deleteProfile(profile);
+  Future<bool> hasYoutubeProfile() async {
+    if (_config?.isYoutube == true) return true;
+    return await _storageService.hasYoutubeProfile();
+  }
+
+  Future<void> saveProfile(ServerConfig profile) async {
+    await _storageService.saveProfile(profile);
+    notifyListeners();
+  }
+
+  Future<void> deleteProfile(ServerConfig profile) async {
+    await _storageService.deleteProfile(profile);
+    notifyListeners();
+  }
+
+  Future<void> renameProfile(ServerConfig profile, String newName) async {
+    final updated = profile.copyWith(name: newName);
+    await _storageService.saveProfile(updated);
+    if (_config?.serverUrl == profile.serverUrl &&
+        _config?.username == profile.username &&
+        _config?.serverFamily == profile.serverFamily) {
+      _config = updated;
+      await _storageService.saveServerConfig(updated);
+    }
+    notifyListeners();
+  }
+
+  Future<bool> connectYtStream() async {
+    return await login(
+      serverUrl: 'https://music.youtube.com',
+      username: 'YT Stream',
+      password: 'youtube',
+      serverFamily: 'youtube',
+      profileName: 'YT Stream',
+    );
+  }
 
   Future<void> switchProfile(ServerConfig profile) async {
     _config = profile;
     await _storageService.saveServerConfig(profile);
+    await _storageService.saveLastSelectedFamily(profile.serverFamily);
+    await _storageService.saveProfile(profile);
     await _subsonicService.configure(profile);
     await _verifyConnection();
   }

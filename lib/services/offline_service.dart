@@ -289,20 +289,24 @@ class OfflineService {
     await _prefs?.setString(_keyExpectedSizes, json.encode(_expectedSizes));
   }
 
+  static String _sanitizeId(String id) {
+    return id.replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_');
+  }
+
   String _getSongPath(String songId) {
-    return '$_offlineDir/$songId.mp3';
+    return '$_offlineDir/${_sanitizeId(songId)}.mp3';
   }
 
   String _getLyricsPath(String songId) {
-    return '$_offlineDir/$songId.lyrics.json';
+    return '$_offlineDir/${_sanitizeId(songId)}.lyrics.json';
   }
 
   String _getCoverArtPath(String songId) {
-    return '$_offlineDir/$songId.jpg';
+    return '$_offlineDir/${_sanitizeId(songId)}.jpg';
   }
 
   String _getCoverArtByArtIdPath(String coverArtId) {
-    return '$_offlineDir/art_${coverArtId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.jpg';
+    return '$_offlineDir/art_${_sanitizeId(coverArtId)}.jpg';
   }
 
   String? getLocalCoverArtPath(String songId) {

@@ -35,6 +35,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   final int _totalSongs = 0;
   int _downloadedCount = 0;
   String _downloadedSize = '0 B';
+  String _audioCacheSize = '0 B';
+  String _imageCacheSize = '0 B';
+  String _totalCacheSize = '0 B';
   int _parallelDownloads = 3;
   bool _keepScreenOn = true;
 
@@ -67,6 +70,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await _cacheSettings.initialize();
     await _offlineService.initialize();
     await _loadOfflineInfo();
+    await _loadCacheInfo();
 
     setState(() {
       _imageCacheEnabled = _cacheSettings.getImageCacheEnabled();
@@ -75,6 +79,19 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       _parallelDownloads = _offlineService.getParallelDownloadsCount();
       _keepScreenOn = _offlineService.getKeepScreenOn();
     });
+  }
+
+  Future<void> _loadCacheInfo() async {
+    final audioBytes = await _cacheSettings.getAudioCacheSizeBytes();
+    final imageBytes = await _cacheSettings.getImageCacheSizeBytes();
+    final totalBytes = audioBytes + imageBytes;
+    if (mounted) {
+      setState(() {
+        _audioCacheSize = _cacheSettings.formatBytes(audioBytes);
+        _imageCacheSize = _cacheSettings.formatBytes(imageBytes);
+        _totalCacheSize = _cacheSettings.formatBytes(totalBytes);
+      });
+    }
   }
 
   Future<void> _loadOfflineInfo() async {
@@ -90,6 +107,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isYoutube = Provider.of<SubsonicService>(context, listen: false).isYoutube;
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -127,7 +146,13 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionCacheCleanup,
-          children: [_buildClearAllCacheButton()],
+          children: [
+            _buildAudioCacheRow(),
+            const SettingsDivider(),
+            _buildImageCacheRow(),
+            const SettingsDivider(),
+            _buildClearAllCacheButton(),
+          ],
         ),
         const SizedBox(height: 24),
         SettingsSectionCard(
@@ -142,8 +167,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             _buildActiveDownloadsRow(),
             const SettingsDivider(),
             _buildPlaylistStatusRow(),
-            const SettingsDivider(),
-            _buildDownloadAllLibraryButton(),
+            if (!isYoutube) ...[
+              const SettingsDivider(),
+              _buildDownloadAllLibraryButton(),
+            ],
             const SettingsDivider(),
             _buildDeleteDownloadsButton(),
           ],
@@ -156,7 +183,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           children: [
             _buildBPMCacheInfo(),
             if (_isCaching) _buildCachingProgress(),
-            _buildCacheAllButton(),
+            if (!isYoutube) _buildCacheAllButton(),
             _buildClearCacheButton(),
           ],
         ),
@@ -549,6 +576,74 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await service.scanForMusic();
   }
 
+  Widget _buildAudioCacheRow() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF34C759), Color(0xFF30D158)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.music_note,
+          color: Colors.white,
+          size: 16,
+        ),
+      ),
+      title: const Text('Cache Brani e Stream', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        '$_audioCacheSize occupati su disco',
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: IconButton(
+        icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
+        tooltip: 'Svuota cache brani',
+        onPressed: _clearAudioCache,
+      ),
+    );
+  }
+
+  Widget _buildImageCacheRow() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF9500), Color(0xFFFFCC00)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          CupertinoIcons.photo,
+          color: Colors.white,
+          size: 16,
+        ),
+      ),
+      title: const Text('Cache Copertine e Immagini', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        '$_imageCacheSize occupati su disco',
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: IconButton(
+        icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
+        tooltip: 'Svuota cache immagini',
+        onPressed: _clearImageCache,
+      ),
+    );
+  }
+
   Widget _buildClearAllCacheButton() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -571,18 +666,44 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         AppLocalizations.of(context)!.clearAllCache,
         style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
+      subtitle: Text(
+        'Totale cache: $_totalCacheSize',
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+        ),
+      ),
       onTap: _clearAllCache,
     );
   }
 
+  void _clearAudioCache() async {
+    await _cacheSettings.clearAudioCache();
+    await _loadCacheInfo();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cache brani svuotata')),
+      );
+    }
+  }
+
+  void _clearImageCache() async {
+    await _cacheSettings.clearImageCache();
+    await _loadCacheInfo();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cache copertine svuotata')),
+      );
+    }
+  }
+
   void _clearAllCache() async {
-    await DefaultCacheManager().emptyCache();
-    await _bpmAnalyzer.clearCache();
+    await _cacheSettings.clearAllCache();
+    await _loadCacheInfo();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.allCacheCleared)),
       );
-      setState(() {});
     }
   }
 
@@ -806,7 +927,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           ),
         );
         if (retry == true) {
-          return _downloadAllLibrary();
+          return await _downloadAllLibrary();
         }
         return;
       }

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:provider/provider.dart';
 import '../models/song.dart';
+import '../models/artist_ref.dart';
 import '../models/radio_station.dart';
 import '../providers/player_provider.dart';
 import '../services/player_ui_settings_service.dart';
@@ -85,7 +86,9 @@ class MiniPlayer extends StatelessWidget {
               currentSong.artistParticipants != null &&
                   currentSong.artistParticipants!.isNotEmpty
               ? currentSong.artistParticipants!.map((a) => a.name).join(', ')
-              : currentSong.artist;
+              : (currentSong.artist != null
+                  ? ArtistRef.splitArtistNames(currentSong.artist!).join(', ')
+                  : null);
           coverArt = currentSong.coverArt;
         } else {
           return const SizedBox.shrink();

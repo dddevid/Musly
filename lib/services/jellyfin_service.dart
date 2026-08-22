@@ -42,9 +42,17 @@ class JellyfinService {
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.options.headers = {'Authorization': _authHeader};
     if (!kIsWeb && _allowSelfSigned) {
+      final targetHost = Uri.tryParse(_baseUrl)?.host;
       (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         final client = HttpClient();
-        client.badCertificateCallback = (cert, host, port) => true;
+        client.badCertificateCallback = (cert, host, port) {
+          if (targetHost != null &&
+              targetHost.isNotEmpty &&
+              host.toLowerCase() == targetHost.toLowerCase()) {
+            return true;
+          }
+          return false;
+        };
         return client;
       };
     }

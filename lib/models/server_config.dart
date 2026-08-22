@@ -40,6 +40,24 @@ class ServerConfig {
   bool get isYoutube => serverFamily == 'youtube';
   bool get isLocal => serverType == 'local' || serverFamily == 'local';
 
+  String get displayServerName {
+    if (name != null && name!.trim().isNotEmpty) return name!.trim();
+    if (isYoutube) return 'YT Stream';
+    if (isJellyfin) return 'Jellyfin';
+    if (serverType != null && serverType!.isNotEmpty) return serverType!;
+    return 'Navidrome / Subsonic';
+  }
+
+  String get displayUrl {
+    if (isYoutube) return 'YT Stream';
+    if (serverUrl.isEmpty) return 'Not configured';
+    try {
+      final uri = Uri.parse(serverUrl);
+      if (uri.host.isNotEmpty) return uri.host;
+    } catch (_) {}
+    return serverUrl;
+  }
+
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
     return ServerConfig(
       serverUrl: json['serverUrl'] ?? '',

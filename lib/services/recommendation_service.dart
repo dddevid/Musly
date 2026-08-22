@@ -342,6 +342,46 @@ class RecommendationService extends ChangeNotifier {
     return _sortByScore(allSongs, jitter: _W.randomJitter, limit: limit);
   }
 
+  /// Returns songs the user recently listened to and enjoyed (Listen Again / Ascolta di nuovo).
+  List<Song> getListenAgain(List<Song> allSongs, {int limit = 15}) {
+    if (allSongs.isEmpty) return [];
+    final songMap = {for (final s in allSongs) s.id: s};
+    final results = <Song>[];
+    final seen = <String>{};
+
+    for (final id in _recentlyPlayed) {
+      final s = songMap[id];
+      if (s != null && !seen.contains(s.id)) {
+        results.add(s);
+        seen.add(s.id);
+        if (results.length >= limit) break;
+      }
+    }
+    return results;
+  }
+
+  /// Returns user's top hits based on play count and high affinity.
+  List<Song> getTopHits(List<Song> allSongs, {int limit = 15}) {
+    if (allSongs.isEmpty) return [];
+    final candidates = allSongs.where((s) {
+      final p = _profiles[s.id];
+      return (p != null && p.playCount > 0) || (_starredSongs.contains(s.id)) || s.starred == true;
+    }).toList();
+
+    if (candidates.isEmpty) {
+      return allSongs.take(limit).toList();
+    }
+
+    candidates.sort((a, b) {
+      final pa = _profiles[a.id]?.playCount ?? 0;
+      final pb = _profiles[b.id]?.playCount ?? 0;
+      if (pa != pb) return pb.compareTo(pa);
+      return (calculateSongScore(b)).compareTo(calculateSongScore(a));
+    });
+
+    return candidates.take(limit).toList();
+  }
+
   List<Song> getQuickPicks(List<Song> allSongs, {int limit = 20}) {
     if (!_enabled || allSongs.isEmpty) return [];
 

@@ -8,6 +8,7 @@ import '../services/auto_dj_service.dart';
 import '../services/transcoding_service.dart';
 import '../services/storage_service.dart';
 import '../services/fade_settings_service.dart';
+import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../widgets/settings/settings_icon_badge.dart';
@@ -28,7 +29,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   double _replayGainPreamp = 0.0;
   bool _replayGainPreventClipping = true;
   double _replayGainFallback = -6.0;
-  bool _lrcLibFallback = false;
+  bool _lrcLibFallback = true;
   AutoDjMode _autoDjMode = AutoDjMode.off;
   int _autoDjSongsToAdd = 5;
   bool _fadeEnabled = false;
@@ -62,6 +63,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isYoutube =
+        Provider.of<SubsonicService>(context, listen: false).isYoutube;
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -96,8 +100,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ],
           ],
         ),
-        const SizedBox(height: 24),
-        _buildTranscodingSection(),
+        if (!isYoutube) ...[
+          const SizedBox(height: 24),
+          _buildTranscodingSection(),
+        ],
         const SizedBox(height: 40),
       ],
     );

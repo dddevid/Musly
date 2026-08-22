@@ -215,6 +215,10 @@ void main() async {
     debugPrint('Failed to initialize favorite playlists service: $e');
   });
 
+  PlaylistCoverService().init().catchError((e) {
+    debugPrint('Failed to initialize playlist cover service: $e');
+  });
+
   // Initialize analytics service (privacy-first, anonymous)
   final analyticsService = AnalyticsService();
   analyticsService.initialize().catchError((e) {

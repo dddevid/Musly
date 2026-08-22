@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../providers/player_provider.dart';
@@ -13,9 +12,13 @@ import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
+import '../widgets/spotify/spotify_quick_access_tile.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
+import 'artist_screen.dart';
 import 'history_screen.dart';
+import 'favorites_screen.dart';
+import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,13 +31,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<Song>> _cachedMixes = const {};
   List<Song> _cachedPersonalized = const [];
+  List<Song> _cachedListenAgain = const [];
+  List<Song> _cachedTopHits = const [];
   String _lastRandomKey = '';
+  String _selectedCategory = 'All'; // 'All' | 'Music' | 'MadeForYou' | 'Playlists'
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return AppLocalizations.of(context)!.goodMorning;
-    if (hour < 17) return AppLocalizations.of(context)!.goodAfternoon;
-    return AppLocalizations.of(context)!.goodEvening;
+    if (hour < 12) return AppLocalizations.of(context)?.goodMorning ?? 'Good morning';
+    if (hour < 17) return AppLocalizations.of(context)?.goodAfternoon ?? 'Good afternoon';
+    return AppLocalizations.of(context)?.goodEvening ?? 'Good evening';
   }
 
   String _computeRandomKey(List<Song> songs) {
@@ -45,363 +51,432 @@ class _HomeScreenState extends State<HomeScreen> {
   bool get _isDesktop =>
       Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
+  void _openAlbum(BuildContext context, String albumId) {
+    NavigationHelper.push(
+      context,
+      AlbumScreen(albumId: albumId),
+    );
+  }
+
+  void _openPlaylist(BuildContext context, Playlist playlist) {
+    NavigationHelper.push(
+      context,
+      PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name),
+    );
+  }
+
+  void _openArtist(BuildContext context, String artistId) {
+    NavigationHelper.push(
+      context,
+      ArtistScreen(artistId: artistId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = _isDesktop;
     final hPad = isDesktop ? 32.0 : 16.0;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final subsonicService = Provider.of<SubsonicService>(context);
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            floating: true,
-            expandedHeight: isDesktop ? 80 : 70,
-            backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: EdgeInsets.only(left: hPad, bottom: 14),
-              title: Text(
-                _getGreeting(),
-                style: TextStyle(
-                  fontSize: isDesktop ? 28 : 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      body: RefreshIndicator(
+        color: const Color(0xFF1DB954),
+        onRefresh: () async {
+          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          await libraryProvider.refresh();
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          slivers: [
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              pinned: true,
+              floating: true,
+              expandedHeight: 110,
+              backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+              elevation: 0,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: EdgeInsets.only(left: hPad, bottom: 48),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getGreeting(),
+                      style: TextStyle(
+                        fontSize: isDesktop ? 24 : 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    CupertinoIcons.clock,
+                    color: isDark ? Colors.white : Colors.black87,
+                    size: 22,
+                  ),
+                  tooltip: 'History',
+                  onPressed: () => NavigationHelper.push(context, const HistoryScreen()),
+                ),
+                IconButton(
+                  icon: Icon(
+                    CupertinoIcons.gear_alt,
+                    color: isDark ? Colors.white : Colors.black87,
+                    size: 22,
+                  ),
+                  tooltip: 'Settings',
+                  onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
+                ),
+                if (isDesktop) const SizedBox(width: 12),
+              ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: Container(
+                  height: 48,
+                  padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 6),
+                  alignment: Alignment.centerLeft,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _buildCategoryChip('All', 'All', isDark),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip('Music', 'Music', isDark),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip('MadeForYou', 'Made For You', isDark),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip('Playlists', 'Playlists', isDark),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.clock,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  NavigationHelper.push(context, const HistoryScreen());
+
+            // Main Feed Content
+            SliverToBoxAdapter(
+              child: Consumer2<LibraryProvider, RecommendationService>(
+                builder: (context, libraryProvider, recommendationService, _) {
+                  if (libraryProvider.isLoading && !libraryProvider.isInitialized) {
+                    return _buildLoadingState(isDesktop, hPad);
+                  }
+
+                  final allSongs = libraryProvider.cachedAllSongs.isNotEmpty
+                      ? libraryProvider.cachedAllSongs
+                      : libraryProvider.randomSongs;
+                  final key = _computeRandomKey(allSongs);
+
+                  if (recommendationService.enabled && key.isNotEmpty) {
+                    if (key != _lastRandomKey) {
+                      _cachedMixes = recommendationService.generateMixes(allSongs);
+                      _cachedPersonalized = recommendationService.getPersonalizedFeed(allSongs, limit: 12);
+                      _cachedListenAgain = recommendationService.getListenAgain(allSongs, limit: 10);
+                      _cachedTopHits = recommendationService.getTopHits(allSongs, limit: 10);
+                      _lastRandomKey = key;
+                    }
+                  } else {
+                    _cachedMixes = const {};
+                    _cachedPersonalized = const [];
+                    _cachedListenAgain = const [];
+                    _cachedTopHits = const [];
+                    _lastRandomKey = '';
+                  }
+
+                  var mixes = _cachedMixes;
+                  var personalizedFeed = _cachedPersonalized;
+                  var listenAgain = _cachedListenAgain;
+                  var topHits = _cachedTopHits;
+                  var recentAlbums = libraryProvider.recentAlbums;
+                  var playlists = libraryProvider.playlists;
+                  var artists = libraryProvider.artists;
+
+                  final isOffline = authProvider.state == AuthState.offlineMode;
+                  final offlineService = OfflineService();
+
+                  if (isOffline) {
+                    final downloadedIds = offlineService.getDownloadedSongIds().toSet();
+                    final downloadedPlaylistIds = offlineService.downloadedPlaylistIds.value.toSet();
+                    final allSongs = libraryProvider.cachedAllSongs;
+                    final Set<String> downloadedAlbumIds = {};
+                    for (final song in allSongs) {
+                      if (downloadedIds.contains(song.id) && song.albumId != null) {
+                        downloadedAlbumIds.add(song.albumId!);
+                      }
+                    }
+
+                    recentAlbums = recentAlbums.where((a) => downloadedAlbumIds.contains(a.id)).toList();
+                    playlists = playlists.where((p) => downloadedPlaylistIds.contains(p.id)).toList();
+
+                    final Map<String, List<Song>> offlineMixes = {};
+                    for (final entry in mixes.entries) {
+                      final filtered = entry.value.where((s) => downloadedIds.contains(s.id)).toList();
+                      if (filtered.isNotEmpty) offlineMixes[entry.key] = filtered;
+                    }
+                    mixes = offlineMixes;
+
+                    personalizedFeed = personalizedFeed.where((s) => downloadedIds.contains(s.id)).toList();
+                    listenAgain = listenAgain.where((s) => downloadedIds.contains(s.id)).toList();
+                    topHits = topHits.where((s) => downloadedIds.contains(s.id)).toList();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1. Iconic Spotify 6-Item Quick Access Top Grid
+                        if (_selectedCategory == 'All' || _selectedCategory == 'Music') ...[
+                          const SizedBox(height: 8),
+                          _buildSpotifyTopGrid(
+                            context,
+                            recentAlbums: recentAlbums,
+                            playlists: playlists,
+                            subsonicService: subsonicService,
+                            isDesktop: isDesktop,
+                            hPad: hPad,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // 2. "Jump Back In" / Recently Played Carousel
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                            recentAlbums.isNotEmpty) ...[
+                          HorizontalScrollSection(
+                            title: 'Jump back in',
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            cardSize: isDesktop ? 180 : 155,
+                            children: recentAlbums.take(12).map((album) {
+                              return SpotifyLikeCard(
+                                title: album.name,
+                                subtitle: album.artist,
+                                coverArt: album.coverArt,
+                                size: isDesktop ? 180 : 155,
+                                onTap: () => _openAlbum(context, album.id),
+                                onPlayPressed: () => _playAlbum(context, album.id),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // 3. Made For You / Personalized Feed
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') &&
+                            recommendationService.enabled &&
+                            personalizedFeed.isNotEmpty) ...[
+                          _buildMixSection(
+                            context: context,
+                            title: 'Made For You',
+                            icon: Icons.auto_awesome,
+                            songs: personalizedFeed,
+                            isDesktop: isDesktop,
+                            hPad: hPad,
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // 4. "Ascolta di nuovo" / Listen Again
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                            listenAgain.isNotEmpty) ...[
+                          _buildMixSection(
+                            context: context,
+                            title: 'Listen Again',
+                            icon: Icons.history_rounded,
+                            songs: listenAgain,
+                            isDesktop: isDesktop,
+                            hPad: hPad,
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // 5. "I tuoi brani preferiti" / Top Hits
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') &&
+                            topHits.isNotEmpty) ...[
+                          _buildMixSection(
+                            context: context,
+                            title: 'Your Top Hits',
+                            icon: Icons.favorite_rounded,
+                            songs: topHits,
+                            isDesktop: isDesktop,
+                            hPad: hPad,
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // 6. Playlists Section
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'Playlists') &&
+                            playlists.isNotEmpty) ...[
+                          HorizontalScrollSection(
+                            title: 'Your Playlists',
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            cardSize: isDesktop ? 180 : 155,
+                            children: playlists.take(12).map((playlist) {
+                              return SpotifyLikeCard(
+                                title: playlist.name,
+                                subtitle: 'Playlist • Musly',
+                                coverArt: playlist.coverArt,
+                                size: isDesktop ? 180 : 155,
+                                onTap: () => _openPlaylist(context, playlist),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+
+                        // 7. Favorite Mixes
+                        if (_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') ...[
+                          for (final entry in mixes.entries.take(4))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 28),
+                              child: _buildMixSection(
+                                context: context,
+                                title: entry.key,
+                                icon: Icons.graphic_eq_rounded,
+                                songs: entry.value,
+                                isDesktop: isDesktop,
+                                hPad: hPad,
+                              ),
+                            ),
+                        ],
+
+                        // 8. Popular Artists (Spotify Circular Cards)
+                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                            artists.isNotEmpty) ...[
+                          HorizontalScrollSection(
+                            title: 'Artists You Love',
+                            padding: EdgeInsets.symmetric(horizontal: hPad),
+                            cardSize: isDesktop ? 160 : 140,
+                            children: artists.take(10).map((artist) {
+                              final coverArt = artist.coverArt ??
+                                  artist.artistImageUrl ??
+                                  (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
+                              return SpotifyLikeCard(
+                                title: artist.name,
+                                subtitle: 'Artist',
+                                coverArt: coverArt,
+                                isRound: true,
+                                size: isDesktop ? 160 : 140,
+                                onTap: () => _openArtist(context, artist.id),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ],
+                    ),
+                  );
                 },
               ),
-              if (isDesktop) const SizedBox(width: 8),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Consumer2<LibraryProvider, RecommendationService>(
-              builder: (context, libraryProvider, recommendationService, _) {
-                if (libraryProvider.isLoading &&
-                    !libraryProvider.isInitialized) {
-                  return _buildLoadingState(isDesktop, hPad);
-                }
-
-                final allSongs = libraryProvider.randomSongs;
-                final key = _computeRandomKey(allSongs);
-
-                if (recommendationService.enabled && key.isNotEmpty) {
-                  if (key != _lastRandomKey) {
-                    _cachedMixes = recommendationService.generateMixes(
-                      allSongs,
-                    );
-                    _cachedPersonalized = recommendationService
-                        .getPersonalizedFeed(allSongs, limit: 10);
-                    _lastRandomKey = key;
-                  }
-                } else {
-                  _cachedMixes = const {};
-                  _cachedPersonalized = const [];
-                  _lastRandomKey = '';
-                }
-
-                Map<String, List<Song>> mixes = _cachedMixes;
-                List<Song> personalizedFeed = _cachedPersonalized;
-                List<Album> recentAlbums = libraryProvider.recentAlbums;
-                List<Playlist> playlists = libraryProvider.playlists;
-
-                final isOffline = Provider.of<AuthProvider>(context, listen: false).state == AuthState.offlineMode;
-                final offlineService = OfflineService();
-
-                if (isOffline) {
-                  final downloadedIds =
-                      offlineService.getDownloadedSongIds().toSet();
-                  final downloadedPlaylistIds =
-                      offlineService.downloadedPlaylistIds.value.toSet();
-
-                  final allSongs = libraryProvider.cachedAllSongs;
-                  final Set<String> downloadedAlbumIds = {};
-                  for (final song in allSongs) {
-                    if (downloadedIds.contains(song.id) &&
-                        song.albumId != null) {
-                      downloadedAlbumIds.add(song.albumId!);
-                    }
-                  }
-
-                  recentAlbums = recentAlbums
-                      .where((a) => downloadedAlbumIds.contains(a.id))
-                      .toList();
-                  playlists = playlists
-                      .where((p) => downloadedPlaylistIds.contains(p.id))
-                      .toList();
-
-                  final Map<String, List<Song>> offlineMixes = {};
-                  for (final entry in mixes.entries) {
-                    final filtered = entry.value
-                        .where((s) => downloadedIds.contains(s.id))
-                        .toList();
-                    if (filtered.isNotEmpty) {
-                      offlineMixes[entry.key] = filtered;
-                    }
-                  }
-                  mixes = offlineMixes;
-
-                  personalizedFeed = personalizedFeed
-                      .where((s) => downloadedIds.contains(s.id))
-                      .toList();
-                }
-
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 0 : 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (recentAlbums.isNotEmpty || playlists.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _QuickAccessGrid(
-                          albums:
-                              recentAlbums.take(isDesktop ? 6 : 4).toList(),
-                          playlists:
-                              playlists.take(isDesktop ? 3 : 2).toList(),
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-                      ],
-
-                      const SizedBox(height: 24),
-
-                      // Favorite Playlists Section
-                      const FavoritePlaylistsSection(),
-                      const SizedBox(height: 24),
-
-                      if (recommendationService.enabled &&
-                          personalizedFeed.isNotEmpty)
-                        _buildMixSection(
-                          context: context,
-                          title: AppLocalizations.of(context)!.forYou,
-                          icon: Icons.stars_rounded,
-                          songs: personalizedFeed,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-
-                      if (mixes.containsKey('Quick Picks'))
-                        _buildMixSection(
-                          context: context,
-                          title: AppLocalizations.of(context)!.quickPicks,
-                          icon: Icons.bolt_rounded,
-                          songs: mixes['Quick Picks']!,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-
-                      if (mixes.containsKey('Discover Mix'))
-                        _buildMixSection(
-                          context: context,
-                          title: AppLocalizations.of(context)!.discoverMix,
-                          icon: Icons.explore_rounded,
-                          songs: mixes['Discover Mix']!,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-
-                      for (final entry in mixes.entries.where(
-                        (e) =>
-                            e.key != 'Quick Picks' && e.key != 'Discover Mix',
-                      ))
-                        _buildMixSection(
-                          context: context,
-                          title: entry.key,
-                          icon: Icons.auto_awesome,
-                          songs: entry.value,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-
-                      for (final entry in mixes.entries.where(
-                        (e) => e.key.contains('Vibes'),
-                      ))
-                        _buildMixSection(
-                          context: context,
-                          title: entry.key,
-                          icon: Icons.nightlight_round,
-                          songs: entry.value,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
-
-                      if (libraryProvider.recentAlbums.isNotEmpty) ...[
-                        HorizontalScrollSection(
-                          title: AppLocalizations.of(context)!.recentlyPlayed,
-                          padding: EdgeInsets.symmetric(horizontal: hPad),
-                          cardSize: isDesktop ? 180 : 150,
-                          children: libraryProvider.recentAlbums
-                              .take(10)
-                              .map(
-                                (album) => AlbumCard(
-                                  album: album,
-                                  size: isDesktop ? 180 : 150,
-                                  onTap: () => _openAlbum(context, album.id),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      if (libraryProvider.playlists.isNotEmpty) ...[
-                        HorizontalScrollSection(
-                          title: AppLocalizations.of(context)!.yourPlaylists,
-                          padding: EdgeInsets.symmetric(horizontal: hPad),
-                          cardSize: isDesktop ? 180 : 150,
-                          children: libraryProvider.playlists
-                              .take(10)
-                              .map(
-                                (playlist) => _PlaylistCard(
-                                  playlist: playlist,
-                                  size: isDesktop ? 180 : 150,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PlaylistScreen(
-                                        playlistId: playlist.id,
-                                        playlistName: playlist.name,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      if (!recommendationService.enabled &&
-                          libraryProvider.randomSongs.isNotEmpty) ...[
-                        _SectionTitle(
-                          title: AppLocalizations.of(context)!.madeForYou,
-                          hPad: hPad,
-                        ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...libraryProvider.randomSongs.take(5).map((song) {
-                          final index = libraryProvider.randomSongs.indexOf(
-                            song,
-                          );
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: libraryProvider.randomSongs,
-                              index: index,
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: libraryProvider.randomSongs,
-                            index: index,
-                            showAlbum: true,
-                          );
-                        }),
-                        const SizedBox(height: 24),
-                      ],
-
-                      if (libraryProvider.recentAlbums.isEmpty &&
-                          libraryProvider.playlists.isEmpty &&
-                          libraryProvider.randomSongs.isEmpty &&
-                          mixes.isEmpty) ...[
-                        const SizedBox(height: 48),
-                        Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.music_note_rounded,
-                                size: 64,
-                                color: Colors.grey[600],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!
-                                    .noContentAvailable,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context)!.tryRefreshing,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: () => libraryProvider.refresh(),
-                                icon: const Icon(Icons.refresh),
-                                label: Text(
-                                  AppLocalizations.of(context)!.refresh,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: 150),
-                    ],
-                  ),
-                );
-              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildLoadingState(bool isDesktop, double hPad) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: hPad),
-          child: GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: isDesktop ? 3 : 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 3.5,
-            children: List.generate(
-              isDesktop ? 6 : 6,
-              (_) => Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
+  Widget _buildCategoryChip(String key, String label, bool isDark) {
+    final isSelected = _selectedCategory == key;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedCategory = key),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1DB954)
+              : (isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
           ),
         ),
-        const SizedBox(height: 24),
-        HorizontalShimmerList(
-          count: 5,
-          child: AlbumCardShimmer(size: isDesktop ? 180 : 150),
-        ),
-      ],
+      ),
     );
   }
 
-  void _openAlbum(BuildContext context, String albumId) {
-    NavigationHelper.push(context, AlbumScreen(albumId: albumId));
+  Widget _buildSpotifyTopGrid(
+    BuildContext context, {
+    required List<Album> recentAlbums,
+    required List<Playlist> playlists,
+    required SubsonicService subsonicService,
+    required bool isDesktop,
+    required double hPad,
+  }) {
+    final cols = isDesktop ? 4 : 2;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hPad),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final spacing = 8.0;
+          final totalSpacing = spacing * (cols - 1);
+          final cardWidth = (constraints.maxWidth - totalSpacing) / cols;
+
+          return Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
+            children: [
+              // 1. Liked Songs tile (Iconic Spotify Violet Box)
+              SizedBox(
+                width: cardWidth,
+                child: SpotifyQuickAccessTile(
+                  title: 'Liked Songs',
+                  customArtwork: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 22),
+                    ),
+                  ),
+                  onTap: () => NavigationHelper.push(context, const FavoritesScreen()),
+                ),
+              ),
+
+              // Recent Playlists & Albums
+              ...playlists.take(2).map((playlist) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: SpotifyQuickAccessTile(
+                    title: playlist.name,
+                    imageUrl: playlist.coverArt,
+                    onTap: () => _openPlaylist(context, playlist),
+                  ),
+                );
+              }),
+
+              ...recentAlbums.take(cols == 4 ? 5 : 3).map((album) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: SpotifyQuickAccessTile(
+                    title: album.name,
+                    imageUrl: album.coverArt,
+                    onTap: () => _openAlbum(context, album.id),
+                    onPlayPressed: () => _playAlbum(context, album.id),
+                  ),
+                );
+              }),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildMixSection({
@@ -412,777 +487,99 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isDesktop,
     required double hPad,
   }) {
-    if (isDesktop) {
-      final topSongs = songs.take(10).toList();
-      return Column(
+    final cardSize = isDesktop ? 180.0 : 155.0;
+
+    return HorizontalScrollSection(
+      title: title,
+      padding: EdgeInsets.symmetric(horizontal: hPad),
+      cardSize: cardSize,
+      children: songs.take(12).map((song) {
+        return SpotifyLikeCard(
+          title: song.title,
+          subtitle: song.artist,
+          coverArt: song.coverArt,
+          size: cardSize,
+          onTap: () => _playSong(context, song, songs),
+          onPlayPressed: () => _playSong(context, song, songs),
+        );
+      }).toList(),
+    );
+  }
+
+  Future<void> _playSong(BuildContext context, Song song, List<Song> queue) async {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final idx = queue.indexOf(song);
+    await playerProvider.playSong(song, playlist: queue, startIndex: idx >= 0 ? idx : 0);
+  }
+
+  Future<void> _playAlbum(BuildContext context, String albumId) async {
+    try {
+      final subsonicService = Provider.of<SubsonicService>(context, listen: false);
+      final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+      final songs = await subsonicService.getAlbumSongs(albumId);
+      if (songs.isNotEmpty) {
+        await playerProvider.playSong(songs.first, playlist: songs, startIndex: 0);
+      }
+    } catch (e) {
+      debugPrint('Error playing album: $e');
+    }
+  }
+
+  Widget _buildLoadingState(bool isDesktop, double hPad) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          HorizontalScrollSection(
-            title: title,
-            padding: EdgeInsets.symmetric(horizontal: hPad),
-            cardSize: 180,
-            children: topSongs.asMap().entries.map((entry) => _DesktopSongCard(
-              song: entry.value,
-              playlist: songs,
-              index: entry.key,
-              size: 180,
-            )).toList(),
-          ),
-          const SizedBox(height: 24),
-        ],
-      );
-    }
-    final top5 = songs.take(5).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionTitle(
-          title: title,
-          icon: icon,
-          hPad: hPad,
-        ),
-        ...top5.asMap().entries.map((entry) => SongTile(
-          song: entry.value,
-          playlist: songs,
-          index: entry.key,
-          showAlbum: true,
-        )),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-}
-
-class _QuickAccessGrid extends StatelessWidget {
-  final List<dynamic> albums;
-  final List<dynamic> playlists;
-  final bool isDesktop;
-  final double hPad;
-
-  const _QuickAccessGrid({
-    required this.albums,
-    required this.playlists,
-    this.isDesktop = false,
-    this.hPad = 16,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final raw = [...albums, ...playlists].take(isDesktop ? 9 : 6).toList();
-
-    final items =
-        (!isDesktop && raw.length.isOdd) ? raw.sublist(0, raw.length - 1) : raw;
-
-    if (items.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    if (isDesktop) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: hPad),
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 280,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 3.2,
-          ),
-          itemCount: items.length,
-          itemBuilder: (context, index) =>
-              _buildTile(context, items[index], subsonicService),
-        ),
-      );
-    }
-
-    const tileHeight = 56.0;
-    const spacing = 8.0;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: hPad),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final tileWidth = (constraints.maxWidth - spacing) / 2;
-          final ratio = tileWidth / tileHeight;
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: spacing,
-              crossAxisSpacing: spacing,
-              childAspectRatio: ratio,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) =>
-                _buildTile(context, items[index], subsonicService),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTile(
-    BuildContext context,
-    dynamic item,
-    SubsonicService subsonicService,
-  ) {
-    final isPlaylist = item.runtimeType.toString().contains('Playlist');
-    String? imageUrl;
-    String title;
-    VoidCallback onTap;
-
-    if (isPlaylist) {
-      title = item.name;
-      imageUrl = item.coverArt != null
-          ? (isLocalFilePath(item.coverArt)
-              ? item.coverArt
-              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
-          : null;
-      onTap = () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PlaylistScreen(playlistId: item.id, playlistName: item.name),
-            ),
-          );
-    } else {
-      title = item.name;
-      imageUrl = item.coverArt != null
-          ? (isLocalFilePath(item.coverArt)
-              ? item.coverArt
-              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
-          : null;
-      onTap = () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AlbumScreen(albumId: item.id)),
-          );
-    }
-
-    return _QuickAccessTile(title: title, imageUrl: imageUrl, onTap: onTap);
-  }
-}
-
-class _QuickAccessTile extends StatefulWidget {
-  final String title;
-  final String? imageUrl;
-  final VoidCallback onTap;
-
-  const _QuickAccessTile({
-    required this.title,
-    this.imageUrl,
-    required this.onTap,
-  });
-
-  @override
-  State<_QuickAccessTile> createState() => _QuickAccessTileState();
-}
-
-class _QuickAccessTileState extends State<_QuickAccessTile> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          color: isDark
-              ? (_isHovered ? AppTheme.darkElevated : AppTheme.darkCard)
-              : (_isHovered ? Colors.grey[300] : Colors.grey[200]),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(4),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(4),
-                  ),
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: widget.imageUrl != null
-                        ? (isLocalFilePath(widget.imageUrl)
-                            ? Image.file(
-                                File(widget.imageUrl!),
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, e, _) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: widget.imageUrl!,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 300,
-                                memCacheHeight: 300,
-                                placeholder: (ctx, e) =>
-                                    Container(color: Colors.grey[800]),
-                                errorWidget: (ctx, e, _) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                              ))
-                        : Container(
-                            color: Colors.grey[800],
-                            child: const Icon(
-                              Icons.music_note,
-                              color: Colors.white30,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaylistCard extends StatelessWidget {
-  final dynamic playlist;
-  final VoidCallback? onTap;
-  final double size;
-
-  const _PlaylistCard({required this.playlist, this.onTap, this.size = 150});
-
-  @override
-  Widget build(BuildContext context) {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final coverArtUrl = playlist.coverArt != null
-        ? subsonicService.getCoverArtUrl(playlist.coverArt!, size: 300)
-        : null;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: size,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: coverArtUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: coverArtUrl,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 300,
-                        memCacheHeight: 300,
-                        placeholder: (ctx, url) => Container(
-                          color: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : Colors.grey[300],
-                          child: const Center(
-                            child: Icon(
-                              Icons.queue_music_rounded,
-                              size: 50,
-                              color: Colors.white30,
-                            ),
-                          ),
-                        ),
-                        errorWidget: (ctx, err, stack) => Container(
-                          color: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : Colors.grey[300],
-                          child: const Center(
-                            child: Icon(
-                              Icons.queue_music_rounded,
-                              size: 50,
-                              color: Colors.white30,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color:
-                            isDark ? const Color(0xFF2C2C2E) : Colors.grey[300],
-                        child: const Center(
-                          child: Icon(
-                            Icons.queue_music_rounded,
-                            size: 50,
-                            color: Colors.white30,
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              playlist.name,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            if (playlist.songCount != null)
-              Text(
-                '${playlist.songCount} songs',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  final IconData? icon;
-  final double hPad;
-
-  const _SectionTitle({required this.title, this.icon, this.hPad = 16});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 4, hPad, 4),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20, color: AppTheme.appleMusicRed),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-                letterSpacing: -0.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopSongTableHeader extends StatelessWidget {
-  final double hPad;
-  const _DesktopSongTableHeader({this.hPad = 16});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final labelStyle = TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 1.1,
-      color: isDark ? Colors.white38 : Colors.black38,
-    );
-    return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 4, hPad, 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 32,
-            child: Text('#', style: labelStyle, textAlign: TextAlign.center),
-          ),
-          const SizedBox(width: 12),
-          const SizedBox(width: 40),
-          const SizedBox(width: 12),
-          Expanded(flex: 5, child: Text('TITLE', style: labelStyle)),
-          Expanded(flex: 3, child: Text('ALBUM', style: labelStyle)),
-          const SizedBox(width: 40),
-          SizedBox(
-            width: 52,
-            child: Text('TIME', style: labelStyle, textAlign: TextAlign.right),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopSongRow extends StatefulWidget {
-  final Song song;
-  final List<Song> playlist;
-  final int index;
-  final double hPad;
-
-  const _DesktopSongRow({
-    required this.song,
-    required this.playlist,
-    required this.index,
-    this.hPad = 16,
-  });
-
-  @override
-  State<_DesktopSongRow> createState() => _DesktopSongRowState();
-}
-
-class _DesktopSongRowState extends State<_DesktopSongRow> {
-  bool _hovered = false;
-
-  String _formatDuration(int? seconds) {
-    if (seconds == null) return '--:--';
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final song = widget.song;
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    final isPlaying = context.select<PlayerProvider, bool>(
-      (p) => (p.currentSong?.id == song.id) && p.isPlaying,
-    );
-
-    final rowBg = _hovered
-        ? (isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : Colors.black.withValues(alpha: 0.04))
-        : Colors.transparent;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => context.read<PlayerProvider>().playSong(
-              song,
-              playlist: widget.playlist,
-              startIndex: widget.index,
-            ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          color: rowBg,
-          padding: EdgeInsets.fromLTRB(widget.hPad, 6, widget.hPad, 6),
-          child: Row(
+          Row(
             children: [
-              SizedBox(
-                width: 32,
-                child: Center(
-                  child: _hovered
-                      ? Icon(
-                          Icons.play_arrow_rounded,
-                          size: 18,
-                          color: isDark ? Colors.white : Colors.black,
-                        )
-                      : isPlaying
-                          ? Icon(
-                              Icons.bar_chart_rounded,
-                              size: 18,
-                              color: AppTheme.appleMusicRed,
-                            )
-                          : Text(
-                              '${widget.index + 1}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isPlaying
-                                    ? AppTheme.appleMusicRed
-                                    : (isDark
-                                        ? Colors.white60
-                                        : Colors.black54),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: song.coverArt != null
-                      ? CachedNetworkImage(
-                          imageUrl: subsonicService.getCoverArtUrl(
-                            song.coverArt!,
-                            size: 80,
-                          ),
-                          fit: BoxFit.cover,
-                          memCacheWidth: 100,
-                          memCacheHeight: 100,
-                          placeholder: (ctx, url) =>
-                              Container(color: Colors.grey[800]),
-                          errorWidget: (ctx, err, stack) => Container(
-                            color: Colors.grey[800],
-                            child: const Icon(
-                              Icons.music_note,
-                              size: 16,
-                              color: Colors.white30,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.music_note,
-                            size: 16,
-                            color: Colors.white30,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
-                flex: 5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      song.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isPlaying
-                            ? AppTheme.appleMusicRed
-                            : (isDark ? Colors.white : Colors.black),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (song.artist != null)
-                      Text(
-                        song.artist!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white54 : Colors.black54,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  song.album ?? '',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black54,
+                child: Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(
-                width: 40,
-                child: _hovered || song.starred == true
-                    ? IconButton(
-                        icon: Icon(
-                          song.starred == true
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: 16,
-                          color: song.starred == true
-                              ? AppTheme.appleMusicRed
-                              : (isDark ? Colors.white38 : Colors.black38),
-                        ),
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          context.read<PlayerProvider>().toggleFavoriteForSong(
-                                song,
-                              );
-                        },
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              SizedBox(
-                width: 52,
-                child: Text(
-                  _formatDuration(song.duration),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                  textAlign: TextAlign.right,
                 ),
               ),
               const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DesktopSongCard extends StatefulWidget {
-  final Song song;
-  final List<Song> playlist;
-  final int index;
-  final double size;
-
-  const _DesktopSongCard({
-    required this.song,
-    required this.playlist,
-    required this.index,
-    required this.size,
-  });
-
-  @override
-  State<_DesktopSongCard> createState() => _DesktopSongCardState();
-}
-
-class _DesktopSongCardState extends State<_DesktopSongCard> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          final p = context.read<PlayerProvider>();
-          p.playSong(widget.song, playlist: widget.playlist, startIndex: widget.index);
-        },
-        child: SizedBox(
-          width: widget.size,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AnimatedScale(
-                scale: _isHovered ? 1.04 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+              Expanded(
+                child: Container(
+                  height: 56,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: _isHovered
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Stack(
-                    children: [
-                      AlbumArtwork(
-                        coverArt: widget.song.coverArt,
-                        size: widget.size,
-                        borderRadius: 8,
-                      ),
-                      if (_isHovered)
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              color: AppTheme.appleMusicRed,
-                              shape: BoxShape.circle,
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                    ],
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.song.title,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                widget.song.artist ?? '',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 24),
+          Container(
+            width: 140,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, __) => Container(
+                width: 140,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

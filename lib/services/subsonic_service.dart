@@ -174,6 +174,13 @@ class SubsonicService {
         }
       }
 
+      String? targetHost;
+      try {
+        if (_config != null && _config!.serverUrl.isNotEmpty) {
+          targetHost = Uri.tryParse(_config!.normalizedUrl)?.host;
+        }
+      } catch (_) {}
+
       HttpClient createClient() {
         HttpClient buildClient(SecurityContext context) {
           return HttpOverrides.runWithHttpOverrides(() {
@@ -181,7 +188,14 @@ class SubsonicService {
             client.connectionTimeout = const Duration(seconds: 15);
             client.idleTimeout = const Duration(seconds: 15);
             if (allowSelfSigned) {
-              client.badCertificateCallback = (cert, host, port) => true;
+              client.badCertificateCallback = (cert, host, port) {
+                if (targetHost != null &&
+                    targetHost.isNotEmpty &&
+                    host.toLowerCase() == targetHost.toLowerCase()) {
+                  return true;
+                }
+                return false;
+              };
             }
             return client;
           }, _RealHttpOverrides());
@@ -406,6 +420,9 @@ class SubsonicService {
     if (coverArt == null || _config == null) {
       return '';
     }
+    if (coverArt.startsWith('http://') || coverArt.startsWith('https://')) {
+      return coverArt;
+    }
     _ensureStableAuthParams();
 
     final params = Map<String, String>.from(
@@ -456,21 +473,77 @@ class SubsonicService {
     if (_jellyfin != null) return _jellyfin!.getArtists();
     if (_youtube != null) return _youtube!.getArtists();
     final response = await _request('getArtists');
-    final artists = <Artist>[];
+    final rawArtists = <Artist>[];
 
     final artistsData = response['artists']?['index'];
     if (artistsData is List) {
       for (final index in artistsData) {
         final indexArtists = index['artist'];
         if (indexArtists is List) {
-          artists.addAll(
-            indexArtists.map((a) => Artist.fromJson(a as Map<String, dynamic>)),
+          for (final a in indexArtists) {
+            if (a is! Map<String, dynamic>) continue;
+
+            // 1. Check if Navidrome provided multi-artist participants in 'artists' field
+            final participants = ArtistRef.parseList(a['artists']);
+            if (participants != null && participants.length > 1) {
+              for (final p in participants) {
+                rawArtists.add(Artist(
+                  id: p.id.isNotEmpty ? p.id : a['id']?.toString() ?? '',
+                  name: p.name,
+                  coverArt: p.effectiveCoverArt ?? a['coverArt']?.toString(),
+                  albumCount: a['albumCount'] as int?,
+                  artistImageUrl: a['artistImageUrl']?.toString(),
+                ));
+              }
+              continue;
+            }
+
+            // 2. Check if artist name has multi-artist delimiters (e.g. "Drake / 21 Savage", "Queen; David Bowie")
+            final name = a['name']?.toString() ?? '';
+            final splits = ArtistRef.splitArtistNames(name);
+            if (splits.length > 1) {
+              for (final s in splits) {
+                rawArtists.add(Artist(
+                  id: a['id']?.toString() ?? '',
+                  name: s,
+                  coverArt: a['coverArt']?.toString(),
+                  albumCount: a['albumCount'] as int?,
+                  artistImageUrl: a['artistImageUrl']?.toString(),
+                ));
+              }
+            } else {
+              rawArtists.add(Artist.fromJson(a));
+            }
+          }
+        }
+      }
+    }
+
+    // Deduplicate artists by normalized lowercase name
+    final uniqueMap = <String, Artist>{};
+    for (final artist in rawArtists) {
+      final key = artist.name.trim().toLowerCase();
+      if (key.isEmpty) continue;
+      if (!uniqueMap.containsKey(key)) {
+        uniqueMap[key] = artist;
+      } else {
+        final existing = uniqueMap[key]!;
+        if ((existing.id.isEmpty && artist.id.isNotEmpty) ||
+            (existing.coverArt == null && artist.coverArt != null)) {
+          uniqueMap[key] = Artist(
+            id: artist.id.isNotEmpty ? artist.id : existing.id,
+            name: existing.name,
+            coverArt: artist.coverArt ?? existing.coverArt,
+            albumCount: (existing.albumCount ?? 0) + (artist.albumCount ?? 0),
+            artistImageUrl: artist.artistImageUrl ?? existing.artistImageUrl,
           );
         }
       }
     }
 
-    return artists;
+    final result = uniqueMap.values.toList();
+    result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return result;
   }
 
   Future<List<Song>> getAllSongs() async {
@@ -490,10 +563,16 @@ class SubsonicService {
       if (response['artistInfo2'] != null) {
         return ArtistInfo.fromJson(response['artistInfo2'] as Map<String, dynamic>);
       }
-      return null;
-    } catch (e) {
-      return null;
-    }
+    } catch (_) {}
+
+    try {
+      final response = await _request('getArtistInfo', {'id': id});
+      if (response['artistInfo'] != null) {
+        return ArtistInfo.fromJson(response['artistInfo'] as Map<String, dynamic>);
+      }
+    } catch (_) {}
+
+    return null;
   }
 
   Future<List<Album>> getAlbumList({

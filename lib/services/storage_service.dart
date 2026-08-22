@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -23,6 +24,11 @@ class StorageService {
   static const String _gaplessPlaybackKey = 'gapless_playback';
   static const String _lrcLibFallbackKey = 'lrclib_fallback';
   static const String _volumeKey = 'volume';
+
+  String _profileKey(ServerConfig config) {
+    final raw = '${config.serverFamily}_${config.serverUrl}_${config.username}';
+    return md5.convert(utf8.encode(raw)).toString();
+  }
 
   Future<String?> _safeSecureRead(String key) async {
     try {
@@ -78,14 +84,22 @@ class StorageService {
   Future<void> saveServerConfig(ServerConfig config) async {
     final prefs = await _prefs;
     
-    // Save password securely
+    // Save secrets securely
     if (config.password.isNotEmpty) {
       await _safeSecureWrite('server_pwd_active', config.password);
     }
+    if (config.apiToken != null && config.apiToken!.isNotEmpty) {
+      await _safeSecureWrite('server_token_active', config.apiToken!);
+    }
+    if (config.clientCertificatePassword != null && config.clientCertificatePassword!.isNotEmpty) {
+      await _safeSecureWrite('server_cert_pwd_active', config.clientCertificatePassword!);
+    }
     
-    // Strip password from plain text storage
+    // Strip secrets from plain text storage
     final map = config.toJson();
     map['password'] = ''; 
+    map['apiToken'] = null;
+    map['clientCertificatePassword'] = null;
     await prefs.setString(_serverConfigKey, json.encode(map));
   }
 
@@ -93,16 +107,30 @@ class StorageService {
     final prefs = await _prefs;
     final configJson = prefs.getString(_serverConfigKey);
     if (configJson != null) {
-      final map = json.decode(configJson);
+      final map = json.decode(configJson) as Map<String, dynamic>;
       
-      // Load password from secure storage
+      // Load secrets from secure storage
       final securePwd = await _safeSecureRead('server_pwd_active');
+      final secureToken = await _safeSecureRead('server_token_active');
+      final secureCertPwd = await _safeSecureRead('server_cert_pwd_active');
       
-      // Migrate existing plaintext password to secure storage if found
+      // Migrate existing plaintext secrets to secure storage if found
       if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_pwd_active', map['password']);
+        await _safeSecureWrite('server_pwd_active', map['password'].toString());
       } else if (securePwd != null) {
         map['password'] = securePwd;
+      }
+
+      if (secureToken == null && map['apiToken'] != null && map['apiToken'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_token_active', map['apiToken'].toString());
+      } else if (secureToken != null) {
+        map['apiToken'] = secureToken;
+      }
+
+      if (secureCertPwd == null && map['clientCertificatePassword'] != null && map['clientCertificatePassword'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_cert_pwd_active', map['clientCertificatePassword'].toString());
+      } else if (secureCertPwd != null) {
+        map['clientCertificatePassword'] = secureCertPwd;
       }
       
       return ServerConfig.fromJson(map);
@@ -114,6 +142,8 @@ class StorageService {
     final prefs = await _prefs;
     await prefs.remove(_serverConfigKey);
     await _safeSecureDelete('server_pwd_active');
+    await _safeSecureDelete('server_token_active');
+    await _safeSecureDelete('server_cert_pwd_active');
   }
 
   Future<List<ServerConfig>> getSavedProfiles() async {
@@ -125,14 +155,42 @@ class StorageService {
     final profiles = <ServerConfig>[];
     
     for (int i = 0; i < list.length; i++) {
-      final map = list[i] as Map<String, dynamic>;
-      // Read secure password for each profile using its index or unique key
-      final securePwd = await _safeSecureRead('server_profile_pwd_$i');
+      final map = Map<String, dynamic>.from(list[i] as Map);
+      final pTemp = ServerConfig.fromJson(map);
+      final pKey = _profileKey(pTemp);
+
+      // 1. Password
+      String? securePwd = await _safeSecureRead('server_profile_pwd_$pKey');
+      if (securePwd == null) {
+        // Check legacy index key
+        securePwd = await _safeSecureRead('server_profile_pwd_$i');
+        if (securePwd != null) {
+          await _safeSecureWrite('server_profile_pwd_$pKey', securePwd);
+          await _safeSecureDelete('server_profile_pwd_$i');
+        }
+      }
       if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_profile_pwd_$i', map['password']);
+        await _safeSecureWrite('server_profile_pwd_$pKey', map['password'].toString());
       } else if (securePwd != null) {
         map['password'] = securePwd;
       }
+
+      // 2. API Token
+      String? secureToken = await _safeSecureRead('server_profile_token_$pKey');
+      if (secureToken == null && map['apiToken'] != null && map['apiToken'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_profile_token_$pKey', map['apiToken'].toString());
+      } else if (secureToken != null) {
+        map['apiToken'] = secureToken;
+      }
+
+      // 3. Client Certificate Password
+      String? secureCertPwd = await _safeSecureRead('server_profile_cert_pwd_$pKey');
+      if (secureCertPwd == null && map['clientCertificatePassword'] != null && map['clientCertificatePassword'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_profile_cert_pwd_$pKey', map['clientCertificatePassword'].toString());
+      } else if (secureCertPwd != null) {
+        map['clientCertificatePassword'] = secureCertPwd;
+      }
+
       profiles.add(ServerConfig.fromJson(map));
     }
     return profiles;
@@ -141,57 +199,66 @@ class StorageService {
   Future<void> saveProfile(ServerConfig config) async {
     final profiles = await getSavedProfiles();
     final idx = profiles.indexWhere(
-      (p) => p.serverUrl == config.serverUrl && p.username == config.username,
+      (p) =>
+          (config.isYoutube && p.isYoutube) ||
+          (p.serverUrl == config.serverUrl && p.username == config.username),
     );
     
+    final pKey = _profileKey(config);
+    if (config.password.isNotEmpty) {
+      await _safeSecureWrite('server_profile_pwd_$pKey', config.password);
+    }
+    if (config.apiToken != null && config.apiToken!.isNotEmpty) {
+      await _safeSecureWrite('server_profile_token_$pKey', config.apiToken!);
+    }
+    if (config.clientCertificatePassword != null && config.clientCertificatePassword!.isNotEmpty) {
+      await _safeSecureWrite('server_profile_cert_pwd_$pKey', config.clientCertificatePassword!);
+    }
+
     if (idx >= 0) {
       profiles[idx] = config;
-      if (config.password.isNotEmpty) {
-        await _safeSecureWrite('server_profile_pwd_$idx', config.password);
-      }
     } else {
       profiles.add(config);
-      if (config.password.isNotEmpty) {
-        await _safeSecureWrite('server_profile_pwd_${profiles.length - 1}', config.password);
-      }
     }
     
     final prefs = await _prefs;
     final safeProfiles = profiles.map((p) {
       final map = p.toJson();
       map['password'] = '';
+      map['apiToken'] = null;
+      map['clientCertificatePassword'] = null;
       return map;
     }).toList();
     
     await prefs.setString(_serverProfilesKey, jsonEncode(safeProfiles));
   }
 
+  Future<bool> hasYoutubeProfile() async {
+    final profiles = await getSavedProfiles();
+    return profiles.any((p) => p.isYoutube);
+  }
+
   Future<void> deleteProfile(ServerConfig config) async {
     final profiles = await getSavedProfiles();
     final idx = profiles.indexWhere(
-      (p) => p.serverUrl == config.serverUrl && p.username == config.username,
+      (p) =>
+          (config.isYoutube && p.isYoutube) ||
+          (p.serverUrl == config.serverUrl && p.username == config.username),
     );
     
     if (idx >= 0) {
-      profiles.removeAt(idx);
-      await _safeSecureDelete('server_profile_pwd_$idx');
-      
-      // Shift remaining secure passwords to match new indices
-      for (int i = idx; i < profiles.length; i++) {
-        final nextPwd = await _safeSecureRead('server_profile_pwd_${i + 1}');
-        if (nextPwd != null) {
-          await _safeSecureWrite('server_profile_pwd_$i', nextPwd);
-        } else {
-          await _safeSecureDelete('server_profile_pwd_$i');
-        }
-      }
-      // Delete the last one since we shifted everything down
-      await _safeSecureDelete('server_profile_pwd_${profiles.length}');
+      final removed = profiles.removeAt(idx);
+      final pKey = _profileKey(removed);
+      await _safeSecureDelete('server_profile_pwd_$pKey');
+      await _safeSecureDelete('server_profile_token_$pKey');
+      await _safeSecureDelete('server_profile_cert_pwd_$pKey');
       
       final prefs = await _prefs;
       final safeProfiles = profiles.map((p) {
         final map = p.toJson();
         map['password'] = '';
+        map['apiToken'] = null;
+        map['clientCertificatePassword'] = null;
         return map;
       }).toList();
       await prefs.setString(_serverProfilesKey, jsonEncode(safeProfiles));
@@ -270,7 +337,7 @@ class StorageService {
 
   Future<bool> getLrcLibFallback() async {
     final prefs = await _prefs;
-    return prefs.getBool(_lrcLibFallbackKey) ?? false;
+    return prefs.getBool(_lrcLibFallbackKey) ?? true;
   }
 
   Future<void> saveVolume(double volume) async {

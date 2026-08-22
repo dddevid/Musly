@@ -24,6 +24,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Album? _album;
   List<Song> _songs = [];
   bool _isLoading = true;
+  bool _showSearch = false;
+  String _searchQuery = '';
 
   bool _allDownloaded = false;
   bool _isQueued = false;
@@ -369,6 +371,43 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   ),
                 ),
                 actions: [
+                  IconButton(
+                    tooltip: 'Cerca nell\'album',
+                    icon: Icon(_showSearch ? CupertinoIcons.search_circle_fill : CupertinoIcons.search),
+                    onPressed: () {
+                      setState(() {
+                        _showSearch = !_showSearch;
+                        if (!_showSearch) _searchQuery = '';
+                      });
+                    },
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(CupertinoIcons.ellipsis_circle),
+                    tooltip: 'Altro',
+                    onSelected: (value) {
+                      if (value == 'queue_all') {
+                        final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                        for (final s in _songs) {
+                          playerProvider.addToQueue(s);
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${_songs.length} brani aggiunti alla coda')),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'queue_all',
+                        child: Row(
+                          children: [
+                            Icon(CupertinoIcons.text_badge_plus, size: 18),
+                            SizedBox(width: 12),
+                            Text('Aggiungi tutti alla coda'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                   if (!isOffline) _buildLikeButton(context),
                   if (!isOffline) _buildDownloadButton(context),
                 ],
@@ -404,6 +443,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       const SizedBox(height: 4),
                       Text(
                         [
+                          '${_songs.length} brani',
                           if (_album!.genre != null)
                             _album!.genre!.toUpperCase(),
                           if (_album!.year != null) _album!.year.toString(),
@@ -437,24 +477,43 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           ),
                         ],
                       ),
+                      if (_showSearch) ...[
+                        const SizedBox(height: 16),
+                        CupertinoSearchTextField(
+                          placeholder: 'Filtra tracce...',
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                          onChanged: (val) {
+                            setState(() {
+                              _searchQuery = val.trim().toLowerCase();
+                            });
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
-              SliverFixedExtentList(
-                itemExtent: 58.0,
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final song = _songs[index];
-                  return SongTile(
-                    song: song,
-                    playlist: _songs,
-                    index: index,
-                    showArtwork: false,
-                    showTrackNumber: true,
-                    showArtist: false,
+              Builder(
+                builder: (context) {
+                  final displaySongs = _searchQuery.isEmpty
+                      ? _songs
+                      : _songs.where((s) => s.title.toLowerCase().contains(_searchQuery) || (s.artist?.toLowerCase().contains(_searchQuery) ?? false)).toList();
+                  return SliverFixedExtentList(
+                    itemExtent: 58.0,
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final song = displaySongs[index];
+                      return SongTile(
+                        song: song,
+                        playlist: displaySongs,
+                        index: index,
+                        showArtwork: false,
+                        showTrackNumber: true,
+                        showArtist: false,
+                      );
+                    }, childCount: displaySongs.length),
                   );
-                }, childCount: _songs.length),
+                },
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 150)),
             ],

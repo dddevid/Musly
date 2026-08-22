@@ -42,10 +42,16 @@ class UsageTimeService extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// Dispose and unregister observer
-  void disposeService() {
+  @override
+  void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _saveSessionTime();
     super.dispose();
+  }
+
+  /// Alias for dispose
+  void disposeService() {
+    dispose();
   }
 
   @override

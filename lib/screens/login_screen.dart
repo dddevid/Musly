@@ -589,7 +589,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'YT Stream streams music directly from YouTube. No account required — tap Connect to start.',
+                              'YT Stream streams music directly online. No account required — tap Connect to start.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Theme.of(context).brightness == Brightness.dark

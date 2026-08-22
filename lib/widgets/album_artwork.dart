@@ -13,18 +13,28 @@ bool isLocalFilePath(String? s) {
   return false;
 }
 
-class _ImageUrlCache {
+class ImageUrlCache {
   static final Map<String, String> _cache = {};
+
+  static void clear() {
+    _cache.clear();
+  }
 
   static String getUrl(SubsonicService service, String? coverArt, int size) {
     if (coverArt == null || coverArt.isEmpty) return '';
-    final key = '${coverArt}_$size';
+    if (coverArt.startsWith('http://') || coverArt.startsWith('https://')) {
+      return coverArt;
+    }
+    final serverKey = service.config?.serverUrl ?? '';
+    final key = '${serverKey}_${coverArt}_$size';
     return _cache.putIfAbsent(
       key,
       () => service.getCoverArtUrl(coverArt, size: size),
     );
   }
 }
+
+typedef _ImageUrlCache = ImageUrlCache;
 
 class AlbumArtwork extends StatelessWidget {
   final String? coverArt;

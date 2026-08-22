@@ -652,6 +652,34 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         return;
       }
 
+      // For YT Stream, use the internal search which returns full Song objects
+      // (with title, artist, coverArt) so Auto shows proper metadata.
+      if (_subsonicService.isYoutube) {
+        final ytResults = await _searchForAndroidAuto(query);
+        if (ytResults.isNotEmpty) {
+          final first = ytResults.first;
+          final song = Song(
+            id: first['id'] ?? '',
+            title: first['title'] ?? query,
+            artist: first['artist'],
+            album: first['album'],
+            coverArt: first['artworkUrl'],
+            duration: int.tryParse(first['duration'] ?? '') ?? 0,
+          );
+          final allSongs = ytResults.map((r) => Song(
+            id: r['id'] ?? '',
+            title: r['title'] ?? '',
+            artist: r['artist'],
+            coverArt: r['artworkUrl'],
+            duration: int.tryParse(r['duration'] ?? '') ?? 0,
+          )).where((s) => s.id.isNotEmpty).toList();
+          await playSong(song, playlist: allSongs, startIndex: 0);
+        } else {
+          debugPrint('Android Auto: no YT search results for "$query"');
+        }
+        return;
+      }
+
       final results = await _subsonicService.search(
         query,
         songCount: 20,
@@ -699,21 +727,34 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     }
 
-    // 3. In YT Stream mode the mediaId IS the YouTube video ID – play it
-    //    directly without a round-trip search.
+    // 3. In YT Stream mode the mediaId IS the YouTube video ID.
+    //    Push a placeholder MediaItem immediately so Auto doesn't show a blank
+    //    screen, then resolve the real metadata in background and update.
     if (_subsonicService.isYoutube) {
+      // Push a "loading" MediaItem so Auto shows a title immediately.
+      _audioHandler.updateNowPlaying(
+        id: mediaId,
+        title: 'Caricamento…',
+        artist: 'YouTube',
+      );
+
+      // Start playback with placeholder song immediately.
+      final tempSong = Song(
+        id: mediaId,
+        title: 'Caricamento…',
+        artist: 'YouTube',
+        duration: 0,
+      );
+
       try {
-        // Build a minimal Song object so playSong can resolve the stream.
-        final tempSong = Song(
-          id: mediaId,
-          title: mediaId, // title will be updated once stream metadata loads
-          duration: 0,
-        );
         await playSong(tempSong);
-        return;
       } catch (e) {
         debugPrint('Android Auto: YT Stream playFromMediaId error: $e');
+        return;
       }
+
+      // After playback has started, fetch real metadata in background.
+      _resolveAndUpdateYoutubeMetadata(mediaId);
       return;
     }
 
@@ -738,46 +779,113 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Fetches real title/artist/thumbnail for a YT video after playback starts
+  /// and updates the currentSong + Android Auto / lock-screen MediaItem.
+  void _resolveAndUpdateYoutubeMetadata(String videoId) {
+    final ytDlp = YtDlpService();
+    ytDlp.getVideoInfo(videoId).then((info) {
+      if (info == null) return;
+      // Only update if this video is still the active song.
+      if (_currentSong?.id != videoId) return;
+
+      final title = info['title'] as String? ?? videoId;
+      final artist = info['artist'] as String? ??
+          info['uploader'] as String? ??
+          info['channel'] as String? ??
+          'YouTube';
+      final thumbUrl = info['thumbnailUrl'] as String? ??
+          info['thumbnail'] as String? ??
+          info['coverArt'] as String?;
+
+      final updatedSong = Song(
+        id: videoId,
+        title: title,
+        artist: artist,
+        coverArt: thumbUrl,
+        duration: _currentSong?.duration ?? 0,
+      );
+      _currentSong = updatedSong;
+      _resolvedArtworkUrl = thumbUrl;
+      notifyListeners();
+      _updateAndroidAuto();
+      debugPrint('Android Auto: YT metadata resolved — "$title" by $artist');
+    }).catchError((e) {
+      debugPrint('Android Auto: YT metadata resolution failed (harmless): $e');
+    });
+  }
+
+  String? _resolveInitialArtworkUrl(Song? song) {
+    if (song == null) return null;
+    if (song.isLocal) {
+      return Uri.file(song.coverArt ?? song.path ?? '').toString();
+    }
+    if (_resolvedArtworkUrl != null && _currentSong?.id == song.id) {
+      return _resolvedArtworkUrl;
+    }
+    if (song.coverArt != null && song.coverArt!.isNotEmpty) {
+      if (song.coverArt!.startsWith('/') || (song.coverArt!.length > 2 && song.coverArt![1] == ':')) {
+        return Uri.file(song.coverArt!).toString();
+      }
+      return _subsonicService.getCoverArtUrl(song.coverArt, size: 800);
+    }
+    return _subsonicService.getCoverArtUrl(song.id, size: 800);
+  }
+
   String? _resolveArtworkUrl() {
     if (_currentSong == null) return null;
-    if (_currentSong!.coverArt == null) return null;
     if (_currentSong!.isLocal) {
-      return Uri.file(_currentSong!.coverArt!).toString();
+      return Uri.file(_currentSong!.coverArt ?? _currentSong!.path ?? '').toString();
     }
-
-    return _resolvedArtworkUrl;
+    if (_resolvedArtworkUrl != null && _resolvedArtworkUrl!.isNotEmpty) {
+      return _resolvedArtworkUrl;
+    }
+    return _resolveInitialArtworkUrl(_currentSong);
   }
 
   Future<void> _refreshArtworkUrl() async {
     final song = _currentSong;
-    if (song == null || song.coverArt == null) {
+    if (song == null) {
       _resolvedArtworkUrl = null;
       return;
     }
     if (song.isLocal) {
-      _resolvedArtworkUrl = Uri.file(song.coverArt!).toString();
+      _resolvedArtworkUrl = Uri.file(song.coverArt ?? song.path ?? '').toString();
+      if (_currentSong?.id == song.id) {
+        _updateAndroidAuto();
+        _updateAllServices();
+      }
       return;
     }
 
     await _offlineService.initialize();
 
     final localPath = _offlineService.getLocalCoverArtPath(song.id);
-    if (localPath != null) {
+    if (localPath != null && File(localPath).existsSync()) {
       _resolvedArtworkUrl = Uri.file(localPath).toString();
-      if (_currentSong?.id == song.id) _updateAllServices();
+      if (_currentSong?.id == song.id) {
+        _updateAndroidAuto();
+        _updateAllServices();
+      }
       return;
     }
 
-    final coverArtId = song.coverArt!;
+    final coverArtId = song.coverArt ?? song.id;
 
-    // Search for cached artwork from highest to lowest quality for iOS Now Playing
+    // Search for cached artwork from highest to lowest quality
     for (final sz in [1200, 800, 600, 400, 300, 200]) {
-      for (final key in ['${coverArtId}_natural_$sz', '${coverArtId}_$sz']) {
+      for (final key in [
+        '${coverArtId}_natural_$sz',
+        '${coverArtId}_$sz',
+        '${song.coverArt}_$sz',
+        '${song.coverArt}_natural_$sz',
+        coverArtId,
+      ]) {
         try {
           final fileInfo = await DefaultCacheManager().getFileFromCache(key);
           if (fileInfo != null && fileInfo.file.existsSync()) {
             if (_currentSong?.id == song.id) {
               _resolvedArtworkUrl = Uri.file(fileInfo.file.path).toString();
+              _updateAndroidAuto();
               _updateAllServices();
             }
             return;
@@ -785,12 +893,29 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         } catch (_) {}
       }
     }
-    // Request high quality for iOS Now Playing bar / Control Center (1200px)
-    final serverUrl = _subsonicService.getCoverArtUrl(coverArtId, size: 1200);
 
-    if (!_offlineService.isOfflineMode) {
+    // Request high quality for Android MediaSession / iOS Now Playing (800px)
+    final serverUrl = _subsonicService.getCoverArtUrl(coverArtId, size: 800);
+
+    if (!_offlineService.isOfflineMode && serverUrl.isNotEmpty) {
       _resolvedArtworkUrl = serverUrl;
-      if (_currentSong?.id == song.id) _updateAllServices();
+      if (_currentSong?.id == song.id) {
+        _updateAndroidAuto();
+        _updateAllServices();
+      }
+
+      // Pre-download cover art to disk in background so Android MediaSession can display natively from file://
+      try {
+        final cacheKey = coverArtId.startsWith('http')
+            ? 'yt_thumb_${coverArtId.split('=').first.hashCode}_800'
+            : '${coverArtId}_800';
+        final fileInfo = await DefaultCacheManager().downloadFile(serverUrl, key: cacheKey);
+        if (_currentSong?.id == song.id && fileInfo.file.existsSync()) {
+          _resolvedArtworkUrl = Uri.file(fileInfo.file.path).toString();
+          _updateAndroidAuto();
+          _updateAllServices();
+        }
+      } catch (_) {}
     }
   }
 
@@ -986,13 +1111,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           .catchError((_) => null);
     }
 
-    // 3. Preload cover artwork into Flutter image cache
+    // 3. Preload cover artwork into Flutter image cache (800px)
     if (nextSong.coverArt != null) {
       final coverUrl =
-          _subsonicService.getCoverArtUrl(nextSong.coverArt, size: 300);
+          _subsonicService.getCoverArtUrl(nextSong.coverArt, size: 800);
       if (coverUrl.isNotEmpty) {
         try {
           CachedNetworkImageProvider(coverUrl).resolve(ImageConfiguration.empty);
+          DefaultCacheManager().downloadFile(coverUrl, key: '${nextSong.coverArt}_800').catchError((_) => null as dynamic);
         } catch (_) {}
       }
     }
@@ -1410,6 +1536,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         final toAdd = similar.where((s) => !existingIds.contains(s.id)).toList();
         if (toAdd.isNotEmpty) {
           _queue.addAll(toAdd);
+          if (_concatenatingSource != null && !_isRenderingRemotely) {
+            for (final s in toAdd) {
+              try {
+                final source = await _buildAudioSourceForSong(s);
+                _concatenatingSource!.add(source);
+              } catch (e) {
+                debugPrint('Error adding radio song to concatenating source: $e');
+              }
+            }
+          }
           notifyListeners();
           _saveQueueState();
           debugPrint('[Player] Radio queue populated with ${toAdd.length} similar songs for "${song.title}"');
@@ -1496,14 +1632,23 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
       _currentSong = song;
       _lastPreloadedSongId = null;
-      _resolvedArtworkUrl = null;
+      _resolvedArtworkUrl = _resolveInitialArtworkUrl(song);
       _position = Duration.zero;
       notifyListeners();
       _saveQueueState();
 
+      // Immediately push to Android Auto / MediaSession so lockscreen/notification updates on frame 0
+      _updateAndroidAuto();
+
       _refreshArtworkUrl().catchError((_) {});
 
-
+      // Pre-warm the next song in the queue in background
+      Timer(const Duration(milliseconds: 1200), () {
+        final next = _getNextSongToPreload();
+        if (next != null && next.id != song.id) {
+          _preloadSong(next).catchError((_) {});
+        }
+      });
 
       if (_castService.isConnected) {
         if (_audioPlayer.playing) await _audioPlayer.stop();
@@ -1513,7 +1658,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             : await _subsonicService.resolveStreamUrlAsync(song);
         final coverUrl = song.isLocal == true && song.coverArt != null
             ? song.coverArt!
-            : _subsonicService.getCoverArtUrl(song.coverArt ?? song.id);
+            : _subsonicService.getCoverArtUrl(song.coverArt ?? song.id, size: 800);
 
         await _castService.loadMedia(
           url: playUrl,
@@ -1552,7 +1697,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             artist: song.artist ?? 'Unknown Artist',
             album: song.album,
             albumArtUrl: song.coverArt != null
-                ? _subsonicService.getCoverArtUrl(song.coverArt, size: 0)
+                ? _subsonicService.getCoverArtUrl(song.coverArt, size: 800)
                 : null,
             durationSecs: song.duration,
             contentType: mimeType,
@@ -1583,7 +1728,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           // YouTube: single StreamAudioSource, no gapless
           _concatenatingSource = null;
           await _audioPlayer.setAudioSource(youtubeSource);
-          await _applyReplayGain(song);
+          _applyReplayGain(song).catchError((_) {});
           await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_subsonicService.isYoutube) {
           // All songs are YouTube — can't build ConcatenatingAudioSource easily
@@ -1600,7 +1745,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             }
           }
           await _audioPlayer.setUrl(playUrl);
-          await _applyReplayGain(song);
+          _applyReplayGain(song).catchError((_) {});
           await _ensureAudioFocus(() => _audioPlayer.play());
         } else if (_gaplessEnabled) {
           // Build ConcatenatingAudioSource for gapless playback
@@ -1620,7 +1765,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
               rethrow;
             }
           }
-          await _applyReplayGain(song);
+          _applyReplayGain(song).catchError((_) {});
           await _ensureAudioFocus(() => _audioPlayer.play());
         } else {
           // Gapless disabled — single-song mode
@@ -1796,17 +1941,29 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       _updateAndroidAuto();
     } else {
-      // After app restart the audio source may not be loaded yet.
-      // If we have a current song but the player has no source, prepare it first.
+      // After app restart or if player went idle/empty, prepare it first.
       if (_currentSong != null &&
           (_audioPlayer.audioSource == null ||
-              _audioPlayer.duration == Duration.zero)) {
+              _audioPlayer.processingState == ProcessingState.idle ||
+              _audioPlayer.processingState == ProcessingState.completed)) {
         await _prepareCurrentSong();
       }
       await _ensureAudioFocus(() async {
-        await _audioPlayer.play();
-        await _fadeIn();
+        try {
+          await _audioPlayer.play();
+          await _fadeIn();
+        } catch (e) {
+          debugPrint('Error playing audio: $e, attempting recovery...');
+          if (_currentSong != null) {
+            await _prepareCurrentSong();
+            await _audioPlayer.play();
+            await _fadeIn();
+          }
+        }
       });
+      _isPlaying = true;
+      notifyListeners();
+      _updateAndroidAuto();
     }
   }
 
@@ -1904,7 +2061,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _stopFade();
 
     if (!_fadeSettingsService.getFadeEnabled()) {
-      await _audioPlayer.setVolume(0.0);
       onComplete?.call();
       return;
     }
@@ -2258,6 +2414,48 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _audioPlayer.stop();
     _isPlaying = false;
     _position = Duration.zero;
+    notifyListeners();
+    _updateAndroidAuto();
+  }
+
+  Future<void> resetForServerSwitch() async {
+    _stopFade();
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _jukeboxPollTimer?.cancel();
+    _jukeboxPollTimer = null;
+
+    if (_castService.isConnected) {
+      try {
+        await _castService.stop();
+      } catch (_) {}
+    }
+    if (_upnpService.isConnected) {
+      try {
+        await _upnpService.stop();
+      } catch (_) {}
+    }
+
+    try {
+      await _audioPlayer.stop();
+    } catch (_) {}
+
+    _queue.clear();
+    _currentIndex = -1;
+    _currentSong = null;
+    _concatenatingSource = null;
+    _resolvedArtworkUrl = null;
+    _currentRadioStation = null;
+    _isPlayingRadio = false;
+    _isPlaying = false;
+    _position = Duration.zero;
+    _duration = Duration.zero;
+
+    try {
+      _discordRpcService.clearPresence();
+    } catch (_) {}
+
+    _clearPersistedQueue();
     notifyListeners();
     _updateAndroidAuto();
   }

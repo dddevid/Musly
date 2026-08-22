@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
+import '../services/subsonic_service.dart';
 import '../models/playlist.dart';
 import '../screens/playlist_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/radio_screen.dart';
 import '../screens/settings_screen.dart';
+import 'playlist_artwork.dart';
 
 class DesktopNavigationSidebar extends StatefulWidget {
   final int selectedIndex;
@@ -108,13 +109,18 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
             onFavoritesTap: _navigateToFavorites,
             onPlaylistTap: _navigateToPlaylist,
           ),
-          _NavItem(
-            icon: Icons.radio_rounded,
-            activeIcon: Icons.radio_rounded,
-            label: l10n.categoryRadio,
-            isSelected: false,
-            isCollapsed: _isCollapsed,
-            onTap: _navigateToRadio,
+          Consumer<SubsonicService>(
+            builder: (context, subsonic, _) {
+              if (subsonic.isYoutube) return const SizedBox.shrink();
+              return _NavItem(
+                icon: Icons.radio_rounded,
+                activeIcon: Icons.radio_rounded,
+                label: l10n.categoryRadio,
+                isSelected: false,
+                isCollapsed: _isCollapsed,
+                onTap: _navigateToRadio,
+              );
+            },
           ),
           _NavItem(
             icon: Icons.settings_outlined,
@@ -571,14 +577,7 @@ class _PlaylistTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
     final l10n = AppLocalizations.of(context)!;
-    final coverArtUrl = playlist.coverArt != null
-        ? libraryProvider.getCoverArtUrl(playlist.coverArt)
-        : null;
     final hoverBg = isDark
         ? Colors.white.withValues(alpha: 0.07)
         : Colors.black.withValues(alpha: 0.06);
@@ -594,13 +593,10 @@ class _PlaylistTile extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(4),
             hoverColor: hoverBg,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: _ArtworkImage(url: coverArtUrl, isDark: isDark),
-              ),
+            child: PlaylistArtwork(
+              playlist: playlist,
+              size: 48,
+              borderRadius: 4,
             ),
           ),
         ),
@@ -617,13 +613,10 @@ class _PlaylistTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: _ArtworkImage(url: coverArtUrl, isDark: isDark),
-              ),
+            PlaylistArtwork(
+              playlist: playlist,
+              size: 44,
+              borderRadius: 4,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -663,42 +656,7 @@ class _PlaylistTile extends StatelessWidget {
   }
 }
 
-class _ArtworkImage extends StatelessWidget {
-  final String? url;
-  final bool isDark;
-  const _ArtworkImage({required this.url, required this.isDark});
 
-  @override
-  Widget build(BuildContext context) {
-    final bg = isDark ? const Color(0xFF181818) : const Color(0xFFD0D0D0);
-    if (url == null) {
-      return Container(
-        color: bg,
-        child: Icon(
-          Icons.music_note_rounded,
-          color: isDark ? Colors.white24 : Colors.black26,
-        ),
-      );
-    }
-    return CachedNetworkImage(
-      imageUrl: url!,
-      cacheKey: url,
-      fit: BoxFit.cover,
-      memCacheHeight: 200,
-      memCacheWidth: 200,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: Duration.zero,
-      placeholder: (context, url) => Container(color: bg),
-      errorWidget: (context, url, error) => Container(
-        color: bg,
-        child: Icon(
-          Icons.music_note_rounded,
-          color: isDark ? Colors.white24 : Colors.black26,
-        ),
-      ),
-    );
-  }
-}
 
 class _CollapseButton extends StatelessWidget {
   final bool isCollapsed;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/artist_ref.dart';
@@ -231,11 +232,13 @@ class SongTile extends StatelessWidget {
 
 
   void _playSong(BuildContext context) {
+    HapticFeedback.selectionClick();
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     playerProvider.playSong(song, playlist: playlist, startIndex: index);
   }
 
   void _showOptions(BuildContext context) {
+    HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -753,9 +756,13 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
   }
 
   void _navigateToArtist(NavigatorState nav) {
-    final participants = widget.song.artistParticipants;
+    final participants = ArtistRef.fromListOrFallback(
+      widget.song.artistParticipants,
+      fallbackName: widget.song.artist,
+      fallbackId: widget.song.artistId,
+    );
 
-    if (participants != null && participants.length > 1) {
+    if (participants.length > 1) {
       final ctx = NavigationHelper.navigatorKey.currentContext;
       if (ctx == null) return;
       showModalBottomSheet(
@@ -772,7 +779,7 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       return;
     }
 
-    final single = participants?.firstOrNull;
+    final single = participants.firstOrNull;
     if (single != null) {
       _pushArtist(nav, single);
       return;
@@ -791,6 +798,20 @@ class _SongOptionsSheetState extends State<_SongOptionsSheet> {
       nav.push(
         MaterialPageRoute(builder: (_) => ArtistScreen(artistId: artist.id)),
       );
+    } else if (artist.name.isNotEmpty) {
+      final ctx = NavigationHelper.navigatorKey.currentContext;
+      if (ctx != null) {
+        final subsonic = Provider.of<SubsonicService>(ctx, listen: false);
+        subsonic.search(artist.name, artistCount: 3, albumCount: 0, songCount: 0).then((res) {
+          if (res.artists.isNotEmpty) {
+            final matched = res.artists.firstWhere(
+              (a) => a.name.toLowerCase() == artist.name.toLowerCase(),
+              orElse: () => res.artists.first,
+            );
+            nav.push(MaterialPageRoute(builder: (_) => ArtistScreen(artistId: matched.id)));
+          }
+        }).catchError((_) {});
+      }
     }
   }
 

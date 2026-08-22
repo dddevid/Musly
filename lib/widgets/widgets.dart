@@ -14,3 +14,4 @@ export 'spotify_like_card.dart';
 export 'right_sidebar.dart';
 export 'gradient_header.dart';
 export 'lazy_indexed_stack.dart';
+export 'playlist_artwork.dart';

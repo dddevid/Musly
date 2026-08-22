@@ -18,6 +18,7 @@ import '../services/lrc_ttml_parser.dart';
 import '../widgets/now_playing/queue_view.dart';
 import '../widgets/now_playing/now_playing_more_menu.dart';
 import '../widgets/now_playing/add_to_menu.dart';
+import '../widgets/multi_artist_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class NowPlayingScreen extends StatefulWidget {
@@ -364,18 +365,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      GestureDetector(
-                        onTap: () {
-                          // Go to artist
-                        },
-                        child: Text(
-                          artist,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
+                      MultiArtistWidget(
+                        artists: currentSong?.artistParticipants,
+                        artistFallback: artist,
+                        artistIdFallback: currentSong?.artistId,
+                        onBeforeNavigate: () => Navigator.pop(context),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
                     ],

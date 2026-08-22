@@ -8,7 +8,7 @@ import '../services/favorite_playlists_service.dart';
 import '../services/offline_service.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
-import 'album_artwork.dart';
+import 'playlist_artwork.dart';
 
 /// A horizontal scrolling section showing favorite playlists on the home screen
 class FavoritePlaylistsSection extends StatelessWidget {
@@ -134,28 +134,10 @@ class _PlaylistCard extends StatelessWidget {
             // Playlist artwork with heart icon overlay
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: playlist.coverArt != null
-                      ? AlbumArtwork(
-                          coverArt: playlist.coverArt,
-                          size: 140,
-                        )
-                      : Container(
-                          width: 140,
-                          height: 140,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkCard
-                                : AppTheme.lightBackground,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            CupertinoIcons.music_note_list,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
-                        ),
+                PlaylistArtwork(
+                  playlist: playlist,
+                  size: 140,
+                  borderRadius: 8,
                 ),
                 // Favorite indicator
                 Positioned(

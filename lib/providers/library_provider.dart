@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../services/services.dart';
 import '../services/audio_handler.dart';
 import '../services/local_music_service.dart';
+import '../widgets/album_artwork.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
@@ -296,6 +297,14 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
       }
 
+      if (_subsonicService.isYoutube) {
+        _cachedAllAlbums = [];
+        _cachedAllSongs = [];
+        _artists = [];
+        _recentAlbums = [];
+        return;
+      }
+
       final artistsJson = prefs.getString(_artistsCacheKey);
       if (artistsJson != null) {
         final List<dynamic> artistsList = json.decode(artistsJson);
@@ -323,7 +332,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void _scheduleBackgroundRefresh() {
-    if (_cachedAllSongs.isEmpty) return;
+    if (_cachedAllSongs.isEmpty || _subsonicService.isYoutube) return;
 
     final shouldRefresh = _lastCacheUpdate == null ||
         DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 6);
@@ -336,6 +345,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<void> _refreshAllDataInBackground() async {
+    if (_subsonicService.isYoutube) return;
     try {
       const pageSize = 500;
       int offset = 0;
@@ -417,20 +427,22 @@ class LibraryProvider extends ChangeNotifier {
 
   Future<void> _saveCachedData() async {
     try {
-      // Persist large collections (songs/albums) to SQLite instead of
-      // SharedPreferences JSON to avoid OutOfMemoryError with 100k+ tracks.
-      await _db.insertAlbumsBatch(_cachedAllAlbums);
-      await _db.insertSongsBatch(_cachedAllSongs);
+      if (!_subsonicService.isYoutube) {
+        // Persist large collections (songs/albums) to SQLite instead of
+        // SharedPreferences JSON to avoid OutOfMemoryError with 100k+ tracks.
+        await _db.insertAlbumsBatch(_cachedAllAlbums);
+        await _db.insertSongsBatch(_cachedAllSongs);
+      }
 
       final prefs = await SharedPreferences.getInstance();
 
-      // Playlists and artists are small enough to keep in SharedPreferences
+      // Playlists are small enough to keep in SharedPreferences
       final playlistsJson = json.encode(
         _cachedPlaylists.map((p) => p.toJson()).toList(),
       );
       await prefs.setString(_playlistsCacheKey, playlistsJson);
 
-      if (_artists.isNotEmpty) {
+      if (!_subsonicService.isYoutube && _artists.isNotEmpty) {
         final artistsJson = json.encode(
           _artists.map((a) => a.toJson()).toList(),
         );
@@ -459,9 +471,17 @@ class LibraryProvider extends ChangeNotifier {
       }
       return;
     }
-    // Another initialize() is already in flight; wait for it (bounded).
-    for (var i = 0; i < 100 && _isLoading && !_isInitialized; i++) {
+    // Another initialize() is already in flight; wait for it (bounded to 8s).
+    // Keeping this short so Auto doesn't show a spinner indefinitely if the
+    // server is unreachable or authentication is pending.
+    for (var i = 0; i < 40 && _isLoading && !_isInitialized; i++) {
       await Future.delayed(const Duration(milliseconds: 200));
+    }
+    if (!_isInitialized) {
+      debugPrint(
+        'LibraryProvider: timed out waiting for initialization in Android Auto; '
+        'returning cached data (if any).',
+      );
     }
   }
 
@@ -598,10 +618,28 @@ class LibraryProvider extends ChangeNotifier {
   Future<void> refresh() async {
     _isInitialized = false;
     _lastCacheUpdate = null; // force full re-sync
+    _artists = [];
+    _cachedAllAlbums = [];
+    _cachedAllSongs = [];
+    _recentAlbums = [];
+    _frequentAlbums = [];
+    _newestAlbums = [];
+    _randomAlbums = [];
+    _playlists = [];
+    _cachedPlaylists = [];
+    _randomSongs = [];
+    _richGenres = [];
+    _genres = [];
+    _starred = null;
+    ImageUrlCache.clear();
+    try {
+      await _db.clearServerData();
+    } catch (_) {}
+    notifyListeners();
     await initialize();
 
-    // Force immediate full background refresh if server is reachable.
-    if (!_serverOfflineMode && !_localOnlyMode) {
+    // Force immediate full background refresh if server is reachable and not YT Stream.
+    if (!_serverOfflineMode && !_localOnlyMode && !_subsonicService.isYoutube) {
       _refreshAllDataInBackground();
     }
   }

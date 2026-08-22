@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  battery_plus
   connectivity_plus
   dart_discord_rpc
   dynamic_color

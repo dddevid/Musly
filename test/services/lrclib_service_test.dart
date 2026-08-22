@@ -1,7 +1,16 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/services/lrclib_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    HttpOverrides.global = null;
+    SharedPreferences.setMockInitialValues({});
+  });
+
   group('LrcLibService Title and Artist Cleaning', () {
     test('cleans official video fluff from YouTube titles', () {
       expect(

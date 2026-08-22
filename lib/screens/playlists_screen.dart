@@ -185,24 +185,10 @@ class _PlaylistTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: playlist.coverArt != null
-            ? AlbumArtwork(
-                coverArt: playlist.coverArt,
-                size: 56,
-                borderRadius: 8,
-              )
-            : const Icon(
-                CupertinoIcons.music_note_list,
-                color: AppTheme.appleMusicRed,
-                size: 28,
-              ),
+      leading: PlaylistArtwork(
+        playlist: playlist,
+        size: 56,
+        borderRadius: 8,
       ),
       title: Text(
         playlist.name,

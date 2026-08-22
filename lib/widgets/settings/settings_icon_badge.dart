@@ -13,16 +13,24 @@ class SettingsIconBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColor = gradientColors.first;
     return Container(
       width: AppDimensions.iconBadgeSize,
       height: AppDimensions.iconBadgeSize,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.iconBadgeRadius),
+        boxShadow: [
+          BoxShadow(
+            color: baseColor.withValues(alpha: 0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Icon(
         icon,

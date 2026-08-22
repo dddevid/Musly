@@ -196,63 +196,64 @@ class YtDlpService {
       }
     }
 
-    // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
-      try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('getStreamUrl', {'videoId': cleanId});
-        if (jsonStr != null && jsonStr.isNotEmpty) {
-          final data = jsonDecode(jsonStr) as Map<String, dynamic>;
-          final url = data['url'] as String? ?? '';
-          if (url.isNotEmpty) {
-            final rawHeaders = data['headers'] as Map<String, dynamic>? ?? {};
-            final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
-            final ext = data['ext'] as String? ?? 'mp4';
+      // Parallel race: native Dart AOT and Android Python Chaquopy simultaneously.
+      // The fastest resolver returns immediately to achieve sub-second playback start.
+      final completer = Completer<YtStreamInfo>();
+      int errors = 0;
+      const total = 2;
 
-            final info = YtStreamInfo(url: url, headers: headers, ext: ext);
-            _streamInfoCache[cleanId] = info;
-            _streamCacheTime[cleanId] = DateTime.now();
-            debugPrint('[yt-dlp/Android Python] Successfully resolved stream info for $cleanId');
-            return info;
-          }
-        }
-      } catch (e) {
-        debugPrint('[yt-dlp/Android Python] MethodChannel getStreamUrl error: $e');
-      }
-    }
-
-    // 2. Desktop: Execute host Python / yt-dlp subprocess with JSON dump
-    final targetUrl = cleanId.startsWith('http') ? cleanId : 'https://www.youtube.com/watch?v=$cleanId';
-    try {
-      final result = await _runYtDlp([
-        '-j',
-        '-f', 'ba/b[acodec!=none]/bestaudio/best',
-        '--extractor-args', 'youtube:player_client=android_music,android,ios,mweb',
-        '--no-warnings',
-        '--no-check-certificates',
-        targetUrl,
-      ], timeout: const Duration(seconds: 15));
-
-      if (result != null && result.exitCode == 0) {
-        final json = jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
-        final url = json['url'] as String?;
-        if (url != null && url.isNotEmpty) {
-          final rawHeaders = json['http_headers'] as Map<String, dynamic>? ?? {};
-          final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
-          final ext = json['ext'] as String? ?? 'mp4';
-
-          final info = YtStreamInfo(url: url, headers: headers, ext: ext);
+      void onDone(YtStreamInfo info) {
+        if (!completer.isCompleted) {
           _streamInfoCache[cleanId] = info;
           _streamCacheTime[cleanId] = DateTime.now();
-          debugPrint('[yt-dlp/Desktop Python] Successfully resolved stream info for $cleanId');
-          return info;
+          completer.complete(info);
         }
       }
-    } catch (e) {
-      debugPrint('[yt-dlp/Desktop Python] Subprocess stream resolution error: $e');
+
+      void onError(Object e) {
+        errors++;
+        if (errors >= total && !completer.isCompleted) {
+          completer.completeError(e);
+        }
+      }
+
+      _resolveViaDartExplode(cleanId).then(onDone).catchError(onError);
+      _resolveViaAndroidPython(cleanId).then(onDone).catchError(onError);
+
+      return completer.future;
     }
 
-    // 3. Fallback to youtube_explode_dart
-    debugPrint('[yt-dlp] Falling back to youtube_explode_dart for $cleanId');
+    // Desktop
+    try {
+      final info = await _resolveViaDartExplode(cleanId);
+      _streamInfoCache[cleanId] = info;
+      _streamCacheTime[cleanId] = DateTime.now();
+      return info;
+    } catch (_) {
+      final info = await _resolveViaDesktopYtDlp(cleanId);
+      _streamInfoCache[cleanId] = info;
+      _streamCacheTime[cleanId] = DateTime.now();
+      return info;
+    }
+  }
+
+  Future<YtStreamInfo> _resolveViaAndroidPython(String cleanId) async {
+    final jsonStr = await _androidChannel.invokeMethod<String>('getStreamUrl', {'videoId': cleanId});
+    if (jsonStr != null && jsonStr.isNotEmpty) {
+      final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final url = data['url'] as String? ?? '';
+      if (url.isNotEmpty) {
+        final rawHeaders = data['headers'] as Map<String, dynamic>? ?? {};
+        final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        final ext = data['ext'] as String? ?? 'mp4';
+        return YtStreamInfo(url: url, headers: headers, ext: ext);
+      }
+    }
+    throw Exception('Empty stream info from Android Python');
+  }
+
+  Future<YtStreamInfo> _resolveViaDartExplode(String cleanId) async {
     final clients = [
       [yt.YoutubeApiClient.androidMusic],
       [yt.YoutubeApiClient.mweb],
@@ -271,7 +272,7 @@ class YtDlpService {
         if (audioOnly.isNotEmpty) {
           final best = audioOnly.withHighestBitrate();
           final url = best.url.toString();
-          final info = YtStreamInfo(
+          return YtStreamInfo(
             url: url,
             headers: {
               'User-Agent':
@@ -279,16 +280,36 @@ class YtDlpService {
             },
             ext: best.container.name,
           );
-          _streamInfoCache[cleanId] = info;
-          _streamCacheTime[cleanId] = DateTime.now();
-          return info;
         }
       } catch (e) {
         lastError = e;
       }
     }
+    throw lastError ?? Exception('No audio streams available via Dart for $cleanId');
+  }
 
-    throw lastError ?? Exception('No audio streams available for video $cleanId');
+  Future<YtStreamInfo> _resolveViaDesktopYtDlp(String cleanId) async {
+    final targetUrl = cleanId.startsWith('http') ? cleanId : 'https://www.youtube.com/watch?v=$cleanId';
+    final result = await _runYtDlp([
+      '-j',
+      '-f', 'ba/b[acodec!=none]/bestaudio/best',
+      '--extractor-args', 'youtube:player_client=mweb,android_music,android,ios',
+      '--no-warnings',
+      '--',
+      targetUrl,
+    ], timeout: const Duration(seconds: 15));
+
+    if (result != null && result.exitCode == 0) {
+      final json = jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
+      final url = json['url'] as String?;
+      if (url != null && url.isNotEmpty) {
+        final rawHeaders = json['http_headers'] as Map<String, dynamic>? ?? {};
+        final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        final ext = json['ext'] as String? ?? 'mp4';
+        return YtStreamInfo(url: url, headers: headers, ext: ext);
+      }
+    }
+    throw Exception('Desktop yt-dlp resolution failed for $cleanId');
   }
 
   /// Extracts the direct audio stream URL for a given [videoId].
@@ -362,11 +383,11 @@ class YtDlpService {
     final searchParam = 'ytsearch$limit:$query';
     try {
       final result = await _runYtDlp([
-        searchParam,
         '--dump-json',
         '--flat-playlist',
         '--no-warnings',
-        '--no-check-certificates',
+        '--',
+        searchParam,
       ], timeout: const Duration(seconds: 15));
 
       if (result != null && result.exitCode == 0) {
@@ -469,11 +490,11 @@ class YtDlpService {
 
     try {
       final result = await _runYtDlp([
-        playlistUrl,
         '--dump-json',
         '--flat-playlist',
         '--no-warnings',
-        '--no-check-certificates',
+        '--',
+        playlistUrl,
       ], timeout: const Duration(seconds: 20));
 
       if (result != null && result.exitCode == 0) {
@@ -575,7 +596,7 @@ class YtDlpService {
           '--playlist-items',
           '1:$limit',
           '--no-warnings',
-          '--no-check-certificates',
+          '--',
           url,
         ], timeout: const Duration(seconds: 15));
 
@@ -660,7 +681,7 @@ class YtDlpService {
       final result = await _runYtDlp([
         '-j',
         '--no-warnings',
-        '--no-check-certificates',
+        '--',
         targetUrl,
       ], timeout: const Duration(seconds: 10));
 

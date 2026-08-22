@@ -423,6 +423,9 @@ class _MainScreenState extends State<MainScreen> {
             _handleBackButton();
           },
           child: Scaffold(
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBackground
+                : AppTheme.lightBackground,
             resizeToAvoidBottomInset: false,
             body: Column(
               children: [
@@ -531,15 +534,16 @@ class _MainScreenState extends State<MainScreen> {
                     },
                   ),
                 ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (hasCurrentSong) const MiniPlayer(),
-                    liquidGlass
-                        ? _buildGlassBottomNav(context)
-                        : _buildBottomNav(context),
-                  ],
-                ),
+                if (MediaQuery.of(context).viewInsets.bottom == 0)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasCurrentSong) const MiniPlayer(),
+                      liquidGlass
+                          ? _buildGlassBottomNav(context)
+                          : _buildBottomNav(context),
+                    ],
+                  ),
               ],
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'storage_service.dart';
 
 /// Service that searches LRCLIB (https://lrclib.net) for synced and plain lyrics.
 ///
@@ -88,6 +89,9 @@ class LrcLibService {
     required String title,
     int? durationSeconds,
   }) async {
+    final isEnabled = await StorageService().getLrcLibFallback();
+    if (!isEnabled) return null;
+
     if (title.trim().isEmpty) return null;
 
     final cleanedTitle = cleanTitle(title);

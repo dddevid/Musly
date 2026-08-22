@@ -2,29 +2,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../models/server_config.dart';
-import '../models/song.dart';
-import '../models/album.dart';
 import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
-import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/album_artwork.dart';
 import '../utils/navigation_helper.dart';
 import 'album_screen.dart';
 import 'package:musly/screens/playlist_screen.dart';
 import 'favorites_screen.dart';
 import 'liked_albums_screen.dart';
-import 'playlists_screen.dart';
-import 'settings_screen.dart';
 import 'library_search_delegate.dart';
 import 'artist_screen.dart';
 import 'radio_screen.dart';
-import 'all_songs_screen.dart';
 import 'downloads_screen.dart';
+import 'add_server_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
-import '../widgets/album_artwork.dart' show isLocalFilePath;
+import '../widgets/playlist_artwork.dart';
+import 'settings_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -33,741 +28,124 @@ class LibraryScreen extends StatefulWidget {
   State<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen> {
-  String _selectedFilter = 'Faves';
+enum _SortOption {
+  recents,
+  recentlyAdded,
+  alphabetical,
+  creator,
+}
 
-  List<String> _getFilters(BuildContext context) {
-    final libraryProvider =
-        Provider.of<LibraryProvider>(context, listen: false);
-    if (libraryProvider.isLocalOnlyMode) {
-      return ['Faves', 'Albums', 'Artists', 'Songs', 'Genres', 'Years'];
-    }
-    return ['Faves', 'Albums', 'Artists', 'Songs'];
+class _LibraryScreenState extends State<LibraryScreen> {
+  String? _selectedFilter; // null (All) | 'Playlists' | 'Albums' | 'Artists' | 'Downloaded' | 'Songs'
+  bool _isGridView = false;
+  _SortOption _currentSort = _SortOption.recents;
+
+  bool get _isDesktop =>
+      Platform.isMacOS || Platform.isWindows || Platform.isLinux;
+
+  void _navigate(BuildContext context, Widget screen) {
+    NavigationHelper.push(context, screen);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+  void _showLibrarySearch(BuildContext context) {
+    showSearch(
+      context: context,
+      delegate: LibrarySearchDelegate(
+        libraryProvider: Provider.of<LibraryProvider>(context, listen: false),
+        isDark: Theme.of(context).brightness == Brightness.dark,
+      ),
+    );
+  }
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            floating: true,
-            expandedHeight: 60,
-            backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
-            title: Text(
-              AppLocalizations.of(context)!.yourLibrary,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+  void _showAddMenu(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkSurface : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.refresh,
-                  color: isDark ? Colors.white : Colors.black,
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1DB954).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                onPressed: () {
-                  final libraryProvider = Provider.of<LibraryProvider>(
-                    context,
-                    listen: false,
-                  );
-                  libraryProvider.refresh();
-                },
+                child: const Icon(CupertinoIcons.music_note_list, color: Color(0xFF1DB954), size: 22),
               ),
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.search,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () => _showLibrarySearch(context),
-              ),
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.plus,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () => _showCreatePlaylistDialog(context),
-              ),
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.gear,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () => _showSettings(context),
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                final filters = _getFilters(context);
-                final filterLabels = {
-                  'Faves': l10n.faves,
-                  'Albums': l10n.filterAlbums,
-                  'Artists': l10n.filterArtists,
-                  'Songs': l10n.songs,
-                  'Genres': l10n.genres,
-                  'Years': l10n.years,
-                };
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: filters.map((filter) {
-                      final isSelected = _selectedFilter == filter;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(filterLabels[filter]!),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedFilter = selected ? filter : 'Faves';
-                            });
-                          },
-                          backgroundColor: isDark
-                              ? const Color(0xFF282828)
-                              : Colors.grey[200],
-                          selectedColor: isDark ? Colors.white : Colors.black,
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? (isDark ? Colors.black : Colors.white)
-                                : (isDark ? Colors.white : Colors.black),
-                            fontWeight: FontWeight.w500,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          side: BorderSide.none,
-                          showCheckmark: false,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
+              title: const Text('Create Playlist', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Build a custom playlist with your favorite tracks', style: TextStyle(fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showCreatePlaylistDialog(context);
               },
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                if (_selectedFilter == 'Faves') ...[
-                  // Playlists folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.list_bullet,
-                    iconColor: const Color(0xFF3B82F6),
-                    title: AppLocalizations.of(context)!.playlists,
-                    subtitle: AppLocalizations.of(context)!.yourPlaylists,
-                    isGradient: false,
-                    onTap: () => _navigate(context, const PlaylistsScreen()),
-                  ),
-                  // Liked Songs folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.heart_fill,
-                    iconColor: const Color(0xFF8B5CF6),
-                    title: AppLocalizations.of(context)!.likedSongs,
-                    subtitle: AppLocalizations.of(context)!.playlist,
-                    isGradient: true,
-                    onTap: () => _navigate(context, const FavoritesScreen()),
-                  ),
-                  // All Songs folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.music_note_list,
-                    iconColor: const Color(0xFF34C759),
-                    title: AppLocalizations.of(context)!.songs,
-                    subtitle: AppLocalizations.of(context)!.songs,
-                    isGradient: false,
-                    onTap: () => _navigate(context, const AllSongsScreen()),
-                  ),
-                  // Liked Albums folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.star_fill,
-                    iconColor: const Color(0xFFFF9500),
-                    title: AppLocalizations.of(context)!.likedAlbums,
-                    subtitle: AppLocalizations.of(context)!.albums,
-                    isGradient: false,
-                    onTap: () => _navigate(context, const LikedAlbumsScreen()),
-                  ),
-                  // Radio Stations folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.antenna_radiowaves_left_right,
-                    iconColor: const Color(0xFF34C759),
-                    title: AppLocalizations.of(context)!.radioStations,
-                    subtitle: AppLocalizations.of(context)!.internetRadio,
-                    isGradient: false,
-                    onTap: () => _navigate(context, const RadioScreen()),
-                  ),
-                  // Downloads folder
-                  _SpotifyLibraryTile(
-                    icon: CupertinoIcons.arrow_down_circle_fill,
-                    iconColor: const Color(0xFF00C7BE),
-                    title: 'Downloads',
-                    subtitle: 'Downloaded music',
-                    isGradient: false,
-                    onTap: () => _navigate(context, const DownloadsScreen()),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Consumer<LibraryProvider>(
-            builder: (context, libraryProvider, _) {
-              final items = _getFilteredItems(context, libraryProvider);
-
-              if (items.isEmpty) {
-                return SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _LibraryEmptyState(
-                    isLocalMode: libraryProvider.isLocalOnlyMode,
-                  ),
-                );
-              }
-
-              return SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final item = items[index];
-                  return _buildLibraryItem(context, item);
-                }, childCount: items.length),
-              );
-            },
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 150)),
-        ],
-      ),
-    );
-  }
-
-  List<_LibraryItem> _getFilteredItems(
-    BuildContext context,
-    LibraryProvider provider,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    List<_LibraryItem> items = [];
-
-    // Faves tab: show Playlists and Recent Albums
-    if (_selectedFilter == 'Faves') {
-      // Add playlists
-      items.addAll(
-        provider.playlists.map(
-          (p) => _LibraryItem(
-            type: 'Playlist',
-            id: p.id,
-            name: p.name,
-            subtitle: l10n.songsCount(p.songCount ?? 0),
-            coverArt: p.coverArt,
-          ),
-        ),
-      );
-      // Add recent albums (limited to 10)
-      final recent = provider.isLocalOnlyMode
-          ? provider.cachedAllAlbums.take(10).toList()
-          : provider.recentAlbums.take(10).toList();
-      items.addAll(
-        recent.map(
-          (a) => _LibraryItem(
-            type: 'Album',
-            id: a.id,
-            name: a.name,
-            subtitle:
-                a.artistParticipants != null && a.artistParticipants!.isNotEmpty
-                    ? a.artistParticipants!.map((r) => r.name).join(', ')
-                    : (a.artist ?? ''),
-            coverArt: a.coverArt,
-          ),
-        ),
-      );
-    }
-
-    // Albums tab: show all albums
-    if (_selectedFilter == 'Albums') {
-      final albums = provider.isLocalOnlyMode
-          ? provider.cachedAllAlbums
-          : (provider.cachedAllAlbums.isNotEmpty
-              ? provider.cachedAllAlbums
-              : provider.recentAlbums);
-      items.addAll(
-        albums.map(
-          (a) => _LibraryItem(
-            type: 'Album',
-            id: a.id,
-            name: a.name,
-            subtitle: () {
-              final artistStr = a.artistParticipants != null &&
-                      a.artistParticipants!.isNotEmpty
-                  ? a.artistParticipants!.map((r) => r.name).join(', ')
-                  : (a.artist ?? '');
-              if (a.year != null && artistStr.isNotEmpty) {
-                return '$artistStr • ${a.year}';
-              }
-              return artistStr.isNotEmpty
-                  ? artistStr
-                  : (a.year?.toString() ?? '');
-            }(),
-            coverArt: a.coverArt,
-          ),
-        ),
-      );
-    }
-
-    if (_selectedFilter == 'Artists') {
-      items.addAll(
-        provider.artists.map(
-          (a) => _LibraryItem(
-            type: 'Artist',
-            id: a.id,
-            name: a.name,
-            subtitle: l10n.albumsCount(a.albumCount ?? 0),
-            coverArt: a.coverArt,
-          ),
-        ),
-      );
-    }
-
-    if (_selectedFilter == 'Songs') {
-      items.addAll(
-        provider.cachedAllSongs.map(
-          (s) => _LibraryItem(
-            type: 'Song',
-            id: s.id,
-            name: s.title,
-            subtitle: s.artist ?? '',
-            coverArt: s.coverArt,
-          ),
-        ),
-      );
-    }
-
-    if (_selectedFilter == 'Genres') {
-      final genreMap = <String, List<Song>>{};
-      for (final s in provider.cachedAllSongs) {
-        final g = (s.genre ?? 'Unknown').trim();
-        if (g.isEmpty) continue;
-        genreMap.putIfAbsent(g, () => []).add(s);
-      }
-      final sortedGenres = genreMap.keys.toList()..sort();
-      items.addAll(
-        sortedGenres.map(
-          (g) => _LibraryItem(
-            type: 'Genre',
-            id: 'genre_$g',
-            name: g,
-            subtitle: l10n.songsCount(genreMap[g]!.length),
-            coverArt: genreMap[g]!
-                    .firstWhere(
-                      (s) => s.coverArt != null,
-                      orElse: () => genreMap[g]!.first,
-                    )
-                    .coverArt ??
-                '',
-          ),
-        ),
-      );
-    }
-
-    if (_selectedFilter == 'Years') {
-      final yearMap = <int, List<Album>>{};
-      for (final a in provider.cachedAllAlbums) {
-        if (a.year != null) {
-          yearMap.putIfAbsent(a.year!, () => []).add(a);
-        }
-      }
-      final sortedYears = yearMap.keys.toList()..sort((a, b) => b.compareTo(a));
-      items.addAll(
-        sortedYears.map(
-          (y) => _LibraryItem(
-            type: 'Year',
-            id: 'year_$y',
-            name: y.toString(),
-            subtitle: l10n.albumsCount(yearMap[y]!.length),
-            coverArt: yearMap[y]!
-                    .firstWhere(
-                      (a) => a.coverArt != null,
-                      orElse: () => yearMap[y]!.first,
-                    )
-                    .coverArt ??
-                '',
-          ),
-        ),
-      );
-    }
-
-    return items;
-  }
-
-  Widget _buildLibraryItem(BuildContext context, _LibraryItem item) {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-    final coverArtUrl = item.coverArt != null
-        ? (isLocalFilePath(item.coverArt)
-            ? item.coverArt!
-            : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
-        : null;
-
-    final String typeLabel = switch (item.type) {
-      'Playlist' => l10n.filterPlaylists,
-      'Album' => l10n.filterAlbums,
-      'Artist' => l10n.filterArtists,
-      'Song' => l10n.songs,
-      _ => item.type,
-    };
-
-    final Widget artwork = ClipRRect(
-      borderRadius: BorderRadius.circular(item.type == 'Artist' ? 28 : 4),
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: coverArtUrl != null
-            ? (isLocalFilePath(coverArtUrl)
-                ? Image.file(
-                    File(coverArtUrl),
-                    fit: BoxFit.cover,
-                    cacheWidth: 120,
-                    cacheHeight: 120,
-                    errorBuilder: (ctx, err, stack) =>
-                        _buildPlaceholder(item.type, isDark),
-                  )
-                : CachedNetworkImage(
-                    imageUrl: coverArtUrl,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 120,
-                    memCacheHeight: 120,
-                    placeholder: (ctx, url) =>
-                        Container(color: Colors.grey[800]),
-                    errorWidget: (ctx, url, err) =>
-                        _buildPlaceholder(item.type, isDark),
-                  ))
-            : _buildPlaceholder(item.type, isDark),
-      ),
-    );
-
-    return InkWell(
-      onTap: () => _openItem(context, item),
-      onLongPress: item.type == 'Playlist'
-          ? () => _showDeletePlaylistDialog(context, item)
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Row(
-          children: [
-            artwork,
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    item.name,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$typeLabel • ${item.subtitle}',
-                    style: TextStyle(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.dns_rounded, color: Color(0xFF6366F1), size: 22),
               ),
+              title: const Text('Add Music Source', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Connect Navidrome, Jellyfin, or YT Stream', style: TextStyle(fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                NavigationHelper.push(context, const AddServerScreen());
+              },
             ),
-            if (item.type == 'Playlist')
-              ValueListenableBuilder<Set<String>>(
-                valueListenable: OfflineService().downloadedPlaylistIds,
-                builder: (context, downloaded, _) {
-                  return ValueListenableBuilder<Set<String>>(
-                    valueListenable: OfflineService().queuedPlaylistIds,
-                    builder: (context, queued, _) {
-                      if (downloaded.contains(item.id)) {
-                        return const Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Icon(Icons.check_circle, color: Colors.green, size: 18),
-                        );
-                      }
-                      if (queued.contains(item.id)) {
-                        return const Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Icon(Icons.check_circle_outline, color: Colors.green, size: 18),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  );
-                },
-              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholder(String type, bool isDark) {
-    IconData icon;
-    switch (type) {
-      case 'Playlist':
-        icon = Icons.queue_music;
-        break;
-      case 'Album':
-        icon = Icons.album;
-        break;
-      case 'Artist':
-        icon = Icons.person;
-        break;
-      case 'Song':
-        icon = Icons.music_note;
-        break;
-      case 'Genre':
-        icon = Icons.local_offer;
-        break;
-      case 'Year':
-        icon = Icons.calendar_today;
-        break;
-      default:
-        icon = Icons.music_note;
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF2C2C2E), const Color(0xFF1C1C1E)]
-              : [const Color(0xFFF2F2F7), const Color(0xFFE5E5EA)],
-        ),
-        borderRadius: BorderRadius.circular(type == 'Artist' ? 28 : 4),
-      ),
-      child: Center(
-        child: Icon(
-          icon,
-          size: 24,
-          color: isDark ? Colors.white24 : Colors.black12,
-        ),
-      ),
-    );
-  }
-
-  void _openItem(BuildContext context, _LibraryItem item) {
-    switch (item.type) {
-      case 'Playlist':
-        NavigationHelper.push(
-          context,
-          PlaylistScreen(playlistId: item.id, playlistName: item.name),
-        );
-        break;
-      case 'Album':
-        NavigationHelper.push(context, AlbumScreen(albumId: item.id));
-        break;
-      case 'Artist':
-        NavigationHelper.push(context, ArtistScreen(artistId: item.id));
-        break;
-      case 'Song':
-        final libraryProvider = Provider.of<LibraryProvider>(
-          context,
-          listen: false,
-        );
-        final playerProvider = Provider.of<PlayerProvider>(
-          context,
-          listen: false,
-        );
-        final songs = libraryProvider.cachedAllSongs;
-        final index = songs.indexWhere((s) => s.id == item.id);
-        if (index >= 0) {
-          playerProvider.playSong(
-            songs[index],
-            playlist: songs,
-            startIndex: index,
-          );
-        }
-        break;
-      case 'Genre':
-        final genreName = item.name;
-        final libraryProvider = Provider.of<LibraryProvider>(
-          context,
-          listen: false,
-        );
-        final songs = libraryProvider.cachedAllSongs
-            .where((s) => s.genre == genreName)
-            .toList();
-        if (songs.isNotEmpty) {
-          final playerProvider = Provider.of<PlayerProvider>(
-            context,
-            listen: false,
-          );
-          playerProvider.playSong(songs.first, playlist: songs, startIndex: 0);
-        }
-        break;
-      case 'Year':
-        final yearStr = item.name;
-        final libraryProvider = Provider.of<LibraryProvider>(
-          context,
-          listen: false,
-        );
-        final albums = libraryProvider.cachedAllAlbums
-            .where((a) => a.year?.toString() == yearStr)
-            .toList();
-        if (albums.isNotEmpty) {
-          NavigationHelper.push(context, AlbumScreen(albumId: albums.first.id));
-        }
-        break;
-    }
-  }
-
-  void _navigate(BuildContext context, Widget screen) {
-    NavigationHelper.push(context, screen);
-  }
-
-  void _showDeletePlaylistDialog(BuildContext context, _LibraryItem item) {
+  void _showCreatePlaylistDialog(BuildContext context) {
+    final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deletePlaylist),
-        content: Text(
-          AppLocalizations.of(context)!.deletePlaylistConfirmation(item.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final libraryProvider = Provider.of<LibraryProvider>(
-                context,
-                listen: false,
-              );
-              try {
-                await OfflineService().cancelPlaylistDownload(item.id);
-                await libraryProvider.deletePlaylist(item.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!
-                            .playlistDeleted(item.name),
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppLocalizations.of(context)!.errorDeletingPlaylist(e),
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(AppLocalizations.of(context)!.delete),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showCreatePlaylistDialog(BuildContext context) async {
-    final controller = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.newPlaylist),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.playlistName,
-              filled: true,
-              fillColor:
-                  isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.all(12),
-            ),
+      builder: (ctx) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.createPlaylist),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.playlistName,
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
-              if (controller.text.trim().isNotEmpty) {
-                final libraryProvider = Provider.of<LibraryProvider>(
-                  context,
-                  listen: false,
-                );
-                try {
-                  await libraryProvider.createPlaylist(controller.text.trim());
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          AppLocalizations.of(
-                            context,
-                          )!
-                              .playlistCreated(controller.text),
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          AppLocalizations.of(
-                            context,
-                          )!
-                              .errorCreatingPlaylist(e),
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                await libraryProvider.createPlaylist(name);
+                if (ctx.mounted) Navigator.pop(ctx);
               }
             },
             child: Text(AppLocalizations.of(context)!.create),
@@ -775,456 +153,602 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ],
       ),
     );
-    controller.dispose();
   }
 
-  void _showLibrarySearch(BuildContext context) {
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
+  void _showSortMenu(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showSearch(
-      context: context,
-      delegate: LibrarySearchDelegate(
-        libraryProvider: libraryProvider,
-        isDark: isDark,
-      ),
-    );
-  }
-
-  void _showSettings(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _SettingsSheet(),
-    );
-  }
-}
-
-class _LibraryEmptyState extends StatelessWidget {
-  final bool isLocalMode;
-
-  const _LibraryEmptyState({required this.isLocalMode});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 60),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.library_music_outlined,
-            size: 64,
-            color: isDark ? Colors.white24 : Colors.black26,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isLocalMode ? l10n.localLibraryEmpty : l10n.libraryEmpty,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isLocalMode
-                ? l10n.localLibraryEmptySubtitle
-                : l10n.libraryEmptySubtitle,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-          ),
-          if (isLocalMode) ...[
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                final localService = Provider.of<LocalMusicService>(
-                  context,
-                  listen: false,
-                );
-                if (!localService.isScanning) {
-                  localService.scanForMusic();
-                }
-              },
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.scanForMusic),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: isDark ? Colors.black : Colors.white,
-                backgroundColor: isDark ? Colors.white : Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _LibraryItem {
-  final String type;
-  final String id;
-  final String name;
-  final String subtitle;
-  final String? coverArt;
-
-  _LibraryItem({
-    required this.type,
-    required this.id,
-    required this.name,
-    required this.subtitle,
-    this.coverArt,
-  });
-}
-
-class _SpotifyLibraryTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final bool isGradient;
-  final VoidCallback? onTap;
-
-  const _SpotifyLibraryTile({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    this.isGradient = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                gradient: isGradient
-                    ? LinearGradient(
-                        colors: [iconColor.withValues(alpha: 0.8), iconColor],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isGradient ? null : iconColor.withValues(alpha: 0.15),
-              ),
-              child: Icon(
-                icon,
-                color: isGradient ? Colors.white : iconColor,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsSheet extends StatelessWidget {
-  const _SettingsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final authProvider = Provider.of<AuthProvider>(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-                  borderRadius: BorderRadius.circular(2.5),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                AppLocalizations.of(context)!.settingsTitle,
-                style: theme.textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 24),
-              if (authProvider.config != null) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:
-                          isDark ? AppTheme.darkCard : AppTheme.lightBackground,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          authProvider.state == AuthState.offlineMode
-                              ? CupertinoIcons.wifi_slash
-                              : CupertinoIcons.checkmark_circle_fill,
-                          color: authProvider.state == AuthState.offlineMode
-                              ? Colors.orange
-                              : Colors.green,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                authProvider.state == AuthState.offlineMode
-                                    ? AppLocalizations.of(context)!.offlineMode
-                                    : AppLocalizations.of(context)!.connected,
-                                style: theme.textTheme.titleMedium,
-                              ),
-                              Text(
-                                authProvider.config!.serverUrl,
-                                style: theme.textTheme.bodySmall,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        _buildSwitchServerButton(context),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              ListTile(
-                leading: Icon(
-                  CupertinoIcons.gear_alt,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-                title: Text(AppLocalizations.of(context)!.settingsTitle),
-                trailing: Icon(
-                  CupertinoIcons.chevron_forward,
-                  size: 18,
-                  color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  NavigationHelper.push(context, const SettingsScreen());
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  CupertinoIcons.arrow_right_square,
-                  color: Colors.red,
-                ),
-                title: Text(AppLocalizations.of(context)!.logout),
-                onTap: () async {
-                  final playerProvider = Provider.of<PlayerProvider>(
-                    context,
-                    listen: false,
-                  );
-                  Navigator.pop(context);
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text(AppLocalizations.of(context)!.logout),
-                      content: Text(
-                        AppLocalizations.of(context)!.logoutConfirmation,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(AppLocalizations.of(context)!.cancel),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: Text(
-                            AppLocalizations.of(context)!.logout,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    await playerProvider.stop();
-                    await authProvider.logout();
-                  }
-                },
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSwitchServerButton(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context)!;
-
-    return FutureBuilder<List<ServerConfig>>(
-      future: authProvider.getSavedProfiles(),
-      builder: (context, snapshot) {
-        final profiles = snapshot.data ?? [];
-        if (profiles.length < 2) return const SizedBox.shrink();
-
-        return IconButton(
-          onPressed: () => _showSwitchServerDialog(context),
-          icon: Icon(
-            CupertinoIcons.arrow_right_arrow_left,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black87,
-          ),
-          tooltip: l10n.switchServer,
-        );
-      },
-    );
-  }
-
-  void _showSwitchServerDialog(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context)!;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(ctx).brightness == Brightness.dark
-              ? AppTheme.darkSurface
-              : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          color: isDark ? AppTheme.darkSurface : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
                 width: 36,
-                height: 5,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Theme.of(ctx).brightness == Brightness.dark
-                      ? AppTheme.darkDivider
-                      : AppTheme.lightDivider,
-                  borderRadius: BorderRadius.circular(2.5),
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.switchServer,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Sort by',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16),
-              FutureBuilder<List<ServerConfig>>(
-                future: authProvider.getSavedProfiles(),
-                builder: (context, snapshot) {
-                  final profiles = snapshot.data ?? [];
-                  final currentConfig = authProvider.config;
-                  final otherProfiles = profiles
-                      .where(
-                        (p) =>
-                            p.serverUrl != currentConfig?.serverUrl ||
-                            p.username != currentConfig?.username,
-                      )
-                      .toList();
+            ),
+            _buildSortOptionTile(ctx, 'Recents', _SortOption.recents),
+            _buildSortOptionTile(ctx, 'Recently added', _SortOption.recentlyAdded),
+            _buildSortOptionTile(ctx, 'Alphabetical', _SortOption.alphabetical),
+            _buildSortOptionTile(ctx, 'Creator', _SortOption.creator),
+          ],
+        ),
+      ),
+    );
+  }
 
-                  return Column(
-                    children: otherProfiles.map((profile) {
-                      final label = profile.name?.isNotEmpty == true
-                          ? profile.name!
-                          : '${profile.username}@${Uri.tryParse(profile.serverUrl)?.host ?? profile.serverUrl}';
-                      return ListTile(
-                        leading: const Icon(CupertinoIcons.person_crop_circle),
-                        title: Text(label),
-                        subtitle: Text(
-                          profile.serverUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: () async {
-                          Navigator.pop(ctx);
-                          final playerProvider = Provider.of<PlayerProvider>(
-                              context,
-                              listen: false);
-                          await playerProvider.stop();
-                          await authProvider.switchProfile(profile);
-                        },
-                      );
-                    }).toList(),
-                  );
-                },
+  Widget _buildSortOptionTile(BuildContext ctx, String title, _SortOption option) {
+    final isSelected = _currentSort == option;
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? const Color(0xFF1DB954) : null,
+        ),
+      ),
+      trailing: isSelected
+          ? const Icon(CupertinoIcons.checkmark, color: Color(0xFF1DB954), size: 18)
+          : null,
+      onTap: () {
+        setState(() => _currentSort = option);
+        Navigator.pop(ctx);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final hPad = _isDesktop ? 32.0 : 16.0;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final subsonicService = Provider.of<SubsonicService>(context);
+    final isYoutube = subsonicService.isYoutube || authProvider.config?.isYoutube == true;
+
+    return Scaffold(
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      body: Consumer<LibraryProvider>(
+        builder: (context, libraryProvider, _) {
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // 1. Header
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                pinned: true,
+                floating: true,
+                expandedHeight: 120,
+                backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: EdgeInsets.only(left: hPad, bottom: 44),
+                  title: Text(
+                    AppLocalizations.of(context)?.yourLibrary ?? 'Your Library',
+                    style: TextStyle(
+                      fontSize: _isDesktop ? 24 : 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(CupertinoIcons.search, color: isDark ? Colors.white : Colors.black87, size: 22),
+                    tooltip: 'Search in Library',
+                    onPressed: () => _showLibrarySearch(context),
+                  ),
+                  IconButton(
+                    icon: Icon(CupertinoIcons.plus, color: isDark ? Colors.white : Colors.black87, size: 24),
+                    tooltip: 'Add',
+                    onPressed: () => _showAddMenu(context),
+                  ),
+                  IconButton(
+                    icon: Icon(CupertinoIcons.gear_alt, color: isDark ? Colors.white : Colors.black87, size: 22),
+                    tooltip: 'Settings',
+                    onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
+                  ),
+                  if (_isDesktop) const SizedBox(width: 12),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Container(
+                    height: 48,
+                    padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 6),
+                    alignment: Alignment.centerLeft,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          if (_selectedFilter != null) ...[
+                            GestureDetector(
+                              onTap: () => setState(() => _selectedFilter = null),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF282828) : Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Icon(CupertinoIcons.clear, size: 14, color: isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ],
+                          _buildFilterChip('Playlists', 'Playlists', isDark),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Albums', 'Albums', isDark),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Artists', 'Artists', isDark),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Downloaded', 'Downloaded', isDark),
+                          if (!isYoutube) ...[
+                            const SizedBox(width: 8),
+                            _buildFilterChip('Songs', 'Songs', isDark),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
+
+              // 2. Spotify Sort & View Mode Controls Bar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Sort Option Button
+                      InkWell(
+                        onTap: () => _showSortMenu(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Row(
+                            children: [
+                              const Icon(CupertinoIcons.arrow_up_arrow_down, size: 14),
+                              const SizedBox(width: 6),
+                              Text(
+                                switch (_currentSort) {
+                                  _SortOption.recents => 'Recents',
+                                  _SortOption.recentlyAdded => 'Recently added',
+                                  _SortOption.alphabetical => 'Alphabetical',
+                                  _SortOption.creator => 'Creator',
+                                },
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // View Mode Toggle (List / Grid)
+                      IconButton(
+                        icon: Icon(
+                          _isGridView ? CupertinoIcons.list_bullet : CupertinoIcons.square_grid_2x2,
+                          size: 18,
+                        ),
+                        tooltip: _isGridView ? 'Switch to List' : 'Switch to Grid',
+                        onPressed: () => setState(() => _isGridView = !_isGridView),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 3. Dynamic Items (List View or Grid View)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
+                  child: _isGridView
+                      ? _buildGridView(context, libraryProvider, isDark, isYoutube)
+                      : _buildListView(context, libraryProvider, isDark, isYoutube),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 48)),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String key, String label, bool isDark) {
+    final isSelected = _selectedFilter == key;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = isSelected ? null : key;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1DB954)
+              : (isDark ? const Color(0xFF282828) : const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildListView(BuildContext context, LibraryProvider libraryProvider, bool isDark, bool isYoutube) {
+    final offlineService = OfflineService();
+    final downloadedCount = offlineService.getDownloadedSongIds().length;
+
+    var playlists = libraryProvider.playlists;
+    var albums = libraryProvider.recentAlbums;
+    var artists = libraryProvider.artists;
+
+    // Apply Sorting
+    playlists = _sortList(playlists, (p) => p.name);
+    albums = _sortList(albums, (a) => a.name);
+    artists = _sortList(artists, (a) => a.name);
+
+    return Column(
+      children: [
+        // Pinned Liked Songs tile (if no filter or Playlists filter)
+        if (_selectedFilter == null || _selectedFilter == 'Playlists') ...[
+          _buildPinnedItemTile(
+            title: 'Liked Songs',
+            subtitle: '📌 Playlist • Favorites',
+            gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+            icon: CupertinoIcons.heart_fill,
+            onTap: () => _navigate(context, const FavoritesScreen()),
+          ),
+        ],
+
+        // Pinned Downloaded tile (if no filter or Downloaded filter)
+        if (_selectedFilter == null || _selectedFilter == 'Downloaded') ...[
+          _buildPinnedItemTile(
+            title: 'Downloaded Songs',
+            subtitle: '📌 $downloadedCount songs saved offline',
+            gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
+            icon: CupertinoIcons.arrow_down_circle_fill,
+            onTap: () => _navigate(context, const DownloadsScreen()),
+          ),
+        ],
+
+        // Playlists
+        if (_selectedFilter == null || _selectedFilter == 'Playlists') ...[
+          ...playlists.map((playlist) {
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: PlaylistArtwork(playlist: playlist, size: 54),
+                ),
+              ),
+              title: Text(
+                playlist.name,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                'Playlist • ${playlist.songCount ?? 0} songs',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                ),
+              ),
+              onTap: () => _navigate(context, PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name)),
+            );
+          }),
+        ],
+
+        // Albums (only on server mode or when filtered)
+        if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums') ...[
+          ...albums.map((album) {
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              leading: AlbumArtwork(
+                coverArt: album.coverArt,
+                size: 54,
+                borderRadius: 6,
+              ),
+              title: Text(
+                album.name,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                'Album • ${album.artist}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                ),
+              ),
+              onTap: () => _navigate(context, AlbumScreen(albumId: album.id)),
+            );
+          }),
+        ],
+
+        // Artists (only on server mode or when filtered)
+        if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists') ...[
+          ...artists.map((artist) {
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              leading: AlbumArtwork(
+                coverArt: artist.coverArt ??
+                    artist.artistImageUrl ??
+                    (artist.id.isNotEmpty ? 'ar-${artist.id}' : null),
+                size: 54,
+                borderRadius: 999,
+              ),
+              title: Text(
+                artist.name,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                'Artist',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                ),
+              ),
+              onTap: () => _navigate(context, ArtistScreen(artistId: artist.id)),
+            );
+          }),
+        ],
+
+        // Folders when no filter selected
+        if (_selectedFilter == null && !isYoutube) ...[
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            leading: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(CupertinoIcons.antenna_radiowaves_left_right, color: Color(0xFF34C759), size: 24),
+            ),
+            title: const Text('Radio Stations', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            subtitle: const Text('Radios', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            onTap: () => _navigate(context, const RadioScreen()),
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            leading: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9500).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(CupertinoIcons.star_fill, color: Color(0xFFFF9500), size: 24),
+            ),
+            title: const Text('Liked Albums', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            subtitle: const Text('Albums', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            onTap: () => _navigate(context, const LikedAlbumsScreen()),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPinnedItemTile({
+    required String title,
+    required String subtitle,
+    required List<Color> gradientColors,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      leading: Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: gradientColors),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 13, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildGridView(BuildContext context, LibraryProvider libraryProvider, bool isDark, bool isYoutube) {
+    final cols = _isDesktop ? 4 : 2;
+
+    var playlists = libraryProvider.playlists;
+    var albums = libraryProvider.recentAlbums;
+    var artists = libraryProvider.artists;
+
+    playlists = _sortList(playlists, (p) => p.name);
+    albums = _sortList(albums, (a) => a.name);
+    artists = _sortList(artists, (a) => a.name);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = 12.0;
+        final cardWidth = (constraints.maxWidth - spacing * (cols - 1)) / cols;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 16,
+          children: [
+            // Pinned Liked Songs Card
+            if (_selectedFilter == null || _selectedFilter == 'Playlists')
+              SizedBox(
+                width: cardWidth,
+                child: _buildGridItemCard(
+                  title: 'Liked Songs',
+                  subtitle: 'Playlist • Favorites',
+                  customArtwork: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 36),
+                    ),
+                  ),
+                  onTap: () => _navigate(context, const FavoritesScreen()),
+                ),
+              ),
+
+            // Playlists
+            if (_selectedFilter == null || _selectedFilter == 'Playlists')
+              ...playlists.map((playlist) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: _buildGridItemCard(
+                    title: playlist.name,
+                    subtitle: 'Playlist • Musly',
+                    customArtwork: PlaylistArtwork(playlist: playlist, size: cardWidth),
+                    onTap: () => _navigate(context, PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name)),
+                  ),
+                );
+              }),
+
+            // Albums (only on server mode or when filtered)
+            if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums')
+              ...albums.map((album) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: _buildGridItemCard(
+                    title: album.name,
+                    subtitle: 'Album • ${album.artist}',
+                    imageUrl: album.coverArt,
+                    onTap: () => _navigate(context, AlbumScreen(albumId: album.id)),
+                  ),
+                );
+              }),
+
+            // Artists (only on server mode or when filtered)
+            if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists')
+              ...artists.map((artist) {
+                final coverArt = artist.coverArt ??
+                    artist.artistImageUrl ??
+                    (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
+                return SizedBox(
+                  width: cardWidth,
+                  child: _buildGridItemCard(
+                    title: artist.name,
+                    subtitle: 'Artist',
+                    imageUrl: coverArt,
+                    isRound: true,
+                    onTap: () => _navigate(context, ArtistScreen(artistId: artist.id)),
+                  ),
+                );
+              }),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGridItemCard({
+    required String title,
+    required String subtitle,
+    String? imageUrl,
+    Widget? customArtwork,
+    bool isRound = false,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        crossAxisAlignment: isRound ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: customArtwork ??
+                AlbumArtwork(
+                  coverArt: imageUrl,
+                  size: 240,
+                  borderRadius: isRound ? 999 : 8,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<T> _sortList<T>(List<T> items, String Function(T) nameSelector) {
+    final list = List<T>.from(items);
+    switch (_currentSort) {
+      case _SortOption.alphabetical:
+        list.sort((a, b) => nameSelector(a).toLowerCase().compareTo(nameSelector(b).toLowerCase()));
+        break;
+      case _SortOption.recents:
+      case _SortOption.recentlyAdded:
+      case _SortOption.creator:
+        // Preserves default recent or natural order
+        break;
+    }
+    return list;
   }
 }

@@ -6,13 +6,16 @@ import '../models/music_folder.dart';
 import '../models/server_config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/library_provider.dart';
 import '../services/jukebox_service.dart';
 import '../services/subsonic_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import 'jukebox_screen.dart';
+import 'add_server_screen.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../widgets/settings/settings_icon_badge.dart';
+import '../widgets/settings/server_switcher_sheet.dart';
 import '../utils/context_extensions.dart';
 
 class SettingsServerTab extends StatefulWidget {
@@ -28,57 +31,34 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context);
-    final serverType = authProvider.config?.serverType;
-    final serverVersion = authProvider.config?.serverVersion;
+    final currentConfig = authProvider.config;
 
-    String serverSubtitle = 'Subsonic API';
-    if (serverType != null && serverType.isNotEmpty) {
-      serverSubtitle = serverType;
-      if (serverVersion != null && serverVersion.isNotEmpty) {
-        serverSubtitle += ' $serverVersion';
-      }
-    }
+    final isYoutube =
+        currentConfig?.isYoutube == true ||
+        Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        SettingsSectionCard(
-          title: l10n.sectionServerConnection,
-          children: [
-            _buildInfoTile(
-              icon: CupertinoIcons.cloud,
-              iconColor: Theme.of(context).colorScheme.primary,
-              title: l10n.serverType,
-              subtitle: serverSubtitle,
-            ),
-            const SettingsDivider(),
-            _buildInfoTile(
-              icon: CupertinoIcons.link,
-              iconColor: const Color(0xFF007AFF),
-              title: l10n.serverUrl,
-              subtitle: authProvider.config?.serverUrl ?? l10n.notConnected,
-            ),
-            const SettingsDivider(),
-            _buildInfoTile(
-              icon: CupertinoIcons.person,
-              iconColor: const Color(0xFF34C759),
-              title: l10n.username,
-              subtitle: authProvider.config?.username ?? l10n.unknown,
-            ),
-          ],
-        ),
+        _buildActiveServerCard(context, authProvider, currentConfig, isYoutube),
+
         const SizedBox(height: 24),
-        _buildSavedProfilesSection(),
-        const SizedBox(height: 24),
-        SettingsSectionCard(
-          title: l10n.sectionMusicFolders,
-          children: [_buildMusicFoldersButton()],
-        ),
-        const SizedBox(height: 24),
-        SettingsSectionCard(
-          title: l10n.sectionJukebox,
-          children: [_buildJukeboxSection()],
-        ),
+
+        _buildSavedServersSection(context, authProvider, currentConfig),
+
+        if (!isYoutube) ...[
+          const SizedBox(height: 24),
+          SettingsSectionCard(
+            title: l10n.sectionMusicFolders,
+            children: [_buildMusicFoldersButton()],
+          ),
+          const SizedBox(height: 24),
+          SettingsSectionCard(
+            title: l10n.sectionJukebox,
+            children: [_buildJukeboxSection()],
+          ),
+        ],
+
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: l10n.sectionAccount,
@@ -89,35 +69,356 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     );
   }
 
-  Widget _buildInfoTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-  }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildActiveServerCard(
+    BuildContext context,
+    AuthProvider authProvider,
+    ServerConfig? config,
+    bool isYoutube,
+  ) {
+    final isDark = context.isDark;
+
+    final (IconData icon, List<Color> gradient, String serviceLabel) = isYoutube
+        ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)], 'YT Stream')
+        : config?.isJellyfin == true
+            ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)], 'Jellyfin')
+            : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)], config?.serverType ?? 'Navidrome / Subsonic');
+
+    final serverName = config?.displayServerName ?? serviceLabel;
+    final displayUrl = config?.displayUrl ?? (isYoutube ? 'YT Stream' : 'Not Connected');
+
+    final isConnected = authProvider.state == AuthState.authenticated;
+    final isAuthenticating = authProvider.state == AuthState.authenticating;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
         ),
-        child: Icon(icon, color: iconColor, size: 18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 14),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              serverName,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: (isConnected ? const Color(0xFF34C759) : Colors.orange)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.circle_fill,
+                                  size: 6,
+                                  color: isConnected ? const Color(0xFF34C759) : Colors.orange,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isConnected
+                                      ? 'CONNECTED'
+                                      : isAuthenticating
+                                          ? 'CONNECTING'
+                                          : 'OFFLINE',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: isConnected ? const Color(0xFF34C759) : Colors.orange,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              displayUrl,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                FilledButton.tonalIcon(
+                  onPressed: () => ServerSwitcherSheet.show(context),
+                  icon: const Icon(CupertinoIcons.arrow_2_squarepath, size: 14),
+                  label: const Text('Switch'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (!isYoutube && config != null) ...[
+            Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(CupertinoIcons.person_fill, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                  const SizedBox(width: 6),
+                  Text(
+                    config.username,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (config.serverVersion != null && config.serverVersion!.isNotEmpty) ...[
+                    Icon(CupertinoIcons.info_circle, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                    const SizedBox(width: 6),
+                    Text(
+                      'v${config.serverVersion}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
+    );
+  }
+
+  Widget _buildSavedServersSection(
+    BuildContext context,
+    AuthProvider authProvider,
+    ServerConfig? currentConfig,
+  ) {
+    final isDark = context.isDark;
+
+    return FutureBuilder<List<ServerConfig>>(
+      future: authProvider.getSavedProfiles(),
+      builder: (context, snapshot) {
+        var profiles = snapshot.data ?? [];
+        if (currentConfig != null &&
+            !profiles.any((p) =>
+                (p.isYoutube && currentConfig.isYoutube) ||
+                (p.serverUrl == currentConfig.serverUrl && p.username == currentConfig.username))) {
+          profiles = [currentConfig, ...profiles];
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'SAVED SERVERS & SERVICES',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? AppTheme.darkSecondaryText
+                          : AppTheme.lightSecondaryText,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => ServerSwitcherSheet.show(context),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Text(
+                        'Manage',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkSurface : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Column(
+                  children: [
+                    ...profiles.map((profile) {
+                      final isActive = (profile.isYoutube && currentConfig?.isYoutube == true) ||
+                          (currentConfig?.serverUrl == profile.serverUrl &&
+                              currentConfig?.username == profile.username);
+
+                      final (IconData pIcon, List<Color> pGradient) = profile.isYoutube
+                          ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)])
+                          : profile.isJellyfin
+                              ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)])
+                              : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)]);
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                            leading: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: pGradient),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(pIcon, color: Colors.white, size: 18),
+                            ),
+                            title: Text(
+                              profile.displayServerName,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              profile.displayUrl,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                              ),
+                            ),
+                            trailing: isActive
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'ACTIVE',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF34C759),
+                                      ),
+                                    ),
+                                  )
+                                : Icon(
+                                    CupertinoIcons.arrow_2_squarepath,
+                                    size: 16,
+                                    color: isDark ? Colors.white38 : Colors.black38,
+                                  ),
+                            onTap: isActive
+                                ? null
+                                : () async {
+                                    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                                    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                                    await playerProvider.stop();
+                                    await authProvider.switchProfile(profile);
+                                    await libraryProvider.refresh();
+                                  },
+                          ),
+                          if (profile != profiles.last)
+                            Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                        ],
+                      );
+                    }),
+                    Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      leading: Icon(
+                        CupertinoIcons.plus_circle_fill,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 24,
+                      ),
+                      title: Text(
+                        'Add Server / Service',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      trailing: const Icon(CupertinoIcons.chevron_right, size: 14),
+                      onTap: () => NavigationHelper.push(context, const AddServerScreen()),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -188,9 +489,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               vertical: 4,
             ),
             secondary: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6000)],
-        icon: CupertinoIcons.speaker_2,
-      ),
+              gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6000)],
+              icon: CupertinoIcons.speaker_2,
+            ),
             title: Text(l10n.jukeboxMode, style: const TextStyle(fontSize: 16)),
             subtitle: Text(
               l10n.jukeboxModeSubtitle,
@@ -276,148 +577,6 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSavedProfilesSection() {
-    return FutureBuilder<List<ServerConfig>>(
-      future: Provider.of<AuthProvider>(context, listen: false).getSavedProfiles(),
-      builder: (context, snapshot) {
-        final profiles = snapshot.data ?? [];
-        if (profiles.isEmpty) return const SizedBox.shrink();
-
-        final l10n = AppLocalizations.of(context)!;
-        final authProvider = Provider.of<AuthProvider>(context);
-        final currentConfig = authProvider.config;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(
-                l10n.sectionSavedProfiles,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: context.isDark
-                      ? AppTheme.darkSecondaryText
-                      : AppTheme.lightSecondaryText,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ),
-              Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: context.isDark ? AppTheme.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Column(
-                  children: [
-                    ...profiles.map((profile) {
-                      final isActive = currentConfig?.serverUrl == profile.serverUrl &&
-                          currentConfig?.username == profile.username;
-                      final label = profile.name?.isNotEmpty == true
-                          ? profile.name!
-                          : '${profile.username}@${Uri.tryParse(profile.serverUrl)?.host ?? profile.serverUrl}';
-
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        leading: Icon(
-                          isActive
-                              ? CupertinoIcons.checkmark_circle_fill
-                              : CupertinoIcons.person_crop_circle,
-                          color: isActive
-                              ? const Color(0xFF34C759)
-                              : (context.isDark
-                                  ? AppTheme.darkSecondaryText
-                                  : AppTheme.lightSecondaryText),
-                        ),
-                        title: Text(
-                          label,
-                          style: TextStyle(
-                            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                            color: isActive
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                          ),
-                        ),
-                        subtitle: Text(
-                          profile.serverUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.isDark
-                                ? AppTheme.darkSecondaryText
-                                : AppTheme.lightSecondaryText,
-                          ),
-                        ),
-                        trailing: isActive
-                            ? const Icon(CupertinoIcons.checkmark,
-                                color: Color(0xFF34C759), size: 18)
-                            : null,
-                        onTap: isActive
-                            ? null
-                            : () async {
-                                final confirmed = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: Text(l10n.switchProfile),
-                                    content: Text(l10n.switchProfileConfirmation(label)),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx, false),
-                                        child: Text(l10n.cancel),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx, true),
-                                        child: Text(l10n.ok),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                if (confirmed == true) {
-                                  if (!context.mounted) return;
-                                  final playerProvider =
-                                      Provider.of<PlayerProvider>(context, listen: false);
-                                  await playerProvider.stop();
-                                  await authProvider.switchProfile(profile);
-                                }
-                              },
-                      );
-                    }),
-                    Divider(height: 1, color: context.isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      leading: Icon(
-                        CupertinoIcons.plus_circle,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      title: Text(
-                        l10n.addProfile,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      onTap: () {
-                        // Navigate to login screen to add new profile
-                        final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-                        playerProvider.stop();
-                        authProvider.disconnect();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         );
       },
     );

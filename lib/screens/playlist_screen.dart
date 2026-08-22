@@ -6,6 +6,7 @@ import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
 import '../services/favorite_playlists_service.dart';
+import '../services/playlist_cover_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import '../l10n/app_localizations.dart';
@@ -30,6 +31,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   bool _isLoading = true;
   bool _isSelecting = false;
   bool _isReordering = false;
+  bool _showSearch = false;
+  String _searchQuery = '';
   final Set<int> _selectedIndices = {};
 
   bool _allDownloaded = false;
@@ -68,6 +71,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       context,
       listen: false,
     );
+    final subsonicService = Provider.of<SubsonicService>(
+      context,
+      listen: false,
+    );
 
     try {
       final playlist = await libraryProvider.getPlaylist(widget.playlistId);
@@ -77,6 +84,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
           _isLoading = false;
         });
         _updateDownloadState();
+      }
+      if (playlist.songs != null && playlist.songs!.isNotEmpty) {
+        PlaylistCoverService().checkAndGenerateCover(
+          playlistId: widget.playlistId,
+          songs: playlist.songs!,
+          subsonicService: subsonicService,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -104,18 +118,23 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       listen: false,
     );
     try {
+      final updatedSongs = List<Song>.from(_playlist!.songs!)
+        ..removeAt(index);
       await subsonicService.updatePlaylist(
         playlistId: widget.playlistId,
         songIndexesToRemove: [index],
       );
       setState(() {
-        final updatedSongs = List<Song>.from(_playlist!.songs!)
-          ..removeAt(index);
         _playlist = _playlist!.copyWith(
           songCount: updatedSongs.length,
           songs: updatedSongs,
         );
       });
+      PlaylistCoverService().checkAndGenerateCover(
+        playlistId: widget.playlistId,
+        songs: updatedSongs,
+        subsonicService: subsonicService,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -160,12 +179,19 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       listen: false,
     );
 
+    final updatedSongs = List<Song>.from(_playlist!.songs!);
+    final song = updatedSongs.removeAt(oldIndex);
+    updatedSongs.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, song);
+
     setState(() {
-      final updatedSongs = List<Song>.from(_playlist!.songs!);
-      final song = updatedSongs.removeAt(oldIndex);
-      updatedSongs.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, song);
       _playlist = _playlist!.copyWith(songs: updatedSongs);
     });
+
+    PlaylistCoverService().checkAndGenerateCover(
+      playlistId: widget.playlistId,
+      songs: updatedSongs,
+      subsonicService: subsonicService,
+    );
 
     try {
       await subsonicService.updatePlaylist(
@@ -423,24 +449,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       final allDownloaded = downloaded.contains(widget.playlistId);
                       return Stack(
                         children: [
-                          Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: _playlist!.coverArt != null
-                                ? AlbumArtwork(
-                                    coverArt: _playlist!.coverArt,
-                                    size: 150,
-                                    borderRadius: 12,
-                                  )
-                                : const Icon(
-                                    CupertinoIcons.music_note_list,
-                                    color: AppTheme.appleMusicRed,
-                                    size: 64,
-                                  ),
+                          PlaylistArtwork(
+                            playlist: _playlist,
+                            songs: _playlist?.songs,
+                            size: 150,
+                            borderRadius: 12,
                           ),
                           if (allDownloaded)
                             Positioned(
@@ -562,35 +575,56 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 40,
-                      left: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                      right: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                      bottom: ScreenHelper.isSmallScreen(context) ? 60 : 80,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.appleMusicRed.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
+              collapseMode: CollapseMode.pin,
+              background: LayoutBuilder(
+                builder: (context, constraints) {
+                  final topPadding = MediaQuery.of(context).padding.top;
+                  final isSmall = ScreenHelper.isSmallScreen(context);
+                  final minHeight = kToolbarHeight + topPadding;
+                  final maxHeight = isSmall ? 280.0 : 360.0;
+                  final currentHeight = constraints.maxHeight;
+                  final delta = (maxHeight - minHeight).clamp(1.0, 999.0);
+                  final progress = ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
+
+                  final maxArtSize = isSmall ? 190.0 : 240.0;
+                  final availableHeight = (currentHeight - topPadding - (isSmall ? 16.0 : 24.0)).clamp(0.0, maxHeight);
+                  final artDimension = (maxArtSize * progress).clamp(0.0, availableHeight);
+                  final opacity = (progress * 1.3 - 0.1).clamp(0.0, 1.0);
+
+                  if (artDimension <= 10.0 || opacity <= 0.0) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: topPadding + (isSmall ? 8.0 : 12.0) * progress,
+                        bottom: (isSmall ? 10.0 : 16.0) * progress,
                       ),
-                      child: _playlist!.coverArt != null
-                          ? AlbumArtwork(
-                              coverArt: _playlist!.coverArt,
-                              size: 150,
-                              borderRadius: 12,
-                            )
-                          : const Icon(
-                              CupertinoIcons.music_note_list,
-                              color: AppTheme.appleMusicRed,
-                              size: 64,
-                            ),
+                      child: Opacity(
+                        opacity: opacity,
+                        child: SizedBox.square(
+                          dimension: artDimension,
+                          child: PlaylistArtwork(
+                            playlist: _playlist,
+                            songs: _playlist?.songs,
+                            size: artDimension,
+                            borderRadius: (14.0 * progress).clamp(4.0, 14.0),
+                            shadow: progress > 0.3
+                                ? BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: (isDark ? 0.35 : 0.2) * progress,
+                                    ),
+                                    blurRadius: 16.0 * progress,
+                                    offset: Offset(0, 8.0 * progress),
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
             actions: [
@@ -615,6 +649,44 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       _selectedIndices.isNotEmpty ? _removeSelected : null,
                 ),
               ] else ...[
+                IconButton(
+                  tooltip: 'Cerca nella playlist',
+                  icon: Icon(_showSearch ? CupertinoIcons.search_circle_fill : CupertinoIcons.search),
+                  onPressed: () {
+                    setState(() {
+                      _showSearch = !_showSearch;
+                      if (!_showSearch) _searchQuery = '';
+                    });
+                  },
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(CupertinoIcons.ellipsis_circle),
+                  tooltip: 'Altro',
+                  onSelected: (value) {
+                    if (value == 'queue_all') {
+                      final songs = _playlist?.songs ?? [];
+                      final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                      for (final s in songs) {
+                        playerProvider.addToQueue(s);
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${songs.length} brani aggiunti alla coda')),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'queue_all',
+                      child: Row(
+                        children: [
+                          Icon(CupertinoIcons.text_badge_plus, size: 18),
+                          SizedBox(width: 12),
+                          Text('Aggiungi tutti alla coda'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 AnimatedBuilder(
                   animation: FavoritePlaylistsService(),
                   builder: (context, child) {
@@ -691,6 +763,18 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       ),
                     ],
                   ),
+                  if (_showSearch) ...[
+                    const SizedBox(height: 16),
+                    CupertinoSearchTextField(
+                      placeholder: 'Filtra brani...',
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().toLowerCase();
+                        });
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 24),
                 ],
               ),
@@ -752,64 +836,53 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               ),
             )
           else
-            SliverFixedExtentList(
-              itemExtent: 68.0,
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = _playlist!.songs![index];
-                  final tile = SongTile(
-                    song: song,
-                    playlist: _playlist!.songs,
-                    index: index,
-                    showArtist: true,
-                    onLongPress: () {
-                      _toggleSelectMode();
-                      _toggleSelection(index);
+            Builder(
+              builder: (context) {
+                final allSongs = _playlist!.songs!;
+                final displaySongs = _searchQuery.isEmpty
+                    ? allSongs
+                    : allSongs.where((s) => s.title.toLowerCase().contains(_searchQuery) || (s.artist?.toLowerCase().contains(_searchQuery) ?? false)).toList();
+
+                return SliverFixedExtentList(
+                  itemExtent: 68.0,
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final song = displaySongs[index];
+                      final tile = SongTile(
+                        song: song,
+                        playlist: displaySongs,
+                        index: index,
+                        showArtist: true,
+                        onLongPress: () {
+                          _toggleSelectMode();
+                          _toggleSelection(index);
+                        },
+                      );
+                      return Dismissible(
+                        key: ValueKey('${song.id}_$index'),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          color: Colors.red,
+                          child: const Icon(
+                            CupertinoIcons.trash,
+                            color: Colors.white,
+                          ),
+                        ),
+                        onDismissed: (_) {
+                          final originalIndex = _playlist!.songs!.indexOf(song);
+                          if (originalIndex != -1) {
+                            _removeSongFromPlaylist(originalIndex);
+                          }
+                        },
+                        child: tile,
+                      );
                     },
-                  );
-                  return Dismissible(
-                    key: ValueKey('${song.id}_$index'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      color: Colors.red,
-                      child: const Icon(
-                        CupertinoIcons.trash,
-                        color: Colors.white,
-                      ),
-                    ),
-                    confirmDismiss: (_) async {
-                      return await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Remove from playlist'),
-                              content: Text(
-                                'Remove "${song.title}" from this playlist?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text(
-                                    'Remove',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ) ??
-                          false;
-                    },
-                    onDismissed: (_) => _removeSongFromPlaylist(index),
-                    child: tile,
-                  );
-                },
-                childCount: _playlist!.songs!.length,
-              ),
+                    childCount: displaySongs.length,
+                  ),
+                );
+              },
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 150)),
         ],

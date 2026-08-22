@@ -69,7 +69,9 @@ class _ArtistCardState extends State<ArtistCard> {
                       children: [
                         ClipOval(
                           child: AlbumArtwork(
-                            coverArt: widget.artist.coverArt,
+                            coverArt: widget.artist.coverArt ??
+                                widget.artist.artistImageUrl ??
+                                (widget.artist.id.isNotEmpty ? 'ar-${widget.artist.id}' : null),
                             size: widget.size,
                             borderRadius: widget.size / 2,
                             shadow: const BoxShadow(color: Colors.transparent),
@@ -170,7 +172,9 @@ class ArtistTile extends StatelessWidget {
         decoration: const BoxDecoration(shape: BoxShape.circle),
         child: ClipOval(
           child: AlbumArtwork(
-            coverArt: artist.coverArt,
+            coverArt: artist.coverArt ??
+                artist.artistImageUrl ??
+                (artist.id.isNotEmpty ? 'ar-${artist.id}' : null),
             size: 50,
             borderRadius: 25,
             shadow: const BoxShadow(color: Colors.transparent),

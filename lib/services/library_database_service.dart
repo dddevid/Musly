@@ -13,7 +13,7 @@ import '../models/models.dart';
 /// millions of rows can be written without spikes in memory usage.
 class LibraryDatabaseService {
   static const String _dbName = 'musly_library.db';
-  static const int _dbVersion = 2; // bumped from 1 after schema changes
+  static const int _dbVersion = 3; // bumped to 3 for starred albums
   static const int _batchSize = 1000;
 
   Database? _db;
@@ -49,6 +49,12 @@ class LibraryDatabaseService {
       try {
         await db.execute(
             'ALTER TABLE songs ADD COLUMN userRating INTEGER');
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute(
+            'ALTER TABLE albums ADD COLUMN starred INTEGER DEFAULT 0');
       } catch (_) {}
     }
   }
@@ -97,6 +103,7 @@ class LibraryDatabaseService {
         genre TEXT,
         created TEXT,
         isLocal INTEGER DEFAULT 0,
+        starred INTEGER DEFAULT 0,
         artistParticipants TEXT
       )
     ''');
@@ -326,7 +333,13 @@ class LibraryDatabaseService {
   }
 
   Future<void> setAlbumStarred(String albumId, bool starred) async {
-    // Albums can be queried or tagged as needed
+    final db = await database;
+    await db.update(
+      'albums',
+      {'starred': starred ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [albumId],
+    );
   }
 
   Future<List<Song>> getStarredSongs() async {
@@ -337,7 +350,7 @@ class LibraryDatabaseService {
 
   Future<List<Album>> getStarredAlbums() async {
     final db = await database;
-    final maps = await db.query('albums');
+    final maps = await db.query('albums', where: 'starred = 1');
     return maps.map((m) => _albumFromMap(m)).toList();
   }
 
@@ -414,14 +427,14 @@ class LibraryDatabaseService {
     });
   }
 
-  /// Clear only server-side data, preserving local library entries.
+  /// Clear only server-side data, preserving local library entries and user favorites/playlists.
   Future<void> clearServerData() async {
     final db = await database;
     await db.transaction((txn) async {
-      await txn.delete('songs', where: 'isLocal = ?', whereArgs: [0]);
-      await txn.delete('albums', where: 'isLocal = ?', whereArgs: [0]);
-      await txn.delete('artists', where: 'isLocal = ?', whereArgs: [0]);
-      await txn.delete('playlists');
+      await txn.delete('songs', where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
+      await txn.delete('albums', where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
+      await txn.delete('artists', where: 'isLocal = 0');
+      await txn.delete('playlists', where: "owner != 'Local' AND owner IS NOT NULL");
     });
   }
 
@@ -524,6 +537,7 @@ class LibraryDatabaseService {
       'genre': album.genre,
       'created': album.created?.toIso8601String(),
       'isLocal': album.isLocal ? 1 : 0,
+      'starred': album.starred == true ? 1 : 0,
       'artistParticipants': album.artistParticipants != null
           ? jsonEncode(
               album.artistParticipants!.map((a) => a.toJson()).toList(),
@@ -548,6 +562,7 @@ class LibraryDatabaseService {
           ? DateTime.tryParse(m['created'] as String)
           : null,
       isLocal: (m['isLocal'] as int?) == 1,
+      starred: (m['starred'] as int?) == 1,
       artistParticipants: participantsJson != null
           ? ArtistRef.parseList(jsonDecode(participantsJson))
           : null,
@@ -581,18 +596,22 @@ class LibraryDatabaseService {
   // ── Helpers: Playlist ─────────────────────────────────────────────────
 
   Map<String, dynamic> _playlistToMap(Playlist playlist) {
+    String? songIdsVal;
+    if (playlist.songs != null && playlist.songs!.isNotEmpty) {
+      songIdsVal = jsonEncode(playlist.songs!.map((s) => s.toJson()).toList());
+    }
     return {
       'id': playlist.id,
       'name': playlist.name,
       'comment': playlist.comment,
       'owner': playlist.owner,
       'public': playlist.public == true ? 1 : 0,
-      'songCount': playlist.songCount,
+      'songCount': playlist.songCount ?? playlist.songs?.length,
       'duration': playlist.duration,
       'created': playlist.created?.toIso8601String(),
       'changed': playlist.changed?.toIso8601String(),
       'coverArt': playlist.coverArt,
-      'songIds': playlist.songs?.map((s) => s.id).toList().join(','),
+      'songIds': songIdsVal,
     };
   }
 
@@ -600,9 +619,18 @@ class LibraryDatabaseService {
     final songIdsStr = m['songIds'] as String?;
     List<Song>? songList;
     if (songIdsStr != null && songIdsStr.isNotEmpty) {
-      songList = songIdsStr
+      if (songIdsStr.startsWith('[')) {
+        try {
+          final List<dynamic> decoded = jsonDecode(songIdsStr);
+          songList = decoded
+              .map((s) => Song.fromJson(s as Map<String, dynamic>))
+              .toList();
+        } catch (_) {}
+      }
+      songList ??= songIdsStr
           .split(',')
-          .map((id) => Song(id: id, title: 'Unknown'))
+          .where((id) => id.isNotEmpty)
+          .map((id) => Song(id: id, title: 'Track'))
           .toList();
     }
     return Playlist(
@@ -611,7 +639,7 @@ class LibraryDatabaseService {
       comment: m['comment'] as String?,
       owner: m['owner'] as String?,
       public: (m['public'] as int?) == 1,
-      songCount: m['songCount'] as int?,
+      songCount: m['songCount'] as int? ?? songList?.length,
       duration: m['duration'] as int?,
       created: m['created'] != null
           ? DateTime.tryParse(m['created'] as String)
