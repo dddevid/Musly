@@ -18,7 +18,7 @@ import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
-import 'widgets/privacy_policy_dialog.dart';
+import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'package:dynamic_color/dynamic_color.dart';

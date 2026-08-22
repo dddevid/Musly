@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../cast_button.dart';
+import 'package:musly/widgets/navigation/cast_button.dart';
 
 class NowPlayingBottomActions extends StatelessWidget {
   final VoidCallback onLyricsTap;

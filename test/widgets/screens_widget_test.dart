@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/screens/all_songs_screen.dart';
-import 'package:musly/screens/library_screen.dart';
-import 'package:musly/screens/playlists_screen.dart';
-import 'package:musly/screens/settings_screen.dart';
+import 'package:musly/screens/media/song_collection_screen.dart';
+import 'package:musly/screens/main/library_screen.dart';
+import 'package:musly/screens/media/playlists_screen.dart';
+import 'package:musly/screens/settings/settings_screen.dart';
 
 import '../test_helpers.dart';
 import '../bootstrap.dart';

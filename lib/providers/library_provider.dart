@@ -6,7 +6,7 @@ import '../models/models.dart';
 import '../services/services.dart';
 import '../services/audio_handler.dart';
 import '../services/local_music_service.dart';
-import '../widgets/album_artwork.dart';
+import 'package:musly/widgets/common/album_artwork.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;

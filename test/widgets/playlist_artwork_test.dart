@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/models.dart';
-import 'package:musly/widgets/playlist_artwork.dart';
+import 'package:musly/widgets/common/playlist_artwork.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../test_helpers.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/support_dialog.dart';
+import 'package:musly/widgets/dialogs/support_dialog.dart';
 
 /// Service to track app usage time and show support dialog after 8 minutes
 class UsageTimeService extends ChangeNotifier with WidgetsBindingObserver {
