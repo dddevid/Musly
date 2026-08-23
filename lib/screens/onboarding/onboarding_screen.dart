@@ -181,13 +181,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _onNextPressed() {
-    if (_currentPage < _slides.length - 1) {
-      HapticFeedback.lightImpact();
-      _pageController.nextPage(
+  void _goToPage(int page) {
+    if (page < 0 || page >= _slides.length) return;
+    HapticFeedback.lightImpact();
+    setState(() => _currentPage = page);
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        page,
         duration: const Duration(milliseconds: 380),
         curve: Curves.easeInOutCubic,
       );
+    }
+  }
+
+  void _onNextPressed() {
+    if (_currentPage < _slides.length - 1) {
+      _goToPage(_currentPage + 1);
     } else {
       _completeOnboarding();
     }
@@ -195,11 +204,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _onPrevPressed() {
     if (_currentPage > 0) {
-      HapticFeedback.lightImpact();
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 380),
-        curve: Curves.easeInOutCubic,
-      );
+      _goToPage(_currentPage - 1);
     }
   }
 
@@ -410,91 +415,104 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Headline
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 38,
-                                fontWeight: FontWeight.w800,
-                                height: 1.15,
-                                letterSpacing: -0.8,
-                                color: Colors.white,
-                              ),
-                              children: [
-                                TextSpan(text: currentItem.titlePrefix),
-                                TextSpan(
-                                  text: currentItem.titleHighlight,
-                                  style: TextStyle(
-                                    color: currentItem.highlightColor,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          // Subtitle
-                          Text(
-                            currentItem.description,
-                            style: TextStyle(
-                              fontSize: 15.5,
-                              height: 1.5,
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Feature Bullet List
-                          ...currentItem.features.map((feature) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 320),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            child: KeyedSubtree(
+                              key: ValueKey<int>(_currentPage),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: currentItem.highlightColor.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(
-                                      feature.icon,
-                                      color: currentItem.highlightColor,
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  // Headline
+                                  RichText(
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                        fontSize: 38,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1.15,
+                                        letterSpacing: -0.8,
+                                        color: Colors.white,
+                                      ),
                                       children: [
-                                        Text(
-                                          feature.title,
-                                          style: const TextStyle(
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          feature.description,
+                                        TextSpan(text: currentItem.titlePrefix),
+                                        TextSpan(
+                                          text: currentItem.titleHighlight,
                                           style: TextStyle(
-                                            fontSize: 12.5,
-                                            color: Colors.white.withValues(alpha: 0.55),
+                                            color: currentItem.highlightColor,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
+
+                                  const SizedBox(height: 14),
+
+                                  // Subtitle
+                                  Text(
+                                    currentItem.description,
+                                    style: TextStyle(
+                                      fontSize: 15.5,
+                                      height: 1.5,
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  // Feature Bullet List
+                                  ...currentItem.features.map((feature) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: currentItem.highlightColor.withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: Icon(
+                                              feature.icon,
+                                              color: currentItem.highlightColor,
+                                              size: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  feature.title,
+                                                  style: const TextStyle(
+                                                    fontSize: 14.5,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  feature.description,
+                                                  style: TextStyle(
+                                                    fontSize: 12.5,
+                                                    color: Colors.white.withValues(alpha: 0.55),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
                                 ],
                               ),
-                            );
-                          }),
+                            ),
+                          ),
 
                           const SizedBox(height: 28),
 
@@ -506,13 +524,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 children: List.generate(_slides.length, (index) {
                                   final isActive = index == _currentPage;
                                   return GestureDetector(
-                                    onTap: () {
-                                      _pageController.animateToPage(
-                                        index,
-                                        duration: const Duration(milliseconds: 380),
-                                        curve: Curves.easeInOutCubic,
-                                      );
-                                    },
+                                    onTap: () => _goToPage(index),
                                     child: AnimatedContainer(
                                       duration: const Duration(milliseconds: 260),
                                       margin: const EdgeInsets.only(right: 8),
