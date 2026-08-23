@@ -1,0 +1,55 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run Flutter tests and static analysis"
+  lane :test do
+    Dir.chdir("../..") do
+      sh("flutter", "analyze")
+      sh("flutter", "test")
+    end
+  end
+
+  desc "Build Release APK"
+  lane :build_apk do
+    Dir.chdir("../..") do
+      sh("flutter", "build", "apk", "--release")
+    end
+  end
+
+  desc "Build Release App Bundle (AAB)"
+  lane :build_bundle do
+    Dir.chdir("../..") do
+      sh("flutter", "build", "appbundle", "--release")
+    end
+  end
+
+  desc "Build and deploy to Google Play Internal track"
+  lane :internal do
+    build_bundle
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Build and deploy to Google Play Beta track"
+  lane :beta do
+    build_bundle
+    upload_to_play_store(
+      track: "beta",
+      aab: "../build/app/outputs/bundle/release/app-release.aab"
+    )
+  end
+
+  desc "Build and deploy to Google Play Production track"
+  lane :deploy do
+    build_bundle
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab"
+    )
+  end
+end

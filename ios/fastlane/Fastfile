@@ -1,0 +1,48 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Run Flutter tests and static analysis"
+  lane :test do
+    Dir.chdir("../..") do
+      sh("flutter", "analyze")
+      sh("flutter", "test")
+    end
+  end
+
+  desc "Sync Signing Certificates and Provisioning Profiles"
+  lane :certificates do
+    if ENV["MATCH_PASSWORD"]
+      match(type: "appstore", readonly: true)
+    else
+      get_certificates
+      get_provisioning_profile
+    end
+  end
+
+  desc "Build iOS IPA"
+  lane :build do
+    certificates
+    Dir.chdir("../..") do
+      sh("flutter", "build", "ipa", "--release")
+    end
+  end
+
+  desc "Build and upload to Apple TestFlight"
+  lane :beta do
+    build
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      ipa: "../build/ios/ipa/musly.ipa"
+    )
+  end
+
+  desc "Build and submit to the Apple App Store"
+  lane :release do
+    build
+    upload_to_app_store(
+      force: true,
+      ipa: "../build/ios/ipa/musly.ipa",
+      skip_screenshots: true
+    )
+  end
+end

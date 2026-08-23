@@ -1,0 +1,2 @@
+json_key_file(ENV["SUPPLY_JSON_KEY"]) # Path to Google Play service account JSON key
+package_name("com.devid.musly") # Android package name
