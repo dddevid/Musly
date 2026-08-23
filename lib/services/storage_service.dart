@@ -421,6 +421,16 @@ class StorageService {
     return prefs.getString('last_selected_server_family');
   }
 
+  Future<void> saveHideWindowTitlebar(bool hide) async {
+    final prefs = await _prefs;
+    await prefs.setBool('hide_window_titlebar', hide);
+  }
+
+  Future<bool> getHideWindowTitlebar() async {
+    final prefs = await _prefs;
+    return prefs.getBool('hide_window_titlebar') ?? false;
+  }
+
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();

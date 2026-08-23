@@ -157,10 +157,18 @@ void main() async {
 
   JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
 
+  final storageService = StorageService();
+
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
-    const windowOptions = WindowOptions();
+    final hideTitlebar = await storageService.getHideWindowTitlebar();
+    final windowOptions = WindowOptions(
+      titleBarStyle: hideTitlebar ? TitleBarStyle.hidden : TitleBarStyle.normal,
+    );
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      if (hideTitlebar) {
+        await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+      }
       await windowManager.show();
       await windowManager.focus();
     });
@@ -176,7 +184,6 @@ void main() async {
     ),
   );
 
-  final storageService = StorageService();
   final subsonicService = SubsonicService();
   final offlineService = OfflineService();
   final recommendationService = RecommendationService();

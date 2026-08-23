@@ -15,6 +15,8 @@ import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
+import 'package:musly/services/storage_service.dart';
+import 'package:window_manager/window_manager.dart';
 
 class SettingsDisplayTab extends StatefulWidget {
   const SettingsDisplayTab({super.key});
@@ -38,6 +40,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _lyricsBlurUnfocused = false;
   String _lyricsAlignment = 'left';
   bool _lyricsGlowEffect = true;
+  bool _hideWindowTitlebar = false;
 
   ThemeMode _themeMode = ThemeMode.system;
   AccentColor _accentColor = AccentColor.red;
@@ -78,6 +81,11 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _accentColor = themeService.accentColor;
       _liquidGlass = themeService.liquidGlass;
     });
+
+    if (_isDesktop) {
+      final hide = await StorageService().getHideWindowTitlebar();
+      if (mounted) setState(() => _hideWindowTitlebar = hide);
+    }
   }
 
   @override
@@ -121,6 +129,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               _buildDiscordRpcToggle(),
               const SettingsDivider(),
               _buildDiscordRpcStateStyleSelector(),
+              const SettingsDivider(),
+              _buildWindowTitlebarToggle(),
             ],
           ],
         ),
@@ -1279,6 +1289,23 @@ class _ThemeModeSelector extends StatelessWidget {
       onChanged: (val) async {
         await _playerUiSettings.setLyricsGlowEffect(val);
         setState(() => _lyricsGlowEffect = val);
+      },
+    );
+  }
+
+  Widget _buildWindowTitlebarToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Hide Window Titlebar / Decorations'),
+      subtitle: const Text('Hides native titlebar (useful for Linux Wayland & tiling window managers)'),
+      value: _hideWindowTitlebar,
+      onChanged: (val) async {
+        await StorageService().saveHideWindowTitlebar(val);
+        setState(() => _hideWindowTitlebar = val);
+        if (_isDesktop) {
+          try {
+            await windowManager.setTitleBarStyle(val ? TitleBarStyle.hidden : TitleBarStyle.normal);
+          } catch (_) {}
+        }
       },
     );
   }
