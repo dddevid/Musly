@@ -155,6 +155,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _upnpService.addListener(_onUpnpStateChanged);
     _upnpService.onRendererLost = _onUpnpRendererLost;
     _jukeboxService.addListener(_onJukeboxEnabledChanged);
+    MuslyConnectService().addListener(_onMuslyConnectStateChanged);
     _initializePlayer();
     _onJukeboxEnabledChanged();
     try {
@@ -2128,6 +2129,29 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Forcibly pauses the local audio player engine (e.g. during playback transfer).
+  Future<void> pauseLocal() async {
+    try {
+      await _audioPlayer.pause();
+    } catch (_) {}
+    _isPlaying = false;
+    notifyListeners();
+  }
+
+  void _onMuslyConnectStateChanged() {
+    final connect = MuslyConnectService();
+    if (connect.isControllingRemoteDevice) {
+      final dev = connect.activeRemoteDevice;
+      if (dev != null) {
+        _isPlaying = dev.isPlaying;
+        _position = Duration(seconds: dev.positionSeconds);
+        _duration = Duration(seconds: dev.durationSeconds);
+        _volume = dev.volume;
+        notifyListeners();
+      }
+    }
+  }
+
   Future<void> stop() async {
     if (_castService.isConnected) {
       await _castService.stop();
@@ -3049,6 +3073,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _persistDebounceTimer?.cancel();
     _jukeboxPollTimer?.cancel();
     _jukeboxService.removeListener(_onJukeboxEnabledChanged);
+    MuslyConnectService().removeListener(_onMuslyConnectStateChanged);
     _windowsPositionTimer?.cancel();
     _castService.removeListener(_onCastStateChanged);
     _upnpService.removeListener(_onUpnpStateChanged);

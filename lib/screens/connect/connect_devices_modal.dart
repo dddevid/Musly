@@ -567,6 +567,55 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
+  Future<void> _handleTransferToDevice(
+    BuildContext context,
+    ConnectDevice device,
+    PlayerProvider player,
+    MuslyConnectService connectService,
+  ) async {
+    final queue = player.queue.isNotEmpty
+        ? player.queue
+        : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
+
+    if (queue.isEmpty) {
+      await connectService.connectToRemoteDevice(device);
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connected to ${device.name}')),
+        );
+      }
+      return;
+    }
+
+    final pos = player.position.inSeconds;
+    final idx = player.currentIndex.clamp(0, queue.length - 1);
+
+    // 1. Immediately pause the local audio player engine on this device
+    await player.pauseLocal();
+
+    // 2. Connect to the target device as controller
+    await connectService.connectToRemoteDevice(device);
+
+    // 3. Send queue to target device
+    final ok = await connectService.transferPlaybackToRemote(
+      queue,
+      idx,
+      pos,
+      targetDevice: device,
+    );
+
+    if (ok && context.mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Playback transferred to ${device.name}'),
+          backgroundColor: const Color(0xFF1DB954),
+        ),
+      );
+    }
+  }
+
   Widget _buildMuslyDeviceRow({
     required BuildContext context,
     required ConnectDevice device,
@@ -594,7 +643,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
             if (isControlling) {
               connectService.disconnectRemote();
             } else {
-              await connectService.connectToRemoteDevice(device);
+              await _handleTransferToDevice(context, device, player, connectService);
             }
           },
           child: Padding(
@@ -641,42 +690,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                   icon: const Icon(CupertinoIcons.arrow_right_arrow_left, size: 18),
                   tooltip: 'Transfer audio here',
                   color: isDark ? Colors.white60 : Colors.black54,
-                  onPressed: () async {
-                    final queue = player.queue.isNotEmpty
-                        ? player.queue
-                        : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
-
-                    if (queue.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No active playback to transfer')),
-                      );
-                      return;
-                    }
-
-                    final pos = player.position.inSeconds;
-                    final idx = player.currentIndex.clamp(0, queue.length - 1);
-
-                    await connectService.connectToRemoteDevice(device);
-                    final ok = await connectService.transferPlaybackToRemote(
-                      queue,
-                      idx,
-                      pos,
-                      targetDevice: device,
-                    );
-
-                    if (ok) {
-                      await player.pause();
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Playback transferred to ${device.name}'),
-                            backgroundColor: const Color(0xFF1DB954),
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  onPressed: () => _handleTransferToDevice(context, device, player, connectService),
                 ),
               ],
             ),
