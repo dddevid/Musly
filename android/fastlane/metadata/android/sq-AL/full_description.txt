@@ -1,0 +1,11 @@
+Musly është një klient muzikor modern dhe i fokusuar te privatësia për serverët e përputhshëm me Subsonic (Navidrome, Subsonic, Airsonic, Gonic), Jellyfin dhe skedarët lokalë audio.
+
+<b>Veçoritë:</b>
+• <b>Mbështetje për shumë platforma:</b> Lidhu me Navidrome, Subsonic, Jellyfin ose dëgjo skedarët lokalë në pajisje.
+• <b>Kombinime & Rekomandime Inteligjente:</b> Algoritëm 100% në pajisje për lista të personalizuara ("Krijuar për ty", "Dëgjo sërish", "Këngët më të dëgjuara").
+• <b>Shkarkime Offline:</b> Shkarko këngët e preferuara, albume të plota ose diskografi artistësh me vazhdim automatik.
+• <b>Android Auto:</b> Mbështetje e plotë për Android Auto me shfletim të bibliotekës dhe kontroll nga makina.
+• <b>Profile për shumë serverë:</b> Kalim i lehtë mes llogarive të ndryshme me kalim automatik LAN / WAN sipas shpejtësisë.
+• <b>Tekste Këngësh të Sinkronizuara:</b> Tekste në kohë reale me mbështetje nga LRCLIB dhe stile të personalizueshme.
+• <b>Privatësia në Rend të Parë:</b> 100% pa telemetri, pa gjurmues dhe ruajtje e sigurt e të dhënave të hyrjes.
+• <b>Dizajn Modern:</b> Animacione të rrjedhshme, ngjyra dinamike nga kapaku i albumit dhe modalitet i errët adaptiv.

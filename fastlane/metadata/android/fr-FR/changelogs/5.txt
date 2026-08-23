@@ -1,0 +1,10 @@
+• Musly Connect : découvrez les appareils sur le réseau local et contrôlez la lecture à distance
+• Geste Swipe-to-Queue style Spotify sur tous les morceaux
+• Fondu enchaîné intelligent (Smart Crossfade 0-12s) dans les paramètres de lecture
+• Musly Wrapped : rétrospective annuelle saisonnière 100% privée et locale
+• Recommandations intelligentes (Pour vous, Réécouter, Meilleurs titres)
+• Section Téléchargements dédiée avec téléchargement groupé pour favoris et artistes
+• Profils multi-serveurs avec basculement automatique LAN / WAN
+• Améliorations complètes pour Android Auto
+• Nouvelle expérience d'intégration interactive (Onboarding)
+• Optimisations des performances et corrections de bugs

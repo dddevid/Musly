@@ -1,0 +1,10 @@
+• Musly Connect: Geräte im lokalen Netzwerk finden und Wiedergabe fernsteuern
+• Swipe-to-Queue-Geste im Spotify-Stil für alle Songs
+• Einstellbares Smart-Crossfade (0-12s) in den Wiedergabeeinstellungen
+• Musly Wrapped: 100% private, lokale Jahresrückschau
+• Smarte Empfehlungen & Taste-Learning (Für dich erstellt, Erneut anhören, Top-Hits)
+• Eigener Download-Bereich mit Stapel-Downloads für Favoriten und Künstler
+• Multi-Server-Profile mit automatischem LAN/WAN-Ping-Fallback
+• Umfassende Verbesserungen für Android Auto
+• Interaktive Onboarding-Einführung
+• Leistungsoptimierungen und Fehlerbehebungen

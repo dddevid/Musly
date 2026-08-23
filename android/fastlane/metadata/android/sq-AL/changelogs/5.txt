@@ -1,0 +1,10 @@
+• Musly Connect: Zbulo pajisjet në rrjetin lokal dhe kontrollo muzikën në distancë
+• Gjest i shpejtë Swipe-to-Queue në stilin Spotify për të gjitha këngët
+• Smart Crossfade i rregullueshëm (0-12s) te cilësimet e dëgjimit
+• Musly Wrapped: Përmbledhje vjetore sezonale 100% private dhe në pajisje
+• Rekomandime Inteligjente (Krijuar për ty, Dëgjo sërish, Këngët më të dëgjuara)
+• Seksion i dedikuar shkarkimesh me shkarkim në grup për këngë dhe artistë
+• Profile për shumë serverë me kontroll automatik lidhjeje LAN / WAN
+• Përmirësime gjithëpërfshirëse për Android Auto
+• Përvojë e re mikpritëse dhe Onboarding interaktiv
+• Optimizime të shpejtësisë dhe rregullime gabimesh

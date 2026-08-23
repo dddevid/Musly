@@ -1,0 +1,11 @@
+Musly ist ein moderner, datenschutzorientierter Musik-Client für Subsonic-kompatible Server (Navidrome, Subsonic, Airsonic, Gonic), Jellyfin und lokale Audiodateien.
+
+<b>Funktionen:</b>
+• <b>Multi-Provider-Unterstützung:</b> Verbinde dich mit Navidrome, Subsonic, Jellyfin oder spiele lokale Dateien direkt ab.
+• <b>Smarte Mixe & Empfehlungen:</b> 100% lokaler Algorithmus für personalisierte Mixe ("Für dich erstellt", "Erneut anhören", "Top-Hits").
+• <b>Offline-Downloads:</b> Lade Favoriten, ganze Alben oder Künstler-Diskografien mit automatischer Fortsetzung herunter.
+• <b>Android Auto:</b> Vollständige Android Auto-Unterstützung mit Mediathek-Navigation und Tastensteuerung.
+• <b>Multi-Server-Profile:</b> Nahtloser Wechsel zwischen mehreren Server-Konten mit automatischem LAN/WAN-Fallback.
+• <b>Synchrone Songtexte:</b> Zeitgesteuerte Lyrics mit LRCLIB-Unterstützung und anpassbaren Anzeigestilen.
+• <b>Datenschutz an erster Stelle:</b> 100% frei von Telemetrie und Trackern, sichere Speicherung aller Zugangsdaten.
+• <b>Modernes Design:</b> Flüssige Animationen, dynamische Farbpaletten passend zum Albumcover und adaptiver Dark-Mode.

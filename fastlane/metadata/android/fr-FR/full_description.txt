@@ -1,0 +1,11 @@
+Musly est un lecteur et client musical moderne et axé sur la confidentialité pour les serveurs compatibles Subsonic (Navidrome, Subsonic, Airsonic, Gonic), Jellyfin et les fichiers audio locaux.
+
+<b>Fonctionnalités :</b>
+• <b>Support Multi-Serveurs :</b> Connectez-vous à Navidrome, Subsonic, Jellyfin ou lisez vos fichiers locaux directement sur votre appareil.
+• <b>Mix Intelligents & Recommandations :</b> Algorithme 100% sur l'appareil pour des mix personnalisés (« Pour vous », « Réécouter », « Meilleurs titres »).
+• <b>Téléchargements Hors-ligne :</b> Téléchargez par lots vos favoris, albums complets ou discographies d'artistes avec reprise automatique.
+• <b>Android Auto :</b> Prise en charge complète d'Android Auto avec navigation dans la bibliothèque et commandes au volant.
+• <b>Profils Multi-Serveurs :</b> Basculez facilement entre plusieurs comptes avec basculement automatique LAN / WAN.
+• <b>Paroles Synchronisées :</b> Paroles synchronisées en temps réel avec intégration LRCLIB et styles d'affichage personnalisables.
+• <b>Confidentialité Absolue :</b> 100% sans télémétrie, aucun traceur et stockage sécurisé des identifiants.
+• <b>Design Moderne :</b> Animations fluides, palettes de couleurs dynamiques adaptées aux pochettes et mode sombre adaptatif.

@@ -1,0 +1,1 @@
+Klient muzike Subsonic dhe Jellyfin me dëgjim pa internet (offline).
