@@ -2964,14 +2964,40 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  void _updateDiscordRpc() {
+  String? _lastDiscordSongId;
+  bool? _lastDiscordIsPlaying;
+  String? _lastDiscordStateText;
+  int _lastDiscordSeekPosMs = -1;
+
+  void _updateDiscordRpc({bool force = false}) {
     try {
       if (_currentSong == null) {
-        _discordRpcService.clearPresence();
+        if (_lastDiscordSongId != null) {
+          _discordRpcService.clearPresence();
+          _lastDiscordSongId = null;
+          _lastDiscordIsPlaying = null;
+          _lastDiscordStateText = null;
+          _lastDiscordSeekPosMs = -1;
+        }
         return;
       }
 
       final stateText = _discordStateText();
+      final posMs = _position.inMilliseconds;
+      final bool seekJumped = (_lastDiscordSeekPosMs - posMs).abs() > 3000;
+
+      if (!force &&
+          _lastDiscordSongId == _currentSong!.id &&
+          _lastDiscordIsPlaying == _isPlaying &&
+          _lastDiscordStateText == stateText &&
+          !seekJumped) {
+        return;
+      }
+
+      _lastDiscordSongId = _currentSong!.id;
+      _lastDiscordIsPlaying = _isPlaying;
+      _lastDiscordStateText = stateText;
+      _lastDiscordSeekPosMs = posMs;
 
       if (!_isPlaying) {
         _discordRpcService.updatePresence(
@@ -2986,7 +3012,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         );
       } else {
         final int now = DateTime.now().millisecondsSinceEpoch;
-        final int startTimestamp = now - _position.inMilliseconds;
+        final int startTimestamp = now - posMs;
         final int? endTimestamp = _duration.inMilliseconds > 0
             ? startTimestamp + _duration.inMilliseconds
             : null;

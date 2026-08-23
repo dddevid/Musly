@@ -118,10 +118,7 @@ class DiscordRpcService {
           smallImageText: smallImageText,
         ),
       );
-      debugPrint('[Discord RPC] Presence updated: $details by $state');
-    } catch (e) {
-      debugPrint('Error updating Discord presence: $e');
-    }
+    } catch (_) {}
   }
 
   void clearPresence() {
@@ -129,13 +126,10 @@ class DiscordRpcService {
         !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       return;
     }
-    debugPrint('Clearing Discord Presence');
     if (_initialized) {
       try {
         _rpc?.clearPresence();
-      } catch (e) {
-        debugPrint('Error clearing presence: $e');
-      }
+      } catch (_) {}
     }
   }
 }
