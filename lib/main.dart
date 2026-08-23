@@ -350,15 +350,40 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  bool _checkedOnboarding = false;
+  bool _onboardingCompleted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final completed = await StorageService().isOnboardingCompleted();
+    if (mounted) {
+      setState(() {
+        _onboardingCompleted = completed;
+        _checkedOnboarding = true;
+      });
+    }
+  }
+
+  void _finishOnboarding() {
+    setState(() {
+      _onboardingCompleted = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
     switch (authProvider.state) {
       case AuthState.unknown:
-        return Scaffold(
+        return const Scaffold(
           backgroundColor: Colors.black,
-          body: Center(child: const CircularProgressIndicator()),
+          body: Center(child: CircularProgressIndicator()),
         );
       case AuthState.authenticated:
         // Show privacy policy first if needed
@@ -381,6 +406,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
         );
       case AuthState.unauthenticated:
       case AuthState.error:
+        if (!_checkedOnboarding) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF090A0E),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (!_onboardingCompleted) {
+          return OnboardingScreen(onFinished: _finishOnboarding);
+        }
         return const LoginScreen();
     }
   }

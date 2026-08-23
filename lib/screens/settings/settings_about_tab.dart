@@ -8,6 +8,7 @@ import 'package:musly/widgets/dialogs/support_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/utils/context_extensions.dart';
+import 'package:musly/screens/onboarding/onboarding_screen.dart';
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -92,6 +93,21 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               icon: Icons.chat_bubble_rounded,
               title: AppLocalizations.of(context)!.aboutLinkDiscord,
               url: 'https://discord.gg/k9FqpbT65M',
+            ),
+            _buildDivider(context),
+            _buildActionTile(
+              context,
+              icon: CupertinoIcons.sparkles,
+              iconColor: const Color(0xFF6366F1),
+              title: 'Welcome Tour',
+              subtitle: 'Replay the introductory onboarding experience',
+              onTap: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (context) => const OnboardingScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),

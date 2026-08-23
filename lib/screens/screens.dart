@@ -1,4 +1,7 @@
 // Barrel file for all Musly Screens
+// Onboarding
+export 'onboarding/onboarding_screen.dart';
+
 // Auth
 export 'auth/login_screen.dart';
 export 'auth/add_server_screen.dart';

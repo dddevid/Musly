@@ -445,6 +445,16 @@ class StorageService {
     return prefs.getBool('hide_window_titlebar') ?? false;
   }
 
+  Future<bool> isOnboardingCompleted() async {
+    final prefs = await _prefs;
+    return prefs.getBool('onboarding_completed') ?? false;
+  }
+
+  Future<void> setOnboardingCompleted(bool completed) async {
+    final prefs = await _prefs;
+    await prefs.setBool('onboarding_completed', completed);
+  }
+
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();
