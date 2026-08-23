@@ -65,14 +65,17 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
   @override
   void initState() {
     super.initState();
-    // Trigger UPnP discovery
-    final upnp = Provider.of<UpnpService>(context, listen: false);
-    upnp.discover();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Trigger UPnP discovery
+      final upnp = Provider.of<UpnpService>(context, listen: false);
+      upnp.discover();
 
-    // Trigger Cast discovery
-    try {
-      _discoveryManager.startDiscovery();
-    } catch (_) {}
+      // Trigger Cast discovery
+      try {
+        _discoveryManager.startDiscovery();
+      } catch (_) {}
+    });
   }
 
   @override
@@ -563,8 +566,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
           color: isControlling ? const Color(0xFF1DB954).withValues(alpha: 0.4) : borderColor,
         ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         leading: Icon(
           _getPlatformIcon(device.platform),
           size: 22,
@@ -672,13 +677,14 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               ),
           ],
         ),
-        onTap: () async {
-          if (isControlling) {
-            connectService.disconnectRemote();
-          } else {
-            await connectService.connectToRemoteDevice(device);
-          }
-        },
+          onTap: () async {
+            if (isControlling) {
+              connectService.disconnectRemote();
+            } else {
+              await connectService.connectToRemoteDevice(device);
+            }
+          },
+        ),
       ),
     );
   }
@@ -697,22 +703,25 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        leading: const Icon(Icons.cast, size: 22, color: Colors.white70),
-        title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        onTap: () async {
-          final ok = await cast.connectToDevice(castDevice);
-          if (context.mounted) {
-            Navigator.of(context).pop();
-            if (!ok) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to connect to ${castDevice.friendlyName}')),
-              );
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          leading: const Icon(Icons.cast, size: 22, color: Colors.white70),
+          title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          onTap: () async {
+            final ok = await cast.connectToDevice(castDevice);
+            if (context.mounted) {
+              Navigator.of(context).pop();
+              if (!ok) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to connect to ${castDevice.friendlyName}')),
+                );
+              }
             }
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -731,25 +740,28 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        leading: const Icon(Icons.speaker_group, size: 22, color: Colors.white70),
-        title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          [upnpDevice.manufacturer, upnpDevice.modelName].where((s) => s.isNotEmpty).join(' • '),
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-        onTap: () async {
-          final ok = await upnp.connect(upnpDevice);
-          if (context.mounted) {
-            Navigator.of(context).pop();
-            if (!ok) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to connect to ${upnpDevice.friendlyName}')),
-              );
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          leading: const Icon(Icons.speaker_group, size: 22, color: Colors.white70),
+          title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(
+            [upnpDevice.manufacturer, upnpDevice.modelName].where((s) => s.isNotEmpty).join(' • '),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          onTap: () async {
+            final ok = await upnp.connect(upnpDevice);
+            if (context.mounted) {
+              Navigator.of(context).pop();
+              if (!ok) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to connect to ${upnpDevice.friendlyName}')),
+                );
+              }
             }
-          }
-        },
+          },
+        ),
       ),
     );
   }

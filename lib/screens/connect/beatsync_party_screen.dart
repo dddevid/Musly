@@ -65,26 +65,29 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
             backgroundColor: Colors.transparent,
             elevation: 0,
             title: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(CupertinoIcons.sparkles, color: Color(0xFF8B5CF6), size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  beatSync.partyRoomName,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                const Icon(CupertinoIcons.sparkles, color: Color(0xFF8B5CF6), size: 18),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    beatSync.partyRoomName,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(5),
                     border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5)),
                   ),
                   child: const Text(
                     'BETA',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF8B5CF6),
                       letterSpacing: 0.5,
@@ -95,9 +98,9 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
             ),
             actions: [
               TextButton.icon(
-                icon: const Icon(CupertinoIcons.square_arrow_right, size: 16, color: Colors.redAccent),
+                icon: const Icon(CupertinoIcons.square_arrow_right, size: 15, color: Colors.redAccent),
                 label: Text(
-                  beatSync.isHost ? 'End Party' : 'Leave Party',
+                  beatSync.isHost ? 'End' : 'Leave',
                   style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 onPressed: () {
@@ -106,7 +109,7 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
                   Navigator.of(context).pop();
                 },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
             ],
           ),
           body: SafeArea(
