@@ -29,11 +29,12 @@
     <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY"/>
     <uses-permission android:name="com.samsung.android.sdk.look.permission.READ"/>
     
-    <!-- Optional features -->
+    <!-- Optional hardware features for TV and Android Auto compatibility -->
     <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
-    <!-- Required by Android Auto for media apps -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.software.leanback" android:required="false"/>
+    <uses-feature android:name="android.hardware.type.television" android:required="false"/>
     <uses-feature android:name="android.hardware.type.automotive" android:required="false"/>
     
     <!-- Queries for url_launcher package -->

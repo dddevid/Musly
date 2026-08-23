@@ -20,9 +20,11 @@ import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
 import 'services/musly_connect_service.dart';
 import 'services/beatsync_service.dart';
+import 'services/tv_detection_service.dart';
 import 'models/connect_device.dart';
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
 import 'package:musly/widgets/dialogs/milestone_celebration_dialog.dart';
+import 'widgets/navigation/tv_remote_scope.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -314,6 +316,10 @@ void main() async {
     }
   };
 
+  // Initialize TV detection
+  final tvDetectionService = TvDetectionService();
+  await tvDetectionService.initialize();
+
   // Initialize Musly Connect LAN discovery
   final deviceName = Platform.isWindows
       ? 'Windows PC'
@@ -351,6 +357,7 @@ void main() async {
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
       ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
       ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
+      ChangeNotifierProvider<TvDetectionService>.value(value: tvDetectionService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],
@@ -403,6 +410,7 @@ class MuslyApp extends StatelessWidget {
           locale: localeService.currentLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => TvRemoteScope(child: child ?? const SizedBox.shrink()),
           home: const AuthWrapper(),
           navigatorObservers: [AnalyticsNavigatorObserver()],
         );
@@ -443,6 +451,18 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   }
 
   Future<void> _checkOnboarding() async {
+    final tvService = Provider.of<TvDetectionService>(context, listen: false);
+    if (tvService.isTvMode) {
+      await StorageService().setOnboardingCompleted(true);
+      if (mounted) {
+        setState(() {
+          _onboardingCompleted = true;
+          _checkedOnboarding = true;
+        });
+      }
+      return;
+    }
+
     final completed = await StorageService().isOnboardingCompleted();
     if (mounted) {
       setState(() {

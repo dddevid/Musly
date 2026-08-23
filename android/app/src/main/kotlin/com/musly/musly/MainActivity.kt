@@ -1,5 +1,10 @@
 package com.devid.musly
 
+import android.app.UiModeManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.os.Build
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
@@ -12,9 +17,50 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.devid.musly/ytdlp"
+    private val TV_CHANNEL = "com.devid.musly/tv_mode"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Native Android TV & TV Box detection
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, TV_CHANNEL).setMethodCallHandler { call, result ->
+            if (call.method == "isTvDevice") {
+                var isTv = false
+                try {
+                    val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+                    if (uiModeManager != null && uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
+                        isTv = true
+                    }
+                    if (!isTv && packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+                        isTv = true
+                    }
+                    if (!isTv && packageManager.hasSystemFeature("android.hardware.type.television")) {
+                        isTv = true
+                    }
+                    if (!isTv && !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
+                        isTv = true
+                    }
+                    if (!isTv) {
+                        val model = (Build.MODEL ?: "").lowercase()
+                        val hardware = (Build.HARDWARE ?: "").lowercase()
+                        val brand = (Build.BRAND ?: "").lowercase()
+                        val fingerprint = (Build.FINGERPRINT ?: "").lowercase()
+                        val tvKeywords = listOf("tv", "box", "firetv", "shield", "bravia", "chromecast", "mibox", "amlogic", "allwinner", "rk3328", "rk3399", "stick")
+                        for (kw in tvKeywords) {
+                            if (model.contains(kw) || hardware.contains(kw) || brand.contains(kw) || fingerprint.contains(kw)) {
+                                isTv = true
+                                break
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    isTv = false
+                }
+                result.success(isTv)
+            } else {
+                result.notImplemented()
+            }
+        }
 
         try {
             if (!Python.isStarted()) {

@@ -160,7 +160,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _keyboardFocusNode.requestFocus();
+      if (mounted) {
+        _keyboardFocusNode.requestFocus();
+      }
     });
   }
 
