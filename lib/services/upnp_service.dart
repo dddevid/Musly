@@ -5,6 +5,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 
 class UpnpDevice {
   final String friendlyName;
@@ -88,11 +90,26 @@ class UpnpService extends ChangeNotifier {
     ),
   );
 
+  void _safeNotifyListeners() {
+    try {
+      final binding = SchedulerBinding.instance;
+      if (binding.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (hasListeners) notifyListeners();
+        });
+      } else {
+        notifyListeners();
+      }
+    } catch (_) {
+      notifyListeners();
+    }
+  }
+
   Future<List<UpnpDevice>> discover() async {
     if (_isDiscovering) return _devices;
     _isDiscovering = true;
     _devices.clear();
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final seen = <String>{};
@@ -136,7 +153,7 @@ class UpnpService extends ChangeNotifier {
           final device = await _fetchDeviceDescription(location);
           if (device != null) {
             _devices.add(device);
-            notifyListeners();
+            _safeNotifyListeners();
             debugPrint('UPnP: Found ${device.friendlyName}');
           }
         } catch (e) {
@@ -151,7 +168,7 @@ class UpnpService extends ChangeNotifier {
       debugPrint('UPnP: Discovery error: $e');
     } finally {
       _isDiscovering = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
 
     return _devices;
@@ -249,7 +266,7 @@ class UpnpService extends ChangeNotifier {
       }
       _consecutivePollErrors = 0;
       _startPolling();
-      notifyListeners();
+      _safeNotifyListeners();
       return true;
     } catch (e) {
       debugPrint('UPnP: Failed to connect to ${device.friendlyName}: $e');
@@ -267,7 +284,7 @@ class UpnpService extends ChangeNotifier {
     _rendererDuration = Duration.zero;
     _volume = -1;
     _consecutivePollErrors = 0;
-    notifyListeners();
+    _safeNotifyListeners();
 
     if (device != null) {
       _soap(device.avTransportUrl, 'Stop', '').then((_) {
@@ -304,7 +321,7 @@ class UpnpService extends ChangeNotifier {
       if (state == null) {
         // getPlaybackState() caught an exception internally and returned null.
         _consecutivePollErrors++;
-        notifyListeners();
+        _safeNotifyListeners();
         if (_consecutivePollErrors == 1 || _consecutivePollErrors % 5 == 0) {
           debugPrint(
             'UPnP: poll failed $_consecutivePollErrors time(s) in a row '
@@ -324,7 +341,7 @@ class UpnpService extends ChangeNotifier {
 
       if (_consecutivePollErrors != 0) {
         _consecutivePollErrors = 0;
-        notifyListeners();
+        _safeNotifyListeners();
       }
 
       bool changed = false;
@@ -350,11 +367,11 @@ class UpnpService extends ChangeNotifier {
       }
 
       if (changed) {
-        notifyListeners();
+        _safeNotifyListeners();
       }
     } catch (e) {
       _consecutivePollErrors++;
-      notifyListeners();
+      _safeNotifyListeners();
       debugPrint('UPnP: poll error: $e');
       if (_consecutivePollErrors >= 30) {
         debugPrint('UPnP: 30 consecutive poll failures — auto-disconnecting renderer');
@@ -705,7 +722,7 @@ class UpnpService extends ChangeNotifier {
         '<Channel>Master</Channel><DesiredVolume>$vol</DesiredVolume>',
       );
       _volume = vol;
-      notifyListeners();
+      _safeNotifyListeners();
     } catch (e) {
       debugPrint('UPnP: SetVolume failed: $e');
     }

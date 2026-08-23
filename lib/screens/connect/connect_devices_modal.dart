@@ -62,6 +62,9 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
   final GoogleCastDiscoveryManagerPlatformInterface _discoveryManager =
       GoogleCastDiscoveryManager.instance;
 
+  bool get _isCastSupported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
   @override
   void initState() {
     super.initState();
@@ -71,18 +74,22 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
       final upnp = Provider.of<UpnpService>(context, listen: false);
       upnp.discover();
 
-      // Trigger Cast discovery
-      try {
-        _discoveryManager.startDiscovery();
-      } catch (_) {}
+      // Trigger Cast discovery on supported mobile platforms only
+      if (_isCastSupported) {
+        try {
+          _discoveryManager.startDiscovery();
+        } catch (_) {}
+      }
     });
   }
 
   @override
   void dispose() {
-    try {
-      _discoveryManager.stopDiscovery();
-    } catch (_) {}
+    if (_isCastSupported) {
+      try {
+        _discoveryManager.stopDiscovery();
+      } catch (_) {}
+    }
     super.dispose();
   }
 
