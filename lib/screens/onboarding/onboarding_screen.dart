@@ -356,11 +356,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             ),
                             child: Text(
-                              widget.onFinished == null
-                                  ? 'Close'
-                                  : (_currentPage == _slides.length - 1
-                                      ? 'Already have an account? Sign in'
-                                      : 'Skip'),
+                              widget.onFinished == null ? 'Close' : 'Skip',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
