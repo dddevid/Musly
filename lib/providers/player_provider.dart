@@ -2138,6 +2138,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  Timer? _muslyConnectPositionTimer;
+
   void _onMuslyConnectStateChanged() {
     final connect = MuslyConnectService();
     if (connect.isControllingRemoteDevice) {
@@ -2147,8 +2149,36 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _position = Duration(seconds: dev.positionSeconds);
         _duration = Duration(seconds: dev.durationSeconds);
         _volume = dev.volume;
+        if (!_positionController.isClosed) {
+          _positionController.add(_position);
+        }
+        _syncMuslyConnectPositionTimer(dev.isPlaying);
         notifyListeners();
       }
+    } else {
+      _muslyConnectPositionTimer?.cancel();
+      _muslyConnectPositionTimer = null;
+    }
+  }
+
+  void _syncMuslyConnectPositionTimer(bool isPlaying) {
+    _muslyConnectPositionTimer?.cancel();
+    if (isPlaying && MuslyConnectService().isControllingRemoteDevice) {
+      _muslyConnectPositionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+        if (!MuslyConnectService().isControllingRemoteDevice || !_isPlaying) {
+          _muslyConnectPositionTimer?.cancel();
+          return;
+        }
+        final newPos = _position + const Duration(milliseconds: 250);
+        if (_duration > Duration.zero && newPos > _duration) {
+          _position = _duration;
+        } else {
+          _position = newPos;
+        }
+        if (!_positionController.isClosed) {
+          _positionController.add(_position);
+        }
+      });
     }
   }
 
@@ -3073,6 +3103,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _persistDebounceTimer?.cancel();
     _jukeboxPollTimer?.cancel();
     _jukeboxService.removeListener(_onJukeboxEnabledChanged);
+    _muslyConnectPositionTimer?.cancel();
     MuslyConnectService().removeListener(_onMuslyConnectStateChanged);
     _windowsPositionTimer?.cancel();
     _castService.removeListener(_onCastStateChanged);
