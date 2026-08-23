@@ -174,7 +174,7 @@ class WrappedService {
         final cover = songMap[p.songId]?.coverArt ??
             p.coverArt ??
             (p.albumId != null ? 'al-${p.albumId}' : p.songId);
-        if (cover != null && cover.isNotEmpty) {
+        if (cover.isNotEmpty) {
           artistCovers.putIfAbsent(p.artist!, () => cover);
         }
       }

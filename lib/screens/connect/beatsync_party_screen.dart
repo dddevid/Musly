@@ -94,15 +94,19 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(CupertinoIcons.clear_circled),
-                tooltip: 'Leave Party',
+              TextButton.icon(
+                icon: const Icon(CupertinoIcons.square_arrow_right, size: 16, color: Colors.redAccent),
+                label: Text(
+                  beatSync.isHost ? 'End Party' : 'Leave Party',
+                  style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
                 onPressed: () {
                   beatSync.leaveParty();
                   MuslyConnectService().disconnectRemote();
                   Navigator.of(context).pop();
                 },
               ),
+              const SizedBox(width: 8),
             ],
           ),
           body: SafeArea(
@@ -130,8 +134,32 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
 
                   // 5. Host Controls or Leave Button
                   if (beatSync.isHost && currentSong != null) ...[
-                    _buildHostBroadcastControls(playerProvider),
+                    _buildHostBroadcastControls(playerProvider, isDark),
+                    const SizedBox(height: 20),
                   ],
+
+                  // 6. Bottom Leave / Close Party Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        beatSync.leaveParty();
+                        MuslyConnectService().disconnectRemote();
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(CupertinoIcons.square_arrow_right, size: 16, color: Colors.redAccent),
+                      label: Text(
+                        beatSync.isHost ? 'End Party Room for Everyone' : 'Leave Party Room',
+                        style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -372,20 +400,21 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
     );
   }
 
-  Widget _buildHostBroadcastControls(PlayerProvider player) {
+  Widget _buildHostBroadcastControls(PlayerProvider player, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-        ),
+        color: isDark ? const Color(0xFF1B1C28) : const Color(0xFFEBECEF),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            icon: const Icon(CupertinoIcons.backward_fill, color: Colors.white),
+            icon: Icon(CupertinoIcons.backward_fill, color: isDark ? Colors.white : Colors.black87),
             onPressed: () {
               player.skipPrevious();
               final currentSong = player.currentSong;
@@ -396,7 +425,11 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
             },
           ),
           IconButton(
-            icon: Icon(player.isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill, color: Colors.white, size: 32),
+            icon: Icon(
+              player.isPlaying ? CupertinoIcons.pause_circle_fill : CupertinoIcons.play_circle_fill,
+              color: const Color(0xFF8B5CF6),
+              size: 38,
+            ),
             onPressed: () {
               if (player.isPlaying) {
                 player.pause();
@@ -412,7 +445,7 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
             },
           ),
           IconButton(
-            icon: const Icon(CupertinoIcons.forward_fill, color: Colors.white),
+            icon: Icon(CupertinoIcons.forward_fill, color: isDark ? Colors.white : Colors.black87),
             onPressed: () {
               player.skipNext();
               final currentSong = player.currentSong;
