@@ -5,6 +5,91 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-23
+
+### Added
+
+- **Smart Recommendations & Taste-Learning Engine (YT Stream & Home)**
+  - Algorithmic music taste profiling learning from play counts, ratings, skips, and completion rates with exponential recency decay.
+  - Dynamically generated mixes: "Made For You", "Listen Again", "Your Top Hits", Artist Mixes, and Genre Mixes.
+  - Intelligent discovery search querying correlated songs based on user affinities.
+  - Full local SQLite persistence for YT Stream caching and smart recommendation candidate pools.
+
+- **Automatic Octo-Fiesta Integration (#216)**
+  - Seamless auto-detection and support for Octo-Fiesta extensions inside Subsonic and Jellyfin servers without creating separate source profiles.
+
+- **Offline Downloader & Dedicated Downloads Section (#226)**
+  - Dedicated Downloads screen in the Library.
+  - **"Download All" Favorites (#209)** — One-tap download of all starred/favorite songs for offline playback.
+  - **"Download All" Artist Tracks (#225)** — Batch download all songs from an artist directly from the artist screen.
+  - Durable playlist download state machine with auto-resume, progress indicators, and outline-check badges.
+  - Downloaded badges on songs, albums, and playlists (#224).
+  - Validation using server `/download` endpoint and file size verification.
+
+- **Dual WAN / LAN Server Support (#187)**
+  - Configure separate Local LAN and Remote WAN server URLs with automatic ping latency check and seamless fallback.
+
+- **Multi-Server Profiles (#185)**
+  - Store and switch between multiple Subsonic / Jellyfin server accounts and credentials without overwriting previous profiles.
+
+- **Windows System Media Transport Controls (SMTC)**
+  - Full native Windows SMTC integration with timeline progress synchronization, cover artwork, and hardware media keys (Play, Pause, Next, Previous, Stop).
+  - Set explicit `AppUserModelID` to "Musly" ensuring the OS media overlay displays "Musly" instead of "App sconosciuta".
+
+- **Discord Rich Presence**
+  - Live Discord status integration showing song title, artist, album, and precise elapsed/remaining playback timestamps.
+  - Configurable subtitle style (Artist, Song title, App name).
+  - State-change caching debounce to eliminate log noise and avoid Discord rate limits.
+
+- **A-Z Alphabetical Index Sidebar (#204)**
+  - Fast-scroll alphabet navigation bar on album collection screens with haptic feedback and instant letter jump.
+
+- **Synced Lyrics Customization (#184)**
+  - Customization options for the time-synced lyrics view including background blur toggle, text alignment, and active lyric glow.
+
+- **Dolby Atmos Audio Stream Support (#188)**
+  - Audio stream badge and playback detection for Dolby Atmos content.
+
+- **Artist Biography & Album Actions (#221, #222, #214)**
+  - Detailed artist biography lookup from Subsonic API.
+  - Like/favorite button on Album screens.
+  - Direct navigation to Album details from Favorite Albums list.
+
+- **Linux & Desktop Window Controls (#208)**
+  - Option in settings to toggle native window titlebars and client-side window decorations on Linux.
+
+### Changed & Improved
+
+- **Desktop UI & Window Experience**
+  - Closeable Queue right sidebar accessible via close button and toggleable from the desktop player bar.
+  - Volume mute/unmute now accurately restores previous volume level instead of resetting.
+  - Safe global spacebar shortcut: typing spaces in search and text fields is preserved without toggling Play/Pause.
+  - Route deduplication: prevents opening identical screens or windows repeatedly on top of each other.
+  - Hidden mobile-only "Circular Design" toggle on desktop platforms.
+
+- **Audio Playback & Scrobbling Quality of Life**
+  - **Scrobble on Shuffle (#207)**: Only scrobbles to server after passing the minimum threshold (50% or 4 minutes) to prevent false scrobbles on skip.
+  - **Now Playing Notification (#210)**: Sends "Now Playing" status to server on gapless automatic track advance.
+  - Immediate play/pause UI icon synchronization with safe audio fade transitions.
+  - Rounded corners and dynamic ambient shadow support for non-1:1 aspect ratio artwork (#206).
+  - Sort bottom sheet padding adjusted to remain fully visible above the mini player (#230).
+  - Duplicate song prevention warning when adding tracks to an existing playlist (#211).
+
+- **Privacy-First Architecture**
+  - Completely removed Countly SDK, analytics trackers, and remote telemetry. Musly is 100% private with no background telemetry.
+
+- **Localization & Translations**
+  - Corrected ICU plural syntax warnings across French, Spanish, Italian, Portuguese, and Russian.
+  - Adjusted Italian action button labels to eliminate text truncation and RenderFlex overflows.
+  - Added Azerbaijani and Polish translations, localized audio focus denial, and fade in/out notifications.
+
+### Fixed
+
+- **mTLS Crash on Connect (#218)**: Handled mutual TLS handshake exceptions gracefully without crashing.
+- **Artist Blank Screen (#186)**: Multi-layer fallback lookup strategy for artists with missing ID or metadata.
+- **Android Auto Compatibility**: Enhanced Android Auto service metadata resolution, browse tree loading, and focus request timeout handling.
+- **Codebase Modernization**: Consolidated file structure, cleaned deprecated Flutter API usages, and eliminated all linter diagnostics.
+
 ## [1.0.13] - 2026-05-10
 
 ### Added
