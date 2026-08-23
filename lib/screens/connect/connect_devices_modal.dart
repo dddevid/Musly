@@ -1,6 +1,5 @@
-// ── Musly Connect & BeatSync [BETA] Device Modal ──────────────────────────────
-// BeatSync multiroom party concept inspired by:
-// https://github.com/freeman-jiang/beatsync
+// ── Musly Connect & Group Listening Modal ────────────────────────────────────
+// Clean, human-crafted device selector inspired by Spotify Connect & Apple AirPlay.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:io';
@@ -17,7 +16,6 @@ import '../../services/beatsync_service.dart';
 import '../../services/musly_connect_service.dart';
 import '../../services/cast_service.dart';
 import '../../services/upnp_service.dart';
-import '../../theme/app_theme.dart';
 import 'beatsync_party_screen.dart';
 
 class ConnectDevicesModal extends StatefulWidget {
@@ -39,7 +37,7 @@ class ConnectDevicesModal extends StatefulWidget {
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460, maxHeight: 640),
+            constraints: const BoxConstraints(maxWidth: 440, maxHeight: 600),
             child: const ConnectDevicesModal(isDesktopDialog: true),
           ),
         ),
@@ -70,11 +68,9 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // Trigger UPnP discovery
       final upnp = Provider.of<UpnpService>(context, listen: false);
       upnp.discover();
 
-      // Trigger Cast discovery on supported mobile platforms only
       if (_isCastSupported) {
         try {
           _discoveryManager.startDiscovery();
@@ -97,9 +93,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final surfaceColor = isDark ? const Color(0xFF14151E) : Colors.white;
-    final cardBg = isDark ? const Color(0xFF1C1D29) : const Color(0xFFF4F5F9);
-    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06);
+    final surfaceColor = isDark ? const Color(0xFF14151B) : Colors.white;
+    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.06);
 
     return Consumer4<MuslyConnectService, BeatSyncService, CastService, UpnpService>(
       builder: (context, connectService, beatSync, castService, upnpService, _) {
@@ -113,35 +108,35 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: widget.isDesktopDialog
-                ? BorderRadius.circular(20)
-                : const BorderRadius.vertical(top: Radius.circular(24)),
+                ? BorderRadius.circular(16)
+                : const BorderRadius.vertical(top: Radius.circular(20)),
             border: widget.isDesktopDialog
-                ? Border.all(color: borderColor, width: 1.5)
+                ? Border.all(color: dividerColor, width: 1)
                 : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           constraints: BoxConstraints(
             maxHeight: widget.isDesktopDialog
-                ? 640
-                : MediaQuery.of(context).size.height * 0.85,
+                ? 600
+                : MediaQuery.of(context).size.height * 0.82,
           ),
           child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Drag Handle for Mobile
+                // Mobile Drag Handle
                 if (!widget.isDesktopDialog) ...[
                   Center(
                     child: Container(
-                      width: 36,
+                      width: 32,
                       height: 4,
                       decoration: BoxDecoration(
                         color: isDark ? Colors.white24 : Colors.black12,
@@ -149,81 +144,96 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                 ],
 
-                // Header
+                // Modal Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Connect & Devices',
-                      style: TextStyle(
-                        fontSize: widget.isDesktopDialog ? 18 : 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Connect to a Device',
+                          style: TextStyle(
+                            fontSize: widget.isDesktopDialog ? 17 : 19,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Select where audio should play',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white54 : Colors.black45,
+                          ),
+                        ),
+                      ],
                     ),
                     IconButton(
-                      icon: const Icon(CupertinoIcons.xmark_circle_fill, size: 20),
-                      color: isDark ? Colors.white54 : Colors.black45,
+                      icon: const Icon(CupertinoIcons.xmark_circle_fill, size: 22),
+                      color: isDark ? Colors.white30 : Colors.black26,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
 
-                // Content
+                // Main Device List
                 Expanded(
                   child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Controlling Remote Device Banner ───────────────────
+                        // ── Active Remote Control Status Bar ──────────────────
                         if (isControlling) ...[
-                          _buildActiveRemoteControlBanner(context, connectService, isDark),
-                          const SizedBox(height: 12),
+                          _buildActiveRemoteControlTile(context, connectService, isDark),
+                          const SizedBox(height: 14),
                         ],
 
-                        // ── Active BeatSync Party Banner ───────────────────────
+                        // ── Active Party Banner ───────────────────────────────
                         if (isInParty) ...[
-                          _buildActiveBeatSyncBanner(context, beatSync, isDark),
-                          const SizedBox(height: 12),
+                          _buildActivePartyTile(context, beatSync, isDark),
+                          const SizedBox(height: 14),
                         ],
 
-                        // Current Device Card
-                        _buildCurrentDeviceCard(connectService, player, isDark),
-                        const SizedBox(height: 16),
+                        // ── Current Device / Output ───────────────────────────
+                        if (!isControlling) ...[
+                          _buildCurrentDeviceTile(connectService, player, isDark),
+                          const SizedBox(height: 16),
+                        ],
 
-                        // ── Musly BeatSync [BETA] Card ─────────────────────────
+                        // ── Group Session / Party Mode (BeatSync) ──────────────
                         if (!isInParty) ...[
-                          _buildBeatSyncSection(context, beatSync, partyRooms, isDark, cardBg, borderColor),
+                          _buildGroupSessionCard(context, beatSync, partyRooms, isDark),
                           const SizedBox(height: 20),
                         ],
 
-                        // ── Musly Connect Devices (Spotify Connect style) ──────
-                        _buildSectionHeader('Musly Connect Devices', compatibleDevices.isNotEmpty),
-                        const SizedBox(height: 8),
+                        // ── Available Musly Devices ───────────────────────────
+                        _buildSectionLabel('MUSLY CONNECT DEVICES'),
+                        const SizedBox(height: 6),
 
                         if (compatibleDevices.isEmpty)
-                          _buildEmptyDeviceHint('No other Musly devices found on this Wi-Fi.')
+                          _buildEmptyNotice('No other devices running Musly found on this Wi-Fi.')
                         else
                           ...compatibleDevices.map(
-                            (d) => _buildMuslyConnectDeviceTile(
-                              context,
-                              d,
-                              connectService,
-                              player,
-                              isDark,
-                              cardBg,
-                              borderColor,
+                            (device) => _buildMuslyDeviceRow(
+                              context: context,
+                              device: device,
+                              connectService: connectService,
+                              player: player,
+                              isDark: isDark,
                             ),
                           ),
 
                         const SizedBox(height: 16),
 
-                        // ── Cast & DLNA Devices ───────────────────────────────
+                        // ── Cast & UPnP Wireless Speakers ──────────────────────
                         StreamBuilder<List<GoogleCastDevice>>(
                           stream: _discoveryManager.devicesStream,
                           builder: (context, snapshot) {
@@ -236,19 +246,16 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildSectionHeader('Speakers & Displays (Cast / DLNA)', true),
-                                const SizedBox(height: 8),
+                                _buildSectionLabel('SPEAKERS & TVS'),
+                                const SizedBox(height: 6),
 
-                                // Cast Devices
-                                ...castDevices.map((cd) => _buildCastDeviceTile(context, cd, castService, cardBg, borderColor)),
-
-                                // UPnP Devices
-                                ...upnpDevices.map((ud) => _buildUpnpDeviceTile(context, ud, upnpService, cardBg, borderColor)),
+                                ...castDevices.map((cd) => _buildCastRow(context, cd, castService, isDark)),
+                                ...upnpDevices.map((ud) => _buildUpnpRow(context, ud, upnpService, isDark)),
                               ],
                             );
                           },
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),
@@ -261,57 +268,130 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildActiveRemoteControlBanner(
-    BuildContext context,
-    MuslyConnectService connectService,
-    bool isDark,
-  ) {
+  Widget _buildSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 4),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.grey,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyNotice(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
+      ),
+    );
+  }
+
+  Widget _buildCurrentDeviceTile(MuslyConnectService connect, PlayerProvider player, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.brandRed.withValues(alpha: 0.12),
+        color: const Color(0xFF1DB954).withValues(alpha: isDark ? 0.12 : 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.brandRed.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
-          const Icon(CupertinoIcons.antenna_radiowaves_left_right, color: AppTheme.brandRed, size: 18),
-          const SizedBox(width: 10),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1DB954).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.volume_up_rounded, color: Color(0xFF1DB954), size: 20),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'CONTROLLING REMOTE DEVICE',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.brandRed, letterSpacing: 0.5),
-                ),
-                const SizedBox(height: 1),
                 Text(
-                  connectService.activeRemoteDevice?.name ?? 'Remote Device',
+                  connect.localDeviceName,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Playing on this device',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF1DB954), fontWeight: FontWeight.w600),
+                ),
               ],
             ),
           ),
-          ElevatedButton.icon(
+          // Subtle audio wave indicator
+          const Icon(CupertinoIcons.waveform, color: Color(0xFF1DB954), size: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveRemoteControlTile(
+    BuildContext context,
+    MuslyConnectService connectService,
+    bool isDark,
+  ) {
+    final remoteName = connectService.activeRemoteDevice?.name ?? 'Remote Device';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1DB954).withValues(alpha: isDark ? 0.14 : 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.devices_rounded, color: Color(0xFF1DB954), size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  remoteName,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Controlling remote playback',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
             onPressed: () {
               connectService.disconnectRemote();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Disconnected from remote device')),
+                const SnackBar(content: Text('Switched back to this device')),
               );
             },
-            icon: const Icon(CupertinoIcons.xmark, size: 12),
-            label: const Text('Disconnect', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.brandRed,
-              foregroundColor: Colors.white,
-              elevation: 0,
+            style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              backgroundColor: isDark ? Colors.white12 : Colors.black12,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              'Disconnect',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
           ),
         ],
@@ -319,36 +399,32 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildActiveBeatSyncBanner(
-    BuildContext context,
-    BeatSyncService beatSync,
-    bool isDark,
-  ) {
+  Widget _buildActivePartyTile(BuildContext context, BeatSyncService beatSync, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+        color: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.14 : 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35)),
+        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(CupertinoIcons.music_mic, color: Color(0xFF8B5CF6), size: 18),
-          const SizedBox(width: 10),
+          const Icon(CupertinoIcons.person_2_fill, color: Color(0xFF8B5CF6), size: 20),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  beatSync.isHost ? 'HOSTING PARTY ROOM' : 'CONNECTED TO PARTY',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF8B5CF6), letterSpacing: 0.5),
-                ),
-                const SizedBox(height: 1),
-                Text(
                   beatSync.partyRoomName,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  beatSync.isHost ? 'Hosting group session' : 'Joined group session',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF8B5CF6), fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -360,16 +436,18 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               );
             },
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Open Room', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6))),
+            child: const Text(
+              'Open',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
+            ),
           ),
           const SizedBox(width: 6),
           IconButton(
-            icon: const Icon(CupertinoIcons.xmark_circle, size: 18, color: Colors.redAccent),
-            tooltip: beatSync.isHost ? 'Close Room' : 'Leave Room',
+            icon: const Icon(CupertinoIcons.xmark_circle, size: 20, color: Colors.redAccent),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () {
@@ -380,7 +458,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                 MuslyConnectService().leavePartySession();
               }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(wasHost ? 'Party room closed' : 'Left party room')),
+                SnackBar(content: Text(wasHost ? 'Group session ended' : 'Left group session')),
               );
             },
           ),
@@ -389,105 +467,36 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildCurrentDeviceCard(MuslyConnectService connect, PlayerProvider player, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1DB954).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFF1DB954),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(CupertinoIcons.speaker_2_fill, color: Colors.white, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'CURRENT DEVICE',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF1DB954), letterSpacing: 0.5),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  connect.localDeviceName,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const Icon(CupertinoIcons.waveform, color: Color(0xFF1DB954), size: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBeatSyncSection(
+  Widget _buildGroupSessionCard(
     BuildContext context,
     BeatSyncService beatSync,
     List<ConnectDevice> availableRooms,
     bool isDark,
-    Color cardBg,
-    Color borderColor,
   ) {
-    if (beatSync.isInParty) {
-      return const SizedBox.shrink();
-    }
+    final bg = isDark ? const Color(0xFF1B1C26) : const Color(0xFFF4F5F8);
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: bg,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                children: [
-                  Icon(CupertinoIcons.sparkles, color: Color(0xFF8B5CF6), size: 16),
-                  SizedBox(width: 8),
-                  Text(
-                    'BeatSync Multi-Speaker',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'BETA',
-                  style: TextStyle(
-                    color: Color(0xFF8B5CF6),
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+              const Icon(CupertinoIcons.person_2_fill, color: Color(0xFF8B5CF6), size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                'Group Listening Session',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Sync audio across phones and PCs over Wi-Fi with NTP precision.',
+            'Play audio in sync across multiple phones and computers on this network.',
             style: TextStyle(
               fontSize: 12,
               color: isDark ? Colors.white60 : Colors.black54,
@@ -498,7 +507,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () {
                     if (!beatSync.isHost) {
                       beatSync.startHostingParty();
@@ -507,20 +516,22 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                       CupertinoPageRoute(builder: (_) => const BeatSyncPartyScreen()),
                     );
                   },
-                  icon: const Icon(CupertinoIcons.music_mic, size: 14),
-                  label: Text(beatSync.isHost ? 'Open Party' : 'Host Party', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF8B5CF6),
                     side: const BorderSide(color: Color(0xFF8B5CF6)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
+                  child: Text(
+                    beatSync.isHost ? 'Open Session' : 'Start Session',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
               if (availableRooms.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: () async {
                       final host = availableRooms.first;
                       final ok = await MuslyConnectService().connectToRemoteDevice(host);
@@ -535,14 +546,16 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                         );
                       }
                     },
-                    icon: const Icon(CupertinoIcons.person_badge_plus, size: 14),
-                    label: Text('Join (${availableRooms.first.name})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(
+                      'Join (${availableRooms.first.name})',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -554,146 +567,29 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildSectionHeader(String title, bool hasDevices) {
-    return Text(
-      title.toUpperCase(),
-      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 0.6),
-    );
-  }
-
-  Widget _buildMuslyConnectDeviceTile(
-    BuildContext context,
-    ConnectDevice device,
-    MuslyConnectService connectService,
-    PlayerProvider player,
-    bool isDark,
-    Color cardBg,
-    Color borderColor,
-  ) {
+  Widget _buildMuslyDeviceRow({
+    required BuildContext context,
+    required ConnectDevice device,
+    required MuslyConnectService connectService,
+    required PlayerProvider player,
+    required bool isDark,
+  }) {
     final isControlling = connectService.activeRemoteDevice?.id == device.id;
+    final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: isControlling
-            ? const Color(0xFF1DB954).withValues(alpha: 0.08)
-            : cardBg,
+        color: isControlling ? const Color(0xFF1DB954).withValues(alpha: 0.1) : tileBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isControlling ? const Color(0xFF1DB954).withValues(alpha: 0.4) : borderColor,
-        ),
+        border: isControlling
+            ? Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.35))
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        leading: Icon(
-          _getPlatformIcon(device.platform),
-          size: 22,
-          color: isControlling ? const Color(0xFF1DB954) : (isDark ? Colors.white70 : Colors.black87),
-        ),
-        title: Text(
-          device.name,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          device.isPlaying && device.currentSongTitle != null
-              ? 'Playing: ${device.currentSongTitle}'
-              : 'Musly (${device.platform.toUpperCase()})',
-          style: TextStyle(
-            fontSize: 12,
-            color: isControlling ? const Color(0xFF1DB954) : Colors.grey,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Transfer Playback Button
-            IconButton(
-              icon: const Icon(CupertinoIcons.arrow_right_arrow_left_circle, size: 22),
-              tooltip: 'Transfer playback here',
-              color: isDark ? Colors.white70 : Colors.black87,
-              onPressed: () async {
-                final queueToTransfer = player.queue.isNotEmpty
-                    ? player.queue
-                    : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
-
-                if (queueToTransfer.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No active playback to transfer')),
-                  );
-                  return;
-                }
-
-                final currentPos = player.position.inSeconds;
-                final currentIndex = player.currentIndex.clamp(0, queueToTransfer.length - 1);
-
-                // Connect to remote device
-                await connectService.connectToRemoteDevice(device);
-
-                // Transfer playback with dual WebSocket + HTTP delivery
-                final delivered = await connectService.transferPlaybackToRemote(
-                  queueToTransfer,
-                  currentIndex,
-                  currentPos,
-                  targetDevice: device,
-                );
-
-                if (delivered) {
-                  // Pause local playback since it migrated to target device
-                  await player.pause();
-
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Playback transferred to ${device.name}'),
-                        backgroundColor: const Color(0xFF1DB954),
-                      ),
-                    );
-                  }
-                } else {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to transfer playback to ${device.name}')),
-                    );
-                  }
-                }
-              },
-            ),
-
-            // Disconnect or Control toggle
-            if (isControlling)
-              IconButton(
-                icon: const Icon(CupertinoIcons.xmark_circle, size: 20, color: Colors.redAccent),
-                tooltip: 'Disconnect controller',
-                onPressed: () {
-                  connectService.disconnectRemote();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Disconnected from ${device.name}')),
-                  );
-                },
-              )
-            else
-              IconButton(
-                icon: const Icon(CupertinoIcons.slider_horizontal_3, size: 20),
-                tooltip: 'Remote Control',
-                color: isDark ? Colors.white54 : Colors.black45,
-                onPressed: () async {
-                  final ok = await connectService.connectToRemoteDevice(device);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(ok ? 'Connected to ${device.name}' : 'Could not connect'),
-                      ),
-                    );
-                  }
-                },
-              ),
-          ],
-        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
           onTap: () async {
             if (isControlling) {
               connectService.disconnectRemote();
@@ -701,32 +597,112 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               await connectService.connectToRemoteDevice(device);
             }
           },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                Icon(
+                  _getPlatformIcon(device.platform),
+                  size: 22,
+                  color: isControlling ? const Color(0xFF1DB954) : (isDark ? Colors.white70 : Colors.black87),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        device.name,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isControlling ? const Color(0xFF1DB954) : null,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        device.isPlaying && device.currentSongTitle != null
+                            ? 'Playing: ${device.currentSongTitle}'
+                            : 'Musly Connect • Ready',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isControlling ? const Color(0xFF1DB954) : Colors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Play Here transfer button
+                IconButton(
+                  icon: const Icon(CupertinoIcons.arrow_right_arrow_left, size: 18),
+                  tooltip: 'Transfer audio here',
+                  color: isDark ? Colors.white60 : Colors.black54,
+                  onPressed: () async {
+                    final queue = player.queue.isNotEmpty
+                        ? player.queue
+                        : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
+
+                    if (queue.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No active playback to transfer')),
+                      );
+                      return;
+                    }
+
+                    final pos = player.position.inSeconds;
+                    final idx = player.currentIndex.clamp(0, queue.length - 1);
+
+                    await connectService.connectToRemoteDevice(device);
+                    final ok = await connectService.transferPlaybackToRemote(
+                      queue,
+                      idx,
+                      pos,
+                      targetDevice: device,
+                    );
+
+                    if (ok) {
+                      await player.pause();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Playback transferred to ${device.name}'),
+                            backgroundColor: const Color(0xFF1DB954),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCastDeviceTile(
-    BuildContext context,
-    GoogleCastDevice castDevice,
-    CastService cast,
-    Color cardBg,
-    Color borderColor,
-  ) {
+  Widget _buildCastRow(BuildContext context, GoogleCastDevice castDevice, CastService cast, bool isDark) {
+    final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: tileBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
       ),
       child: Material(
         color: Colors.transparent,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-          leading: const Icon(Icons.cast, size: 22, color: Colors.white70),
-          title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          leading: const Icon(Icons.cast, size: 20, color: Colors.grey),
+          title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+          subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 11.5, color: Colors.grey)),
           onTap: () async {
             final ok = await cast.connectToDevice(castDevice);
             if (context.mounted) {
@@ -743,29 +719,25 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildUpnpDeviceTile(
-    BuildContext context,
-    UpnpDevice upnpDevice,
-    UpnpService upnp,
-    Color cardBg,
-    Color borderColor,
-  ) {
+  Widget _buildUpnpRow(BuildContext context, UpnpDevice upnpDevice, UpnpService upnp, bool isDark) {
+    final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: tileBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
       ),
       child: Material(
         color: Colors.transparent,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-          leading: const Icon(Icons.speaker_group, size: 22, color: Colors.white70),
-          title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          leading: const Icon(Icons.speaker_group, size: 20, color: Colors.grey),
+          title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
           subtitle: Text(
             [upnpDevice.manufacturer, upnpDevice.modelName].where((s) => s.isNotEmpty).join(' • '),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 11.5, color: Colors.grey),
           ),
           onTap: () async {
             final ok = await upnp.connect(upnpDevice);
@@ -783,29 +755,22 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildEmptyDeviceHint(String message) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: Text(
-        message,
-        style: const TextStyle(fontSize: 12, color: Colors.grey),
-      ),
-    );
-  }
-
   IconData _getPlatformIcon(String platform) {
     switch (platform.toLowerCase()) {
+      case 'android':
+        return Icons.phone_android_rounded;
+      case 'ios':
+        return Icons.phone_iphone_rounded;
       case 'windows':
         return Icons.desktop_windows_rounded;
       case 'macos':
         return Icons.laptop_mac_rounded;
       case 'linux':
         return Icons.computer_rounded;
-      case 'ios':
-        return CupertinoIcons.device_phone_portrait;
-      case 'android':
+      case 'tv':
+        return Icons.tv_rounded;
       default:
-        return Icons.phone_android_rounded;
+        return Icons.speaker_rounded;
     }
   }
 }
