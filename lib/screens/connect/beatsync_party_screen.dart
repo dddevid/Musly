@@ -387,7 +387,7 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
           IconButton(
             icon: const Icon(CupertinoIcons.backward_fill, color: Colors.white),
             onPressed: () {
-              player.previous();
+              player.skipPrevious();
               final currentSong = player.currentSong;
               if (currentSong != null) {
                 final epoch = BeatSyncService().calculateScheduledPlayEpoch();
@@ -414,7 +414,7 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
           IconButton(
             icon: const Icon(CupertinoIcons.forward_fill, color: Colors.white),
             onPressed: () {
-              player.next();
+              player.skipNext();
               final currentSong = player.currentSong;
               if (currentSong != null) {
                 final epoch = BeatSyncService().calculateScheduledPlayEpoch();

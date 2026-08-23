@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'song.dart';
 
 /// Supported operation modes for Musly Connect peer compatibility matching.
 enum ConnectMode {

@@ -3,10 +3,10 @@
 // https://github.com/freeman-jiang/beatsync
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'package:provider/provider.dart';
 import '../../models/connect_device.dart';
 import '../../providers/player_provider.dart';
@@ -34,21 +34,34 @@ class ConnectDevicesModal extends StatefulWidget {
 }
 
 class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
+  final GoogleCastDiscoveryManagerPlatformInterface _discoveryManager =
+      GoogleCastDiscoveryManager.instance;
+
   @override
   void initState() {
     super.initState();
-    // Trigger discovery scans
+    // Trigger UPnP discovery
     final upnp = Provider.of<UpnpService>(context, listen: false);
     upnp.discover();
-    final cast = Provider.of<CastService>(context, listen: false);
-    cast.searchDevices();
+
+    // Trigger Cast discovery
+    try {
+      _discoveryManager.startDiscovery();
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    try {
+      _discoveryManager.stopDiscovery();
+    } catch (_) {}
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primary = theme.colorScheme.primary;
 
     return Consumer4<MuslyConnectService, BeatSyncService, CastService, UpnpService>(
       builder: (context, connectService, beatSync, castService, upnpService, _) {
@@ -121,16 +134,30 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                   const SizedBox(height: 20),
 
                   // ── Cast & DLNA Devices ───────────────────────────────────
-                  if (castService.devices.isNotEmpty || upnpService.devices.isNotEmpty) ...[
-                    _buildSectionHeader('Speakers & Displays (Cast / DLNA)', true),
-                    const SizedBox(height: 8),
+                  StreamBuilder<List<GoogleCastDevice>>(
+                    stream: _discoveryManager.devicesStream,
+                    builder: (context, snapshot) {
+                      final castDevices = snapshot.data ?? [];
+                      final upnpDevices = upnpService.devices;
+                      final hasWireless = castDevices.isNotEmpty || upnpDevices.isNotEmpty;
 
-                    // Cast Devices
-                    ...castService.devices.map((cd) => _buildCastDeviceTile(context, cd, castService)),
+                      if (!hasWireless) return const SizedBox.shrink();
 
-                    // UPnP Devices
-                    ...upnpService.devices.map((ud) => _buildUpnpDeviceTile(context, ud, upnpService)),
-                  ],
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader('Speakers & Displays (Cast / DLNA)', true),
+                          const SizedBox(height: 8),
+
+                          // Cast Devices
+                          ...castDevices.map((cd) => _buildCastDeviceTile(context, cd, castService)),
+
+                          // UPnP Devices
+                          ...upnpDevices.map((ud) => _buildUpnpDeviceTile(context, ud, upnpService)),
+                        ],
+                      );
+                    },
+                  ),
 
                   const SizedBox(height: 20),
                 ],
@@ -392,24 +419,40 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildCastDeviceTile(BuildContext context, dynamic castDevice, CastService cast) {
+  Widget _buildCastDeviceTile(BuildContext context, GoogleCastDevice castDevice, CastService cast) {
     return ListTile(
       leading: const Icon(Icons.cast, color: Colors.white70),
-      title: Text(castDevice.name, style: const TextStyle(fontSize: 14)),
-      onTap: () {
-        cast.connect(castDevice);
-        Navigator.of(context).pop();
+      title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 14)),
+      subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      onTap: () async {
+        final ok = await cast.connectToDevice(castDevice);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+          if (!ok) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to connect to ${castDevice.friendlyName}')),
+            );
+          }
+        }
       },
     );
   }
 
-  Widget _buildUpnpDeviceTile(BuildContext context, dynamic upnpDevice, UpnpService upnp) {
+  Widget _buildUpnpDeviceTile(BuildContext context, UpnpDevice upnpDevice, UpnpService upnp) {
     return ListTile(
       leading: const Icon(Icons.speaker_group, color: Colors.white70),
       title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 14)),
-      onTap: () {
-        upnp.connect(upnpDevice);
-        Navigator.of(context).pop();
+      subtitle: Text([upnpDevice.manufacturer, upnpDevice.modelName].where((s) => s.isNotEmpty).join(' • '), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      onTap: () async {
+        final ok = await upnp.connect(upnpDevice);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+          if (!ok) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to connect to ${upnpDevice.friendlyName}')),
+            );
+          }
+        }
       },
     );
   }

@@ -18,6 +18,9 @@ import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
+import 'services/musly_connect_service.dart';
+import 'services/beatsync_service.dart';
+import 'models/connect_device.dart';
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
@@ -272,8 +275,8 @@ void main() async {
   muslyConnectService.onRemotePlay = () => playerProvider.play();
   muslyConnectService.onRemotePause = () => playerProvider.pause();
   muslyConnectService.onRemoteTogglePlayPause = () => playerProvider.togglePlayPause();
-  muslyConnectService.onRemoteNext = () => playerProvider.next();
-  muslyConnectService.onRemotePrevious = () => playerProvider.previous();
+  muslyConnectService.onRemoteNext = () => playerProvider.skipNext();
+  muslyConnectService.onRemotePrevious = () => playerProvider.skipPrevious();
   muslyConnectService.onRemoteSeek = (sec) => playerProvider.seek(Duration(seconds: sec));
   muslyConnectService.onRemoteVolume = (vol) => playerProvider.setVolume(vol);
   muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) {
@@ -312,7 +315,7 @@ void main() async {
     mode: subsonicService.isYoutube
         ? ConnectMode.webStream
         : (subsonicService.isJellyfin ? ConnectMode.jellyfin : ConnectMode.subsonic),
-    serverHash: subsonicService.baseUrl,
+    serverHash: subsonicService.activeBaseUrl,
   ).catchError((e) {
     debugPrint('MuslyConnect initialization error: $e');
   });
