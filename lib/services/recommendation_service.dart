@@ -102,21 +102,26 @@ class RecommendationService extends ChangeNotifier {
     final id = song.id;
     final hour = DateTime.now().hour;
 
-    _profiles
-        .putIfAbsent(
-          id,
-          () => SongProfile(
-            songId: id,
-            title: song.title,
-            artist: song.artist,
-            artistId: song.artistId,
-            albumId: song.albumId,
-            genre: song.genre,
-            duration: song.duration,
-          ),
-        )
-        .addPlay(
-            durationPlayed: durationPlayed, completed: completed, hour: hour);
+    final profile = _profiles.putIfAbsent(
+      id,
+      () => SongProfile(
+        songId: id,
+        title: song.title,
+        artist: song.artist,
+        artistId: song.artistId,
+        albumId: song.albumId,
+        coverArt: song.coverArt,
+        genre: song.genre,
+        duration: song.duration,
+      ),
+    );
+
+    if (song.coverArt != null && song.coverArt!.isNotEmpty) {
+      profile.coverArt = song.coverArt;
+    }
+
+    profile.addPlay(
+        durationPlayed: durationPlayed, completed: completed, hour: hour);
 
     _recentlyPlayed.remove(id);
     _recentlyPlayed.insert(0, id);
@@ -775,6 +780,7 @@ class SongProfile {
   final String? genre;
   final int? duration;
 
+  String? coverArt;
   int playCount = 0;
   int skipCount = 0;
   int totalListenTime = 0;
@@ -789,6 +795,7 @@ class SongProfile {
     this.artist,
     this.artistId,
     this.albumId,
+    this.coverArt,
     this.genre,
     this.duration,
     DateTime? lastPlayed,
@@ -825,6 +832,7 @@ class SongProfile {
         'artist': artist,
         'artistId': artistId,
         'albumId': albumId,
+        'coverArt': coverArt,
         'genre': genre,
         'duration': duration,
         'playCount': playCount,
@@ -842,6 +850,7 @@ class SongProfile {
         artist: json['artist'] as String?,
         artistId: json['artistId'] as String?,
         albumId: json['albumId'] as String?,
+        coverArt: json['coverArt'] as String?,
         genre: json['genre'] as String?,
         duration: json['duration'] as int?,
         lastPlayed: json['lastPlayed'] != null

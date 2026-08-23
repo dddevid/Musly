@@ -144,11 +144,13 @@ class WrappedService {
       if (songMap.containsKey(p.songId)) {
         song = songMap[p.songId]!;
       } else {
+        final cover = p.coverArt ?? (p.albumId != null ? 'al-${p.albumId}' : p.songId);
         song = Song(
           id: p.songId,
           title: p.title,
           artist: p.artist,
           albumId: p.albumId,
+          coverArt: cover,
           genre: p.genre,
           duration: p.duration,
         );
@@ -169,8 +171,11 @@ class WrappedService {
     for (final p in profiles.values) {
       if (p.artist != null && p.artist!.isNotEmpty) {
         artistCounts[p.artist!] = (artistCounts[p.artist!] ?? 0) + p.playCount;
-        if (songMap.containsKey(p.songId) && songMap[p.songId]?.coverArt != null) {
-          artistCovers.putIfAbsent(p.artist!, () => songMap[p.songId]?.coverArt);
+        final cover = songMap[p.songId]?.coverArt ??
+            p.coverArt ??
+            (p.albumId != null ? 'al-${p.albumId}' : p.songId);
+        if (cover != null && cover.isNotEmpty) {
+          artistCovers.putIfAbsent(p.artist!, () => cover);
         }
       }
     }

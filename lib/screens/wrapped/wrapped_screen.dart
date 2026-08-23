@@ -76,9 +76,14 @@ class _WrappedScreenState extends State<WrappedScreen>
     final recService = Provider.of<RecommendationService>(context, listen: false);
     final libProvider = Provider.of<LibraryProvider>(context, listen: false);
 
+    var allSongs = libProvider.cachedAllSongs;
+    if (allSongs.isEmpty) {
+      allSongs = libProvider.downloadedSongs;
+    }
+
     final wrappedData = await WrappedService().computeWrappedData(
       recommendationService: recService,
-      allLibrarySongs: libProvider.cachedAllSongs,
+      allLibrarySongs: allSongs,
     );
 
     if (mounted) {
@@ -791,15 +796,21 @@ class _WrappedScreenState extends State<WrappedScreen>
                         color: i == 0 ? const Color(0xFF8E2DE2) : Colors.white60,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: const Color(0xFF8E2DE2).withValues(alpha: 0.3),
-                      child: Text(
-                        rank.name.isNotEmpty ? rank.name[0].toUpperCase() : '?',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    if (rank.coverArt != null && rank.coverArt!.isNotEmpty)
+                      AlbumArtwork(
+                        coverArt: rank.coverArt,
+                        size: 42,
+                        borderRadius: 21,
+                      )
+                    else
+                      CircleAvatar(
+                        radius: 21,
+                        backgroundColor: const Color(0xFF8E2DE2).withValues(alpha: 0.3),
+                        child: Text(
+                          rank.name.isNotEmpty ? rank.name[0].toUpperCase() : '?',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ),
-                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(

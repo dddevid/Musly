@@ -1861,4 +1861,73 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get endOfSong => 'End of Song';
+
+  @override
+  String get muslyConnect => 'Musly Connect';
+
+  @override
+  String get connectToDevice => 'Connect to a Device';
+
+  @override
+  String get currentlyPlayingOn => 'Currently Playing On';
+
+  @override
+  String get noDevicesFound =>
+      'No other Musly devices found on your Wi-Fi network.';
+
+  @override
+  String get transferPlaybackHere => 'Transfer playback here';
+
+  @override
+  String playbackTransferredTo(String device) {
+    return 'Playback transferred to $device';
+  }
+
+  @override
+  String get muslyBeatSync => 'Musly BeatSync';
+
+  @override
+  String get beatSyncSubtitle =>
+      'Synchronize multiple phones & computers over Wi-Fi as surround party speakers with millisecond precision.';
+
+  @override
+  String get hostParty => 'Host Party';
+
+  @override
+  String get joinParty => 'Join Party';
+
+  @override
+  String get leaveParty => 'Leave Party';
+
+  @override
+  String get audioPhaseCalibration => 'Audio Phase Calibration';
+
+  @override
+  String get phaseCalibrationSubtitle =>
+      'Adjust if using Bluetooth headphones or external speaker latency.';
+
+  @override
+  String get partySpeakers => 'Party Speakers';
+
+  @override
+  String get muslyWrapped => 'Musly Wrapped';
+
+  @override
+  String get wrappedSeasonal => 'Musly Wrapped is Seasonal';
+
+  @override
+  String get playYourTopSongs => 'Play Your Top Songs';
+
+  @override
+  String get milestone50SongsTitle => 'Thank you from our hearts!';
+
+  @override
+  String get milestone50SongsBadge => '50 SONGS MILESTONE';
+
+  @override
+  String get milestone50SongsMessage =>
+      'You just reached the milestone of 50 songs listened to on Musly! Thank you for choosing this app for your daily music journey.';
+
+  @override
+  String get continueListening => 'Continue Listening';
 }

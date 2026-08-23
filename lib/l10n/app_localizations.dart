@@ -3525,6 +3525,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'End of Song'**
   String get endOfSong;
+
+  /// Title for Musly Connect feature
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Connect'**
+  String get muslyConnect;
+
+  /// Title for Connect to a Device sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a Device'**
+  String get connectToDevice;
+
+  /// Label for currently active playback device
+  ///
+  /// In en, this message translates to:
+  /// **'Currently Playing On'**
+  String get currentlyPlayingOn;
+
+  /// Empty state when no peer devices are discovered
+  ///
+  /// In en, this message translates to:
+  /// **'No other Musly devices found on your Wi-Fi network.'**
+  String get noDevicesFound;
+
+  /// Tooltip for transferring playback to a device
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer playback here'**
+  String get transferPlaybackHere;
+
+  /// Snackbar message when playback is transferred
+  ///
+  /// In en, this message translates to:
+  /// **'Playback transferred to {device}'**
+  String playbackTransferredTo(String device);
+
+  /// Title for BeatSync feature
+  ///
+  /// In en, this message translates to:
+  /// **'Musly BeatSync'**
+  String get muslyBeatSync;
+
+  /// Description of BeatSync party audio sync
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronize multiple phones & computers over Wi-Fi as surround party speakers with millisecond precision.'**
+  String get beatSyncSubtitle;
+
+  /// Button to host a party room
+  ///
+  /// In en, this message translates to:
+  /// **'Host Party'**
+  String get hostParty;
+
+  /// Button to join a party room
+  ///
+  /// In en, this message translates to:
+  /// **'Join Party'**
+  String get joinParty;
+
+  /// Button to leave a party room
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Party'**
+  String get leaveParty;
+
+  /// Title for phase sync calibration slider
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Phase Calibration'**
+  String get audioPhaseCalibration;
+
+  /// Subtitle for phase calibration
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust if using Bluetooth headphones or external speaker latency.'**
+  String get phaseCalibrationSubtitle;
+
+  /// List title for connected party devices
+  ///
+  /// In en, this message translates to:
+  /// **'Party Speakers'**
+  String get partySpeakers;
+
+  /// Title for Musly Wrapped retrospective
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Wrapped'**
+  String get muslyWrapped;
+
+  /// Title when Wrapped is accessed outside seasonal window
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Wrapped is Seasonal'**
+  String get wrappedSeasonal;
+
+  /// Button to play top songs playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Play Your Top Songs'**
+  String get playYourTopSongs;
+
+  /// Title for 50-song milestone celebration
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you from our hearts!'**
+  String get milestone50SongsTitle;
+
+  /// Badge for 50-song milestone
+  ///
+  /// In en, this message translates to:
+  /// **'50 SONGS MILESTONE'**
+  String get milestone50SongsBadge;
+
+  /// Message for 50-song milestone
+  ///
+  /// In en, this message translates to:
+  /// **'You just reached the milestone of 50 songs listened to on Musly! Thank you for choosing this app for your daily music journey.'**
+  String get milestone50SongsMessage;
+
+  /// Button to continue listening after milestone celebration
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Listening'**
+  String get continueListening;
 }
 
 class _AppLocalizationsDelegate

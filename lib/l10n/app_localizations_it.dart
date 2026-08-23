@@ -1720,7 +1720,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get supportWayEnjoy => 'Semplicemente goditi la musica!';
 
   @override
-  String get supportMadeWithLove => 'Creato con passione in Italia';
+  String get supportMadeWithLove => 'Crafted with passion in Italy';
 
   @override
   String get playbackSpeed => 'Playback Speed';
@@ -1859,17 +1859,86 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get audioFocusDenied =>
-      'Impossibile avviare la riproduzione — un\'altra app ha il focus audio';
+      'Couldn\'t start playback — another app has audio focus';
 
   @override
-  String get addToLibrary => 'Aggiungi alla libreria';
+  String get addToLibrary => 'Add to Library';
 
   @override
-  String get alreadyInLibrary => 'Brano già presente nella libreria del server';
+  String get alreadyInLibrary => 'Song already in server library';
 
   @override
   String get selectPlaylist => 'Seleziona Playlist';
 
   @override
   String get endOfSong => 'Fine Brano';
+
+  @override
+  String get muslyConnect => 'Musly Connect';
+
+  @override
+  String get connectToDevice => 'Connetti a un Dispositivo';
+
+  @override
+  String get currentlyPlayingOn => 'In Riproduzione Su';
+
+  @override
+  String get noDevicesFound =>
+      'Nessun altro dispositivo Musly trovato sulla tua rete Wi-Fi.';
+
+  @override
+  String get transferPlaybackHere => 'Trasferisci la riproduzione qui';
+
+  @override
+  String playbackTransferredTo(String device) {
+    return 'Riproduzione trasferita su $device';
+  }
+
+  @override
+  String get muslyBeatSync => 'Musly BeatSync';
+
+  @override
+  String get beatSyncSubtitle =>
+      'Sincronizza più telefoni e computer su Wi-Fi come altoparlanti surround per le feste con precisione al millisecondo.';
+
+  @override
+  String get hostParty => 'Crea Party';
+
+  @override
+  String get joinParty => 'Unisciti al Party';
+
+  @override
+  String get leaveParty => 'Lascia il Party';
+
+  @override
+  String get audioPhaseCalibration => 'Calibrazione Fase Audio';
+
+  @override
+  String get phaseCalibrationSubtitle =>
+      'Regola per compensare la latenza di cuffie o altoparlanti Bluetooth.';
+
+  @override
+  String get partySpeakers => 'Altoparlanti Party';
+
+  @override
+  String get muslyWrapped => 'Musly Wrapped';
+
+  @override
+  String get wrappedSeasonal => 'Musly Wrapped è Stagionale';
+
+  @override
+  String get playYourTopSongs => 'Riproduci i Tuoi Brani Preferiti';
+
+  @override
+  String get milestone50SongsTitle => 'Grazie di cuore!';
+
+  @override
+  String get milestone50SongsBadge => '50 BRANI ASCOLTATI';
+
+  @override
+  String get milestone50SongsMessage =>
+      'Hai appena raggiunto il traguardo di 50 brani ascoltati su Musly! Grazie per aver scelto quest\'app per accompagnare la tua passione musicale ogni giorno.';
+
+  @override
+  String get continueListening => 'Continua ad ascoltare';
 }
