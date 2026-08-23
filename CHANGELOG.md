@@ -75,6 +75,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Sort bottom sheet padding adjusted to remain fully visible above the mini player (#230).
   - Duplicate song prevention warning when adding tracks to an existing playlist (#211).
 
+- **Unified Login & Provider Selection Grid**
+  - "Local Files" integrated directly alongside Subsonic, Jellyfin, and Web Stream as a first-class music source.
+  - Uniform 2-column grid button layout ensuring identical dimensions across all provider options.
+  - Context-aware settings visibility: hides Legacy Authentication for Jellyfin; hides server URL/credentials, Legacy Auth, Self-Signed Certs, and Advanced Options when selecting Local Files or Web Stream.
+  - Replaced legacy bottom "Use Local Files" button with clean, inline scanning and access card.
+
+- **iOS Platform Guard & App Store Sandbox Compliance**
+  - Completely disabled and concealed Web Stream / YT Stream on iOS across login screens, server switcher sheets, storage profiles, and streaming handlers to strictly comply with iOS guidelines.
+
 - **Privacy-First Architecture**
   - Completely removed Countly SDK, analytics trackers, and remote telemetry. Musly is 100% private with no background telemetry.
 
