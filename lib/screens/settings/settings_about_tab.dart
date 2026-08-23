@@ -8,8 +8,11 @@ import 'package:musly/widgets/dialogs/support_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/utils/context_extensions.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:musly/screens/onboarding/onboarding_screen.dart';
 import 'package:musly/screens/wrapped/wrapped_screen.dart';
+import 'package:musly/services/wrapped_service.dart';
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -20,6 +23,8 @@ class SettingsAboutTab extends StatefulWidget {
 
 class _SettingsAboutTabState extends State<SettingsAboutTab> {
   bool _hasRated = false;
+  int _versionTapCount = 0;
+  bool _devWrappedUnlocked = false;
 
   @override
   void initState() {
@@ -48,6 +53,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               iconColor: Theme.of(context).colorScheme.primary,
               title: AppLocalizations.of(context)!.aboutVersion,
               subtitle: '2.0.0',
+              onTap: _onVersionTapped,
             ),
             _buildDivider(context),
             _buildInfoTile(
@@ -110,21 +116,29 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 );
               },
             ),
-            _buildDivider(context),
-            _buildActionTile(
-              context,
-              icon: CupertinoIcons.gift_fill,
-              iconColor: const Color(0xFFFA243C),
-              title: 'Musly Wrapped',
-              subtitle: 'Your annual Year in Review and listening insights',
-              onTap: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute(
-                    builder: (context) => const WrappedScreen(),
-                  ),
-                );
-              },
-            ),
+            if (WrappedService.isWrappedSeason() || (kDebugMode && _devWrappedUnlocked)) ...[
+              _buildDivider(context),
+              _buildActionTile(
+                context,
+                icon: CupertinoIcons.gift_fill,
+                iconColor: const Color(0xFFFA243C),
+                title: kDebugMode && !WrappedService.isWrappedSeason()
+                    ? 'Musly Wrapped (Dev Preview)'
+                    : 'Musly Wrapped',
+                subtitle: kDebugMode && !WrappedService.isWrappedSeason()
+                    ? 'Developer test preview of Year-in-Review'
+                    : 'Your annual Year in Review and listening insights',
+                onTap: () {
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (context) => WrappedScreen(
+                        devPreview: kDebugMode && _devWrappedUnlocked,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 24),
@@ -174,6 +188,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     required Color iconColor,
     required String title,
     required String subtitle,
+    VoidCallback? onTap,
   }) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -196,7 +211,49 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               : AppTheme.lightSecondaryText,
         ),
       ),
+      onTap: onTap,
     );
+  }
+
+  void _onVersionTapped() {
+    if (!kDebugMode) return;
+
+    setState(() {
+      _versionTapCount++;
+      if (_versionTapCount >= 8) {
+        _devWrappedUnlocked = true;
+      }
+    });
+
+    HapticFeedback.lightImpact();
+
+    if (_versionTapCount < 8 && _versionTapCount >= 4) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${8 - _versionTapCount} taps away from Developer Wrapped Preview'),
+          duration: const Duration(milliseconds: 700),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_versionTapCount == 8) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Text('Developer Wrapped Preview unlocked!'),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFA243C),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildDeveloperInfo(BuildContext context) {
