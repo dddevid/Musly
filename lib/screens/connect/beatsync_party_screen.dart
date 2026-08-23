@@ -104,8 +104,11 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
                   style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 onPressed: () {
-                  beatSync.leaveParty();
-                  MuslyConnectService().disconnectRemote();
+                  if (beatSync.isHost) {
+                    MuslyConnectService().endPartySession();
+                  } else {
+                    MuslyConnectService().leavePartySession();
+                  }
                   Navigator.of(context).pop();
                 },
               ),
@@ -146,8 +149,11 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen>
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        beatSync.leaveParty();
-                        MuslyConnectService().disconnectRemote();
+                        if (beatSync.isHost) {
+                          MuslyConnectService().endPartySession();
+                        } else {
+                          MuslyConnectService().leavePartySession();
+                        }
                         Navigator.of(context).pop();
                       },
                       icon: const Icon(CupertinoIcons.square_arrow_right, size: 16, color: Colors.redAccent),

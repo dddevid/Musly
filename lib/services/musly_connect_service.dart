@@ -28,6 +28,7 @@ class MuslyConnectService extends ChangeNotifier {
   ConnectDevice? _activeRemoteDevice;
   WebSocket? _remoteWsClient;
   final List<WebSocket> _connectedClientSockets = [];
+  final Map<WebSocket, String> _socketGuestNames = {};
 
   // Network Sockets & Timers
   RawDatagramSocket? _udpBeaconSocket;
@@ -305,8 +306,20 @@ class MuslyConnectService extends ChangeNotifier {
           }
         }
       },
-      onDone: () => _connectedClientSockets.remove(socket),
-      onError: (_) => _connectedClientSockets.remove(socket),
+      onDone: () {
+        _connectedClientSockets.remove(socket);
+        final guestName = _socketGuestNames.remove(socket);
+        if (guestName != null) {
+          BeatSyncService().removeGuest(guestName);
+        }
+      },
+      onError: (_) {
+        _connectedClientSockets.remove(socket);
+        final guestName = _socketGuestNames.remove(socket);
+        if (guestName != null) {
+          BeatSyncService().removeGuest(guestName);
+        }
+      },
     );
   }
 
@@ -386,12 +399,22 @@ class MuslyConnectService extends ChangeNotifier {
 
       case ConnectCommandType.joinParty:
         final guestName = message.payload['guestName'] as String? ?? 'Guest';
+        if (socket != null) {
+          _socketGuestNames[socket] = guestName;
+        }
         beatSync.addGuest(guestName);
         break;
 
       case ConnectCommandType.leaveParty:
         final guestName = message.payload['guestName'] as String? ?? 'Guest';
+        if (socket != null) {
+          _socketGuestNames.remove(socket);
+        }
         beatSync.removeGuest(guestName);
+        if (message.payload['partyClosed'] == true && beatSync.isGuest) {
+          beatSync.leaveParty();
+          disconnectRemote();
+        }
         break;
 
       case ConnectCommandType.stateUpdate:
@@ -468,6 +491,36 @@ class MuslyConnectService extends ChangeNotifier {
     _remoteWsClient = null;
     _activeRemoteDevice = null;
     notifyListeners();
+  }
+
+  /// Guest leaves the active party room and notifies the host.
+  void leavePartySession() {
+    if (_remoteWsClient != null && _remoteWsClient!.readyState == WebSocket.open) {
+      try {
+        sendCommand(ConnectCommandType.leaveParty, {'guestName': _localDeviceName});
+      } catch (_) {}
+    }
+    disconnectRemote();
+    BeatSyncService().leaveParty();
+  }
+
+  /// Host ends the party room and notifies all connected guests.
+  void endPartySession() {
+    final message = ConnectMessage(
+      type: ConnectCommandType.leaveParty,
+      payload: {'partyClosed': true, 'guestName': _localDeviceName},
+      senderId: _localDeviceId,
+    );
+    final raw = message.serialize();
+    for (final s in _connectedClientSockets) {
+      if (s.readyState == WebSocket.open) {
+        try {
+          s.add(raw);
+        } catch (_) {}
+      }
+    }
+    _socketGuestNames.clear();
+    BeatSyncService().leaveParty();
   }
 
   void sendCommand(ConnectCommandType type, [Map<String, dynamic>? payload]) {

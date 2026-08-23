@@ -197,8 +197,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                         const SizedBox(height: 16),
 
                         // ── Musly BeatSync [BETA] Card ─────────────────────────
-                        _buildBeatSyncSection(context, beatSync, partyRooms, isDark, cardBg, borderColor),
-                        const SizedBox(height: 20),
+                        if (!isInParty) ...[
+                          _buildBeatSyncSection(context, beatSync, partyRooms, isDark, cardBg, borderColor),
+                          const SizedBox(height: 20),
+                        ],
 
                         // ── Musly Connect Devices (Spotify Connect style) ──────
                         _buildSectionHeader('Musly Connect Devices', compatibleDevices.isNotEmpty),
@@ -371,10 +373,14 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () {
-              beatSync.leaveParty();
-              MuslyConnectService().disconnectRemote();
+              final wasHost = beatSync.isHost;
+              if (wasHost) {
+                MuslyConnectService().endPartySession();
+              } else {
+                MuslyConnectService().leavePartySession();
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(beatSync.isHost ? 'Party room closed' : 'Left party room')),
+                SnackBar(content: Text(wasHost ? 'Party room closed' : 'Left party room')),
               );
             },
           ),
@@ -435,6 +441,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     Color cardBg,
     Color borderColor,
   ) {
+    if (beatSync.isInParty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
