@@ -76,10 +76,9 @@ class _WrappedScreenState extends State<WrappedScreen>
     final recService = Provider.of<RecommendationService>(context, listen: false);
     final libProvider = Provider.of<LibraryProvider>(context, listen: false);
 
-    var allSongs = libProvider.cachedAllSongs;
-    if (allSongs.isEmpty) {
-      allSongs = libProvider.downloadedSongs;
-    }
+    final allSongs = libProvider.cachedAllSongs.isNotEmpty
+        ? libProvider.cachedAllSongs
+        : libProvider.randomSongs;
 
     final wrappedData = await WrappedService().computeWrappedData(
       recommendationService: recService,
