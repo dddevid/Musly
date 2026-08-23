@@ -95,9 +95,10 @@ class JellyfinService {
           sendTimeout: const Duration(seconds: 10),
         ),
       );
-      final data = resp.data as Map<String, dynamic>;
       final product = (data['ProductName'] as String? ?? '').toLowerCase();
-      final serverType = product.contains('emby') ? 'Emby' : 'Jellyfin';
+      final serverType = product.contains('octofiesta') || product.contains('fiesta')
+          ? 'Octo-Fiesta'
+          : (product.contains('emby') ? 'Emby' : 'Jellyfin');
       final version = data['Version'] as String?;
       return PingResult(
         success: true,

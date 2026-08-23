@@ -432,10 +432,24 @@ class SubsonicService {
     if (_youtube != null) return _youtube!.pingWithError();
     try {
       final response = await _request('ping');
+      String? type = response['type'] as String?;
+      final serverVersion = response['serverVersion'] as String?;
+      final isOpenSubsonic = response['openSubsonic'] == true || response['openSubsonic'] == 'true';
+
+      // fix #216: Automatically detect Octo-Fiesta proxy or server implementation
+      if (type != null) {
+        final lower = type.toLowerCase();
+        if (lower.contains('octofiesta') || lower.contains('octo-fiesta') || lower.contains('fiesta')) {
+          type = 'Octo-Fiesta';
+        }
+      } else if (isOpenSubsonic) {
+        type = 'OpenSubsonic';
+      }
+
       return PingResult(
         success: true,
-        serverType: response['type'],
-        serverVersion: response['serverVersion'],
+        serverType: type,
+        serverVersion: serverVersion,
       );
     } catch (e) {
       return PingResult(success: false, error: e.toString());
