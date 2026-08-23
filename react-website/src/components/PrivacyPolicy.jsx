@@ -44,34 +44,33 @@ function PrivacyPolicy({ onBack }) {
         <section className="privacy-section">
           <div className="section-header">
             <Database size={24} />
-            <h2>What Data We Collect</h2>
+            <h2>Data & Architecture</h2>
           </div>
           <div className="data-grid">
             <div className="data-item">
-              <h3>Music Library</h3>
-              <p>Your music library metadata (song titles, artists, albums) is stored 
-              locally on your device or on your personal Navidrome/Subsonic server. 
-              We never access this data.</p>
+              <h3>Music Library & Local Files</h3>
+              <p>Your music library metadata (song titles, artists, albums, playlists) is stored 
+              locally on your device or streamed directly from your personal Subsonic, Navidrome, 
+              or Jellyfin server. We never access, log, or store this data.</p>
             </div>
             <div className="data-item">
-              <h3>Anonymous Analytics</h3>
-              <p>With your consent, we collect anonymous usage statistics including:</p>
+              <h3>Zero Telemetry & Analytics</h3>
+              <p>Musly is completely telemetry-free:</p>
               <ul>
-                <li>App crashes (to fix bugs)</li>
-                <li>Feature usage (to improve the app)</li>
-                <li>Country-level location (for regional insights)</li>
-                <li>Monthly active users count</li>
+                <li>No crash reporters or third-party analytics SDKs</li>
+                <li>No advertising IDs (IDFA/GAID) or device fingerprinting</li>
+                <li>No listening habits or playback activity uploaded</li>
+                <li>Recommendation algorithms ("Smart Mixes") run 100% locally on-device</li>
               </ul>
               <p className="no-identifiers">
-                <strong>No advertising IDs.</strong> No personal identifiers. 
-                Completely anonymous.
+                <strong>Zero Tracking.</strong> Complete privacy by design.
               </p>
             </div>
             <div className="data-item">
               <h3>Server Credentials</h3>
-              <p>Your Navidrome/Subsonic server credentials are stored securely on your 
-              device using platform-specific secure storage. We never see or store 
-              your passwords.</p>
+              <p>Your server passwords and API tokens are encrypted on your 
+              device using hardware-backed secure storage (Android Keystore, iOS Keychain, 
+              Windows DPAPI). They never leave your device.</p>
             </div>
           </div>
         </section>
@@ -90,20 +89,18 @@ function PrivacyPolicy({ onBack }) {
                 <li>Your listening history</li>
                 <li>Your server credentials</li>
                 <li>Your personal information</li>
-                <li>Your email address</li>
-                <li>Any data with advertisers</li>
-                <li>Any data with data brokers</li>
+                <li>Your IP address or device identifiers</li>
+                <li>Any data with advertisers or data brokers</li>
               </ul>
             </div>
             <div className="sharing-item yes">
               <Eye size={32} />
               <h3>What We DO Share:</h3>
               <ul>
-                <li>Nothing. Your data stays with you.</li>
+                <li><strong>Nothing.</strong> Your data stays on your device.</li>
               </ul>
               <p className="analytics-note">
-                Anonymous analytics (if enabled) are sent to our self-hosted Countly 
-                server. This data cannot identify you personally.
+                Optional services: LRCLIB (for public synced lyrics lookup) and Discord RPC (local playback status) communicate directly without transmitting personal identifiers.
               </p>
             </div>
           </div>
@@ -116,20 +113,20 @@ function PrivacyPolicy({ onBack }) {
           </div>
           <div className="rights-list">
             <div className="right-item">
-              <h3>Right to Access</h3>
-              <p>You can request a copy of all data we have about you (it's minimal and anonymous).</p>
+              <h3>Right to Control</h3>
+              <p>You have absolute control over your data. All listening history and preferences can be reset locally at any time.</p>
             </div>
             <div className="right-item">
               <h3>Right to Deletion</h3>
-              <p>Contact us to delete any anonymous analytics data associated with your device.</p>
+              <p>Clearing the app storage or uninstalling the app permanently removes 100% of your local data.</p>
             </div>
             <div className="right-item">
-              <h3>Right to Opt-Out</h3>
-              <p>Disable analytics anytime in Settings → Analytics & Privacy.</p>
+              <h3>No Opt-In Required</h3>
+              <p>You are private by default. No analytics toggles needed because zero tracking code exists.</p>
             </div>
             <div className="right-item">
               <h3>Right to Portability</h3>
-              <p>Your music library is yours. Export it anytime from the app.</p>
+              <p>Your music library belongs to you. Connect to any standard Subsonic, Navidrome, or Jellyfin server.</p>
             </div>
           </div>
         </section>
@@ -140,10 +137,10 @@ function PrivacyPolicy({ onBack }) {
             <h2>Security Measures</h2>
           </div>
           <ul className="security-list">
-            <li>All server connections use HTTPS encryption</li>
-            <li>Local credentials stored in platform secure storage (Keychain/Keystore)</li>
-            <li>No data stored on our servers except anonymous analytics</li>
-            <li>Open source code - anyone can audit our privacy claims</li>
+            <li>Direct encrypted connections (HTTPS / TLS) to your personal media servers</li>
+            <li>Hardware-backed credential encryption (Keychain, Keystore, Windows DPAPI)</li>
+            <li>Zero intermediary servers — we do not host or operate servers that process your audio</li>
+            <li>100% Open Source code — anyone can audit our privacy claims</li>
           </ul>
         </section>
 
