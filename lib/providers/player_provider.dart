@@ -60,6 +60,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   RepeatMode _repeatMode = RepeatMode.off;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+  Song? _currentSong;
   double _volume = 1.0;
   double _lastNonZeroVolume = 1.0;
 

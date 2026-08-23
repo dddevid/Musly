@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/theme/app_theme.dart';
@@ -8,7 +7,6 @@ import 'package:musly/services/analytics_service.dart';
 import 'package:musly/widgets/dialogs/support_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
-import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
 class SettingsAboutTab extends StatefulWidget {

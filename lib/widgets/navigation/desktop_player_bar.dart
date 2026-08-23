@@ -7,6 +7,7 @@ import 'package:musly/providers/player_provider.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
+import 'package:musly/utils/navigation_helper.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;

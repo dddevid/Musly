@@ -47,13 +47,13 @@ class NavigationHelper {
       return a.artistId == b.artistId;
     }
     if (a is GenreScreen && b is GenreScreen) {
-      return a.genreName == b.genreName;
+      return a.genre == b.genre;
     }
     if (a is SongCollectionScreen && b is SongCollectionScreen) {
-      return a.type == b.type && a.title == b.title;
+      return a.type == b.type && a.customTitle == b.customTitle;
     }
     if (a is AlbumCollectionScreen && b is AlbumCollectionScreen) {
-      return a.type == b.type && a.title == b.title;
+      return a.type == b.type && a.customTitle == b.customTitle;
     }
     return true;
   }

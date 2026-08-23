@@ -1,6 +1,7 @@
 // ignore_for_file: experimental_member_use
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -686,7 +687,7 @@ class YoutubeService {
           final artistCounts = <String, int>{};
           for (final s in allDbSongs) {
             if (s.artist != null && s.artist!.isNotEmpty && s.artist != 'Unknown') {
-              artistCounts[s.artist!] = (artistCounts[s.artist!] ?? 0) + (s.playCount ?? 1);
+              artistCounts[s.artist!] = (artistCounts[s.artist!] ?? 0) + (s.userRating ?? 1);
             }
           }
           if (artistCounts.isNotEmpty) {

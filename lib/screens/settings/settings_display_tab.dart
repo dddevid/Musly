@@ -470,48 +470,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     );
   }
 
-  Widget _buildChips({
-    required List<({String value, String label})> options,
-    required String selected,
-    required ValueChanged<String> onSelected,
-  }) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.map((opt) {
-        final isSelected = opt.value == selected;
-        return GestureDetector(
-          onTap: () => onSelected(opt.value),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : (context.isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.06)),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
-              ),
-            ),
-            child: Text(
-              opt.label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected
-                    ? Colors.white
-                    : (context.isDark ? Colors.white70 : Colors.black87),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildRecommendationsToggle() {
     return Consumer<RecommendationService>(
       builder: (context, service, _) {
