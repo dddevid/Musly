@@ -99,6 +99,24 @@ class _AddServerScreenState extends State<AddServerScreen> {
     }
   }
 
+  bool _isRemoteInsecureHttp(String url) {
+    final trimmed = url.trim().toLowerCase();
+    if (!trimmed.startsWith('http://')) return false;
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || uri.host.isEmpty) return false;
+    final host = uri.host.toLowerCase();
+    if (host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '::1' ||
+        host.endsWith('.local') ||
+        host.startsWith('192.168.') ||
+        host.startsWith('10.') ||
+        RegExp(r'^172\.(1[6-9]|2[0-9]|3[0-1])\.').hasMatch(host)) {
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _connectYtStream() async {
     if (!kIsWeb && Platform.isIOS) {
       setState(() {
@@ -820,6 +838,32 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 ),
               ),
             ),
+            if (_isRemoteInsecureHttp(_urlController.text)) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(CupertinoIcons.exclamationmark_shield_fill, size: 16, color: Colors.amber),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Insecure HTTP: Passwords and streaming traffic are not encrypted over public networks. HTTPS is recommended.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.amber[200] : Colors.amber[900],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
 
             // LAN URL (Optional)

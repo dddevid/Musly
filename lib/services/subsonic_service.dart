@@ -47,7 +47,7 @@ class SubsonicService {
     try {
       final uri = Uri.parse(url);
       final q = Map<String, String>.from(uri.queryParameters);
-      for (final key in const ['p', 't', 's']) {
+      for (final key in const ['p', 't', 's', 'password', 'api_key', 'token', 'apiToken', 'apiKey', 'auth']) {
         if (q.containsKey(key)) q[key] = '***';
       }
       return uri.replace(queryParameters: q).toString();

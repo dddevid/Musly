@@ -36,11 +36,42 @@ class JellyfinService {
     _buildDio();
   }
 
+  static String _sanitizeUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final q = Map<String, String>.from(uri.queryParameters);
+      for (final key in const ['p', 't', 's', 'password', 'api_key', 'token', 'apiToken', 'apiKey', 'auth', 'X-Emby-Token']) {
+        if (q.containsKey(key)) q[key] = '***';
+      }
+      return uri.replace(queryParameters: q).toString();
+    } catch (_) {
+      return url;
+    }
+  }
+
   void _buildDio() {
     _dio = Dio();
     _dio.options.connectTimeout = const Duration(seconds: 15);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.options.headers = {'Authorization': _authHeader};
+
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            final safe = _sanitizeUrl(options.uri.toString());
+            debugPrint('[Jellyfin] → ${options.method} $safe');
+            handler.next(options);
+          },
+          onError: (e, handler) {
+            final safe = _sanitizeUrl(e.requestOptions.uri.toString());
+            debugPrint('[Jellyfin] ✗ ${e.type.name} $safe — ${e.message}');
+            handler.next(e);
+          },
+        ),
+      );
+    }
+
     if (!kIsWeb && _allowSelfSigned) {
       final targetHost = Uri.tryParse(_baseUrl)?.host;
       (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
