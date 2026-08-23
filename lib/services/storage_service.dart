@@ -26,7 +26,7 @@ class StorageService {
   static const String _volumeKey = 'volume';
 
   String _profileKey(ServerConfig config) {
-    final raw = '${config.serverFamily}_${config.serverUrl}_${config.username}';
+    final raw = '${config.serverFamily}_${config.serverUrl}_${config.username}_${config.name ?? ""}';
     return md5.convert(utf8.encode(raw)).toString();
   }
 
@@ -162,6 +162,15 @@ class StorageService {
       // 1. Password
       String? securePwd = await _safeSecureRead('server_profile_pwd_$pKey');
       if (securePwd == null) {
+        // Check legacy key without profile name
+        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
+        securePwd = await _safeSecureRead('server_profile_pwd_$legacyKey');
+        if (securePwd != null) {
+          await _safeSecureWrite('server_profile_pwd_$pKey', securePwd);
+        }
+      }
+      if (securePwd == null) {
         // Check legacy index key
         securePwd = await _safeSecureRead('server_profile_pwd_$i');
         if (securePwd != null) {
@@ -177,6 +186,14 @@ class StorageService {
 
       // 2. API Token
       String? secureToken = await _safeSecureRead('server_profile_token_$pKey');
+      if (secureToken == null) {
+        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
+        secureToken = await _safeSecureRead('server_profile_token_$legacyKey');
+        if (secureToken != null) {
+          await _safeSecureWrite('server_profile_token_$pKey', secureToken);
+        }
+      }
       if (secureToken == null && map['apiToken'] != null && map['apiToken'].toString().isNotEmpty) {
         await _safeSecureWrite('server_profile_token_$pKey', map['apiToken'].toString());
       } else if (secureToken != null) {
@@ -185,6 +202,14 @@ class StorageService {
 
       // 3. Client Certificate Password
       String? secureCertPwd = await _safeSecureRead('server_profile_cert_pwd_$pKey');
+      if (secureCertPwd == null) {
+        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
+        secureCertPwd = await _safeSecureRead('server_profile_cert_pwd_$legacyKey');
+        if (secureCertPwd != null) {
+          await _safeSecureWrite('server_profile_cert_pwd_$pKey', secureCertPwd);
+        }
+      }
       if (secureCertPwd == null && map['clientCertificatePassword'] != null && map['clientCertificatePassword'].toString().isNotEmpty) {
         await _safeSecureWrite('server_profile_cert_pwd_$pKey', map['clientCertificatePassword'].toString());
       } else if (secureCertPwd != null) {
@@ -201,7 +226,10 @@ class StorageService {
     final idx = profiles.indexWhere(
       (p) =>
           (config.isYoutube && p.isYoutube) ||
-          (p.serverUrl == config.serverUrl && p.username == config.username),
+          (p.serverFamily == config.serverFamily &&
+           p.serverUrl == config.serverUrl &&
+           p.username == config.username &&
+           (config.name == null || config.name!.isEmpty || p.name == config.name)),
     );
     
     final pKey = _profileKey(config);
@@ -243,7 +271,10 @@ class StorageService {
     final idx = profiles.indexWhere(
       (p) =>
           (config.isYoutube && p.isYoutube) ||
-          (p.serverUrl == config.serverUrl && p.username == config.username),
+          (p.serverFamily == config.serverFamily &&
+           p.serverUrl == config.serverUrl &&
+           p.username == config.username &&
+           (config.name == null || config.name!.isEmpty || p.name == config.name)),
     );
     
     if (idx >= 0) {

@@ -215,9 +215,11 @@ class AuthProvider extends ChangeNotifier {
         _state = AuthState.authenticated;
         notifyListeners();
 
-        _storageService.saveProfile(updatedConfig).catchError(
-              (e) => debugPrint('Error saving profile: $e'),
-            );
+        try {
+          await _storageService.saveProfile(updatedConfig);
+        } catch (e) {
+          debugPrint('Error saving profile: $e');
+        }
 
         final offlineService = OfflineService();
         await offlineService.initialize();
@@ -347,6 +349,7 @@ class AuthProvider extends ChangeNotifier {
     await _storageService.saveProfile(profile);
     await _subsonicService.configure(profile);
     await _verifyConnection();
+    notifyListeners();
   }
 
   Future<void> updateSelectedMusicFolderIds(List<String> ids) async {

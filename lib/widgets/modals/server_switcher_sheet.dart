@@ -33,6 +33,12 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   bool _isSameServer(ServerConfig a, ServerConfig? b) {
     if (b == null) return false;
     if (a.isYoutube && b.isYoutube) return true;
+    if (a.name != null && b.name != null && a.name!.isNotEmpty && b.name!.isNotEmpty) {
+      return a.name == b.name &&
+          a.serverFamily == b.serverFamily &&
+          a.serverUrl == b.serverUrl &&
+          a.username == b.username;
+    }
     return a.serverFamily == b.serverFamily &&
         a.serverUrl == b.serverUrl &&
         a.username == b.username;
