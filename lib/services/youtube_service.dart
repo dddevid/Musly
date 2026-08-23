@@ -672,15 +672,43 @@ class YoutubeService {
     }
   }
 
-  // ── Random / Trending songs ───────────────────────────────────────────────
+  // ── Random / Trending songs (Algorithmic Taste-Aware) ──────────────────────
 
   Future<List<Song>> getRandomSongs({int size = 20, String? genre}) async {
     try {
-      final query = genre != null && genre.isNotEmpty
-          ? '$genre music hits'
-          : 'top music hits 2026';
+      String query;
+      if (genre != null && genre.isNotEmpty) {
+        query = '$genre music hits';
+      } else {
+        // Algorithmic discovery based on user's played and saved songs in SQLite
+        final allDbSongs = await _db.getAllSongs();
+        if (allDbSongs.isNotEmpty) {
+          final artistCounts = <String, int>{};
+          for (final s in allDbSongs) {
+            if (s.artist != null && s.artist!.isNotEmpty && s.artist != 'Unknown') {
+              artistCounts[s.artist!] = (artistCounts[s.artist!] ?? 0) + (s.playCount ?? 1);
+            }
+          }
+          if (artistCounts.isNotEmpty) {
+            final sortedArtists = artistCounts.keys.toList()
+              ..sort((a, b) => (artistCounts[b] ?? 0).compareTo(artistCounts[a] ?? 0));
+            // Pick from top artists pool with slight random exploration for variety
+            final topPool = sortedArtists.take(4).toList();
+            final pickedArtist = topPool[Random().nextInt(topPool.length)];
+            query = '$pickedArtist songs hits';
+          } else {
+            query = 'top music hits 2026';
+          }
+        } else {
+          query = 'top music hits 2026';
+        }
+      }
+
       final rawResults = await _ytdlp.search(query, limit: size);
       final songs = rawResults.map(_mapDictToSong).toList();
+      for (final song in songs) {
+        await _db.insertOrUpdateSong(song);
+      }
       return songs;
     } catch (e) {
       debugPrint('[YouTube] getRandomSongs error: $e');

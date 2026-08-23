@@ -299,9 +299,36 @@ class LibraryProvider extends ChangeNotifier {
 
       if (_subsonicService.isYoutube) {
         _cachedAllAlbums = [];
-        _cachedAllSongs = [];
-        _artists = [];
-        _recentAlbums = [];
+        _cachedAllSongs = await _db.getAllSongs();
+        _cachedPlaylists = await _subsonicService.getPlaylists();
+        _playlists = _cachedPlaylists;
+
+        final songMap = {for (final s in _cachedAllSongs) s.id: s};
+        for (final p in _playlists) {
+          if (p.songs != null) {
+            for (final s in p.songs!) {
+              songMap[s.id] = s;
+            }
+          }
+        }
+        _cachedAllSongs = songMap.values.toList();
+
+        final artistMap = <String, int>{};
+        for (final s in _cachedAllSongs) {
+          if (s.artist != null && s.artist!.isNotEmpty && s.artist != 'Unknown') {
+            artistMap[s.artist!] = (artistMap[s.artist!] ?? 0) + 1;
+          }
+        }
+        _artists = artistMap.keys
+            .map((name) => Artist(id: 'yt-$name', name: name))
+            .toList();
+
+        if (_randomSongs.isEmpty && _cachedAllSongs.isNotEmpty) {
+          _randomSongs = _cachedAllSongs.take(50).toList();
+        } else if (_cachedAllSongs.isEmpty) {
+          // Asynchronously fetch initial trending starter tracks
+          Future.microtask(() => loadRandomSongs());
+        }
         return;
       }
 
@@ -633,7 +660,9 @@ class LibraryProvider extends ChangeNotifier {
     _starred = null;
     ImageUrlCache.clear();
     try {
-      await _db.clearServerData();
+      if (!_subsonicService.isYoutube) {
+        await _db.clearServerData();
+      }
     } catch (_) {}
     notifyListeners();
     await initialize();
@@ -757,7 +786,25 @@ class LibraryProvider extends ChangeNotifier {
   Future<void> loadRandomSongs() async {
     if (_serverOfflineMode) return;
     try {
-      _randomSongs = await _subsonicService.getRandomSongs(size: 50);
+      final songs = await _subsonicService.getRandomSongs(size: 50);
+      _randomSongs = songs;
+      if (_subsonicService.isYoutube && songs.isNotEmpty) {
+        final existingMap = {for (final s in _cachedAllSongs) s.id: s};
+        for (final s in songs) {
+          existingMap[s.id] = s;
+        }
+        _cachedAllSongs = existingMap.values.toList();
+
+        final artistMap = <String, int>{};
+        for (final s in _cachedAllSongs) {
+          if (s.artist != null && s.artist!.isNotEmpty && s.artist != 'Unknown') {
+            artistMap[s.artist!] = (artistMap[s.artist!] ?? 0) + 1;
+          }
+        }
+        _artists = artistMap.keys
+            .map((name) => Artist(id: 'yt-$name', name: name))
+            .toList();
+      }
       notifyListeners();
       _audioHandler
           .notifyAutoChildrenChanged([MuslyAudioHandler.mediaIdRecent]);

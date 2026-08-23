@@ -42,9 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppLocalizations.of(context)?.goodEvening ?? 'Good evening';
   }
 
-  String _computeRandomKey(List<Song> songs) {
+  String _computeRandomKey(List<Song> songs, RecommendationService rec) {
     if (songs.isEmpty) return '';
-    return '${songs.length}_${songs.first.id}_${songs.last.id}';
+    final lastPlayed = rec.recentlyPlayed.isNotEmpty ? rec.recentlyPlayed.first : '';
+    return '${songs.length}_${songs.first.id}_${songs.last.id}_${rec.profiles.length}_${rec.recentlyPlayed.length}_$lastPlayed';
   }
 
   bool get _isDesktop =>
@@ -171,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final allSongs = libraryProvider.cachedAllSongs.isNotEmpty
                       ? libraryProvider.cachedAllSongs
                       : libraryProvider.randomSongs;
-                  final key = _computeRandomKey(allSongs);
+                  final key = _computeRandomKey(allSongs, recommendationService);
 
                   if (recommendationService.enabled && key.isNotEmpty) {
                     if (key != _lastRandomKey) {
@@ -196,6 +197,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   var recentAlbums = libraryProvider.recentAlbums;
                   var playlists = libraryProvider.playlists;
                   var artists = libraryProvider.artists;
+
+                  // In YT Stream mode, if artists are empty, use top recommended artists from taste profiles
+                  if (artists.isEmpty && recommendationService.enabled) {
+                    final topNames = recommendationService.getRecommendedArtists(limit: 10);
+                    if (topNames.isNotEmpty) {
+                      artists = topNames.map((name) => Artist(id: 'yt-$name', name: name)).toList();
+                    }
+                  }
 
                   final isOffline = authProvider.state == AuthState.offlineMode;
                   final offlineService = OfflineService();
@@ -231,13 +240,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Modern music player design
+                        // Quick Access Top Grid
                         if (_selectedCategory == 'All' || _selectedCategory == 'Music') ...[
                           const SizedBox(height: 8),
                           _buildSpotifyTopGrid(
                             context,
                             recentAlbums: recentAlbums,
                             playlists: playlists,
+                            mixes: mixes,
                             subsonicService: subsonicService,
                             isDesktop: isDesktop,
                             hPad: hPad,
@@ -266,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 28),
                         ],
 
-                        // 3. Made For You / Personalized Feed
+                        // 3. Made For You / Personalized Feed (Deeply learned tastes)
                         if ((_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') &&
                             recommendationService.enabled &&
                             personalizedFeed.isNotEmpty) ...[
@@ -345,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                         ],
 
-                        // Modern music player design
+                        // 8. Artists You Love
                         if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
                             artists.isNotEmpty) ...[
                           HorizontalScrollSection(
@@ -409,6 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context, {
     required List<Album> recentAlbums,
     required List<Playlist> playlists,
+    required Map<String, List<Song>> mixes,
     required SubsonicService subsonicService,
     required bool isDesktop,
     required double hPad,
@@ -427,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
             spacing: spacing,
             runSpacing: spacing,
             children: [
-              // Modern music player design
+              // Liked Songs
               SizedBox(
                 width: cardWidth,
                 child: QuickAccessTile(
@@ -448,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Recent Playlists & Albums
+              // Recent Playlists
               ...playlists.take(2).map((playlist) {
                 return SizedBox(
                   width: cardWidth,
@@ -460,17 +471,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }),
 
-              ...recentAlbums.take(cols == 4 ? 5 : 3).map((album) {
-                return SizedBox(
-                  width: cardWidth,
-                  child: QuickAccessTile(
-                    title: album.name,
-                    imageUrl: album.coverArt,
-                    onTap: () => _openAlbum(context, album.id),
-                    onPlayPressed: () => _playAlbum(context, album.id),
-                  ),
-                );
-              }),
+              // Recent Albums or Top Smart Mixes
+              if (recentAlbums.isNotEmpty)
+                ...recentAlbums.take(cols == 4 ? 5 : 3).map((album) {
+                  return SizedBox(
+                    width: cardWidth,
+                    child: QuickAccessTile(
+                      title: album.name,
+                      imageUrl: album.coverArt,
+                      onTap: () => _openAlbum(context, album.id),
+                      onPlayPressed: () => _playAlbum(context, album.id),
+                    ),
+                  );
+                })
+              else
+                ...mixes.entries.take(cols == 4 ? 5 : 3).map((entry) {
+                  final songs = entry.value;
+                  final firstCover = songs.isNotEmpty ? songs.first.coverArt : null;
+                  return SizedBox(
+                    width: cardWidth,
+                    child: QuickAccessTile(
+                      title: entry.key,
+                      imageUrl: firstCover,
+                      onTap: () {
+                        if (songs.isNotEmpty) {
+                          _playSong(context, songs.first, songs);
+                        }
+                      },
+                      onPlayPressed: () {
+                        if (songs.isNotEmpty) {
+                          _playSong(context, songs.first, songs);
+                        }
+                      },
+                    ),
+                  );
+                }),
             ],
           );
         },
