@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ArrowLeft, Shield, Lock, Eye, Database, Share2, UserX, Trash2, Mail } from 'lucide-react'
+import { ArrowLeft, Shield, Lock, Eye, Database, Share2, UserX, Trash2, Mail, Wifi } from 'lucide-react'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import './PrivacyPolicy.css'
@@ -60,7 +60,7 @@ function PrivacyPolicy({ onBack }) {
                 <li>No crash reporters or third-party analytics SDKs</li>
                 <li>No advertising IDs (IDFA/GAID) or device fingerprinting</li>
                 <li>No listening habits or playback activity uploaded</li>
-                <li>Recommendation algorithms ("Smart Mixes") run 100% locally on-device</li>
+                <li>Recommendation algorithms ("Smart Mixes" and "Wrapped") run 100% locally on-device</li>
               </ul>
               <p className="no-identifiers">
                 <strong>Zero Tracking.</strong> Complete privacy by design.
@@ -71,6 +71,23 @@ function PrivacyPolicy({ onBack }) {
               <p>Your server passwords and API tokens are encrypted on your 
               device using hardware-backed secure storage (Android Keystore, iOS Keychain, 
               Windows DPAPI). They never leave your device.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="privacy-section">
+          <div className="section-header">
+            <Wifi size={24} />
+            <h2>Musly Connect & Local LAN Networking</h2>
+          </div>
+          <div className="data-grid">
+            <div className="data-item">
+              <h3>100% Peer-to-Peer LAN</h3>
+              <p>Musly Connect and Listening Party (BeatSync) communicate strictly over your local Wi-Fi network (UDP port 43882 / HTTP port 43883). No playback transfers, device names, or commands are ever routed through any external cloud server.</p>
+            </div>
+            <div className="data-item">
+              <h3>Total User Control</h3>
+              <p>Musly Connect can be completely toggled off in Settings at any time, shutting down all network sockets, beacons, and background discovery immediately.</p>
             </div>
           </div>
         </section>
@@ -114,7 +131,7 @@ function PrivacyPolicy({ onBack }) {
           <div className="rights-list">
             <div className="right-item">
               <h3>Right to Control</h3>
-              <p>You have absolute control over your data. All listening history and preferences can be reset locally at any time.</p>
+              <p>You have absolute control over your data. All listening history, cache, and preferences can be reset locally at any time.</p>
             </div>
             <div className="right-item">
               <h3>Right to Deletion</h3>
@@ -139,6 +156,7 @@ function PrivacyPolicy({ onBack }) {
           <ul className="security-list">
             <li>Direct encrypted connections (HTTPS / TLS) to your personal media servers</li>
             <li>Hardware-backed credential encryption (Keychain, Keystore, Windows DPAPI)</li>
+            <li>Origin validation and size limits on local network sockets to prevent web cross-origin exploits</li>
             <li>Zero intermediary servers — we do not host or operate servers that process your audio</li>
             <li>100% Open Source code — anyone can audit our privacy claims</li>
           </ul>
