@@ -16,7 +16,6 @@ import 'package:musly/utils/context_extensions.dart';
 
 import 'package:musly/services/crossfade_service.dart';
 import 'package:musly/services/musly_connect_service.dart';
-import 'package:musly/services/beatsync_service.dart';
 import 'package:musly/screens/connect/connect_devices_modal.dart';
 
 class SettingsPlaybackTab extends StatefulWidget {
