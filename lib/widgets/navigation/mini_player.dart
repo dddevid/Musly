@@ -121,6 +121,7 @@ class MiniPlayer extends StatelessWidget {
                 onTap: handleTap,
                 child: Container(
                   height: 64,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0xF01C1C1E)
@@ -133,7 +134,17 @@ class MiniPlayer extends StatelessWidget {
                       width: 0.8,
                     ),
                   ),
-                  child: row,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: row),
+                      const Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: _MiniPlayerProgressBar(borderRadius: 22, isGlass: true),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -158,24 +169,76 @@ class MiniPlayer extends StatelessWidget {
                   ),
                 ),
               ),
-              child: Column(
+              child: Stack(
                 children: [
-                  if (!isPlayingRadio)
-                    Selector<PlayerProvider, double>(
-                      selector: (ctx, p) => p.progress,
-                      builder: (ctx, progress, __) => LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Theme.of(context).colorScheme.primary,
-                        ),
-                        minHeight: 2,
-                      ),
-                    )
-                  else
-                    const SizedBox(height: 2),
-                  Expanded(child: row),
+                  Positioned.fill(child: row),
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _MiniPlayerProgressBar(borderRadius: 0, isGlass: false),
+                  ),
                 ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Smooth, high-precision progress bar for the mini player.
+class _MiniPlayerProgressBar extends StatelessWidget {
+  final double borderRadius;
+  final bool isGlass;
+
+  const _MiniPlayerProgressBar({
+    this.borderRadius = 0,
+    this.isGlass = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
+    return Selector<PlayerProvider, (double, bool)>(
+      selector: (_, p) => (p.progress, p.isPlayingRadio),
+      builder: (context, data, _) {
+        final (progress, isRadio) = data;
+        if (isRadio) return const SizedBox.shrink();
+
+        final cleanProgress = progress.isNaN || progress.isInfinite
+            ? 0.0
+            : progress.clamp(0.0, 1.0);
+
+        final trackColor = isDark
+            ? (isGlass ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.12))
+            : (isGlass ? Colors.black.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.08));
+
+        return ClipRRect(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(borderRadius)),
+          child: Container(
+            height: 2.5,
+            width: double.infinity,
+            color: trackColor,
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: cleanProgress,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      primary,
+                      primary.withValues(alpha: 0.85),
+                    ],
+                  ),
+                  borderRadius: cleanProgress >= 0.98
+                      ? BorderRadius.vertical(bottom: Radius.circular(borderRadius))
+                      : BorderRadius.zero,
+                ),
               ),
             ),
           ),

@@ -1166,8 +1166,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   double get progress {
-    if (_duration.inMilliseconds == 0) return 0;
-    return _position.inMilliseconds / _duration.inMilliseconds;
+    if (_duration.inMilliseconds == 0) {
+      if (_currentSong?.duration != null && _currentSong!.duration! > 0) {
+        return (_position.inSeconds / _currentSong!.duration!).clamp(0.0, 1.0);
+      }
+      return 0.0;
+    }
+    final val = _position.inMilliseconds / _duration.inMilliseconds;
+    if (val.isNaN || val.isInfinite) return 0.0;
+    return val.clamp(0.0, 1.0);
   }
 
   double get playbackSpeed => _playbackSpeed;
