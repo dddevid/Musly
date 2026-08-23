@@ -157,6 +157,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   void _showSortMenu(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // fix #230: account for mini player height (~80px) + system bottom inset
+    // so all sort options are fully visible and tappable when a song is playing.
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 80.0 + 16.0;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -165,7 +168,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomPadding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
