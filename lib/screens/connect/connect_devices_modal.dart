@@ -28,14 +28,16 @@ class ConnectDevicesModal extends StatefulWidget {
 
   static Future<void> show(BuildContext context) {
     HapticFeedback.mediumImpact();
-    final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+    final isDesktop =
+        !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
 
     if (isDesktop) {
       return showDialog(
         context: context,
         builder: (context) => Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440, maxHeight: 600),
             child: const ConnectDevicesModal(isDesktopDialog: true),
@@ -94,11 +96,13 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = isDark ? const Color(0xFF14151B) : Colors.white;
-    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.06);
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.black.withValues(alpha: 0.06);
 
     return Consumer3<MuslyConnectService, CastService, UpnpService>(
       builder: (context, connectService, castService, upnpService, _) {
-        final compatibleDevices = connectService.getCompatibleDevices();
+        // final compatibleDevices = connectService.getCompatibleDevices();
         // final partyRooms = connectService.getAvailablePartyRooms();
         final player = Provider.of<PlayerProvider>(context, listen: false);
         final isControlling = connectService.isControllingRemoteDevice;
@@ -173,7 +177,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(CupertinoIcons.xmark_circle_fill, size: 22),
+                      icon: const Icon(CupertinoIcons.xmark_circle_fill,
+                          size: 22),
                       color: isDark ? Colors.white30 : Colors.black26,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -192,7 +197,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                       children: [
                         // ── Active Remote Control Status Bar ──────────────────
                         if (isControlling) ...[
-                          _buildActiveRemoteControlTile(context, connectService, isDark),
+                          _buildActiveRemoteControlTile(
+                              context, connectService, isDark),
                           const SizedBox(height: 14),
                         ],
 
@@ -204,7 +210,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
 
                         // ── Current Device / Output ───────────────────────────
                         if (!isControlling) ...[
-                          _buildCurrentDeviceTile(connectService, player, isDark),
+                          _buildCurrentDeviceTile(
+                              connectService, player, isDark),
                           const SizedBox(height: 16),
                         ],
 
@@ -214,24 +221,24 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                         //   const SizedBox(height: 20),
                         // ],
 
-                        // ── Available Musly Devices ───────────────────────────
-                        _buildSectionLabel('MUSLY CONNECT DEVICES'),
-                        const SizedBox(height: 6),
-
-                        if (compatibleDevices.isEmpty)
-                          _buildEmptyNotice('No other devices running Musly found on this Wi-Fi.')
-                        else
-                          ...compatibleDevices.map(
-                            (device) => _buildMuslyDeviceRow(
-                              context: context,
-                              device: device,
-                              connectService: connectService,
-                              player: player,
-                              isDark: isDark,
-                            ),
-                          ),
-
-                        const SizedBox(height: 16),
+                        // ── Available Musly Devices (Musly Connect disabled) ──
+                        // _buildSectionLabel('MUSLY CONNECT DEVICES'),
+                        // const SizedBox(height: 6),
+                        //
+                        // if (compatibleDevices.isEmpty)
+                        //   _buildEmptyNotice('No other devices running Musly found on this Wi-Fi.')
+                        // else
+                        //   ...compatibleDevices.map(
+                        //     (device) => _buildMuslyDeviceRow(
+                        //       context: context,
+                        //       device: device,
+                        //       connectService: connectService,
+                        //       player: player,
+                        //       isDark: isDark,
+                        //     ),
+                        //   ),
+                        //
+                        // const SizedBox(height: 16),
 
                         // ── Cast & UPnP Wireless Speakers ──────────────────────
                         StreamBuilder<List<GoogleCastDevice>>(
@@ -239,7 +246,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                           builder: (context, snapshot) {
                             final castDevices = snapshot.data ?? [];
                             final upnpDevices = upnpService.devices;
-                            final hasWireless = castDevices.isNotEmpty || upnpDevices.isNotEmpty;
+                            final hasWireless = castDevices.isNotEmpty ||
+                                upnpDevices.isNotEmpty;
 
                             if (!hasWireless) return const SizedBox.shrink();
 
@@ -248,9 +256,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                               children: [
                                 _buildSectionLabel('SPEAKERS & TVS'),
                                 const SizedBox(height: 6),
-
-                                ...castDevices.map((cd) => _buildCastRow(context, cd, castService, isDark)),
-                                ...upnpDevices.map((ud) => _buildUpnpRow(context, ud, upnpService, isDark)),
+                                ...castDevices.map((cd) => _buildCastRow(
+                                    context, cd, castService, isDark)),
+                                ...upnpDevices.map((ud) => _buildUpnpRow(
+                                    context, ud, upnpService, isDark)),
                               ],
                             );
                           },
@@ -283,17 +292,19 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildEmptyNotice(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
-      ),
-    );
-  }
+  // Unused since Musly Connect device list is disabled (see build()).
+  // Widget _buildEmptyNotice(String text) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+  //     child: Text(
+  //       text,
+  //       style: const TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildCurrentDeviceTile(MuslyConnectService connect, PlayerProvider player, bool isDark) {
+  Widget _buildCurrentDeviceTile(
+      MuslyConnectService connect, PlayerProvider player, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -309,7 +320,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               color: const Color(0xFF1DB954).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.volume_up_rounded, color: Color(0xFF1DB954), size: 20),
+            child: const Icon(Icons.volume_up_rounded,
+                color: Color(0xFF1DB954), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -318,20 +330,25 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               children: [
                 Text(
                   connect.localDeviceName,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Playing on this device',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF1DB954), fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF1DB954),
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           // Subtle audio wave indicator
-          const Icon(CupertinoIcons.waveform, color: Color(0xFF1DB954), size: 18),
+          const Icon(CupertinoIcons.waveform,
+              color: Color(0xFF1DB954), size: 18),
         ],
       ),
     );
@@ -342,14 +359,16 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     MuslyConnectService connectService,
     bool isDark,
   ) {
-    final remoteName = connectService.activeRemoteDevice?.name ?? 'Remote Device';
+    final remoteName =
+        connectService.activeRemoteDevice?.name ?? 'Remote Device';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF1DB954).withValues(alpha: isDark ? 0.14 : 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -361,14 +380,18 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               children: [
                 Text(
                   remoteName,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Controlling remote playback',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF1DB954),
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -383,7 +406,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               backgroundColor: isDark ? Colors.white12 : Colors.black12,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
               'Disconnect',
@@ -410,6 +434,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
   }
   */
 
+  /*
+  // Unused since Musly Connect device list is disabled (see build()).
   Future<void> _handleTransferToDevice(
     BuildContext context,
     ConnectDevice device,
@@ -458,7 +484,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
       );
     }
   }
+  */
 
+  /*
+  // Unused since Musly Connect device list is disabled (see build()).
   Widget _buildMuslyDeviceRow({
     required BuildContext context,
     required ConnectDevice device,
@@ -542,8 +571,10 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
       ),
     );
   }
+  */
 
-  Widget _buildCastRow(BuildContext context, GoogleCastDevice castDevice, CastService cast, bool isDark) {
+  Widget _buildCastRow(BuildContext context, GoogleCastDevice castDevice,
+      CastService cast, bool isDark) {
     final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
 
     return Container(
@@ -556,17 +587,23 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         color: Colors.transparent,
         child: ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
           leading: const Icon(Icons.cast, size: 20, color: Colors.grey),
-          title: Text(castDevice.friendlyName, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-          subtitle: Text(castDevice.modelName ?? 'Google Cast', style: const TextStyle(fontSize: 11.5, color: Colors.grey)),
+          title: Text(castDevice.friendlyName,
+              style:
+                  const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+          subtitle: Text(castDevice.modelName ?? 'Google Cast',
+              style: const TextStyle(fontSize: 11.5, color: Colors.grey)),
           onTap: () async {
             final ok = await cast.connectToDevice(castDevice);
             if (context.mounted) {
               Navigator.of(context).pop();
               if (!ok) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to connect to ${castDevice.friendlyName}')),
+                  SnackBar(
+                      content: Text(
+                          'Failed to connect to ${castDevice.friendlyName}')),
                 );
               }
             }
@@ -576,7 +613,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  Widget _buildUpnpRow(BuildContext context, UpnpDevice upnpDevice, UpnpService upnp, bool isDark) {
+  Widget _buildUpnpRow(BuildContext context, UpnpDevice upnpDevice,
+      UpnpService upnp, bool isDark) {
     final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
 
     return Container(
@@ -589,11 +627,17 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         color: Colors.transparent,
         child: ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-          leading: const Icon(Icons.speaker_group, size: 20, color: Colors.grey),
-          title: Text(upnpDevice.friendlyName, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+          leading:
+              const Icon(Icons.speaker_group, size: 20, color: Colors.grey),
+          title: Text(upnpDevice.friendlyName,
+              style:
+                  const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
           subtitle: Text(
-            [upnpDevice.manufacturer, upnpDevice.modelName].where((s) => s.isNotEmpty).join(' • '),
+            [upnpDevice.manufacturer, upnpDevice.modelName]
+                .where((s) => s.isNotEmpty)
+                .join(' • '),
             style: const TextStyle(fontSize: 11.5, color: Colors.grey),
           ),
           onTap: () async {
@@ -602,7 +646,9 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               Navigator.of(context).pop();
               if (!ok) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to connect to ${upnpDevice.friendlyName}')),
+                  SnackBar(
+                      content: Text(
+                          'Failed to connect to ${upnpDevice.friendlyName}')),
                 );
               }
             }
@@ -612,6 +658,8 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
+  /*
+  // Unused since Musly Connect device list is disabled (see build()).
   IconData _getPlatformIcon(String platform) {
     switch (platform.toLowerCase()) {
       case 'android':
@@ -630,4 +678,5 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         return Icons.speaker_rounded;
     }
   }
+  */
 }

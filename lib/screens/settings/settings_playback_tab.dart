@@ -15,8 +15,8 @@ import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
 import 'package:musly/services/crossfade_service.dart';
-import 'package:musly/services/musly_connect_service.dart';
-import 'package:musly/screens/connect/connect_devices_modal.dart';
+// import 'package:musly/services/musly_connect_service.dart'; // Musly Connect disabled
+// import 'package:musly/screens/connect/connect_devices_modal.dart'; // Musly Connect disabled
 
 class SettingsPlaybackTab extends StatefulWidget {
   const SettingsPlaybackTab({super.key});
@@ -85,8 +85,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ],
           ],
         ),
-        const SizedBox(height: 24),
-        _buildConnectSection(),
+        // const SizedBox(height: 24), // Musly Connect disabled
+        // _buildConnectSection(), // Musly Connect disabled
         const SizedBox(height: 24),
         _buildCrossfadeSection(),
         const SizedBox(height: 24),
@@ -335,6 +335,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     );
   }
 
+  /*
+  // Musly Connect settings section disabled
   Widget _buildConnectSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -390,6 +392,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
       },
     );
   }
+  */
 
   Widget _buildCrossfadeSection() {
     final accent = Theme.of(context).colorScheme.primary;
@@ -400,27 +403,35 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
       title: 'Smart Crossfade',
       children: [
         ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [accent, accent.withValues(alpha: 0.6)]),
+              gradient: LinearGradient(
+                  colors: [accent, accent.withValues(alpha: 0.6)]),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle, color: Colors.white, size: 18),
+            child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle,
+                color: Colors.white, size: 18),
           ),
           title: const Text('Track Crossfade', style: TextStyle(fontSize: 16)),
           subtitle: Text(
-            crossfadeSec == 0 ? 'Off (Instant transition)' : '$crossfadeSec seconds crossfade between songs',
+            crossfadeSec == 0
+                ? 'Off (Instant transition)'
+                : '$crossfadeSec seconds crossfade between songs',
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.5),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.5),
             ),
           ),
           trailing: Text(
             crossfadeSec == 0 ? 'Off' : '${crossfadeSec}s',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: accent),
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: accent),
           ),
         ),
         Padding(
@@ -443,9 +454,18 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Off', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
-                  Text('6s', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
-                  Text('12s', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
+                  Text('Off',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white38 : Colors.black38)),
+                  Text('6s',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white38 : Colors.black38)),
+                  Text('12s',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white38 : Colors.black38)),
                 ],
               ),
             ],
@@ -590,8 +610,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return Consumer<TranscodingService>(
       builder: (context, ts, _) {
         final accent = Theme.of(context).colorScheme.primary;
-        final secondaryText =
-            context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+        final secondaryText = context.isDark
+            ? AppTheme.darkSecondaryText
+            : AppTheme.lightSecondaryText;
 
         Widget connectionBadge() {
           final isWifi = ts.currentConnectionType == ConnectionType.wifi;
@@ -633,9 +654,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 vertical: 4,
               ),
               leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
-        icon: CupertinoIcons.waveform,
-      ),
+                gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
+                icon: CupertinoIcons.waveform,
+              ),
               title: Text(
                 AppLocalizations.of(context)!.transcodingEnable,
                 style: const TextStyle(fontSize: 16),

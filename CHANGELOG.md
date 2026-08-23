@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Musly Connect (Local Network Device Remote & Playback Transfer)**
+- **Musly Connect (Local Network Device Remote & Playback Transfer) (Temporarely Unavailable)**
   - Zero-config LAN P2P UDP discovery and embedded WebSocket control server.
   - Discover nearby Musly devices running on the same server or streaming mode to control playback (Play, Pause, Next, Prev, Seek, Volume) and transfer the active queue and track position with 1 tap.
 
