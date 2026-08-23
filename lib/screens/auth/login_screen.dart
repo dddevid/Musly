@@ -118,8 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildErrorCard(ThemeData theme) {
-    final error = _loginError;
-    if (error == null) return const SizedBox.shrink();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final error = _loginError ?? (authProvider.state == AuthState.error ? authProvider.error : null);
+    if (error == null || error.isEmpty) return const SizedBox.shrink();
 
     final type = _categoriseError(error);
 

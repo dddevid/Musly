@@ -400,6 +400,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
           onDisconnect: () => authProvider.disconnect(),
         );
       case AuthState.authenticating:
+        // When authenticating interactively from LoginScreen (no active session yet),
+        // keep LoginScreen mounted so its inline loading and detailed error states are preserved.
+        if (authProvider.config == null) {
+          if (!_checkedOnboarding) {
+            return const Scaffold(
+              backgroundColor: Color(0xFF090A0E),
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (!_onboardingCompleted) {
+            return OnboardingScreen(onFinished: _finishOnboarding);
+          }
+          return const LoginScreen();
+        }
         return _AuthenticatingScreen(
           hasOfflineContent: authProvider.hasOfflineContent,
           onEnterOfflineMode: () => authProvider.enterOfflineMode(),
