@@ -429,7 +429,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         if (_selectedFilter == null || _selectedFilter == 'Playlists') ...[
           _buildPinnedItemTile(
             title: 'Liked Songs',
-            subtitle: '📌 Playlist • Favorites',
+            subtitle: 'Playlist • Favorites',
             gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
             icon: CupertinoIcons.heart_fill,
             onTap: () => _navigate(context, const FavoritesScreen()),
@@ -440,7 +440,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         if (_selectedFilter == null || _selectedFilter == 'Downloaded') ...[
           _buildPinnedItemTile(
             title: 'Downloaded Songs',
-            subtitle: '📌 $downloadedCount songs saved offline',
+            subtitle: '$downloadedCount songs saved offline',
             gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
             icon: CupertinoIcons.arrow_down_circle_fill,
             onTap: () => _navigate(context, const DownloadsScreen()),
@@ -592,9 +592,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
         child: Icon(icon, color: Colors.white, size: 24),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 13, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+      subtitle: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(CupertinoIcons.pin_fill, size: 12, color: Color(0xFF1DB954)),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              subtitle,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
       onTap: onTap,
     );

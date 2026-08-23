@@ -40,10 +40,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const List<_OnboardingItem> _slides = [
     _OnboardingItem(
-      titlePrefix: 'Own Your Music,\n',
-      titleHighlight: 'Shape Your Vibe.',
+      titlePrefix: 'Your Music Library,\n',
+      titleHighlight: 'In Your Pocket.',
       description:
-          'Stream seamlessly from Subsonic, Jellyfin, or local files with pure lossless fidelity.',
+          'Connect to Navidrome, Subsonic, Jellyfin, or play local files with bit-perfect lossless quality.',
       highlightColor: Color(0xFF60A5FA),
       auraColors: [
         Color(0xFF1E3A8A),
@@ -57,9 +57,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _OnboardingItem(
       titlePrefix: 'Smart Mixes,\n',
-      titleHighlight: 'Crafted For You.',
+      titleHighlight: 'Built Around You.',
       description:
-          'An intelligent recommendation engine that learns what you love and creates personal mixes.',
+          'Musly learns your listening habits on-device to craft dynamic daily mixes and surface forgotten favorites.',
       highlightColor: Color(0xFFFB923C),
       auraColors: [
         Color(0xFF7C2D12),
@@ -72,10 +72,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       buttonText: 'Next',
     ),
     _OnboardingItem(
-      titlePrefix: 'Pure Privacy,\n',
-      titleHighlight: 'Zero Tracking.',
+      titlePrefix: 'Completely Private.\n',
+      titleHighlight: 'No Ads, No Tracking.',
       description:
-          '100% telemetry-free. Enjoy time-synced lyrics, offline downloads, and desktop sync in total privacy.',
+          'Zero analytics, zero telemetry. Enjoy time-synced lyrics, offline downloads, and desktop sync in total privacy.',
       highlightColor: Color(0xFF34D399),
       auraColors: [
         Color(0xFF064E3B),

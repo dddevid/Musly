@@ -3175,7 +3175,7 @@ abstract class AppLocalizations {
   /// No description provided for @supportGreeting.
   ///
   /// In en, this message translates to:
-  /// **'Hey there! 👋'**
+  /// **'Hey there!'**
   String get supportGreeting;
 
   /// No description provided for @supportParagraph1.
@@ -3193,13 +3193,13 @@ abstract class AppLocalizations {
   /// No description provided for @supportParagraph3.
   ///
   /// In en, this message translates to:
-  /// **'But servers, development tools, and coffee aren\'t free 😅 If Musly has become a part of your daily life and you\'d like to say \"thanks,\" a small donation would mean the world to me. It helps cover costs and keeps me motivated to add new features.'**
+  /// **'But servers, development tools, and coffee aren\'t free If Musly has become a part of your daily life and you\'d like to say \"thanks,\" a small donation would mean the world to me. It helps cover costs and keeps me motivated to add new features.'**
   String get supportParagraph3;
 
   /// No description provided for @supportParagraph4.
   ///
   /// In en, this message translates to:
-  /// **'No pressure at all though - your enjoyment of the app is already the best reward! 💙'**
+  /// **'No pressure at all though - your enjoyment of the app is already the best reward!'**
   String get supportParagraph4;
 
   /// No description provided for @supportDonationTitle.
@@ -3253,13 +3253,13 @@ abstract class AppLocalizations {
   /// No description provided for @supportWayEnjoy.
   ///
   /// In en, this message translates to:
-  /// **'Just enjoy the music! 🎵'**
+  /// **'Just enjoy the music!'**
   String get supportWayEnjoy;
 
   /// No description provided for @supportMadeWithLove.
   ///
   /// In en, this message translates to:
-  /// **'Made with 💙 in Italy'**
+  /// **'Crafted with passion in Italy'**
   String get supportMadeWithLove;
 
   /// Title of the playback speed bottom sheet

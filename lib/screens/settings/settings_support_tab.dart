@@ -185,7 +185,7 @@ class SettingsSupportTab extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildSupportItem(
                   context: context,
-                  icon: CupertinoIcons.heart_fill,
+                  icon: CupertinoIcons.music_note_2,
                   text: l10n.supportWayEnjoy,
                 ),
               ],
@@ -196,12 +196,25 @@ class SettingsSupportTab extends StatelessWidget {
 
         // Made with love
         Center(
-          child: Text(
-            l10n.supportMadeWithLove,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Crafted with ',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                ),
+              ),
+              const Icon(CupertinoIcons.heart_fill, size: 14, color: Color(0xFFFA2D48)),
+              Text(
+                ' in Italy',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 32),
