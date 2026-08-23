@@ -9,6 +9,8 @@ import 'package:musly/services/upnp_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'airplay_button.dart';
 
+import '../../screens/connect/connect_devices_modal.dart';
+
 class CastButton extends StatelessWidget {
   final Color? iconColor;
   final double iconSize;
@@ -30,30 +32,23 @@ class CastButton extends StatelessWidget {
       (s) => s.isConnected,
     );
 
-    late IconData icon;
-    late Color color;
-    late String tooltip;
+    final IconData icon;
+    final Color color;
+    final String tooltip;
 
     if (castState == CastState.connected) {
       icon = Icons.cast_connected;
-      color = Theme.of(context).colorScheme.primary;
-      tooltip =
-          'Casting to ${context.read<CastService>().deviceName ?? "device"}';
-    } else if (castState == CastState.connecting) {
-      icon = Icons.cast_connected;
-      color = Colors.orange;
-      tooltip = AppLocalizations.of(context)!.loading;
+      color = const Color(0xFF1DB954);
+      tooltip = 'Cast: Connected';
     } else if (upnpConnected) {
-      icon = Icons.speaker_rounded;
-      color = Theme.of(context).colorScheme.primary;
+      icon = Icons.speaker_group;
+      color = const Color(0xFF1DB954);
       tooltip =
           'DLNA: ${context.read<UpnpService>().connectedDevice?.friendlyName ?? "device"}';
     } else {
       icon = Icons.cast;
       color = iconColor ?? Colors.white;
-      // Use castDlnaBeta if available, else a fallback or just hardcoded, but let's see if castDlnaBeta exists.
-      // Wait, in the diff it uses `AppLocalizations.of(context)!.castDlnaBeta`. I will just use 'Cast / DLNA (Beta)' directly if it doesn't compile, but let's assume it exists or use something else.
-      tooltip = 'Cast / DLNA (Beta)'; 
+      tooltip = 'Connect to a Device (Musly Connect / BeatSync)';
     }
 
     return IconButton(
@@ -69,7 +64,7 @@ class CastButton extends StatelessWidget {
         } else if (upnpService.isConnected) {
           _showUpnpControlDialog(context, upnpService);
         } else {
-          _showDevicePickerDialog(context, castService, upnpService);
+          ConnectDevicesModal.show(context);
         }
       },
     );

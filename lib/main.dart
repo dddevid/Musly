@@ -265,6 +265,58 @@ void main() async {
   final libraryProvider = LibraryProvider(subsonicService, audioHandler);
   playerProvider.setLibraryProvider(libraryProvider);
 
+  final muslyConnectService = MuslyConnectService();
+  final beatSyncService = BeatSyncService();
+
+  // Wire Musly Connect remote execution callbacks
+  muslyConnectService.onRemotePlay = () => playerProvider.play();
+  muslyConnectService.onRemotePause = () => playerProvider.pause();
+  muslyConnectService.onRemoteTogglePlayPause = () => playerProvider.togglePlayPause();
+  muslyConnectService.onRemoteNext = () => playerProvider.next();
+  muslyConnectService.onRemotePrevious = () => playerProvider.previous();
+  muslyConnectService.onRemoteSeek = (sec) => playerProvider.seek(Duration(seconds: sec));
+  muslyConnectService.onRemoteVolume = (vol) => playerProvider.setVolume(vol);
+  muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) {
+    if (queue.isNotEmpty) {
+      playerProvider.playSong(
+        queue[index.clamp(0, queue.length - 1)],
+        playlist: queue,
+        startIndex: index,
+      );
+      if (posSec > 0) {
+        playerProvider.seek(Duration(seconds: posSec));
+      }
+    }
+  };
+
+  // Wire BeatSync [BETA] scheduled playback callbacks
+  beatSyncService.onScheduledPlay = (song, startPosMs) {
+    playerProvider.playSong(song);
+    if (startPosMs > 0) {
+      playerProvider.seek(Duration(milliseconds: startPosMs));
+    }
+  };
+  beatSyncService.onScheduledPause = () => playerProvider.pause();
+  beatSyncService.onScheduledSeek = (seekMs) => playerProvider.seek(Duration(milliseconds: seekMs));
+
+  // Initialize Musly Connect LAN discovery
+  final deviceName = Platform.isWindows
+      ? 'Windows PC'
+      : (Platform.isMacOS
+          ? 'Mac'
+          : (Platform.isLinux
+              ? 'Linux PC'
+              : (Platform.isIOS ? 'iPhone' : 'Android Device')));
+  muslyConnectService.initialize(
+    deviceName: deviceName,
+    mode: subsonicService.isYoutube
+        ? ConnectMode.webStream
+        : (subsonicService.isJellyfin ? ConnectMode.jellyfin : ConnectMode.subsonic),
+    serverHash: subsonicService.baseUrl,
+  ).catchError((e) {
+    debugPrint('MuslyConnect initialization error: $e');
+  });
+
   final Widget appWithProviders = MultiProvider(
     providers: [
       Provider<StorageService>.value(value: storageService),
@@ -282,6 +334,8 @@ void main() async {
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
+      ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
+      ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],

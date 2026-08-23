@@ -15,6 +15,9 @@ import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
 import 'package:musly/services/crossfade_service.dart';
+import 'package:musly/services/musly_connect_service.dart';
+import 'package:musly/services/beatsync_service.dart';
+import 'package:musly/screens/connect/connect_devices_modal.dart';
 
 class SettingsPlaybackTab extends StatefulWidget {
   const SettingsPlaybackTab({super.key});
@@ -83,6 +86,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ],
           ],
         ),
+        const SizedBox(height: 24),
+        _buildConnectSection(),
         const SizedBox(height: 24),
         _buildCrossfadeSection(),
         const SizedBox(height: 24),
@@ -328,6 +333,68 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildConnectSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Consumer2<MuslyConnectService, BeatSyncService>(
+      builder: (context, connect, beatSync, _) {
+        final compatiblePeers = connect.getCompatibleDevices();
+
+        return SettingsSectionCard(
+          title: 'Musly Connect & BeatSync',
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
+              ),
+              title: Row(
+                children: [
+                  const Text('Musly Connect', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'BETA',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF8B5CF6),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                compatiblePeers.isEmpty
+                    ? 'LAN Discovery active • No nearby devices'
+                    : '${compatiblePeers.length} nearby compatible device(s) found',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+              ),
+              trailing: const Icon(CupertinoIcons.chevron_forward, size: 18),
+              onTap: () => ConnectDevicesModal.show(context),
+            ),
+          ],
+        );
+      },
     );
   }
 
