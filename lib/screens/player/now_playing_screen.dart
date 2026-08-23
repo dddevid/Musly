@@ -335,13 +335,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               Expanded(
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 16.0),
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: AlbumArtView(
-                        image: _currentImageProvider ?? widget.image,
-                        tag: currentSong?.id ?? widget.heroTag,
-                      ),
+                    padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                    child: AlbumArtView(
+                      image: _currentImageProvider ?? widget.image,
+                      tag: currentSong?.id ?? widget.heroTag,
                     ),
                   ),
                 ),
