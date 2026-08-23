@@ -371,7 +371,7 @@
       }
     }
   },
-  "songsCount": "{count, plural, one {} few {{count} песни} many {{count} песен}=0{Нет песен} =1{1 песня} other{{count} песен}}",
+  "songsCount": "{count, plural, =0{Нет песен} =1{1 песня} few{{count} песни} many{{count} песен} other{{count} песен}}",
   "@songsCount": {
     "description": "Songs count with plural support",
     "placeholders": {
@@ -380,7 +380,7 @@
       }
     }
   },
-  "albumsCount": "{count, plural, one {} few {{count} альбома} many {{count} альбомов}=0{Нет альбомов} =1{1 альбом} other{{count} альбомов}}",
+  "albumsCount": "{count, plural, =0{Нет альбомов} =1{1 альбом} few{{count} альбома} many{{count} альбомов} other{{count} альбомов}}",
   "@albumsCount": {
     "description": "Albums count with plural support",
     "placeholders": {

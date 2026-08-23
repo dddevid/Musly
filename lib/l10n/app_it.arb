@@ -371,7 +371,7 @@
       }
     }
   },
-  "songsCount": "{count, plural, one {}=0{Nessuna canzone} =1{1 canzone} other{{count} canzoni}}",
+  "songsCount": "{count, plural, =0{Nessuna canzone} =1{1 canzone} other{{count} canzoni}}",
   "@songsCount": {
     "description": "Songs count with plural support",
     "placeholders": {
@@ -380,7 +380,7 @@
       }
     }
   },
-  "albumsCount": "{count, plural, one {}=0{Nessun album} =1{1 album} other{{count} album}}",
+  "albumsCount": "{count, plural, =0{Nessun album} =1{1 album} other{{count} album}}",
   "@albumsCount": {
     "description": "Albums count with plural support",
     "placeholders": {

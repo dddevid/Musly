@@ -371,7 +371,7 @@
       }
     }
   },
-  "songsCount": "{count, plural, one {}=0{No hay canciones} =1{1 canción} other{{count} canciones}}",
+  "songsCount": "{count, plural, =0{No hay canciones} =1{1 canción} other{{count} canciones}}",
   "@songsCount": {
     "description": "Songs count with plural support",
     "placeholders": {
@@ -380,7 +380,7 @@
       }
     }
   },
-  "albumsCount": "{count, plural, one {}=0{No hay álbumes} =1{1 álbum} other{{count} álbumes}}",
+  "albumsCount": "{count, plural, =0{No hay álbumes} =1{1 álbum} other{{count} álbumes}}",
   "@albumsCount": {
     "description": "Albums count with plural support",
     "placeholders": {
