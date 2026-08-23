@@ -22,6 +22,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
 
   final _nameController = TextEditingController();
   final _urlController = TextEditingController();
+  final _lanUrlController = TextEditingController();
   final _userController = TextEditingController();
   final _passController = TextEditingController();
 
@@ -51,6 +52,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
   void dispose() {
     _nameController.dispose();
     _urlController.dispose();
+    _lanUrlController.dispose();
     _userController.dispose();
     _passController.dispose();
     _clientCertPassController.dispose();
@@ -173,6 +175,9 @@ class _AddServerScreenState extends State<AddServerScreen> {
         password: pass,
         serverFamily: _selectedFamily,
         profileName: profileName.isNotEmpty ? profileName : null,
+        lanUrl: _lanUrlController.text.trim().isNotEmpty
+            ? _lanUrlController.text.trim()
+            : null,
         allowSelfSignedCertificates: _allowSelfSigned,
         useLegacyAuth: _useLegacyAuth,
         customCertificatePath: _customCertPath,
@@ -674,6 +679,24 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 labelText: 'Server URL *',
                 hintText: isJellyfin ? 'https://jellyfin.example.com' : 'https://music.example.com',
                 prefixIcon: const Icon(CupertinoIcons.link),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // LAN URL (Optional)
+            TextFormField(
+              controller: _lanUrlController,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: 'LAN Server URL (Optional)',
+                hintText: 'e.g. http://192.168.1.5:4533',
+                prefixIcon: const Icon(CupertinoIcons.wifi),
                 filled: true,
                 fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(

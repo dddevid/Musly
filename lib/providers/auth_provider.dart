@@ -136,6 +136,7 @@ class AuthProvider extends ChangeNotifier {
     String? clientCertificatePath,
     String? clientCertificatePassword,
     String? profileName,
+    String? lanUrl,
     String serverFamily = 'subsonic',
   }) async {
     debugPrint(
@@ -184,6 +185,7 @@ class AuthProvider extends ChangeNotifier {
 
     final config = ServerConfig(
       serverUrl: serverUrl,
+      lanUrl: lanUrl,
       username: username,
       password: password,
       useLegacyAuth: useLegacyAuth,

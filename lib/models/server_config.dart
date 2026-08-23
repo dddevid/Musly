@@ -1,5 +1,6 @@
 class ServerConfig {
   final String serverUrl;
+  final String? lanUrl;
   final String username;
   final String password;
   final bool useLegacyAuth;
@@ -7,12 +8,9 @@ class ServerConfig {
   final List<String> selectedMusicFolderIds;
   final String? serverType;
   final String? serverVersion;
-  final String?
-  customCertificatePath; 
-  final String?
-  clientCertificatePath; 
-  final String?
-  clientCertificatePassword;
+  final String? customCertificatePath; 
+  final String? clientCertificatePath; 
+  final String? clientCertificatePassword;
   final String? name;
   final String serverFamily;
   final String? apiToken;
@@ -20,6 +18,7 @@ class ServerConfig {
 
   ServerConfig({
     required this.serverUrl,
+    this.lanUrl,
     required this.username,
     required this.password,
     this.useLegacyAuth = false,
@@ -61,6 +60,7 @@ class ServerConfig {
   factory ServerConfig.fromJson(Map<String, dynamic> json) {
     return ServerConfig(
       serverUrl: json['serverUrl'] ?? '',
+      lanUrl: json['lanUrl'] as String?,
       username: json['username'] ?? '',
       password: json['password'] ?? '',
       useLegacyAuth: json['useLegacyAuth'] ?? false,
@@ -85,6 +85,7 @@ class ServerConfig {
   Map<String, dynamic> toJson() {
     return {
       'serverUrl': serverUrl,
+      'lanUrl': lanUrl,
       'username': username,
       'password': password,
       'useLegacyAuth': useLegacyAuth,
@@ -104,6 +105,7 @@ class ServerConfig {
 
   ServerConfig copyWith({
     String? serverUrl,
+    String? lanUrl,
     String? username,
     String? password,
     bool? useLegacyAuth,
@@ -121,6 +123,7 @@ class ServerConfig {
   }) {
     return ServerConfig(
       serverUrl: serverUrl ?? this.serverUrl,
+      lanUrl: lanUrl ?? this.lanUrl,
       username: username ?? this.username,
       password: password ?? this.password,
       useLegacyAuth: useLegacyAuth ?? this.useLegacyAuth,
@@ -147,6 +150,18 @@ class ServerConfig {
     String url = serverUrl.trim();
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'https://$url';
+    }
+    if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
+    }
+    return url;
+  }
+
+  String? get normalizedLanUrl {
+    if (lanUrl == null || lanUrl!.trim().isEmpty) return null;
+    String url = lanUrl!.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://$url';
     }
     if (url.endsWith('/')) {
       url = url.substring(0, url.length - 1);

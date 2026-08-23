@@ -229,8 +229,20 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                       color: isDark ? Colors.white70 : Colors.black87,
                     ),
                   ),
-                  const Spacer(),
+                  if (config.lanUrl != null && config.lanUrl!.isNotEmpty) ...[
+                    const Spacer(),
+                    Icon(CupertinoIcons.wifi, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                    const SizedBox(width: 4),
+                    Text(
+                      'LAN: ${config.lanUrl}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
+                    ),
+                  ],
                   if (config.serverVersion != null && config.serverVersion!.isNotEmpty) ...[
+                    const Spacer(),
                     Icon(CupertinoIcons.info_circle, size: 14, color: isDark ? Colors.white54 : Colors.black45),
                     const SizedBox(width: 6),
                     Text(

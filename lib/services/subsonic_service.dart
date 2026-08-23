@@ -86,8 +86,12 @@ class SubsonicService {
     );
   }
 
+  String? _activeBaseUrl;
+  String get activeBaseUrl => _activeBaseUrl ?? _config?.normalizedUrl ?? '';
+
   Future<void> configure(ServerConfig config) async {
     _config = config;
+    _activeBaseUrl = config.normalizedUrl;
     if (config.isJellyfin) {
       _jellyfin ??= JellyfinService();
       _jellyfin!.configure(config);
@@ -106,6 +110,28 @@ class SubsonicService {
         clientCertPath: config.clientCertificatePath,
         clientCertPassword: config.clientCertificatePassword,
       );
+
+      // fix #187: Auto-probe LAN URL if provided, fallback to WAN if unavailable
+      if (config.lanUrl != null && config.lanUrl!.trim().isNotEmpty) {
+        final lanNormalized = config.normalizedLanUrl;
+        if (lanNormalized != null) {
+          try {
+            final authParams = _getAuthParams();
+            final q = authParams.entries
+                .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                .join('&');
+            final pingUrl = '$lanNormalized/rest/ping?$q';
+            final resp = await _dio.get(pingUrl).timeout(const Duration(seconds: 3));
+            if (resp.statusCode == 200) {
+              _activeBaseUrl = lanNormalized;
+              debugPrint('[Subsonic] Successfully connected via LAN: $lanNormalized');
+            }
+          } catch (_) {
+            debugPrint('[Subsonic] LAN unavailable, using WAN: ${config.normalizedUrl}');
+            _activeBaseUrl = config.normalizedUrl;
+          }
+        }
+      }
     }
     
     _clientSalt = await StorageService().getOrCreateSubsonicSalt();
@@ -329,7 +355,7 @@ class SubsonicService {
         )
         .join('&');
 
-    return '${_config!.normalizedUrl}/rest/$endpoint?$queryString';
+    return '$activeBaseUrl/rest/$endpoint?$queryString';
   }
 
   Future<Map<String, dynamic>> _request(
@@ -468,7 +494,7 @@ class SubsonicService {
         )
         .join('&');
 
-    return '${_config!.normalizedUrl}/rest/getCoverArt?$queryString';
+    return '$activeBaseUrl/rest/getCoverArt?$queryString';
   }
 
   /// Returns the /download URL for a song — always original file, no transcoding.
