@@ -12,11 +12,11 @@ import 'package:provider/provider.dart';
 import '../../models/connect_device.dart';
 import '../../models/song.dart';
 import '../../providers/player_provider.dart';
-import '../../services/beatsync_service.dart';
+// import '../../services/beatsync_service.dart';
 import '../../services/musly_connect_service.dart';
 import '../../services/cast_service.dart';
 import '../../services/upnp_service.dart';
-import 'beatsync_party_screen.dart';
+// import 'beatsync_party_screen.dart';
 
 class ConnectDevicesModal extends StatefulWidget {
   final bool isDesktopDialog;
@@ -96,13 +96,13 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     final surfaceColor = isDark ? const Color(0xFF14151B) : Colors.white;
     final dividerColor = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.06);
 
-    return Consumer4<MuslyConnectService, BeatSyncService, CastService, UpnpService>(
-      builder: (context, connectService, beatSync, castService, upnpService, _) {
+    return Consumer3<MuslyConnectService, CastService, UpnpService>(
+      builder: (context, connectService, castService, upnpService, _) {
         final compatibleDevices = connectService.getCompatibleDevices();
-        final partyRooms = connectService.getAvailablePartyRooms();
+        // final partyRooms = connectService.getAvailablePartyRooms();
         final player = Provider.of<PlayerProvider>(context, listen: false);
         final isControlling = connectService.isControllingRemoteDevice;
-        final isInParty = beatSync.isInParty;
+        // final isInParty = beatSync.isInParty;
 
         return Container(
           decoration: BoxDecoration(
@@ -196,11 +196,11 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                           const SizedBox(height: 14),
                         ],
 
-                        // ── Active Party Banner ───────────────────────────────
-                        if (isInParty) ...[
-                          _buildActivePartyTile(context, beatSync, isDark),
-                          const SizedBox(height: 14),
-                        ],
+                        // ── Active Party Banner (BeatSync Disabled) ───────────
+                        // if (isInParty) ...[
+                        //   _buildActivePartyTile(context, beatSync, isDark),
+                        //   const SizedBox(height: 14),
+                        // ],
 
                         // ── Current Device / Output ───────────────────────────
                         if (!isControlling) ...[
@@ -208,11 +208,11 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                           const SizedBox(height: 16),
                         ],
 
-                        // ── Group Session / Party Mode (BeatSync) ──────────────
-                        if (!isInParty) ...[
-                          _buildGroupSessionCard(context, beatSync, partyRooms, isDark),
-                          const SizedBox(height: 20),
-                        ],
+                        // ── Group Session / Party Mode (BeatSync Disabled) ────
+                        // if (!isInParty) ...[
+                        //   _buildGroupSessionCard(context, beatSync, partyRooms, isDark),
+                        //   const SizedBox(height: 20),
+                        // ],
 
                         // ── Available Musly Devices ───────────────────────────
                         _buildSectionLabel('MUSLY CONNECT DEVICES'),
@@ -399,173 +399,16 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
+  /*
+  // BeatSync code commented out temporarily
   Widget _buildActivePartyTile(BuildContext context, BeatSyncService beatSync, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.14 : 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(CupertinoIcons.person_2_fill, color: Color(0xFF8B5CF6), size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  beatSync.partyRoomName,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  beatSync.isHost ? 'Hosting group session' : 'Joined group session',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF8B5CF6), fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                CupertinoPageRoute(builder: (_) => const BeatSyncPartyScreen()),
-              );
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text(
-              'Open',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
-            ),
-          ),
-          const SizedBox(width: 6),
-          IconButton(
-            icon: const Icon(CupertinoIcons.xmark_circle, size: 20, color: Colors.redAccent),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () {
-              final wasHost = beatSync.isHost;
-              if (wasHost) {
-                MuslyConnectService().endPartySession();
-              } else {
-                MuslyConnectService().leavePartySession();
-              }
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(wasHost ? 'Group session ended' : 'Left group session')),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+    ...
   }
 
-  Widget _buildGroupSessionCard(
-    BuildContext context,
-    BeatSyncService beatSync,
-    List<ConnectDevice> availableRooms,
-    bool isDark,
-  ) {
-    final bg = isDark ? const Color(0xFF1B1C26) : const Color(0xFFF4F5F8);
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(CupertinoIcons.person_2_fill, color: Color(0xFF8B5CF6), size: 18),
-              const SizedBox(width: 8),
-              const Text(
-                'Group Listening Session',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Play audio in sync across multiple phones and computers on this network.',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.white60 : Colors.black54,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    if (!beatSync.isHost) {
-                      beatSync.startHostingParty();
-                    }
-                    Navigator.of(context).push(
-                      CupertinoPageRoute(builder: (_) => const BeatSyncPartyScreen()),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF8B5CF6),
-                    side: const BorderSide(color: Color(0xFF8B5CF6)),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text(
-                    beatSync.isHost ? 'Open Session' : 'Start Session',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              if (availableRooms.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final host = availableRooms.first;
-                      final ok = await MuslyConnectService().connectToRemoteDevice(host);
-                      if (ok && context.mounted) {
-                        beatSync.joinPartyAsGuest(host);
-                        MuslyConnectService().sendCommand(
-                          ConnectCommandType.joinParty,
-                          {'guestName': MuslyConnectService().localDeviceName},
-                        );
-                        Navigator.of(context).push(
-                          CupertinoPageRoute(builder: (_) => const BeatSyncPartyScreen()),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: Text(
-                      'Join (${availableRooms.first.name})',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
+  Widget _buildGroupSessionCard(...) {
+    ...
   }
+  */
 
   Future<void> _handleTransferToDevice(
     BuildContext context,

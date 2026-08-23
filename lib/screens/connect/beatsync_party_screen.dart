@@ -1,5 +1,7 @@
+/*
 // ── Musly Listening Party (BeatSync) Screen ───────────────────────────────────
 // Handcrafted multi-speaker listening experience inspired by Apple SharePlay & Spotify Group Session.
+// Temporarily disabled / commented out.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:async';
@@ -433,3 +435,4 @@ class _BeatSyncPartyScreenState extends State<BeatSyncPartyScreen> {
     );
   }
 }
+*/

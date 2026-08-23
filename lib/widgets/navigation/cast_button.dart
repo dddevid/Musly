@@ -47,7 +47,7 @@ class CastButton extends StatelessWidget {
     } else {
       icon = Icons.cast;
       color = iconColor ?? Colors.white;
-      tooltip = 'Connect to a Device (Musly Connect / BeatSync)';
+      tooltip = 'Connect to a Device (Musly Connect)';
     }
 
     return IconButton(

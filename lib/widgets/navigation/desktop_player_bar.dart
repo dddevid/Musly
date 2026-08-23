@@ -10,7 +10,6 @@ import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/connect/connect_devices_modal.dart';
 import 'package:musly/services/musly_connect_service.dart';
-import 'package:musly/services/beatsync_service.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -312,33 +311,26 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Consumer2<MuslyConnectService, BeatSyncService>(
-                  builder: (context, connectService, beatSync, _) {
+                Consumer<MuslyConnectService>(
+                  builder: (context, connectService, _) {
                     if (!connectService.enabled) return const SizedBox.shrink();
                     final isControlling = connectService.isControllingRemoteDevice;
-                    final isInParty = beatSync.isInParty;
 
                     final iconColor = isControlling
                         ? const Color(0xFF1DB954)
-                        : (isInParty
-                            ? const Color(0xFF8B5CF6)
-                            : (isDark
-                                ? const Color(0xFFB3B3B3)
-                                : const Color(0xFF6B6B6B)));
+                        : (isDark
+                            ? const Color(0xFFB3B3B3)
+                            : const Color(0xFF6B6B6B));
 
                     return IconButton(
                       icon: Icon(
-                        isControlling
-                            ? Icons.devices_rounded
-                            : (isInParty ? Icons.surround_sound_rounded : Icons.devices_other_rounded),
+                        isControlling ? Icons.devices_rounded : Icons.devices_other_rounded,
                         size: 20,
                         color: iconColor,
                       ),
                       tooltip: isControlling
                           ? 'Connected: ${connectService.activeRemoteDevice?.name}'
-                          : (isInParty
-                              ? 'BeatSync Room: ${beatSync.partyRoomName}'
-                              : 'Connect Devices & BeatSync'),
+                          : 'Connect to a Device',
                       onPressed: () => ConnectDevicesModal.show(context),
                     );
                   },

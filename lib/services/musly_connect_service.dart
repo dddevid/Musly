@@ -5,10 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/connect_device.dart';
 import '../models/song.dart';
-import '../services/beatsync_service.dart';
+// import '../services/beatsync_service.dart';
 import '../services/storage_service.dart';
 
-/// Core Service managing zero-config LAN device discovery, remote control, and BeatSync [BETA].
+/// Core Service managing zero-config LAN device discovery and remote control.
 class MuslyConnectService extends ChangeNotifier {
   static final MuslyConnectService _instance = MuslyConnectService._internal();
   factory MuslyConnectService() => _instance;
@@ -195,7 +195,7 @@ class MuslyConnectService extends ChangeNotifier {
   void _broadcastLocalBeacon() {
     if (_udpBeaconSocket == null) return;
 
-    final beatSync = BeatSyncService();
+    // final beatSync = BeatSyncService();
     final localDevice = ConnectDevice(
       id: _localDeviceId,
       name: _localDeviceName,
@@ -204,9 +204,9 @@ class MuslyConnectService extends ChangeNotifier {
       port: _httpWsPort,
       mode: _localMode,
       serverHash: _localServerHash,
-      isPartyHost: beatSync.isHost,
-      partyRoomName: beatSync.isHost ? beatSync.partyRoomName : null,
-      partyGuestCount: beatSync.connectedGuestNames.length,
+      isPartyHost: false, // beatSync.isHost,
+      partyRoomName: null, // beatSync.isHost ? beatSync.partyRoomName : null,
+      partyGuestCount: 0, // beatSync.connectedGuestNames.length,
     );
 
     final rawJson = jsonEncode(localDevice.toJson());
@@ -360,23 +360,29 @@ class MuslyConnectService extends ChangeNotifier {
       },
       onDone: () {
         _connectedClientSockets.remove(socket);
+        _socketGuestNames.remove(socket);
+        /*
         final guestName = _socketGuestNames.remove(socket);
         if (guestName != null) {
           BeatSyncService().removeGuest(guestName);
         }
+        */
       },
       onError: (_) {
         _connectedClientSockets.remove(socket);
+        _socketGuestNames.remove(socket);
+        /*
         final guestName = _socketGuestNames.remove(socket);
         if (guestName != null) {
           BeatSyncService().removeGuest(guestName);
         }
+        */
       },
     );
   }
 
   void _dispatchIncomingMessage(ConnectMessage message, WebSocket? socket) {
-    final beatSync = BeatSyncService();
+    // final beatSync = BeatSyncService();
 
     switch (message.type) {
       case ConnectCommandType.play:
@@ -411,7 +417,8 @@ class MuslyConnectService extends ChangeNotifier {
         onRemoteTransferQueue?.call(songs, index, posSec);
         break;
 
-      // ── BeatSync [BETA] NTP Protocol ──────────────────────────────────────
+      /*
+      // ── BeatSync [BETA] NTP Protocol (Temporarily disabled) ───────────────
       case ConnectCommandType.ntpProbe:
         final t0 = message.payload['t0'] as int;
         final t1 = DateTime.now().millisecondsSinceEpoch;
@@ -468,6 +475,7 @@ class MuslyConnectService extends ChangeNotifier {
           disconnectRemote();
         }
         break;
+      */
 
       case ConnectCommandType.stateUpdate:
         final songTitle = message.payload['currentSongTitle'] as String?;
@@ -553,7 +561,7 @@ class MuslyConnectService extends ChangeNotifier {
       } catch (_) {}
     }
     disconnectRemote();
-    BeatSyncService().leaveParty();
+    // BeatSyncService().leaveParty();
   }
 
   /// Host ends the party room and notifies all connected guests.
@@ -572,7 +580,7 @@ class MuslyConnectService extends ChangeNotifier {
       }
     }
     _socketGuestNames.clear();
-    BeatSyncService().leaveParty();
+    // BeatSyncService().leaveParty();
   }
 
   void sendCommand(ConnectCommandType type, [Map<String, dynamic>? payload]) {
@@ -667,10 +675,8 @@ class MuslyConnectService extends ChangeNotifier {
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // BeatSync Broadcast Helper (Host -> All Guests)
-  // ──────────────────────────────────────────────────────────────────────────
-
+  /*
+  // ── BeatSync Broadcast Helper (Host -> All Guests) ──────────────────────────
   void broadcastBeatSyncSchedulePlay(Song song, int targetEpochMs, int startPositionMs) {
     final message = ConnectMessage(
       type: ConnectCommandType.beatSyncSchedulePlay,
@@ -716,6 +722,7 @@ class MuslyConnectService extends ChangeNotifier {
 
     _remoteWsClient?.add(message.serialize());
   }
+  */
 
   String _getPlatformName() {
     if (Platform.isAndroid) return 'android';

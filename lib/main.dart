@@ -19,7 +19,7 @@ import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
 import 'services/musly_connect_service.dart';
-import 'services/beatsync_service.dart';
+// import 'services/beatsync_service.dart';
 import 'services/tv_detection_service.dart';
 import 'models/connect_device.dart';
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
@@ -272,7 +272,7 @@ void main() async {
   playerProvider.setLibraryProvider(libraryProvider);
 
   final muslyConnectService = MuslyConnectService();
-  final beatSyncService = BeatSyncService();
+  // final beatSyncService = BeatSyncService();
 
   // Wire Musly Connect remote execution callbacks
   muslyConnectService.onRemotePlay = () => playerProvider.play();
@@ -305,7 +305,8 @@ void main() async {
     );
   };
 
-  // Wire BeatSync [BETA] scheduled playback callbacks
+  /*
+  // Wire BeatSync [BETA] scheduled playback callbacks (Temporarily disabled)
   beatSyncService.onScheduledPlay = (song, startPosMs) {
     playerProvider.playSong(song);
     if (startPosMs > 0) {
@@ -314,6 +315,7 @@ void main() async {
   };
   beatSyncService.onScheduledPause = () => playerProvider.pause();
   beatSyncService.onScheduledSeek = (seekMs) => playerProvider.seek(Duration(milliseconds: seekMs));
+  */
 
   // Wire 50-Songs Milestone Celebration
   playerProvider.onMilestone50Triggered = () {
@@ -366,7 +368,7 @@ void main() async {
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
       ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
-      ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
+      // ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
       ChangeNotifierProvider<TvDetectionService>.value(value: tvDetectionService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
