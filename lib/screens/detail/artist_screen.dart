@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -53,15 +54,55 @@ class _ArtistScreenState extends State<ArtistScreen> {
             .where((s) => s.artistId == widget.artistId)
             .toList();
       } else {
-        final artistFuture = subsonicService.getArtist(widget.artistId);
-        final artistInfoFuture = subsonicService.getArtistInfo(widget.artistId);
-        
-        artist = await artistFuture;
-        _artistInfo = await artistInfoFuture;
+        // fix #186: fetch artist and info independently so a failure in one
+        // doesn't prevent the other data from loading (e.g. Emby returns
+        // 404 for getArtist but still serves albums and top songs).
+        try {
+          artist = await subsonicService.getArtist(widget.artistId);
+        } catch (e) {
+          debugPrint('[ArtistScreen] getArtist failed: $e – trying fallbacks');
+        }
 
-        topSongs = await subsonicService.getArtistTopSongs(widget.artistId);
-        albums = await subsonicService.getArtistAlbums(widget.artistId);
+        try {
+          _artistInfo = await subsonicService.getArtistInfo(widget.artistId);
+        } catch (_) {}
+
+        // Fallback 1: look up from cached library artists
+        if (artist == null) {
+          final cached = libraryProvider.artists.where(
+            (a) => a.id == widget.artistId,
+          );
+          if (cached.isNotEmpty) artist = cached.first;
+        }
+
+        // Fallback 2: build a minimal Artist from cached songs
+        if (artist == null) {
+          final songMatch = libraryProvider.cachedAllSongs.where(
+            (s) => s.artistId == widget.artistId,
+          );
+          if (songMatch.isNotEmpty) {
+            artist = Artist(
+              id: widget.artistId,
+              name: songMatch.first.artist ?? 'Unknown Artist',
+            );
+          }
+        }
+
+        try {
+          topSongs = await subsonicService.getArtistTopSongs(widget.artistId);
+        } catch (_) {}
+        try {
+          albums = await subsonicService.getArtistAlbums(widget.artistId);
+        } catch (_) {}
+
         if (albums.isNotEmpty) {
+          // Fallback 3: if artist still null, derive name from albums
+          if (artist == null) {
+            artist = Artist(
+              id: widget.artistId,
+              name: albums.first.artist ?? 'Unknown Artist',
+            );
+          }
           final topSongIds = topSongs.map((s) => s.id).toSet();
           final seenIds = {...topSongIds};
           const chunkSize = 5;
@@ -69,11 +110,13 @@ class _ArtistScreenState extends State<ArtistScreen> {
           for (var i = 0; i < albums.length; i += chunkSize) {
             final chunk =
                 albums.sublist(i, (i + chunkSize).clamp(0, albums.length));
-            final results = await Future.wait(
-                chunk.map((a) => subsonicService.getAlbumSongs(a.id)));
-            allAlbumSongs.addAll(results
-                .expand((songs) => songs)
-                .where((s) => seenIds.add(s.id)));
+            try {
+              final results = await Future.wait(
+                  chunk.map((a) => subsonicService.getAlbumSongs(a.id)));
+              allAlbumSongs.addAll(results
+                  .expand((songs) => songs)
+                  .where((s) => seenIds.add(s.id)));
+            } catch (_) {}
           }
           topSongs = [...topSongs, ...allAlbumSongs];
         }
@@ -88,6 +131,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
         });
       }
     } catch (e) {
+      debugPrint('[ArtistScreen] Unexpected error loading artist: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
