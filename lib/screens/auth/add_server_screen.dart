@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/providers/library_provider.dart';
+import 'package:musly/services/local_music_service.dart';
 import 'package:musly/theme/app_theme.dart';
 
 class AddServerScreen extends StatefulWidget {
@@ -325,6 +326,17 @@ class _AddServerScreenState extends State<AddServerScreen> {
                     isDisabled: hasYtStream,
                   ),
                 ],
+                const SizedBox(height: 10),
+                _buildProviderCard(
+                  family: 'local',
+                  title: 'Local Files',
+                  subtitle: 'Play audio files stored directly on this device',
+                  icon: CupertinoIcons.folder_fill,
+                  gradient: const [Color(0xFF34C759), Color(0xFF30B0C7)],
+                  badge: 'Offline',
+                  isSelected: _selectedFamily == 'local',
+                  isDisabled: false,
+                ),
 
                 const SizedBox(height: 24),
 
@@ -337,6 +349,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 // Dynamic Form Content
                 if (_selectedFamily == 'youtube') ...[
                   _buildYtStreamInfoCard(isDark, hasYtStream),
+                ] else if (_selectedFamily == 'local') ...[
+                  _buildLocalFilesCard(isDark),
                 ] else ...[
                   _buildServerForm(isDark),
                 ],
@@ -637,6 +651,112 @@ class _AddServerScreenState extends State<AddServerScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildLocalFilesCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF34C759), Color(0xFF30B0C7)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(CupertinoIcons.folder_fill, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Local Music Library',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Play local audio files stored on device',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _isConnecting ? null : _connectLocalFiles,
+              icon: const Icon(CupertinoIcons.folder_open, size: 18),
+              label: const Text(
+                'Scan & Use Local Files',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF34C759),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _connectLocalFiles() async {
+    final localService = Provider.of<LocalMusicService>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+
+    final granted = await localService.requestPermission();
+    if (!granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Storage permission is required to access local music.')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isConnecting = true);
+    try {
+      await playerProvider.stop();
+      if (Platform.isIOS) {
+        await localService.pickAndAddFiles();
+      } else {
+        await localService.scanForMusic();
+      }
+      if (localService.songs.isNotEmpty) {
+        await authProvider.setLocalOnlyMode(true);
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isConnecting = false);
+    }
   }
 
   Widget _buildServerForm(bool isDark) {
