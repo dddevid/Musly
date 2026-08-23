@@ -72,7 +72,6 @@ dependencies:
   flutter_chrome_cast: ^1.4.1
   dynamic_color: ^1.7.0
   connectivity_plus: ^7.0.0
-  countly_flutter: ^26.1.0
   youtube_explode_dart: ^3.0.5
   http: ^1.6.0
   sqflite: ^2.3.0

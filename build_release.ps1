@@ -27,12 +27,6 @@ if (Test-Path $envFile) {
 
 # Build dart-define arguments
 $defines = @()
-if ($env:COUNTLY_SERVER_URL) {
-    $defines += "--dart-define=COUNTLY_SERVER_URL=`"$env:COUNTLY_SERVER_URL`""
-}
-if ($env:COUNTLY_APP_KEY) {
-    $defines += "--dart-define=COUNTLY_APP_KEY=`"$env:COUNTLY_APP_KEY`""
-}
 
 # Build based on target
 $cmd = ""

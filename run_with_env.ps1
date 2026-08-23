@@ -32,12 +32,6 @@ if (Test-Path $envFile) {
 
 # Build flutter run command with dart-define
 $defines = @()
-if ($env:COUNTLY_SERVER_URL) {
-    $defines += "--dart-define=COUNTLY_SERVER_URL=`"$env:COUNTLY_SERVER_URL`""
-}
-if ($env:COUNTLY_APP_KEY) {
-    $defines += "--dart-define=COUNTLY_APP_KEY=`"$env:COUNTLY_APP_KEY`""
-}
 
 $cmd = "flutter run $($defines -join ' ') $($FlutterArgs -join ' ')"
 Write-Host "Running: $cmd" -ForegroundColor Cyan

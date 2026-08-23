@@ -142,11 +142,11 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                     ),
                     const SizedBox(height: 16),
                     _buildPrivacyPoint(
-                      icon: CupertinoIcons.chart_bar_fill,
+                      icon: CupertinoIcons.shield_fill,
                       color: const Color(0xFFF59E0B),
-                      title: 'Anonymous Analytics (Optional)',
+                      title: '100% Private & Open',
                       description:
-                          'With your consent, we collect only anonymous crash reports and usage stats. No personal identifiers.',
+                          'Musly is completely telemetry-free. No personal identifiers, usage tracking, or analytics are collected.',
                     ),
 
                     const SizedBox(height: 24),
