@@ -978,7 +978,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     // While rendering on a remote target the local just_audio player is
     // paused, so push the real playback state to the media session manually.
-    if (_isRenderingRemotely || _jukeboxService.enabled) {
+    if (_isRenderingRemotely || _jukeboxService.enabled || MuslyConnectService().isControllingRemoteDevice) {
       _audioHandler.updateRemotePlaybackState(
         playing: _isPlaying,
         position: _position,
@@ -1013,6 +1013,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       positionSeconds: _position.inSeconds,
       durationSeconds: effectiveDuration.inSeconds,
       volume: _volume,
+      shuffleEnabled: _shuffleEnabled,
+      repeatModeIndex: _repeatMode.index,
+      currentIndex: _currentIndex,
     );
   }
 
@@ -2145,14 +2148,37 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (connect.isControllingRemoteDevice) {
       final dev = connect.activeRemoteDevice;
       if (dev != null) {
+        if (dev.currentSong != null && dev.currentSong?.id != _currentSong?.id) {
+          _currentSong = dev.currentSong;
+          _currentIndex = dev.currentIndex >= 0 ? dev.currentIndex : _currentIndex;
+          _resolvedArtworkUrl = _resolveArtworkUrl();
+          _updateAndroidAuto();
+        }
         _isPlaying = dev.isPlaying;
         _position = Duration(seconds: dev.positionSeconds);
         _duration = Duration(seconds: dev.durationSeconds);
         _volume = dev.volume;
+        _shuffleEnabled = dev.shuffleEnabled;
+        _repeatMode = RepeatMode.values[dev.repeatModeIndex.clamp(0, RepeatMode.values.length - 1)];
         if (!_positionController.isClosed) {
           _positionController.add(_position);
         }
         _syncMuslyConnectPositionTimer(dev.isPlaying);
+
+        // Keep Android media session / notification / lockscreen live and accurate
+        _audioHandler.updateNowPlaying(
+          id: _currentSong?.id ?? '',
+          title: _currentSong?.title ?? dev.currentSongTitle ?? '',
+          artist: _currentSong?.artist ?? dev.currentSongArtist,
+          album: _currentSong?.album,
+          artworkUrl: _resolvedArtworkUrl,
+          duration: _duration,
+        );
+        _audioHandler.updateRemotePlaybackState(
+          playing: _isPlaying,
+          position: _position,
+        );
+
         notifyListeners();
       }
     } else {
@@ -2178,6 +2204,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         if (!_positionController.isClosed) {
           _positionController.add(_position);
         }
+        _audioHandler.updateRemotePlaybackState(
+          playing: _isPlaying,
+          position: _position,
+        );
       });
     }
   }
@@ -2489,8 +2519,18 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  void toggleShuffle() {
-    _shuffleEnabled = !_shuffleEnabled;
+  void toggleShuffle({bool? forceValue}) {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      _shuffleEnabled = forceValue ?? !_shuffleEnabled;
+      MuslyConnectService().sendCommand(
+        ConnectCommandType.toggleShuffle,
+        {'shuffle': _shuffleEnabled},
+      );
+      notifyListeners();
+      return;
+    }
+
+    _shuffleEnabled = forceValue ?? !_shuffleEnabled;
     _shuffleHistory.clear();
     if (_shuffleEnabled && _queue.length > 1 && _currentSong != null) {
       final currentSong = _currentSong!;
@@ -2507,25 +2547,55 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     _storageService.saveShuffleMode(_shuffleEnabled);
     notifyListeners();
+    _updateAllServices();
   }
 
-  void toggleRepeat() {
+  void setRepeatModeIndex(int? idx) {
+    if (idx != null && idx >= 0 && idx < RepeatMode.values.length) {
+      setRepeatMode(RepeatMode.values[idx]);
+    }
+  }
+
+  void setRepeatMode(RepeatMode mode) {
+    _repeatMode = mode;
     switch (_repeatMode) {
       case RepeatMode.off:
-        _repeatMode = RepeatMode.all;
-        _audioPlayer.setLoopMode(LoopMode.all);
+        _audioPlayer.setLoopMode(LoopMode.off);
         break;
       case RepeatMode.all:
-        _repeatMode = RepeatMode.one;
-        _audioPlayer.setLoopMode(LoopMode.one);
+        _audioPlayer.setLoopMode(LoopMode.all);
         break;
       case RepeatMode.one:
-        _repeatMode = RepeatMode.off;
-        _audioPlayer.setLoopMode(LoopMode.off);
+        _audioPlayer.setLoopMode(LoopMode.one);
         break;
     }
     _storageService.saveRepeatMode(_repeatMode.index);
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(
+        ConnectCommandType.setRepeatMode,
+        {'repeatMode': _repeatMode.index},
+      );
+    }
     notifyListeners();
+    _updateAllServices();
+  }
+
+  void toggleRepeat() {
+    final nextMode = switch (_repeatMode) {
+      RepeatMode.off => RepeatMode.all,
+      RepeatMode.all => RepeatMode.one,
+      RepeatMode.one => RepeatMode.off,
+    };
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      _repeatMode = nextMode;
+      MuslyConnectService().sendCommand(
+        ConnectCommandType.setRepeatMode,
+        {'repeatMode': nextMode.index},
+      );
+      notifyListeners();
+      return;
+    }
+    setRepeatMode(nextMode);
   }
 
   void toggleGaplessPlayback() {

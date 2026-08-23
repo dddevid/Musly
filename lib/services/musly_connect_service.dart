@@ -47,6 +47,8 @@ class MuslyConnectService extends ChangeNotifier {
   Function()? onRemotePrevious;
   Function(int seconds)? onRemoteSeek;
   Function(double volume)? onRemoteVolume;
+  Function(bool? shuffle)? onRemoteToggleShuffle;
+  Function(int? repeatModeIndex)? onRemoteSetRepeatMode;
   Function(List<Song> queue, int startIndex, int positionSeconds)? onRemoteTransferQueue;
   Function()? onRemoteRequestState;
 
@@ -408,6 +410,14 @@ class MuslyConnectService extends ChangeNotifier {
         final vol = (message.payload['volume'] as num?)?.toDouble() ?? 1.0;
         onRemoteVolume?.call(vol);
         break;
+      case ConnectCommandType.toggleShuffle:
+        final shuffleVal = message.payload['shuffle'] as bool?;
+        onRemoteToggleShuffle?.call(shuffleVal);
+        break;
+      case ConnectCommandType.setRepeatMode:
+        final repeatIdx = message.payload['repeatMode'] as int?;
+        onRemoteSetRepeatMode?.call(repeatIdx);
+        break;
       case ConnectCommandType.transferQueue:
         final rawSongs = (message.payload['queue'] as List<dynamic>?) ?? [];
         final songs = rawSongs.map((s) => Song.fromJson(s as Map<String, dynamic>)).toList();
@@ -478,16 +488,22 @@ class MuslyConnectService extends ChangeNotifier {
       */
 
       case ConnectCommandType.stateUpdate:
-        final songTitle = message.payload['currentSongTitle'] as String?;
-        final songArtist = message.payload['currentSongArtist'] as String?;
-        final coverArt = message.payload['coverArt'] as String?;
+        final currentSongMap = message.payload['currentSong'] as Map<String, dynamic>?;
+        final currentSong = currentSongMap != null ? Song.fromJson(currentSongMap) : null;
+        final songTitle = (message.payload['currentSongTitle'] as String?) ?? currentSong?.title;
+        final songArtist = (message.payload['currentSongArtist'] as String?) ?? currentSong?.artist;
+        final coverArt = (message.payload['coverArt'] as String?) ?? currentSong?.coverArt;
         final isPlaying = message.payload['isPlaying'] as bool? ?? false;
         final posSec = message.payload['positionSeconds'] as int? ?? 0;
         final durSec = message.payload['durationSeconds'] as int? ?? 0;
         final vol = (message.payload['volume'] as num?)?.toDouble() ?? 1.0;
+        final shuffle = message.payload['shuffleEnabled'] as bool? ?? false;
+        final repeatIdx = message.payload['repeatModeIndex'] as int? ?? 0;
+        final curIdx = message.payload['currentIndex'] as int? ?? -1;
 
         if (_activeRemoteDevice != null) {
           _activeRemoteDevice = _activeRemoteDevice!.copyWith(
+            currentSong: currentSong,
             currentSongTitle: songTitle,
             currentSongArtist: songArtist,
             coverArt: coverArt,
@@ -495,6 +511,9 @@ class MuslyConnectService extends ChangeNotifier {
             positionSeconds: posSec,
             durationSeconds: durSec,
             volume: vol,
+            shuffleEnabled: shuffle,
+            repeatModeIndex: repeatIdx,
+            currentIndex: curIdx,
           );
           notifyListeners();
         }
@@ -650,12 +669,16 @@ class MuslyConnectService extends ChangeNotifier {
     required int positionSeconds,
     required int durationSeconds,
     required double volume,
+    bool shuffleEnabled = false,
+    int repeatModeIndex = 0,
+    int currentIndex = -1,
   }) {
     if (_connectedClientSockets.isEmpty) return;
 
     final message = ConnectMessage(
       type: ConnectCommandType.stateUpdate,
       payload: {
+        'currentSong': currentSong?.toJson(),
         'currentSongTitle': currentSong?.title,
         'currentSongArtist': currentSong?.artist,
         'coverArt': currentSong?.coverArt,
@@ -663,6 +686,9 @@ class MuslyConnectService extends ChangeNotifier {
         'positionSeconds': positionSeconds,
         'durationSeconds': durationSeconds,
         'volume': volume,
+        'shuffleEnabled': shuffleEnabled,
+        'repeatModeIndex': repeatModeIndex,
+        'currentIndex': currentIndex,
       },
       senderId: _localDeviceId,
     );

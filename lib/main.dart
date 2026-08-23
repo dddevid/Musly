@@ -282,6 +282,8 @@ void main() async {
   muslyConnectService.onRemotePrevious = () => playerProvider.skipPrevious();
   muslyConnectService.onRemoteSeek = (sec) => playerProvider.seek(Duration(seconds: sec));
   muslyConnectService.onRemoteVolume = (vol) => playerProvider.setVolume(vol);
+  muslyConnectService.onRemoteToggleShuffle = (val) => playerProvider.toggleShuffle(forceValue: val);
+  muslyConnectService.onRemoteSetRepeatMode = (idx) => playerProvider.setRepeatModeIndex(idx);
   muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) async {
     if (queue.isNotEmpty) {
       final safeIndex = index.clamp(0, queue.length - 1);
@@ -302,6 +304,9 @@ void main() async {
       positionSeconds: playerProvider.position.inSeconds,
       durationSeconds: playerProvider.duration.inSeconds,
       volume: playerProvider.volume,
+      shuffleEnabled: playerProvider.shuffleEnabled,
+      repeatModeIndex: playerProvider.repeatMode.index,
+      currentIndex: playerProvider.currentIndex,
     );
   };
 

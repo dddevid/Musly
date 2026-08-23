@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:volume_controller/volume_controller.dart';
+import '../../providers/player_provider.dart';
+import '../../services/musly_connect_service.dart';
 
 class VolumeSlider extends StatefulWidget {
   const VolumeSlider({super.key});
@@ -33,10 +36,22 @@ class _VolumeSliderState extends State<VolumeSlider> {
     super.dispose();
   }
 
+  void _onVolumeChanged(double val, PlayerProvider player) {
+    if (MuslyConnectService().isControllingRemoteDevice || player.isRemotePlayback) {
+      player.setVolume(val);
+    } else {
+      VolumeController.instance.setVolume(val);
+      player.setVolume(val);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentVolume = _isDragging ? _dragValue : _systemVolume;
-    
+    final player = context.watch<PlayerProvider>();
+    final isRemote = MuslyConnectService().isControllingRemoteDevice || player.isRemotePlayback;
+    final baseVolume = isRemote ? player.volume : _systemVolume;
+    final currentVolume = _isDragging ? _dragValue : baseVolume;
+
     return Row(
       children: [
         Icon(
@@ -49,15 +64,19 @@ class _VolumeSliderState extends State<VolumeSlider> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onHorizontalDragStart: (details) {
-              setState(() => _isDragging = true);
+              setState(() {
+                _isDragging = true;
+                _dragValue = baseVolume;
+              });
             },
             onHorizontalDragUpdate: (details) {
               final box = context.findRenderObject() as RenderBox;
               final dx = details.localPosition.dx.clamp(0.0, box.size.width);
+              final val = (dx / box.size.width).clamp(0.0, 1.0);
               setState(() {
-                _dragValue = dx / box.size.width;
+                _dragValue = val;
               });
-              VolumeController.instance.setVolume(_dragValue);
+              _onVolumeChanged(val, player);
             },
             onHorizontalDragEnd: (details) {
               setState(() => _isDragging = false);
@@ -65,8 +84,9 @@ class _VolumeSliderState extends State<VolumeSlider> {
             onTapDown: (details) {
               final box = context.findRenderObject() as RenderBox;
               final dx = details.localPosition.dx.clamp(0.0, box.size.width);
-              final val = dx / box.size.width;
-              VolumeController.instance.setVolume(val);
+              final val = (dx / box.size.width).clamp(0.0, 1.0);
+              setState(() => _dragValue = val);
+              _onVolumeChanged(val, player);
             },
             child: Container(
               height: 24, // Tappable area
