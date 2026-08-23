@@ -10,22 +10,34 @@ void main() {
     test('Correctly identifies dates outside seasonal window', () {
       // November before last week
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 11, 23, 23, 59)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 11, 23, 23, 59),
+          checkPlatform: false,
+        ),
         isFalse,
       );
       // Summer
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 7, 15)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 7, 15),
+          checkPlatform: false,
+        ),
         isFalse,
       );
       // January after mid-month
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2027, 1, 16, 0, 1)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2027, 1, 16, 0, 1),
+          checkPlatform: false,
+        ),
         isFalse,
       );
       // February
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2027, 2, 1)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2027, 2, 1),
+          checkPlatform: false,
+        ),
         isFalse,
       );
     });
@@ -33,31 +45,49 @@ void main() {
     test('Correctly unlocks during active seasonal window (Late Nov - Mid Jan)', () {
       // November 24 (Start of seasonal window)
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 11, 24, 0, 0)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 11, 24, 0, 0),
+          checkPlatform: false,
+        ),
         isTrue,
       );
       // November 30
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 11, 30)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 11, 30),
+          checkPlatform: false,
+        ),
         isTrue,
       );
       // December middle & end
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 12, 15)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 12, 15),
+          checkPlatform: false,
+        ),
         isTrue,
       );
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2026, 12, 31, 23, 59)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2026, 12, 31, 23, 59),
+          checkPlatform: false,
+        ),
         isTrue,
       );
       // January 1
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2027, 1, 1, 10, 0)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2027, 1, 1, 10, 0),
+          checkPlatform: false,
+        ),
         isTrue,
       );
       // January 15 (Last day of active window)
       expect(
-        WrappedService.isWrappedSeason(customDate: DateTime(2027, 1, 15, 23, 59)),
+        WrappedService.isWrappedSeason(
+          customDate: DateTime(2027, 1, 15, 23, 59),
+          checkPlatform: false,
+        ),
         isTrue,
       );
     });
@@ -67,9 +97,22 @@ void main() {
         WrappedService.isWrappedSeason(
           devPreview: true,
           customDate: DateTime(2026, 6, 10),
+          checkPlatform: false,
         ),
         isTrue,
       );
+    });
+
+    test('Desktop is excluded by default', () {
+      if (WrappedService.isDesktop) {
+        expect(
+          WrappedService.isWrappedSeason(
+            customDate: DateTime(2026, 12, 15),
+            checkPlatform: true,
+          ),
+          isFalse,
+        );
+      }
     });
 
     test('Computes correct wrapped year in December vs January', () {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,6 +26,9 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   bool _hasRated = false;
   int _versionTapCount = 0;
   bool _devWrappedUnlocked = false;
+
+  bool get _isDesktop =>
+      !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
 
   @override
   void initState() {
@@ -116,7 +120,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 );
               },
             ),
-            if (WrappedService.isWrappedSeason() || (kDebugMode && _devWrappedUnlocked)) ...[
+            if (!_isDesktop && (WrappedService.isWrappedSeason() || (kDebugMode && _devWrappedUnlocked))) ...[
               _buildDivider(context),
               _buildActionTile(
                 context,
@@ -216,7 +220,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   }
 
   void _onVersionTapped() {
-    if (!kDebugMode) return;
+    if (!kDebugMode || _isDesktop) return;
 
     setState(() {
       _versionTapCount++;

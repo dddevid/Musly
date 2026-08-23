@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../models/song.dart';
 import '../services/recommendation_service.dart';
 import '../services/usage_time_service.dart';
@@ -63,11 +65,23 @@ class WrappedService {
   factory WrappedService() => _instance;
   WrappedService._internal();
 
+  /// Whether current running platform is desktop (Windows, macOS, Linux).
+  static bool get isDesktop =>
+      !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+
   /// Returns true if currently within the seasonal window:
+  /// - Excluded on Desktop (mobile only)
   /// - Unlocks during the last week of November (Nov 24) through December
   /// - Stays accessible through mid-January (Jan 15)
   /// - Becomes inactive / locked from Jan 16 through Nov 23
-  static bool isWrappedSeason({bool devPreview = false, DateTime? customDate}) {
+  static bool isWrappedSeason({
+    bool devPreview = false,
+    DateTime? customDate,
+    bool checkPlatform = true,
+  }) {
+    if (checkPlatform && isDesktop && !devPreview) {
+      return false;
+    }
     if (devPreview) return true;
     final now = customDate ?? DateTime.now();
     final month = now.month;

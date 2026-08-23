@@ -242,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Seasonal Wrapped Banner (Late Nov to Mid Jan)
-                        if (WrappedService.isWrappedSeason()) ...[
+                        // Seasonal Wrapped Banner (Late Nov to Mid Jan, Mobile only)
+                        if (!isDesktop && WrappedService.isWrappedSeason()) ...[
                           _buildWrappedBanner(context, hPad, isDesktop),
                           const SizedBox(height: 12),
                         ],
