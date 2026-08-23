@@ -1958,23 +1958,27 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> play() async {
     if (_jukeboxService.enabled) {
-      await _jukeboxService.play(_subsonicService);
       _isPlaying = true;
       notifyListeners();
       _updateAndroidAuto();
+      await _jukeboxService.play(_subsonicService);
       return;
     }
     if (_castService.isConnected) {
+      _isPlaying = true;
+      notifyListeners();
+      _updateAndroidAuto();
       await _castService.play();
-      _isPlaying = true;
-      notifyListeners();
-      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
-      await _upnpService.play();
       _isPlaying = true;
       notifyListeners();
       _updateAndroidAuto();
+      await _upnpService.play();
     } else {
+      _isPlaying = true;
+      notifyListeners();
+      _updateAndroidAuto();
+
       // After app restart or if player went idle/empty, prepare it first.
       if (_currentSong != null &&
           (_audioPlayer.audioSource == null ||
@@ -1995,7 +1999,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
         }
       });
-      _isPlaying = true;
+      _isPlaying = _audioPlayer.playing;
       notifyListeners();
       _updateAndroidAuto();
     }
@@ -2003,26 +2007,35 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> pause() async {
     if (_jukeboxService.enabled) {
-      await _jukeboxService.pause(_subsonicService);
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
+      await _jukeboxService.pause(_subsonicService);
       return;
     }
     if (_castService.isConnected) {
+      _isPlaying = false;
+      notifyListeners();
+      _updateAndroidAuto();
       await _castService.pause();
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
     } else if (_upnpService.isConnected) {
-      await _upnpService.pause();
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
+      await _upnpService.pause();
     } else {
-      await _fadeOut(onComplete: () async {
+      _isPlaying = false;
+      notifyListeners();
+      _updateAndroidAuto();
+
+      try {
+        await _fadeOut(onComplete: () async {
+          await _audioPlayer.pause();
+        });
+      } catch (e) {
         await _audioPlayer.pause();
-      });
+      }
+
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
@@ -2091,21 +2104,22 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
-  Future<void> _fadeOut({VoidCallback? onComplete}) async {
+  Future<void> _fadeOut({Future<void> Function()? onComplete}) async {
     _stopFade();
 
     if (!_fadeSettingsService.getFadeEnabled()) {
-      onComplete?.call();
+      if (onComplete != null) await onComplete();
       return;
     }
 
     final fadeDurationMs = _fadeSettingsService.getFadeDurationMs();
-    final steps = 20;
+    final steps = 10;
     final stepDurationMs = fadeDurationMs ~/ steps;
     final currentVolume = _audioPlayer.volume;
     final volumeStep = currentVolume / steps;
 
     _isFading = true;
+    final completer = Completer<void>();
 
     var currentStep = 0;
     _fadeTimer =
@@ -2113,13 +2127,22 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (!_isFading || currentStep >= steps) {
         timer.cancel();
         _isFading = false;
-        onComplete?.call();
+        if (onComplete != null) await onComplete();
+        if (!completer.isCompleted) completer.complete();
         return;
       }
       currentStep++;
       final newVolume = currentVolume - (volumeStep * currentStep);
       await _audioPlayer.setVolume(newVolume.clamp(0.0, 1.0));
     });
+
+    await completer.future.timeout(
+      Duration(milliseconds: fadeDurationMs + 200),
+      onTimeout: () {
+        _stopFade();
+        if (onComplete != null) onComplete();
+      },
+    );
   }
 
 
