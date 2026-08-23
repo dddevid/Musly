@@ -1,3 +1,8 @@
+// ── BeatSync Party Experience [BETA] ─────────────────────────────────────────
+// Multi-device synchronized audio broadcast inspired by:
+// https://github.com/freeman-jiang/beatsync
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

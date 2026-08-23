@@ -1,3 +1,8 @@
+// ── BeatSync Feature & NTP Synchronization Architecture ───────────────────────
+// Idea, NTP clock sync model, and multi-device party audio protocol inspired by:
+// https://github.com/freeman-jiang/beatsync
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';

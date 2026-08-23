@@ -1,3 +1,8 @@
+// ── Musly Connect & BeatSync [BETA] Device Modal ──────────────────────────────
+// BeatSync multiroom party concept inspired by:
+// https://github.com/freeman-jiang/beatsync
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

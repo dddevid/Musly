@@ -1,3 +1,7 @@
+// ── BeatSync Precision NTP & Connect Tests ───────────────────────────────────
+// Inspired by: https://github.com/freeman-jiang/beatsync
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/connect_device.dart';
 import 'package:musly/services/beatsync_service.dart';
