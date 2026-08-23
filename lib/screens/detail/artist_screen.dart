@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -97,12 +96,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
 
         if (albums.isNotEmpty) {
           // Fallback 3: if artist still null, derive name from albums
-          if (artist == null) {
-            artist = Artist(
-              id: widget.artistId,
-              name: albums.first.artist ?? 'Unknown Artist',
-            );
-          }
+          artist ??= Artist(
+            id: widget.artistId,
+            name: albums.first.artist ?? 'Unknown Artist',
+          );
           final topSongIds = topSongs.map((s) => s.id).toSet();
           final seenIds = {...topSongIds};
           const chunkSize = 5;

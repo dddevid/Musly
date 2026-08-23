@@ -1179,6 +1179,66 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     };
     return flagMap[languageCode] ?? '🌐';
   }
+
+  Widget _buildLyricsBlurToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Blur Unfocused Lyrics'),
+      subtitle: const Text('Add blur effect to past and upcoming lyric lines'),
+      value: _lyricsBlurUnfocused,
+      onChanged: (val) async {
+        await _playerUiSettings.setLyricsBlurUnfocused(val);
+        setState(() => _lyricsBlurUnfocused = val);
+      },
+    );
+  }
+
+  Widget _buildLyricsAlignmentSelector() {
+    return ListTile(
+      title: const Text('Lyrics Alignment'),
+      subtitle: Text(_lyricsAlignment == 'center' ? 'Centered' : 'Left aligned'),
+      trailing: SegmentedButton<String>(
+        segments: const [
+          ButtonSegment(value: 'left', label: Text('Left'), icon: Icon(Icons.format_align_left, size: 16)),
+          ButtonSegment(value: 'center', label: Text('Center'), icon: Icon(Icons.format_align_center, size: 16)),
+        ],
+        selected: {_lyricsAlignment},
+        onSelectionChanged: (val) async {
+          final chosen = val.first;
+          await _playerUiSettings.setLyricsAlignment(chosen);
+          setState(() => _lyricsAlignment = chosen);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLyricsGlowToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Active Line Glow'),
+      subtitle: const Text('Subtle glow effect on currently playing lyric line'),
+      value: _lyricsGlowEffect,
+      onChanged: (val) async {
+        await _playerUiSettings.setLyricsGlowEffect(val);
+        setState(() => _lyricsGlowEffect = val);
+      },
+    );
+  }
+
+  Widget _buildWindowTitlebarToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Hide Window Titlebar / Decorations'),
+      subtitle: const Text('Hides native titlebar (useful for Linux Wayland & tiling window managers)'),
+      value: _hideWindowTitlebar,
+      onChanged: (val) async {
+        await StorageService().saveHideWindowTitlebar(val);
+        setState(() => _hideWindowTitlebar = val);
+        if (_isDesktop) {
+          try {
+            await windowManager.setTitleBarStyle(val ? TitleBarStyle.hidden : TitleBarStyle.normal);
+          } catch (_) {}
+        }
+      },
+    );
+  }
 }
 
 class _ThemeModeSelector extends StatelessWidget {
@@ -1247,66 +1307,6 @@ class _ThemeModeSelector extends StatelessWidget {
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildLyricsBlurToggle() {
-    return SwitchListTile.adaptive(
-      title: const Text('Blur Unfocused Lyrics'),
-      subtitle: const Text('Add blur effect to past and upcoming lyric lines'),
-      value: _lyricsBlurUnfocused,
-      onChanged: (val) async {
-        await _playerUiSettings.setLyricsBlurUnfocused(val);
-        setState(() => _lyricsBlurUnfocused = val);
-      },
-    );
-  }
-
-  Widget _buildLyricsAlignmentSelector() {
-    return ListTile(
-      title: const Text('Lyrics Alignment'),
-      subtitle: Text(_lyricsAlignment == 'center' ? 'Centered' : 'Left aligned'),
-      trailing: SegmentedButton<String>(
-        segments: const [
-          ButtonSegment(value: 'left', label: Text('Left'), icon: Icon(Icons.format_align_left, size: 16)),
-          ButtonSegment(value: 'center', label: Text('Center'), icon: Icon(Icons.format_align_center, size: 16)),
-        ],
-        selected: {_lyricsAlignment},
-        onSelectionChanged: (val) async {
-          final chosen = val.first;
-          await _playerUiSettings.setLyricsAlignment(chosen);
-          setState(() => _lyricsAlignment = chosen);
-        },
-      ),
-    );
-  }
-
-  Widget _buildLyricsGlowToggle() {
-    return SwitchListTile.adaptive(
-      title: const Text('Active Line Glow'),
-      subtitle: const Text('Subtle glow effect on currently playing lyric line'),
-      value: _lyricsGlowEffect,
-      onChanged: (val) async {
-        await _playerUiSettings.setLyricsGlowEffect(val);
-        setState(() => _lyricsGlowEffect = val);
-      },
-    );
-  }
-
-  Widget _buildWindowTitlebarToggle() {
-    return SwitchListTile.adaptive(
-      title: const Text('Hide Window Titlebar / Decorations'),
-      subtitle: const Text('Hides native titlebar (useful for Linux Wayland & tiling window managers)'),
-      value: _hideWindowTitlebar,
-      onChanged: (val) async {
-        await StorageService().saveHideWindowTitlebar(val);
-        setState(() => _hideWindowTitlebar = val);
-        if (_isDesktop) {
-          try {
-            await windowManager.setTitleBarStyle(val ? TitleBarStyle.hidden : TitleBarStyle.normal);
-          } catch (_) {}
-        }
-      },
     );
   }
 }
