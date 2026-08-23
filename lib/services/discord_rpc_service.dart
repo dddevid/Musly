@@ -91,10 +91,19 @@ class DiscordRpcService {
       return;
     }
     if (!_enabled) return;
-    if (!_initialized || _rpc == null) {
-      _startRpc();
-      if (_rpc == null) return;
+    if (_rpc == null) {
+      try {
+        DiscordRPC.initialize();
+        _rpc = DiscordRPC(applicationId: _applicationId);
+      } catch (e) {
+        debugPrint('Discord RPC init failed in updatePresence: $e');
+        return;
+      }
     }
+    if (!_initialized) {
+      _startRpc();
+    }
+    if (_rpc == null || !_initialized) return;
 
     try {
       _rpc!.updatePresence(
@@ -109,7 +118,7 @@ class DiscordRpcService {
           smallImageText: smallImageText,
         ),
       );
-      debugPrint('Discord Presence updated successfully request sent.');
+      debugPrint('[Discord RPC] Presence updated: $details by $state');
     } catch (e) {
       debugPrint('Error updating Discord presence: $e');
     }

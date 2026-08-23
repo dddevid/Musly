@@ -202,7 +202,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ),
           ),
 
-          ...[
+          if (!_isDesktop) ...[
             const SizedBox(height: 20),
             _buildEditorRow(
               icon: CupertinoIcons.sparkles,

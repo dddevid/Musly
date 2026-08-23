@@ -388,7 +388,7 @@ class StorageService {
 
   Future<bool> getDiscordRpcEnabled() async {
     final prefs = await _prefs;
-    return prefs.getBool('discord_rpc_enabled') ?? false; 
+    return prefs.getBool('discord_rpc_enabled') ?? true; 
   }
 
   Future<void> saveDiscordRpcStateStyle(String style) async {

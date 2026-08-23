@@ -13,6 +13,7 @@ class WindowsSystemService {
   WindowsSystemService._internal();
 
   SMTCWindows? _smtc;
+  StreamSubscription<PressedButton>? _buttonPressSub;
   bool _isInitialized = false;
   LocalNotification? _lyricsNotification;
   bool _lyricsEnabled = false;
@@ -30,6 +31,8 @@ class WindowsSystemService {
       if (_isInitialized) return;
 
       try {
+        await SMTCWindows.initialize();
+
         _smtc = SMTCWindows(
           config: const SMTCConfig(
             playEnabled: true,
@@ -41,6 +44,30 @@ class WindowsSystemService {
             rewindEnabled: false,
           ),
         );
+
+        _buttonPressSub?.cancel();
+        _buttonPressSub = _smtc?.buttonPressStream.listen((event) {
+          debugPrint('[Windows SMTC] Button pressed: $event');
+          switch (event) {
+            case PressedButton.play:
+              onPlay?.call();
+              break;
+            case PressedButton.pause:
+              onPause?.call();
+              break;
+            case PressedButton.next:
+              onSkipNext?.call();
+              break;
+            case PressedButton.previous:
+              onSkipPrevious?.call();
+              break;
+            case PressedButton.stop:
+              onStop?.call();
+              break;
+            default:
+              break;
+          }
+        });
 
         _isInitialized = true;
 
@@ -54,9 +81,6 @@ class WindowsSystemService {
             'WindowsSystemService initialized (SMTC, Taskbar & Lyrics Notification)');
       } catch (e) {
         debugPrint('Error initializing WindowsSystemService: $e');
-        debugPrint(
-          'SMTC will be disabled. This is normal if flutter_rust_bridge is not initialized.',
-        );
       }
     }
   }
@@ -70,12 +94,12 @@ class WindowsSystemService {
   }) async {
     if (!kIsWeb && Platform.isWindows && _isInitialized) {
       try {
-        _smtc?.setPlaybackStatus(
+        await _smtc?.setPlaybackStatus(
           isPlaying ? PlaybackStatus.playing : PlaybackStatus.paused,
         );
 
         if (song != null) {
-          _smtc?.updateMetadata(
+          await _smtc?.updateMetadata(
             MusicMetadata(
               title: song.title,
               artist: song.artist ?? 'Unknown Artist',
@@ -85,9 +109,21 @@ class WindowsSystemService {
           );
         }
 
-        _smtc?.setPosition(position);
-
         if (duration.inMilliseconds > 0) {
+          try {
+            await _smtc?.updateTimeline(
+              PlaybackTimeline(
+                startTimeMs: 0,
+                endTimeMs: duration.inMilliseconds,
+                positionMs: position.inMilliseconds,
+                minSeekTimeMs: 0,
+                maxSeekTimeMs: duration.inMilliseconds,
+              ),
+            );
+          } catch (_) {
+            await _smtc?.setPosition(position);
+          }
+
           WindowsTaskbar.setProgress(
             position.inMilliseconds,
             duration.inMilliseconds,
@@ -96,6 +132,7 @@ class WindowsSystemService {
             isPlaying ? TaskbarProgressMode.normal : TaskbarProgressMode.paused,
           );
         } else {
+          await _smtc?.setPosition(position);
           WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
         }
       } catch (e) {
@@ -171,6 +208,10 @@ class WindowsSystemService {
       try {
         await clearLyrics();
         await WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
+        await _buttonPressSub?.cancel();
+        _buttonPressSub = null;
+        await _smtc?.dispose();
+        _smtc = null;
       } catch (e) {
         debugPrint('WindowsSystemService dispose failed: $e');
       }

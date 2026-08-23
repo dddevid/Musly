@@ -997,7 +997,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       position: _position,
       isPlaying: _isPlaying,
     );
-
+    _updateDiscordRpc();
   }
 
   List<Song> get queue => _queue;
@@ -2970,24 +2970,37 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         return;
       }
 
-      final int now = DateTime.now().millisecondsSinceEpoch;
-      final int startTimestamp = now - _position.inMilliseconds;
-      final int? endTimestamp = _isPlaying && _duration.inMilliseconds > 0
-          ? startTimestamp + _duration.inMilliseconds
-          : null;
-
       final stateText = _discordStateText();
 
-      _discordRpcService.updatePresence(
-        state: stateText,
-        details: _currentSong!.title,
-        largeImageKey: 'musly_logo',
-        largeImageText: _currentSong!.album,
-        smallImageKey: 'musly_logo',
-        smallImageText: _isPlaying ? 'Playing' : 'Paused',
-        startTime: startTimestamp,
-        endTime: endTimestamp,
-      );
+      if (!_isPlaying) {
+        _discordRpcService.updatePresence(
+          state: stateText,
+          details: _currentSong!.title,
+          largeImageKey: 'musly_logo',
+          largeImageText: _currentSong!.album ?? 'Musly',
+          smallImageKey: 'musly_logo',
+          smallImageText: 'Paused',
+          startTime: null,
+          endTime: null,
+        );
+      } else {
+        final int now = DateTime.now().millisecondsSinceEpoch;
+        final int startTimestamp = now - _position.inMilliseconds;
+        final int? endTimestamp = _duration.inMilliseconds > 0
+            ? startTimestamp + _duration.inMilliseconds
+            : null;
+
+        _discordRpcService.updatePresence(
+          state: stateText,
+          details: _currentSong!.title,
+          largeImageKey: 'musly_logo',
+          largeImageText: _currentSong!.album ?? 'Musly',
+          smallImageKey: 'musly_logo',
+          smallImageText: 'Playing',
+          startTime: startTimestamp,
+          endTime: endTimestamp,
+        );
+      }
     } catch (_) {}
   }
 
