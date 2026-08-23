@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/l10n/app_localizations.dart';
@@ -129,15 +130,20 @@ class CastButton extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    if (castService.mediaState.imageUrl != null)
+                    if (castService.mediaState.imageUrl != null && castService.mediaState.imageUrl!.isNotEmpty)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          castService.mediaState.imageUrl!,
+                        child: CachedNetworkImage(
+                          imageUrl: castService.mediaState.imageUrl!,
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          errorBuilder: (ctx, e, st) => Container(
+                          placeholder: (ctx, url) => Container(
+                            width: 60,
+                            height: 60,
+                            color: Colors.grey[850],
+                          ),
+                          errorWidget: (ctx, e, st) => Container(
                             width: 60,
                             height: 60,
                             color: Colors.grey[800],

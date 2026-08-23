@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:musly/theme/app_theme.dart';
 
@@ -37,7 +38,7 @@ class _GradientHeaderState extends State<GradientHeader> {
     if (widget.imageUrl == null) return;
 
     try {
-      final imageProvider = NetworkImage(widget.imageUrl!);
+      final imageProvider = CachedNetworkImageProvider(widget.imageUrl!);
       final paletteGenerator = await PaletteGenerator.fromImageProvider(
         imageProvider,
         maximumColorCount: 20,
