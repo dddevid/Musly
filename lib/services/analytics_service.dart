@@ -122,11 +122,13 @@ class AnalyticsService {
     if (!_enabled || !_initialized) return;
 
     try {
-      await Countly.instance.events.recordEvent({
-        'key': eventKey,
-        'segmentation': segmentation ?? {},
-        'count': 1,
-      });
+      await Countly.instance.events.recordEvent(
+        eventKey,
+        segmentation: segmentation != null
+            ? Map<String, Object>.from(segmentation)
+            : {},
+        count: 1,
+      );
     } catch (e) {
       debugPrint('Failed to record event: $e');
     }
@@ -156,11 +158,11 @@ class AnalyticsService {
 
       // Send feedback if provided
       if (feedback != null && feedback.isNotEmpty) {
-        await Countly.instance.events.recordEvent({
-          'key': 'rating_feedback',
-          'segmentation': {'rating': rating.toString(), 'feedback': feedback},
-          'count': 1,
-        });
+        await Countly.instance.events.recordEvent(
+          'rating_feedback',
+          segmentation: <String, Object>{'rating': rating.toString(), 'feedback': feedback},
+          count: 1,
+        );
       }
     } catch (e) {
       debugPrint('Failed to record rating: $e');
