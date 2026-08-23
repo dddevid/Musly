@@ -12,9 +12,9 @@ import 'package:musly/services/theme_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/services/subsonic_service.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
+import 'package:musly/services/musly_connect_service.dart';
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onTap;
@@ -301,6 +301,40 @@ class _MiniPlayerRow extends StatelessWidget {
                 if (subtitle != null)
                   Row(
                     children: [
+                      Consumer<MuslyConnectService>(
+                        builder: (context, connect, _) {
+                          if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1DB954).withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.4), width: 0.8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.devices_rounded, size: 10, color: Color(0xFF1DB954)),
+                                const SizedBox(width: 3),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 80),
+                                  child: Text(
+                                    connect.activeRemoteDevice?.name ?? 'Connected',
+                                    style: const TextStyle(
+                                      color: Color(0xFF1DB954),
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                       if (isPlayingRadio) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(

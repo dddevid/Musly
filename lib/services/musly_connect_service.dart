@@ -45,6 +45,7 @@ class MuslyConnectService extends ChangeNotifier {
   Function(int seconds)? onRemoteSeek;
   Function(double volume)? onRemoteVolume;
   Function(List<Song> queue, int startIndex, int positionSeconds)? onRemoteTransferQueue;
+  Function()? onRemoteRequestState;
 
   // Getters
   String get localDeviceId => _localDeviceId;
@@ -215,13 +216,37 @@ class MuslyConnectService extends ChangeNotifier {
     try {
       _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, _httpWsPort);
       _httpServer?.listen(_handleHttpRequest);
-      debugPrint('[MuslyConnect] Server listening on port $_httpWsPort');
-    } catch (e) {
       debugPrint('[MuslyConnect] Server bind error: $e');
     }
   }
 
+  bool _isAllowedOrigin(String? origin) {
+    if (origin == null || origin.isEmpty) return true;
+    final lower = origin.toLowerCase();
+    return lower.startsWith('http://localhost') ||
+        lower.startsWith('https://localhost') ||
+        lower.startsWith('http://127.0.0.1') ||
+        lower.startsWith('http://192.168.') ||
+        lower.startsWith('http://10.') ||
+        lower.startsWith('http://172.16.') ||
+        lower.startsWith('http://172.17.') ||
+        lower.startsWith('http://172.18.') ||
+        lower.startsWith('http://172.19.') ||
+        lower.startsWith('http://172.2') ||
+        lower.startsWith('http://172.3');
+  }
+
   void _handleHttpRequest(HttpRequest request) async {
+    // CSRF / DNS Rebinding protection: reject unauthorized web browser origins
+    final origin = request.headers.value('origin');
+    if (!_isAllowedOrigin(origin)) {
+      request.response
+        ..statusCode = HttpStatus.forbidden
+        ..write(jsonEncode({'error': 'Forbidden origin'}))
+        ..close();
+      return;
+    }
+
     if (request.uri.path == '/ws') {
       if (WebSocketTransformer.isUpgradeRequest(request)) {
         final socket = await WebSocketTransformer.upgrade(request);
@@ -236,6 +261,15 @@ class MuslyConnectService extends ChangeNotifier {
         ..write(jsonEncode({'status': 'ok', 'device': _localDeviceName, 'id': _localDeviceId}))
         ..close();
     } else if (request.uri.path == '/transfer' && request.method == 'POST') {
+      // Anti-DoS: reject oversized bodies (> 512 KB)
+      if (request.contentLength > 512 * 1024) {
+        request.response
+          ..statusCode = HttpStatus.requestEntityTooLarge
+          ..write(jsonEncode({'error': 'Payload too large'}))
+          ..close();
+        return;
+      }
+
       try {
         final body = await utf8.decodeStream(request);
         final json = jsonDecode(body) as Map<String, dynamic>;
@@ -360,6 +394,33 @@ class MuslyConnectService extends ChangeNotifier {
         beatSync.removeGuest(guestName);
         break;
 
+      case ConnectCommandType.stateUpdate:
+        final songTitle = message.payload['currentSongTitle'] as String?;
+        final songArtist = message.payload['currentSongArtist'] as String?;
+        final coverArt = message.payload['coverArt'] as String?;
+        final isPlaying = message.payload['isPlaying'] as bool? ?? false;
+        final posSec = message.payload['positionSeconds'] as int? ?? 0;
+        final durSec = message.payload['durationSeconds'] as int? ?? 0;
+        final vol = (message.payload['volume'] as num?)?.toDouble() ?? 1.0;
+
+        if (_activeRemoteDevice != null) {
+          _activeRemoteDevice = _activeRemoteDevice!.copyWith(
+            currentSongTitle: songTitle,
+            currentSongArtist: songArtist,
+            coverArt: coverArt,
+            isPlaying: isPlaying,
+            positionSeconds: posSec,
+            durationSeconds: durSec,
+            volume: vol,
+          );
+          notifyListeners();
+        }
+        break;
+
+      case ConnectCommandType.requestState:
+        onRemoteRequestState?.call();
+        break;
+
       default:
         break;
     }
@@ -389,6 +450,9 @@ class MuslyConnectService extends ChangeNotifier {
         onDone: () => disconnectRemote(),
         onError: (_) => disconnectRemote(),
       );
+
+      // Request initial playback state from remote device
+      sendCommand(ConnectCommandType.requestState);
 
       notifyListeners();
       return true;
@@ -464,6 +528,38 @@ class MuslyConnectService extends ChangeNotifier {
     }
 
     return delivered;
+  }
+
+  /// Broadcasts the local player state to all connected controller clients.
+  void broadcastLocalState({
+    required Song? currentSong,
+    required bool isPlaying,
+    required int positionSeconds,
+    required int durationSeconds,
+    required double volume,
+  }) {
+    if (_connectedClientSockets.isEmpty) return;
+
+    final message = ConnectMessage(
+      type: ConnectCommandType.stateUpdate,
+      payload: {
+        'currentSongTitle': currentSong?.title,
+        'currentSongArtist': currentSong?.artist,
+        'coverArt': currentSong?.coverArt,
+        'isPlaying': isPlaying,
+        'positionSeconds': positionSeconds,
+        'durationSeconds': durationSeconds,
+        'volume': volume,
+      },
+      senderId: _localDeviceId,
+    );
+
+    final raw = message.serialize();
+    for (final socket in _connectedClientSockets) {
+      if (socket.readyState == WebSocket.open) {
+        socket.add(raw);
+      }
+    }
   }
 
   // ──────────────────────────────────────────────────────────────────────────

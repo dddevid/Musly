@@ -229,7 +229,30 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      Consumer<MuslyConnectService>(
+                        builder: (context, connect, _) {
+                          if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.devices_rounded, size: 11, color: Color(0xFF1DB954)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Playing on ${connect.activeRemoteDevice?.name ?? "Device"}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF1DB954),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 2),
                       if (currentSong.artist != null || currentSong.artistParticipants != null)
                         MultiArtistWidget(
                           artists: currentSong.artistParticipants,

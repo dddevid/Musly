@@ -30,6 +30,7 @@ import '../services/fade_settings_service.dart';
 import '../services/crossfade_service.dart';
 
 import '../services/transcoding_service.dart';
+import '../services/musly_connect_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -1004,6 +1005,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       isPlaying: _isPlaying,
     );
     _updateDiscordRpc();
+
+    MuslyConnectService().broadcastLocalState(
+      currentSong: _currentSong,
+      isPlaying: _isPlaying,
+      positionSeconds: _position.inSeconds,
+      durationSeconds: effectiveDuration.inSeconds,
+      volume: _volume,
+    );
   }
 
   List<Song> get queue => _queue;
@@ -1011,11 +1020,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool get isPlaying => _isPlaying;
   bool get isLoading => _isLoading;
 
-  /// True when audio is playing on a remote renderer (UPnP or Cast) rather
-  /// than locally.  Used to suppress audio-focus and noisy-event handling that
-  /// would incorrectly pause the remote device, and to route UI volume changes
-  /// to the renderer instead of the Android system volume.
-  bool get isRemotePlayback => _isRenderingRemotely;
+  /// True when audio is playing on a remote renderer (UPnP, Cast, or Musly Connect).
+  bool get isRemotePlayback =>
+      _isRenderingRemotely || MuslyConnectService().isControllingRemoteDevice;
   bool get shuffleEnabled => _shuffleEnabled;
   bool get gaplessEnabled => _gaplessEnabled;
   RepeatMode get repeatMode => _repeatMode;
@@ -2016,6 +2023,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> play() async {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      _isPlaying = true;
+      notifyListeners();
+      MuslyConnectService().sendCommand(ConnectCommandType.play);
+      return;
+    }
     if (_jukeboxService.enabled) {
       _isPlaying = true;
       notifyListeners();
@@ -2065,6 +2078,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> pause() async {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      _isPlaying = false;
+      notifyListeners();
+      MuslyConnectService().sendCommand(ConnectCommandType.pause);
+      return;
+    }
     if (_jukeboxService.enabled) {
       _isPlaying = false;
       notifyListeners();
@@ -2207,6 +2226,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
 
   Future<void> togglePlayPause() async {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(ConnectCommandType.togglePlayPause);
+      return;
+    }
     if (_isPlaying) {
       await pause();
     } else {
@@ -2217,6 +2240,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> seek(Duration position) async {
     _position = position;
     notifyListeners();
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(ConnectCommandType.seek, {'seconds': position.inSeconds});
+      return;
+    }
     if (_jukeboxService.enabled) {
       // Jukebox doesn't support seek by position; ignore.
       return;
@@ -2238,6 +2265,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipNext() async {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(ConnectCommandType.next);
+      return;
+    }
     if (_currentSong != null && _recommendationService != null) {
       final played = _position.inSeconds;
       final total = _duration.inSeconds;
@@ -2344,6 +2375,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipPrevious() async {
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(ConnectCommandType.previous);
+      return;
+    }
     if (_jukeboxService.enabled) {
       await _jukeboxService.skipPrevious(_subsonicService);
       return;
@@ -2613,6 +2648,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     _volume = clamped;
     await _storageService.saveVolume(_volume);
+    if (MuslyConnectService().isControllingRemoteDevice) {
+      MuslyConnectService().sendCommand(ConnectCommandType.setVolume, {'volume': _volume});
+    }
     if (_castService.isConnected) {
       await _castService.setVolume(_volume);
     } else if (_upnpService.isConnected) {

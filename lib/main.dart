@@ -295,6 +295,16 @@ void main() async {
     }
   };
 
+  muslyConnectService.onRemoteRequestState = () {
+    muslyConnectService.broadcastLocalState(
+      currentSong: playerProvider.currentSong,
+      isPlaying: playerProvider.isPlaying,
+      positionSeconds: playerProvider.position.inSeconds,
+      durationSeconds: playerProvider.duration.inSeconds,
+      volume: playerProvider.volume,
+    );
+  };
+
   // Wire BeatSync [BETA] scheduled playback callbacks
   beatSyncService.onScheduledPlay = (song, startPosMs) {
     playerProvider.playSong(song);

@@ -36,7 +36,7 @@ class StorageService {
     try {
       return await _secureStorage.read(key: key);
     } on PlatformException catch (e) {
-      if (e.code == '-34018' || e.message?.contains('entitlement') == true) {
+      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         return prefs.getString('fallback_secure_$key');
       }
@@ -48,7 +48,7 @@ class StorageService {
     try {
       await _secureStorage.write(key: key, value: value);
     } on PlatformException catch (e) {
-      if (e.code == '-34018' || e.message?.contains('entitlement') == true) {
+      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         await prefs.setString('fallback_secure_$key', value);
       }
@@ -59,7 +59,7 @@ class StorageService {
     try {
       await _secureStorage.delete(key: key);
     } on PlatformException catch (e) {
-      if (e.code == '-34018' || e.message?.contains('entitlement') == true) {
+      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         await prefs.remove('fallback_secure_$key');
       }
