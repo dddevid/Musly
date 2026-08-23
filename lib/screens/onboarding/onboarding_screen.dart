@@ -327,7 +327,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               borderRadius: BorderRadius.circular(26),
                               child: Center(
                                 child: Text(
-                                  currentItem.buttonText,
+                                  widget.onFinished == null && _currentPage == _slides.length - 1
+                                      ? 'Finish Tour'
+                                      : currentItem.buttonText,
                                   style: const TextStyle(
                                     fontSize: 16.5,
                                     fontWeight: FontWeight.w600,
@@ -354,9 +356,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             ),
                             child: Text(
-                              _currentPage == _slides.length - 1
-                                  ? 'Already have an account? Sign in'
-                                  : 'Skip',
+                              widget.onFinished == null
+                                  ? 'Close'
+                                  : (_currentPage == _slides.length - 1
+                                      ? 'Already have an account? Sign in'
+                                      : 'Skip'),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,

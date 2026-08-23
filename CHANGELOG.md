@@ -55,6 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Like/favorite button on Album screens.
   - Direct navigation to Album details from Favorite Albums list.
 
+- **Immersive Onboarding Tour Experience**
+  - High-end introductory welcome tour featuring dynamic ambient gradient auras, fluid slide transitions, and sleek typography.
+  - Highlights core Musly capabilities: Lossless self-hosted audio streaming (Subsonic, Jellyfin, Local files), Algorithmic Smart Mixes, and 100% telemetry-free privacy.
+  - Replay onboarding anytime from *Settings -> About -> Welcome Tour* with safe modal return that preserves your active login session.
+
 - **Linux & Desktop Window Controls (#208)**
   - Option in settings to toggle native window titlebars and client-side window decorations on Linux.
 
