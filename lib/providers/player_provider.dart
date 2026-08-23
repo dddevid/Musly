@@ -60,8 +60,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   RepeatMode _repeatMode = RepeatMode.off;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
-  Song? _currentSong;
   double _volume = 1.0;
+  double _lastNonZeroVolume = 1.0;
 
   /// True only while audio is actually being rendered on a remote device.
   /// Distinct from isConnected: if the user plays a radio station while a
@@ -2545,8 +2545,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _saveQueueState();
   }
 
+  double get lastNonZeroVolume => _lastNonZeroVolume;
+
   Future<void> setVolume(double volume) async {
-    _volume = volume.clamp(0.0, 1.0);
+    final clamped = volume.clamp(0.0, 1.0);
+    if (clamped > 0.0) {
+      _lastNonZeroVolume = clamped;
+    }
+    _volume = clamped;
     await _storageService.saveVolume(_volume);
     if (_castService.isConnected) {
       await _castService.setVolume(_volume);
@@ -2556,6 +2562,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _applyReplayGain(_currentSong);
     }
     notifyListeners();
+  }
+
+  Future<void> toggleMute() async {
+    if (_volume > 0.0) {
+      _lastNonZeroVolume = _volume;
+      await setVolume(0.0);
+    } else {
+      await setVolume(_lastNonZeroVolume > 0.0 ? _lastNonZeroVolume : 1.0);
+    }
   }
 
   bool _upnpVolumeWriteInProgress = false;

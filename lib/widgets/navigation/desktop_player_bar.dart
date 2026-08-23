@@ -285,13 +285,23 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-
-                IconButton(
-                  icon: const Icon(Icons.queue_music_rounded, size: 20),
-                  onPressed: () {},
-                  color: isDark
-                      ? const Color(0xFFB3B3B3)
-                      : const Color(0xFF6B6B6B),
+                ValueListenableBuilder<bool>(
+                  valueListenable: NavigationHelper.isDesktopQueueOpen,
+                  builder: (context, isOpen, _) {
+                    return IconButton(
+                      icon: Icon(
+                        Icons.queue_music_rounded,
+                        size: 20,
+                        color: isOpen
+                            ? AppTheme.brandRed
+                            : (isDark
+                                ? const Color(0xFFB3B3B3)
+                                : const Color(0xFF6B6B6B)),
+                      ),
+                      onPressed: NavigationHelper.toggleDesktopQueue,
+                      tooltip: isOpen ? 'Hide Queue' : 'Show Queue',
+                    );
+                  },
                 ),
                 const SizedBox(width: 8),
                 const _VolumeControl(),
@@ -501,8 +511,9 @@ class _VolumeControl extends StatelessWidget {
                 size: 20,
               ),
               onPressed: () {
-                provider.setVolume(isMuted ? 0.5 : 0.0);
+                provider.toggleMute();
               },
+              tooltip: isMuted ? 'Unmute' : 'Mute',
               color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
             SizedBox(

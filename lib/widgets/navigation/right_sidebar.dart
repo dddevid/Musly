@@ -5,8 +5,12 @@ import 'package:musly/providers/player_provider.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
+import 'package:musly/utils/navigation_helper.dart';
+
 class RightSidebar extends StatelessWidget {
-  const RightSidebar({super.key});
+  final VoidCallback? onClose;
+
+  const RightSidebar({super.key, this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +44,10 @@ class RightSidebar extends StatelessWidget {
                         : AppTheme.lightSecondaryText,
                   ),
                   onPressed: () {
-                    // Toggle sidebar visibility
+                    onClose?.call();
+                    NavigationHelper.isDesktopQueueOpen.value = false;
                   },
-                  tooltip: 'Close',
+                  tooltip: 'Close Queue',
                 ),
               ],
             ),

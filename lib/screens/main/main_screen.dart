@@ -24,6 +24,31 @@ class PlayPauseIntent extends Intent {
   const PlayPauseIntent();
 }
 
+class _PlayPauseAction extends Action<PlayPauseIntent> {
+  final BuildContext context;
+  _PlayPauseAction(this.context);
+
+  @override
+  bool isEnabled(PlayPauseIntent intent) {
+    final primaryFocus = FocusManager.instance.primaryFocus;
+    if (primaryFocus != null) {
+      final focusedContext = primaryFocus.context;
+      if (focusedContext != null &&
+          focusedContext.findAncestorWidgetOfExactType<EditableText>() != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  Object? invoke(PlayPauseIntent intent) {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    playerProvider.togglePlayPause();
+    return null;
+  }
+}
+
 class MainScreen extends StatefulWidget {
   final bool isOfflineMode;
 
@@ -37,7 +62,6 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   int _searchTapCount = 0;
   DateTime _lastSearchTap = DateTime.fromMillisecondsSinceEpoch(0);
-  final bool _showRightSidebar = true;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -362,16 +386,24 @@ class _MainScreenState extends State<MainScreen> {
                       },
                     ),
                   ),
-                  if (_showRightSidebar)
-                    Selector<PlayerProvider, bool>(
-                      selector: (_, p) =>
-                          p.currentSong != null || p.isPlayingRadio,
-                      builder: (context, hasCurrentSong, _) {
-                        return hasCurrentSong
-                            ? const RightSidebar()
-                            : const SizedBox.shrink();
-                      },
-                    ),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: NavigationHelper.isDesktopQueueOpen,
+                    builder: (context, isQueueOpen, _) {
+                      if (!isQueueOpen) return const SizedBox.shrink();
+                      return Selector<PlayerProvider, bool>(
+                        selector: (_, p) =>
+                            p.currentSong != null || p.isPlayingRadio,
+                        builder: (context, hasCurrentSong, _) {
+                          return hasCurrentSong
+                              ? RightSidebar(
+                                  onClose: () =>
+                                      NavigationHelper.isDesktopQueueOpen.value = false,
+                                )
+                              : const SizedBox.shrink();
+                        },
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -395,13 +427,7 @@ class _MainScreenState extends State<MainScreen> {
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
-            PlayPauseIntent: CallbackAction<PlayPauseIntent>(
-              onInvoke: (PlayPauseIntent intent) {
-                final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-                playerProvider.togglePlayPause();
-                return null;
-              },
-            ),
+            PlayPauseIntent: _PlayPauseAction(context),
           },
           child: Focus(
             autofocus: true,
