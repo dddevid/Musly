@@ -21,28 +21,56 @@ class WrappedScreen extends StatefulWidget {
 class _WrappedScreenState extends State<WrappedScreen>
     with TickerProviderStateMixin {
   late final AnimationController _auraController;
+  late final AnimationController _suspenseController;
   WrappedData? _data;
   bool _isLoading = true;
   int _currentSlide = 0;
   static const int _totalSlides = 6;
   Timer? _autoAdvanceTimer;
+  Timer? _suspenseTimer;
   bool _isPaused = false;
+  bool _isSuspenseLocked = false;
+  int _suspenseCountdown = 3;
+  bool _topSongRevealed = false;
+  bool _wasPlayingBefore = false;
 
   @override
   void initState() {
     super.initState();
+    // Enable Fullscreen immersive mode like Spotify Wrapped
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     _auraController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat(reverse: true);
+
+    _suspenseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+
+    // Pause active playback when entering Wrapped
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final player = Provider.of<PlayerProvider>(context, listen: false);
+      _wasPlayingBefore = player.isPlaying;
+      if (player.isPlaying) {
+        player.pause();
+      }
+    });
 
     _loadData();
   }
 
   @override
   void dispose() {
+    // Restore normal system UI
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     _autoAdvanceTimer?.cancel();
+    _suspenseTimer?.cancel();
     _auraController.dispose();
+    _suspenseController.dispose();
     super.dispose();
   }
 
@@ -66,10 +94,10 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   void _startSlideTimer() {
     _autoAdvanceTimer?.cancel();
-    if (_isPaused) return;
+    if (_isPaused || _isSuspenseLocked) return;
 
     _autoAdvanceTimer = Timer(const Duration(seconds: 7), () {
-      if (mounted && !_isPaused) {
+      if (mounted && !_isPaused && !_isSuspenseLocked) {
         if (_currentSlide < _totalSlides - 1) {
           _nextSlide();
         }
@@ -77,17 +105,66 @@ class _WrappedScreenState extends State<WrappedScreen>
     });
   }
 
+  void _triggerTopSongSuspense() {
+    if (_topSongRevealed) return;
+
+    setState(() {
+      _isSuspenseLocked = true;
+      _suspenseCountdown = 3;
+    });
+
+    _autoAdvanceTimer?.cancel();
+
+    // 3-second suspense countdown (unskippable)
+    _suspenseTimer?.cancel();
+    _suspenseTimer = Timer.periodic(const Duration(milliseconds: 800), (timer) {
+      if (!mounted) return;
+
+      if (_suspenseCountdown > 1) {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _suspenseCountdown--;
+        });
+      } else {
+        timer.cancel();
+        HapticFeedback.heavyImpact();
+        setState(() {
+          _isSuspenseLocked = false;
+          _topSongRevealed = true;
+        });
+
+        // Automatically start playing the #1 top song in background!
+        if (_data != null && _data!.topSongs.isNotEmpty) {
+          final topSong = _data!.topSongs.first.song;
+          final player = Provider.of<PlayerProvider>(context, listen: false);
+          player.playSong(topSong);
+        }
+
+        _startSlideTimer();
+      }
+    });
+  }
+
   void _nextSlide() {
+    if (_isSuspenseLocked) return; // Cannot skip during suspense
+
     if (_currentSlide < _totalSlides - 1) {
       HapticFeedback.lightImpact();
       setState(() {
         _currentSlide++;
       });
-      _startSlideTimer();
+
+      if (_currentSlide == 2 && !_topSongRevealed) {
+        _triggerTopSongSuspense();
+      } else {
+        _startSlideTimer();
+      }
     }
   }
 
   void _prevSlide() {
+    if (_isSuspenseLocked) return; // Cannot skip during suspense
+
     if (_currentSlide > 0) {
       HapticFeedback.lightImpact();
       setState(() {
@@ -135,17 +212,29 @@ class _WrappedScreenState extends State<WrappedScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF090A0F),
       body: GestureDetector(
-        onTapDown: (_) => setState(() => _isPaused = true),
-        onTapUp: (details) {
-          setState(() => _isPaused = false);
-          final width = MediaQuery.of(context).size.width;
-          if (details.globalPosition.dx < width * 0.3) {
-            _prevSlide();
-          } else {
-            _nextSlide();
+        onTapDown: (_) {
+          if (!_isSuspenseLocked) {
+            setState(() => _isPaused = true);
+            _autoAdvanceTimer?.cancel();
           }
         },
-        onTapCancel: () => setState(() => _isPaused = false),
+        onTapUp: (details) {
+          if (!_isSuspenseLocked) {
+            setState(() => _isPaused = false);
+            final width = MediaQuery.of(context).size.width;
+            if (details.globalPosition.dx < width * 0.3) {
+              _prevSlide();
+            } else {
+              _nextSlide();
+            }
+          }
+        },
+        onTapCancel: () {
+          if (!_isSuspenseLocked) {
+            setState(() => _isPaused = false);
+            _startSlideTimer();
+          }
+        },
         child: Stack(
           children: [
             // Dynamic Ambient Aura Background
@@ -166,7 +255,9 @@ class _WrappedScreenState extends State<WrappedScreen>
                         duration: const Duration(milliseconds: 350),
                         switchInCurve: Curves.easeOutCubic,
                         switchOutCurve: Curves.easeInCubic,
-                        child: _buildSlideContent(_currentSlide),
+                        child: _isSuspenseLocked && _currentSlide == 2
+                            ? _buildSuspenseCountdownSlide()
+                            : _buildSlideContent(_currentSlide),
                       ),
                     ),
                   ),
@@ -329,6 +420,93 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
+  Widget _buildSuspenseCountdownSlide() {
+    return AnimatedBuilder(
+      animation: _suspenseController,
+      builder: (context, _) {
+        final scale = 1.0 + (_suspenseController.value * 0.15);
+
+        return Column(
+          key: const ValueKey('suspense'),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF512F).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFF512F).withValues(alpha: 0.5)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF512F), size: 14),
+                  SizedBox(width: 6),
+                  Text(
+                    'RULLO DI TAMBURI...',
+                    style: TextStyle(
+                      color: Color(0xFFFF512F),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Pronto a scoprire\nil tuo brano #1?',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                height: 1.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            Transform.scale(
+              scale: scale,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const RadialGradient(
+                    colors: [Color(0xFFFA243C), Color(0xFFFF512F)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFA243C).withValues(alpha: 0.5),
+                      blurRadius: 36 * scale,
+                      spreadRadius: 6 * scale,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    '$_suspenseCountdown',
+                    style: const TextStyle(
+                      fontSize: 52,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 48),
+            const Text(
+              'Un attimo di suspense...',
+              style: TextStyle(fontSize: 14, color: Colors.white60, fontStyle: FontStyle.italic),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildSlideContent(int index) {
     switch (index) {
       case 0:
@@ -476,9 +654,28 @@ class _WrappedScreenState extends State<WrappedScreen>
       key: const ValueKey('songs'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'TOP SONGS',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF512F), letterSpacing: 1.2),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'TOP SONGS',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF512F), letterSpacing: 1.2),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Icon(CupertinoIcons.speaker_2_fill, color: Color(0xFF10B981), size: 12),
+                  SizedBox(width: 4),
+                  Text('AUDIO PREVIEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         const Text(
@@ -558,15 +755,15 @@ class _WrappedScreenState extends State<WrappedScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'FAVORITE ARTISTS',
+          'TOP ARTISTS',
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF8E2DE2), letterSpacing: 1.2),
         ),
         const SizedBox(height: 4),
         const Text(
-          'The Voices of Your Year',
+          'The Creators You Loved',
           style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Expanded(
           child: ListView.separated(
             itemCount: _data!.topArtists.length.clamp(0, 5),
@@ -574,43 +771,41 @@ class _WrappedScreenState extends State<WrappedScreen>
             itemBuilder: (context, i) {
               final rank = _data!.topArtists[i];
               return Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: i == 0
                       ? const Color(0xFF8E2DE2).withValues(alpha: 0.25)
                       : Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: i == 0
-                        ? const Color(0xFF8E2DE2).withValues(alpha: 0.6)
+                        ? const Color(0xFF8E2DE2).withValues(alpha: 0.5)
                         : Colors.white10,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF8E2DE2),
-                            const Color(0xFF4A00E0).withValues(alpha: 0.6),
-                          ],
-                        ),
+                    Text(
+                      '#${rank.rank}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: i == 0 ? const Color(0xFF8E2DE2) : Colors.white60,
                       ),
-                      child: Center(
-                        child: Text(
-                          '#${rank.rank}',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
+                    ),
+                    const SizedBox(width: 16),
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: const Color(0xFF8E2DE2).withValues(alpha: 0.3),
+                      child: Text(
+                        rank.artistName.isNotEmpty ? rank.artistName[0].toUpperCase() : '?',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        rank.name,
+                        rank.artistName,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -618,7 +813,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                     Text(
                       '${rank.playCount} plays',
-                      style: const TextStyle(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -636,146 +831,138 @@ class _WrappedScreenState extends State<WrappedScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          'YOUR LISTENING VIBE',
+          'YOUR LISTENING PERSONALITY',
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38EF7D), letterSpacing: 1.2),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF11998E).withValues(alpha: 0.3),
-                const Color(0xFF38EF7D).withValues(alpha: 0.1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF38EF7D).withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            children: [
-              Text(
-                _data!.listeningPersonality,
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                _data!.personalityDescription,
-                style: const TextStyle(fontSize: 15, color: Colors.white70, height: 1.45),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Top Genre: ${_data!.topGenre}',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF38EF7D)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCardSlide() {
-    final topSong = _data!.topSongs.isNotEmpty ? _data!.topSongs.first.song.title : 'None';
-    final topArtist = _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'None';
-
-    return Column(
-      key: const ValueKey('summary'),
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Aesthetic Recap Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF20002C), Color(0xFFCBB4D4)],
+              colors: [Color(0xFF11998E), Color(0xFF38EF7D)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
+                color: const Color(0xFF38EF7D).withValues(alpha: 0.35),
+                blurRadius: 32,
+                spreadRadius: 2,
               ),
             ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'MUSLY WRAPPED',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white),
-                  ),
-                  Text(
-                    '${_data!.year}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white70),
-                  ),
-                ],
+              const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                _data!.personalityTitle,
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
+                textAlign: TextAlign.center,
               ),
-              const Divider(color: Colors.white24, height: 24),
-              _buildSummaryRow(CupertinoIcons.time, 'Minutes Listened', '${_data!.totalMinutesListened} mins'),
               const SizedBox(height: 12),
-              _buildSummaryRow(CupertinoIcons.music_note_2, 'Top Song', topSong),
-              const SizedBox(height: 12),
-              _buildSummaryRow(CupertinoIcons.person_2, 'Top Artist', topArtist),
-              const SizedBox(height: 12),
-              _buildSummaryRow(CupertinoIcons.guitars, 'Top Genre', _data!.topGenre),
-              const SizedBox(height: 12),
-              _buildSummaryRow(CupertinoIcons.sparkles, 'Personality', _data!.listeningPersonality),
+              Text(
+                _data!.personalityDescription,
+                style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.4),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 24),
-
-        // Action: Play Top Songs
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: _playTopSongs,
-            icon: const Icon(CupertinoIcons.play_fill, size: 18),
-            label: Text('Play Your Top ${_data!.year} Songs'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFA243C),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
+        if (_data!.topGenre != null) ...[
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'Top Genre: ${_data!.topGenre}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white70),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
 
-  Widget _buildSummaryRow(IconData icon, String label, String value) {
-    return Row(
+  Widget _buildSummaryCardSlide() {
+    return Column(
+      key: const ValueKey('summary'),
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 16, color: Colors.white70),
-        const SizedBox(width: 10),
-        Text('$label: ', style: const TextStyle(fontSize: 13, color: Colors.white70)),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('MUSLY WRAPPED', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Color(0xFFFA243C))),
+                  Text('${_data!.year}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white70)),
+                ],
+              ),
+              const SizedBox(height: 18),
+              if (_data!.topSongs.isNotEmpty) ...[
+                Row(
+                  children: [
+                    AlbumArtwork(coverArt: _data!.topSongs.first.song.coverArt, size: 54, borderRadius: 10),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Top Song', style: TextStyle(fontSize: 11, color: Colors.white60)),
+                          Text(
+                            _data!.topSongs.first.song.title,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            _data!.topSongs.first.song.artist ?? '',
+                            style: const TextStyle(fontSize: 12, color: Colors.white70),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildMetric('Minutes', '${_data!.totalMinutesListened}'),
+                  Container(width: 1, height: 30, color: Colors.white24),
+                  _buildMetric('Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.artistName : 'N/A'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _playTopSongs,
+            icon: const Icon(CupertinoIcons.play_circle_fill, size: 20),
+            label: const Text('Play Your Top Songs', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFA243C),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
           ),
         ),
       ],

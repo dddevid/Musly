@@ -136,6 +136,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   double _pitch = 1.0;
   bool _pitchCorrection = true;
 
+  // 50-Song Milestone Celebration Callback
+  VoidCallback? onMilestone50Triggered;
+
   PlayerProvider(
     this._subsonicService,
     StorageService storageService,
@@ -1509,6 +1512,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       );
     }
 
+    // ── Check 50 Songs Milestone ──────────────────────────────────────────
+    _check50SongsMilestone().catchError((e) => debugPrint('[Player] Milestone check error: $e'));
+
     if (_sleepTimerEndCurrentSong) {
       _doSleepTimerStop();
       return;
@@ -1557,6 +1563,38 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_currentIndex < _queue.length - 1) {
         await skipToIndex(_currentIndex + 1);
       }
+    }
+  }
+
+  Future<void> _check50SongsMilestone() async {
+    final count = await _storageService.incrementListenedSongsCount();
+    final alreadyShown = await _storageService.is50SongsMilestoneShown();
+
+    if (count >= 50 && !alreadyShown) {
+      final isForeground = WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+      if (isForeground) {
+        await _storageService.set50SongsMilestoneShown(true);
+        await _storageService.set50SongsMilestonePending(false);
+        await pause();
+        onMilestone50Triggered?.call();
+      } else {
+        // App is in background or screen is off: flag as pending for next foreground play
+        await _storageService.set50SongsMilestonePending(true);
+      }
+    }
+  }
+
+  /// Checks if a 50-song milestone was reached while backgrounded and triggers now that app is foregrounded.
+  Future<void> checkPending50Milestone() async {
+    final isPending = await _storageService.is50SongsMilestonePending();
+    final isShown = await _storageService.is50SongsMilestoneShown();
+    final isForeground = WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+    if (isPending && !isShown && isForeground) {
+      await _storageService.set50SongsMilestoneShown(true);
+      await _storageService.set50SongsMilestonePending(false);
+      await pause();
+      onMilestone50Triggered?.call();
     }
   }
 

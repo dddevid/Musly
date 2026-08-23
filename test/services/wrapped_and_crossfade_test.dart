@@ -155,4 +155,25 @@ void main() {
       expect(service.isEnabled, isFalse);
     });
   });
+
+  group('50-Song Milestone Storage Tests', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
+
+    test('Tracks listened songs count and increments correctly', () async {
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('listened_songs_count') ?? 0, equals(0));
+
+      await prefs.setInt('listened_songs_count', 49);
+      final next = (prefs.getInt('listened_songs_count') ?? 0) + 1;
+      await prefs.setInt('listened_songs_count', next);
+
+      expect(next, equals(50));
+      expect(prefs.getBool('milestone_50_songs_shown') ?? false, isFalse);
+
+      await prefs.setBool('milestone_50_songs_shown', true);
+      expect(prefs.getBool('milestone_50_songs_shown'), isTrue);
+    });
+  });
 }

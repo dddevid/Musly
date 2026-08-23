@@ -22,6 +22,7 @@ import 'services/musly_connect_service.dart';
 import 'services/beatsync_service.dart';
 import 'models/connect_device.dart';
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
+import 'package:musly/widgets/dialogs/milestone_celebration_dialog.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -302,6 +303,17 @@ void main() async {
   beatSyncService.onScheduledPause = () => playerProvider.pause();
   beatSyncService.onScheduledSeek = (seekMs) => playerProvider.seek(Duration(milliseconds: seekMs));
 
+  // Wire 50-Songs Milestone Celebration
+  playerProvider.onMilestone50Triggered = () {
+    final ctx = navigatorKey.currentContext;
+    if (ctx != null) {
+      MilestoneCelebrationDialog.show(
+        ctx,
+        onResume: () => playerProvider.play(),
+      );
+    }
+  };
+
   // Initialize Musly Connect LAN discovery
   final deviceName = Platform.isWindows
       ? 'Windows PC'
@@ -406,14 +418,28 @@ class AuthWrapper extends StatefulWidget {
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
-class _AuthWrapperState extends State<AuthWrapper> {
+class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   bool _checkedOnboarding = false;
   bool _onboardingCompleted = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkOnboarding();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Provider.of<PlayerProvider>(context, listen: false).checkPending50Milestone();
+    }
   }
 
   Future<void> _checkOnboarding() async {

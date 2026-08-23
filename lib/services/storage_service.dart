@@ -455,6 +455,41 @@ class StorageService {
     await prefs.setBool('onboarding_completed', completed);
   }
 
+  // ── 50 Songs Milestone Celebration ──────────────────────────────────────────
+
+  Future<int> getListenedSongsCount() async {
+    final prefs = await _prefs;
+    return prefs.getInt('listened_songs_count') ?? 0;
+  }
+
+  Future<int> incrementListenedSongsCount() async {
+    final prefs = await _prefs;
+    final current = prefs.getInt('listened_songs_count') ?? 0;
+    final next = current + 1;
+    await prefs.setInt('listened_songs_count', next);
+    return next;
+  }
+
+  Future<bool> is50SongsMilestoneShown() async {
+    final prefs = await _prefs;
+    return prefs.getBool('milestone_50_songs_shown') ?? false;
+  }
+
+  Future<void> set50SongsMilestoneShown(bool shown) async {
+    final prefs = await _prefs;
+    await prefs.setBool('milestone_50_songs_shown', shown);
+  }
+
+  Future<bool> is50SongsMilestonePending() async {
+    final prefs = await _prefs;
+    return prefs.getBool('milestone_50_songs_pending') ?? false;
+  }
+
+  Future<void> set50SongsMilestonePending(bool pending) async {
+    final prefs = await _prefs;
+    await prefs.setBool('milestone_50_songs_pending', pending);
+  }
+
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();
