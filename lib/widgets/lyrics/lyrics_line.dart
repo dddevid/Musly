@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../models/lyric_line.dart';
+import '../../services/player_ui_settings_service.dart';
 
 enum LyricLineState { past, current, future }
 
@@ -37,6 +38,13 @@ class LyricsLineWidget extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final uiSettings = PlayerUiSettingsService();
+    final isCentered = uiSettings.getLyricsAlignment() == 'center';
+    final blurUnfocused = uiSettings.getLyricsBlurUnfocused();
+    final glowEffect = uiSettings.getLyricsGlowEffect();
+    final textAlign = isCentered ? TextAlign.center : TextAlign.left;
+    final alignment = isCentered ? Alignment.center : Alignment.centerLeft;
+
     switch (state) {
       case LyricLineState.past:
         return SizedBox(
@@ -44,29 +52,41 @@ class LyricsLineWidget extends StatelessWidget {
           width: double.infinity,
           child: Text(
             line.text,
+            textAlign: textAlign,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withValues(alpha: 0.32),
+              color: Colors.white.withValues(alpha: 0.35),
             ),
           ),
         );
       case LyricLineState.future:
-        // Calculate blur based on distance
+        final textWidget = Text(
+          line.text,
+          textAlign: textAlign,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white.withValues(alpha: 0.30),
+          ),
+        );
+
+        if (!blurUnfocused) {
+          return SizedBox(
+            key: const ValueKey('future_clear'),
+            width: double.infinity,
+            child: textWidget,
+          );
+        }
+
+        // Calculate blur based on distance if blur enabled
         final double sigma = (distance * 0.8).clamp(0.0, 3.0);
         return SizedBox(
-          key: const ValueKey('future'),
+          key: const ValueKey('future_blur'),
           width: double.infinity,
           child: ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-            child: Text(
-              line.text,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white.withValues(alpha: 0.22),
-              ),
-            ),
+            child: textWidget,
           ),
         );
       case LyricLineState.current:
@@ -74,39 +94,48 @@ class LyricsLineWidget extends StatelessWidget {
           key: const ValueKey('current'),
           width: double.infinity,
           child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 1.0, end: 1.06),
+            tween: Tween(begin: 1.0, end: 1.05),
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutBack,
             builder: (context, scale, child) {
               return Transform.scale(
                 scale: scale,
-                alignment: Alignment.centerLeft,
+                alignment: alignment,
                 child: child,
               );
             },
             child: line.hasWords 
-                ? _buildWordByWord() 
-                : _buildLineLevel(),
+                ? _buildWordByWord(textAlign, glowEffect) 
+                : _buildLineLevel(textAlign, glowEffect),
           ),
         );
     }
   }
 
-  Widget _buildLineLevel() {
+  Widget _buildLineLevel(TextAlign textAlign, bool glowEffect) {
     return Text(
       line.text,
-      style: const TextStyle(
+      textAlign: textAlign,
+      style: TextStyle(
         fontSize: 24,
-        fontWeight: FontWeight.w800, // Slightly bolder for current
+        fontWeight: FontWeight.w800,
         color: Colors.white,
         height: 1.4,
+        shadows: glowEffect
+            ? [
+                Shadow(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  blurRadius: 16.0,
+                ),
+              ]
+            : null,
       ),
     );
   }
 
-  Widget _buildWordByWord() {
-    // Advanced word-by-word reveal (karaoke style)
+  Widget _buildWordByWord(TextAlign textAlign, bool glowEffect) {
     return RichText(
+      textAlign: textAlign,
       text: TextSpan(
         children: line.words!.map((word) {
           double progress = 0.0;
@@ -118,7 +147,6 @@ class LyricsLineWidget extends StatelessWidget {
             progress = 1.0;
           }
 
-          // Use a ShaderMask to "fill" the word from left to right
           return WidgetSpan(
             child: ShaderMask(
               shaderCallback: (bounds) {
@@ -132,11 +160,19 @@ class LyricsLineWidget extends StatelessWidget {
               },
               child: Text(
                 '${word.text} ',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                   height: 1.4,
+                  shadows: glowEffect
+                      ? [
+                          Shadow(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            blurRadius: 16.0,
+                          ),
+                        ]
+                      : null,
                 ),
               ),
             ),

@@ -35,6 +35,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   String _artworkShadow = 'soft';
   String _artworkShadowColor = 'black';
   bool _liveSearch = true;
+  bool _lyricsBlurUnfocused = false;
+  String _lyricsAlignment = 'left';
+  bool _lyricsGlowEffect = true;
 
   ThemeMode _themeMode = ThemeMode.system;
   AccentColor _accentColor = AccentColor.red;
@@ -68,6 +71,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _artworkShadow = _playerUiSettings.getArtworkShadow();
       _artworkShadowColor = _playerUiSettings.getArtworkShadowColor();
       _liveSearch = _playerUiSettings.getLiveSearch();
+      _lyricsBlurUnfocused = _playerUiSettings.getLyricsBlurUnfocused();
+      _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
+      _lyricsGlowEffect = _playerUiSettings.getLyricsGlowEffect();
       _themeMode = themeService.themeMode;
       _accentColor = themeService.accentColor;
       _liquidGlass = themeService.liquidGlass;
@@ -132,6 +138,17 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             context,
           )!.artworkStyleSection.toUpperCase(),
           children: [_buildArtworkStyleEditor()],
+        ),
+        const SizedBox(height: 24),
+        SettingsSectionCard(
+          title: 'LYRICS DISPLAY',
+          children: [
+            _buildLyricsBlurToggle(),
+            const SettingsDivider(),
+            _buildLyricsAlignmentSelector(),
+            const SettingsDivider(),
+            _buildLyricsGlowToggle(),
+          ],
         ),
         const SizedBox(height: 24),
         SettingsSectionCard(
@@ -1220,6 +1237,49 @@ class _ThemeModeSelector extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildLyricsBlurToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Blur Unfocused Lyrics'),
+      subtitle: const Text('Add blur effect to past and upcoming lyric lines'),
+      value: _lyricsBlurUnfocused,
+      onChanged: (val) async {
+        await _playerUiSettings.setLyricsBlurUnfocused(val);
+        setState(() => _lyricsBlurUnfocused = val);
+      },
+    );
+  }
+
+  Widget _buildLyricsAlignmentSelector() {
+    return ListTile(
+      title: const Text('Lyrics Alignment'),
+      subtitle: Text(_lyricsAlignment == 'center' ? 'Centered' : 'Left aligned'),
+      trailing: SegmentedButton<String>(
+        segments: const [
+          ButtonSegment(value: 'left', label: Text('Left'), icon: Icon(Icons.format_align_left, size: 16)),
+          ButtonSegment(value: 'center', label: Text('Center'), icon: Icon(Icons.format_align_center, size: 16)),
+        ],
+        selected: {_lyricsAlignment},
+        onSelectionChanged: (val) async {
+          final chosen = val.first;
+          await _playerUiSettings.setLyricsAlignment(chosen);
+          setState(() => _lyricsAlignment = chosen);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLyricsGlowToggle() {
+    return SwitchListTile.adaptive(
+      title: const Text('Active Line Glow'),
+      subtitle: const Text('Subtle glow effect on currently playing lyric line'),
+      value: _lyricsGlowEffect,
+      onChanged: (val) async {
+        await _playerUiSettings.setLyricsGlowEffect(val);
+        setState(() => _lyricsGlowEffect = val);
+      },
     );
   }
 }

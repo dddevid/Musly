@@ -12,6 +12,9 @@ class PlayerUiSettingsService {
   static const String _keyArtworkShadow = 'artwork_shadow';
   static const String _keyArtworkShadowColor = 'artwork_shadow_color';
   static const String _keyLiveSearch = 'search_live_search';
+  static const String _keyLyricsBlurUnfocused = 'lyrics_blur_unfocused';
+  static const String _keyLyricsAlignment = 'lyrics_alignment';
+  static const String _keyLyricsGlowEffect = 'lyrics_glow_effect';
 
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
@@ -34,6 +37,9 @@ class PlayerUiSettingsService {
   final ValueNotifier<String> artworkShadowColorNotifier = ValueNotifier(
     'black',
   );
+  final ValueNotifier<bool> lyricsBlurUnfocusedNotifier = ValueNotifier(false);
+  final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
+  final ValueNotifier<bool> lyricsGlowEffectNotifier = ValueNotifier(true);
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -46,6 +52,9 @@ class PlayerUiSettingsService {
     artworkShadowNotifier.value = getArtworkShadow();
     artworkShadowColorNotifier.value = getArtworkShadowColor();
     liveSearchNotifier.value = getLiveSearch();
+    lyricsBlurUnfocusedNotifier.value = getLyricsBlurUnfocused();
+    lyricsAlignmentNotifier.value = getLyricsAlignment();
+    lyricsGlowEffectNotifier.value = getLyricsGlowEffect();
   }
 
   Future<void> setShowVolumeSlider(bool show) async {
@@ -147,6 +156,36 @@ class PlayerUiSettingsService {
     return _prefs?.getBool(_keyLiveSearch) ?? true;
   }
 
+  Future<void> setLyricsBlurUnfocused(bool enabled) async {
+    await initialize();
+    await _prefs!.setBool(_keyLyricsBlurUnfocused, enabled);
+    lyricsBlurUnfocusedNotifier.value = enabled;
+  }
+
+  bool getLyricsBlurUnfocused() {
+    return _prefs?.getBool(_keyLyricsBlurUnfocused) ?? false;
+  }
+
+  Future<void> setLyricsAlignment(String alignment) async {
+    await initialize();
+    await _prefs!.setString(_keyLyricsAlignment, alignment);
+    lyricsAlignmentNotifier.value = alignment;
+  }
+
+  String getLyricsAlignment() {
+    return _prefs?.getString(_keyLyricsAlignment) ?? 'left';
+  }
+
+  Future<void> setLyricsGlowEffect(bool enabled) async {
+    await initialize();
+    await _prefs!.setBool(_keyLyricsGlowEffect, enabled);
+    lyricsGlowEffectNotifier.value = enabled;
+  }
+
+  bool getLyricsGlowEffect() {
+    return _prefs?.getBool(_keyLyricsGlowEffect) ?? true;
+  }
+
   void dispose() {
     showStarRatingsNotifier.dispose();
     showMiniPlayerHeartNotifier.dispose();
@@ -157,5 +196,8 @@ class PlayerUiSettingsService {
     artworkShapeNotifier.dispose();
     artworkShadowNotifier.dispose();
     artworkShadowColorNotifier.dispose();
+    lyricsBlurUnfocusedNotifier.dispose();
+    lyricsAlignmentNotifier.dispose();
+    lyricsGlowEffectNotifier.dispose();
   }
 }
