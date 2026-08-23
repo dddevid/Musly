@@ -3,11 +3,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/models/connect_device.dart';
 import 'package:musly/services/beatsync_service.dart';
+import 'package:musly/services/musly_connect_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
 
   group('NTP Measurement & Precision Math Tests', () {
     test('Correctly computes clock offset and round trip delay (RTT)', () {
@@ -164,6 +167,17 @@ void main() {
       expect(decoded.senderId, equals('client-123'));
       expect(decoded.payload['targetEpochMs'], equals(1700000000000));
       expect(decoded.payload['startPositionMs'], equals(4500));
+    });
+
+    test('MuslyConnectService toggle enabled / disabled state', () async {
+      final service = MuslyConnectService();
+      await service.setEnabled(false);
+      expect(service.enabled, isFalse);
+      expect(service.getCompatibleDevices(), isEmpty);
+      expect(service.getAvailablePartyRooms(), isEmpty);
+
+      await service.setEnabled(true);
+      expect(service.enabled, isTrue);
     });
   });
 }

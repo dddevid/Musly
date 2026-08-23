@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../models/connect_device.dart';
 import '../models/song.dart';
 import '../services/beatsync_service.dart';
+import '../services/storage_service.dart';
 
 /// Core Service managing zero-config LAN device discovery, remote control, and BeatSync [BETA].
 class MuslyConnectService extends ChangeNotifier {
@@ -24,6 +25,7 @@ class MuslyConnectService extends ChangeNotifier {
 
   // State
   bool _isInitialized = false;
+  bool _enabled = true;
   final Map<String, ConnectDevice> _peers = {};
   ConnectDevice? _activeRemoteDevice;
   WebSocket? _remoteWsClient;
@@ -49,9 +51,10 @@ class MuslyConnectService extends ChangeNotifier {
   Function()? onRemoteRequestState;
 
   // Getters
+  bool get enabled => _enabled;
   String get localDeviceId => _localDeviceId;
   String get localDeviceName => _localDeviceName;
-  List<ConnectDevice> get allDiscoveredPeers => _peers.values.toList();
+  List<ConnectDevice> get allDiscoveredPeers => _enabled ? _peers.values.toList() : [];
   ConnectDevice? get activeRemoteDevice => _activeRemoteDevice;
   bool get isControllingRemoteDevice => _activeRemoteDevice != null;
 
@@ -71,14 +74,60 @@ class MuslyConnectService extends ChangeNotifier {
     _localMode = mode;
     _localServerHash = serverHash;
 
-    await _startHttpAndWebSocketServer();
-    await _startUdpBeaconListener();
-    _startBeaconBroadcaster();
-    _startPeerCleanupTimer();
+    final storage = StorageService();
+    _enabled = await storage.getMuslyConnectEnabled();
+
+    if (_enabled) {
+      await _startHttpAndWebSocketServer();
+      await _startUdpBeaconListener();
+      _startBeaconBroadcaster();
+      _startPeerCleanupTimer();
+    }
 
     _isInitialized = true;
     notifyListeners();
-    debugPrint('[MuslyConnect] Initialized with device: $_localDeviceName ($_localDeviceId)');
+    debugPrint('[MuslyConnect] Initialized with device: $_localDeviceName (enabled=$_enabled)');
+  }
+
+  /// Toggles Musly Connect completely on or off and persists setting.
+  Future<void> setEnabled(bool enabled) async {
+    if (_enabled == enabled) return;
+    _enabled = enabled;
+    await StorageService().saveMuslyConnectEnabled(enabled);
+
+    if (!_enabled) {
+      _beaconBroadcastTimer?.cancel();
+      _peerCleanupTimer?.cancel();
+      _statusBroadcastTimer?.cancel();
+      _beaconBroadcastTimer = null;
+      _peerCleanupTimer = null;
+      _statusBroadcastTimer = null;
+
+      _udpBeaconSocket?.close();
+      _udpBeaconSocket = null;
+
+      try {
+        await _httpServer?.close(force: true);
+      } catch (_) {}
+      _httpServer = null;
+
+      for (final s in _connectedClientSockets) {
+        try { s.close(); } catch (_) {}
+      }
+      _connectedClientSockets.clear();
+      _socketGuestNames.clear();
+
+      disconnectRemote();
+      _peers.clear();
+      debugPrint('[MuslyConnect] Services completely stopped');
+    } else {
+      await _startHttpAndWebSocketServer();
+      await _startUdpBeaconListener();
+      _startBeaconBroadcaster();
+      _startPeerCleanupTimer();
+      debugPrint('[MuslyConnect] Services restarted');
+    }
+    notifyListeners();
   }
 
   void updateLocalContext({
@@ -97,6 +146,7 @@ class MuslyConnectService extends ChangeNotifier {
   // ──────────────────────────────────────────────────────────────────────────
 
   List<ConnectDevice> getCompatibleDevices() {
+    if (!_enabled) return [];
     return _peers.values.where((p) {
       if (p.id == _localDeviceId) return false;
       return p.isCompatibleWith(myMode: _localMode, myServerHash: _localServerHash);
@@ -104,6 +154,7 @@ class MuslyConnectService extends ChangeNotifier {
   }
 
   List<ConnectDevice> getAvailablePartyRooms() {
+    if (!_enabled) return [];
     return _peers.values.where((p) => p.isPartyHost && p.id != _localDeviceId).toList();
   }
 
@@ -217,6 +268,7 @@ class MuslyConnectService extends ChangeNotifier {
     try {
       _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, _httpWsPort);
       _httpServer?.listen(_handleHttpRequest);
+    } catch (e) {
       debugPrint('[MuslyConnect] Server bind error: $e');
     }
   }

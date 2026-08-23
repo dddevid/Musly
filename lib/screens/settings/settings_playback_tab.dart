@@ -339,59 +339,53 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildConnectSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Consumer2<MuslyConnectService, BeatSyncService>(
-      builder: (context, connect, beatSync, _) {
+    return Consumer<MuslyConnectService>(
+      builder: (context, connect, _) {
         final compatiblePeers = connect.getCompatibleDevices();
 
         return SettingsSectionCard(
-          title: 'Musly Connect & BeatSync',
+          title: 'Musly Connect & Devices',
           children: [
-            ListTile(
+            SwitchListTile.adaptive(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: Container(
+              secondary: Container(
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-                  ),
+                  color: const Color(0xFF1DB954).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
+                child: const Icon(Icons.devices_rounded, color: Color(0xFF1DB954), size: 18),
               ),
-              title: Row(
-                children: [
-                  const Text('Musly Connect', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'BETA',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF8B5CF6),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              title: const Text('Enable Musly Connect', style: TextStyle(fontSize: 16)),
               subtitle: Text(
-                compatiblePeers.isEmpty
-                    ? 'LAN Discovery active • No nearby devices'
-                    : '${compatiblePeers.length} nearby compatible device(s) found',
+                'Discover nearby devices over Wi-Fi for remote control and listening sessions',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? Colors.white54 : Colors.black54,
                 ),
               ),
-              trailing: const Icon(CupertinoIcons.chevron_forward, size: 18),
-              onTap: () => ConnectDevicesModal.show(context),
+              value: connect.enabled,
+              onChanged: (v) async => await connect.setEnabled(v),
             ),
+            if (connect.enabled) ...[
+              const SettingsDivider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                title: const Text('Available Devices', style: TextStyle(fontSize: 15)),
+                subtitle: Text(
+                  compatiblePeers.isEmpty
+                      ? 'LAN Discovery active • No nearby devices'
+                      : '${compatiblePeers.length} nearby device(s) found',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
+                ),
+                trailing: const Icon(CupertinoIcons.chevron_forward, size: 18),
+                onTap: () => ConnectDevicesModal.show(context),
+              ),
+            ],
           ],
         );
       },

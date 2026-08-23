@@ -405,6 +405,16 @@ class StorageService {
     return prefs.getBool('discord_rpc_enabled') ?? true; 
   }
 
+  Future<void> saveMuslyConnectEnabled(bool enabled) async {
+    final prefs = await _prefs;
+    await prefs.setBool('musly_connect_enabled', enabled);
+  }
+
+  Future<bool> getMuslyConnectEnabled() async {
+    final prefs = await _prefs;
+    return prefs.getBool('musly_connect_enabled') ?? true;
+  }
+
   Future<void> saveDiscordRpcStateStyle(String style) async {
     final prefs = await _prefs;
     await prefs.setString('discord_rpc_state_style', style);

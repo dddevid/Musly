@@ -314,6 +314,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               children: [
                 Consumer2<MuslyConnectService, BeatSyncService>(
                   builder: (context, connectService, beatSync, _) {
+                    if (!connectService.enabled) return const SizedBox.shrink();
                     final isControlling = connectService.isControllingRemoteDevice;
                     final isInParty = beatSync.isInParty;
 
