@@ -254,6 +254,11 @@ class AuthProvider extends ChangeNotifier {
         errorStr.contains('connection errored') ||
         errorStr.contains('Cannot connect')) {
       return 'Cannot connect to server. Check the URL and your internet connection.';
+    } else if (errorStr.contains('TlsException') ||
+        errorStr.contains('CERT_') ||
+        errorStr.contains('certificate') ||
+        errorStr.contains('Client Certificate')) {
+      return 'Certificate or TLS error. Check your custom CA or client certificate file and password.';
     } else if (errorStr.contains('HandshakeException') ||
         errorStr.contains('CERTIFICATE_VERIFY_FAILED') ||
         errorStr.contains('SSL certificate')) {

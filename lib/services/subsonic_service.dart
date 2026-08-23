@@ -182,9 +182,11 @@ class SubsonicService {
       } catch (_) {}
 
       HttpClient createClient() {
-        HttpClient buildClient(SecurityContext context) {
+        HttpClient buildClient(SecurityContext? context) {
           return HttpOverrides.runWithHttpOverrides(() {
-            final client = HttpClient(context: context);
+            final client = (context != null)
+                ? HttpClient(context: context)
+                : HttpClient();
             client.connectionTimeout = const Duration(seconds: 15);
             client.idleTimeout = const Duration(seconds: 15);
             if (allowSelfSigned) {
@@ -202,25 +204,47 @@ class SubsonicService {
         }
 
         try {
-          final context = SecurityContext(withTrustedRoots: true);
-
-          if (hasCustomServerCert && customServerCertBytes != null) {
-            context.setTrustedCertificatesBytes(customServerCertBytes);
+          SecurityContext? context;
+          try {
+            context = SecurityContext(withTrustedRoots: true);
+          } catch (_) {
+            try {
+              context = SecurityContext.defaultContext;
+            } catch (_) {
+              context = null;
+            }
           }
 
-          if (hasClientCert && clientCertBytes != null) {
-            final password = clientCertPassword;
+          if (context != null) {
+            if (hasCustomServerCert && customServerCertBytes != null) {
+              try {
+                context.setTrustedCertificatesBytes(customServerCertBytes);
+              } catch (e) {
+                debugPrint('Failed to set trusted server certificates: $e');
+              }
+            }
 
-            context.useCertificateChainBytes(clientCertBytes,
-                password: password);
-
-            context.usePrivateKeyBytes(clientCertBytes, password: password);
+            if (hasClientCert && clientCertBytes != null) {
+              final password = (clientCertPassword != null && clientCertPassword.isNotEmpty)
+                  ? clientCertPassword
+                  : null;
+              try {
+                context.useCertificateChainBytes(clientCertBytes, password: password);
+              } catch (e) {
+                debugPrint('Failed to use client certificate chain: $e');
+              }
+              try {
+                context.usePrivateKeyBytes(clientCertBytes, password: password);
+              } catch (e) {
+                debugPrint('Failed to use client private key: $e');
+              }
+            }
           }
 
           return buildClient(context);
         } catch (e) {
           debugPrint('Failed to configure TLS: $e');
-          return buildClient(SecurityContext(withTrustedRoots: true));
+          return buildClient(null);
         }
       }
 
