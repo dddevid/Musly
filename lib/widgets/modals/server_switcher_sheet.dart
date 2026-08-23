@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -192,6 +194,10 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           profiles = [currentConfig, ...profiles];
         }
 
+        if (!kIsWeb && Platform.isIOS) {
+          profiles = profiles.where((p) => !p.isYoutube).toList();
+        }
+
         final hasYtStream = profiles.any((p) => p.isYoutube);
 
         return Container(
@@ -296,7 +302,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                       );
                     }),
 
-                    if (!hasYtStream) ...[
+                    if (!kIsWeb && !Platform.isIOS && !hasYtStream) ...[
                       const SizedBox(height: 12),
                       _buildQuickAddYtStreamTile(context),
                     ],

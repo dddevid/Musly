@@ -184,6 +184,9 @@ class YtDlpService {
 
   /// Resolves the stream info (URL and matching HTTP headers) for [videoId].
   Future<YtStreamInfo> resolveStreamInfo(String videoId, {bool forceRefresh = false}) async {
+    if (Platform.isIOS) {
+      throw UnsupportedError('YT Stream is disabled on iOS');
+    }
     final cleanId = videoId.replaceFirst('ytmusic://', '');
 
     if (!forceRefresh) {
@@ -321,7 +324,10 @@ class YtDlpService {
   // ── Search & Discovery ──────────────────────────────────────────────────────
 
   // Modern music player design
-  Future<Map<String, List<Map<String, dynamic>>>> searchDual(String query, {int limit = 20}) async {
+  Future<Map<String, List<Map<String, dynamic>>>> searchDual(String query, {int limit = 25}) async {
+    if (Platform.isIOS) {
+      return {'music': [], 'youtube': []};
+    }
     // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
       try {
@@ -360,6 +366,9 @@ class YtDlpService {
 
   // Modern music player design
   Future<List<Map<String, dynamic>>> search(String query, {int limit = 25}) async {
+    if (Platform.isIOS) {
+      return [];
+    }
     // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
       try {

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +46,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedFamily = widget.initialFamily ?? 'subsonic';
+    final isIos = !kIsWeb && Platform.isIOS;
+    _selectedFamily = (isIos && widget.initialFamily == 'youtube')
+        ? 'subsonic'
+        : (widget.initialFamily ?? 'subsonic');
     _hasYoutubeFuture = Provider.of<AuthProvider>(context, listen: false).hasYoutubeProfile();
   }
 
@@ -94,6 +99,13 @@ class _AddServerScreenState extends State<AddServerScreen> {
   }
 
   Future<void> _connectYtStream() async {
+    if (!kIsWeb && Platform.isIOS) {
+      setState(() {
+        _errorMessage = 'Web Stream is not available on iOS.';
+      });
+      return;
+    }
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
@@ -298,20 +310,21 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   isSelected: _selectedFamily == 'jellyfin',
                   isDisabled: false,
                 ),
-                const SizedBox(height: 10),
-
-                _buildProviderCard(
-                  family: 'youtube',
-                  title: 'Web Stream',
-                  subtitle: hasYtStream
-                      ? 'Already configured in your music sources'
-                      : 'Stream music online without account setup',
-                  icon: CupertinoIcons.play_rectangle_fill,
-                  gradient: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
-                  badge: hasYtStream ? 'ALREADY ADDED' : 'No Account Needed',
-                  isSelected: _selectedFamily == 'youtube',
-                  isDisabled: hasYtStream,
-                ),
+                if (!kIsWeb && !Platform.isIOS) ...[
+                  const SizedBox(height: 10),
+                  _buildProviderCard(
+                    family: 'youtube',
+                    title: 'Web Stream',
+                    subtitle: hasYtStream
+                        ? 'Already configured in your music sources'
+                        : 'Stream music online without account setup',
+                    icon: CupertinoIcons.play_rectangle_fill,
+                    gradient: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
+                    badge: hasYtStream ? 'ALREADY ADDED' : 'No Account Needed',
+                    isSelected: _selectedFamily == 'youtube',
+                    isDisabled: hasYtStream,
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 

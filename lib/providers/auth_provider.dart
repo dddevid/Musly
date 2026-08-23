@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../models/server_config.dart';
 import '../services/services.dart';
@@ -340,6 +341,10 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> connectYtStream() async {
+    if (!kIsWeb && Platform.isIOS) {
+      debugPrint('[Auth] YT Stream is disabled on iOS');
+      return false;
+    }
     return await login(
       serverUrl: 'https://music.youtube.com',
       username: 'Web Stream',

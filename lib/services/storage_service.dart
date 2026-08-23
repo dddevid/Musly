@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -133,7 +135,11 @@ class StorageService {
         map['clientCertificatePassword'] = secureCertPwd;
       }
       
-      return ServerConfig.fromJson(map);
+      final config = ServerConfig.fromJson(map);
+      if (!kIsWeb && Platform.isIOS && config.isYoutube) {
+        return null;
+      }
+      return config;
     }
     return null;
   }
@@ -216,12 +222,19 @@ class StorageService {
         map['clientCertificatePassword'] = secureCertPwd;
       }
 
-      profiles.add(ServerConfig.fromJson(map));
+      final cfg = ServerConfig.fromJson(map);
+      if (!kIsWeb && Platform.isIOS && cfg.isYoutube) {
+        continue;
+      }
+      profiles.add(cfg);
     }
     return profiles;
   }
 
   Future<void> saveProfile(ServerConfig config) async {
+    if (!kIsWeb && Platform.isIOS && config.isYoutube) {
+      return;
+    }
     final profiles = await getSavedProfiles();
     final idx = profiles.indexWhere(
       (p) =>
@@ -262,6 +275,7 @@ class StorageService {
   }
 
   Future<bool> hasYoutubeProfile() async {
+    if (!kIsWeb && Platform.isIOS) return false;
     final profiles = await getSavedProfiles();
     return profiles.any((p) => p.isYoutube);
   }
