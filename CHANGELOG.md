@@ -99,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Interactive Login Error Reporting**: Fixed an issue where failed login attempts would reset the screen without displaying the error, now keeping the form mounted and showing categorized diagnostic cards with troubleshooting hints.
+- **Desktop Onboarding Navigation**: Fixed `PageController` assertions on desktop and added full keyboard navigation shortcuts (`Arrow keys`, `Space`, `Enter`, `Escape`).
 - **mTLS Crash on Connect (#218)**: Handled mutual TLS handshake exceptions gracefully without crashing.
 - **Artist Blank Screen (#186)**: Multi-layer fallback lookup strategy for artists with missing ID or metadata.
 - **Android Auto Compatibility**: Enhanced Android Auto service metadata resolution, browse tree loading, and focus request timeout handling.
