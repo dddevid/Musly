@@ -75,6 +75,34 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _hasPlayedOnce = false;
 
+  // fix #207: track per-song playback time to enforce the Last.FM scrobble
+  // minimum threshold (50% of duration or 4 minutes, whichever comes first).
+  DateTime? _songPlaybackStartTime;
+  Duration _songAccumulatedPlayTime = Duration.zero;
+  String? _scrobbleTrackedSongId; // which song we're currently tracking
+
+  /// Returns true if the current song has been played long enough to
+  /// qualify for a Last.FM-compliant scrobble (>=50% or >=240s).
+  bool _canScrobble(Song song) {
+    if (_scrobbleTrackedSongId != song.id) return false;
+    final played = _songAccumulatedPlayTime +
+        ((_songPlaybackStartTime != null && _isPlaying)
+            ? DateTime.now().difference(_songPlaybackStartTime!)
+            : Duration.zero);
+    final duration = _duration > Duration.zero ? _duration
+        : (song.duration != null ? Duration(seconds: song.duration!) : Duration.zero);
+    if (duration <= Duration.zero) return played.inSeconds >= 30;
+    return played.inSeconds >= 240 ||
+        played.inMilliseconds >= duration.inMilliseconds ~/ 2;
+  }
+
+  /// Called when a new song starts playing; resets scrobble tracking.
+  void _resetScrobbleTracking(Song song) {
+    _songPlaybackStartTime = DateTime.now();
+    _songAccumulatedPlayTime = Duration.zero;
+    _scrobbleTrackedSongId = song.id;
+  }
+
   SharedPreferences? _prefs;
   Timer? _persistDebounceTimer;
   static const String _keyQueue = 'persistent_queue';
@@ -1452,11 +1480,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _onSongComplete() async {
     if (_currentSong != null && _currentSong!.isLocal != true) {
-      _subsonicService.scrobble(_currentSong!.id, submission: true).catchError((
-        e,
-      ) {
-        _offlineService.queueScrobble(_currentSong!.id, submission: true);
-      });
+      // fix #207: only scrobble if the song was played long enough
+      if (_canScrobble(_currentSong!)) {
+        _subsonicService.scrobble(_currentSong!.id, submission: true).catchError((
+          e,
+        ) {
+          _offlineService.queueScrobble(_currentSong!.id, submission: true);
+        });
+      }
     }
 
     if (_currentSong != null && _recommendationService != null) {
@@ -1634,6 +1665,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _lastPreloadedSongId = null;
       _resolvedArtworkUrl = _resolveInitialArtworkUrl(song);
       _position = Duration.zero;
+      // fix #207: reset playback-time tracking so scrobble threshold is
+      // measured from the start of this song's playback, not carried over.
+      _resetScrobbleTracking(song);
       notifyListeners();
       _saveQueueState();
 
@@ -2666,13 +2700,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     // Track completion of the previous song
     if (_currentSong != null) {
       if (_currentSong!.isLocal != true) {
-        _subsonicService
-            .scrobble(_currentSong!.id, submission: true)
-            .catchError(
-          (e) {
-            _offlineService.queueScrobble(_currentSong!.id, submission: true);
-          },
-        );
+        // fix #207: only scrobble if the Last.FM threshold was met
+        if (_canScrobble(_currentSong!)) {
+          _subsonicService
+              .scrobble(_currentSong!.id, submission: true)
+              .catchError(
+            (e) {
+              _offlineService.queueScrobble(_currentSong!.id, submission: true);
+            },
+          );
+        } else {
+          debugPrint(
+              '[Player] Skipped scrobble for "${_currentSong!.title}" '
+              '(not played long enough)');
+        }
       }
       if (_recommendationService != null) {
         _recommendationService!.trackSongPlay(
@@ -2693,8 +2734,24 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _lastPreloadedSongId = null;
     _position = Duration.zero;
     _resolvedArtworkUrl = null;
+    // fix #207: reset tracking so the new song's scrobble threshold starts fresh
+    _resetScrobbleTracking(_currentSong!);
     notifyListeners();
     _saveQueueState();
+
+    // fix #210: send "Now Playing" notification for the new track so the
+    // server's "Now Playing" status updates correctly (gapless auto-advance).
+    if (_currentSong!.isLocal != true) {
+      if (_offlineService.isOfflineMode) {
+        _offlineService.queueScrobble(_currentSong!.id, submission: false);
+      } else {
+        _subsonicService
+            .scrobble(_currentSong!.id, submission: false)
+            .catchError((e) {
+          _offlineService.queueScrobble(_currentSong!.id, submission: false);
+        });
+      }
+    }
 
     await _refreshArtworkUrl();
     if (_currentSong != null) {
