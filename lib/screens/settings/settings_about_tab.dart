@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/utils/context_extensions.dart';
 import 'package:musly/screens/onboarding/onboarding_screen.dart';
+import 'package:musly/screens/wrapped/wrapped_screen.dart';
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -105,6 +106,21 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 Navigator.of(context).push(
                   CupertinoPageRoute(
                     builder: (context) => const OnboardingScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildDivider(context),
+            _buildActionTile(
+              context,
+              icon: CupertinoIcons.gift_fill,
+              iconColor: const Color(0xFFFA243C),
+              title: 'Musly Wrapped',
+              subtitle: 'Your annual Year in Review and listening insights',
+              onTap: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (context) => const WrappedScreen(),
                   ),
                 );
               },

@@ -27,6 +27,7 @@ import '../services/upnp_service.dart';
 import '../services/jukebox_service.dart';
 import '../services/audio_handler.dart';
 import '../services/fade_settings_service.dart';
+import '../services/crossfade_service.dart';
 
 import '../services/transcoding_service.dart';
 import '../providers/library_provider.dart';
@@ -43,6 +44,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   final WindowsSystemService _windowsService = WindowsSystemService();
   final ReplayGainService _replayGainService = ReplayGainService();
   final AutoDjService _autoDjService = AutoDjService();
+  final CrossfadeService _crossfadeService = CrossfadeService();
   late final DiscordRpcService _discordRpcService;
   final CastService _castService;
   late final UpnpService _upnpService;
@@ -1408,6 +1410,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _position = position;
         _positionController.add(position);
         _checkAndPreloadNextSong(position);
+        _checkCrossfade(position);
 
         if (lastSystemUpdate == null ||
             (position.inMilliseconds - lastSystemUpdate!.inMilliseconds).abs() > 1000) {
@@ -2821,6 +2824,38 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   ReplayGainService get replayGainService => _replayGainService;
+  CrossfadeService get crossfadeService => _crossfadeService;
+
+  bool _isCrossfadingOut = false;
+
+  void _checkCrossfade(Duration position) {
+    if (!_crossfadeService.isEnabled || _duration == Duration.zero || _isRenderingRemotely) return;
+    final crossfadeSec = _crossfadeService.getCrossfadeSeconds();
+    if (crossfadeSec <= 0) return;
+    final threshold = _duration - Duration(seconds: crossfadeSec);
+    if (position >= threshold && !_isCrossfadingOut && _isPlaying && hasNext) {
+      _startCrossfadeAttenuation(crossfadeSec);
+    }
+  }
+
+  void _startCrossfadeAttenuation(int crossfadeSec) {
+    _isCrossfadingOut = true;
+    final steps = (crossfadeSec * 4).clamp(4, 40);
+    final stepDurationMs = (crossfadeSec * 1000) ~/ steps;
+    final currentVol = _audioPlayer.volume;
+    final volStep = currentVol / steps;
+    var step = 0;
+
+    Timer.periodic(Duration(milliseconds: stepDurationMs), (timer) {
+      if (!_isCrossfadingOut || !_isPlaying || step >= steps) {
+        timer.cancel();
+        return;
+      }
+      step++;
+      final newVol = (currentVol - (volStep * step)).clamp(0.0, 1.0);
+      _audioPlayer.setVolume(newVol).catchError((_) {});
+    });
+  }
 
   Future<void> toggleFavorite() async {
     if (_currentSong == null) return;

@@ -8,6 +8,9 @@ import 'album_artwork.dart';
 import 'animated_equalizer.dart';
 import '../modals/song_options_modal.dart';
 
+import 'swipeable_song_tile.dart';
+import 'package:flutter/cupertino.dart';
+
 class SongTile extends StatelessWidget {
   final Song song;
   final List<Song>? playlist;
@@ -17,6 +20,7 @@ class SongTile extends StatelessWidget {
   final bool showAlbum;
   final bool showDuration;
   final bool showTrackNumber;
+  final bool enableSwipeToQueue;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Widget? trailing;
@@ -31,6 +35,7 @@ class SongTile extends StatelessWidget {
     this.showAlbum = false,
     this.showDuration = false,
     this.showTrackNumber = false,
+    this.enableSwipeToQueue = true,
     this.onTap,
     this.onLongPress,
     this.trailing,
@@ -45,7 +50,7 @@ class SongTile extends StatelessWidget {
       builder: (context, playerProvider, child) {
         final isPlaying = playerProvider.currentSong?.id == song.id;
 
-        return ListTile(
+        final tile = ListTile(
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           leading: _buildLeading(context, isPlaying),
@@ -64,6 +69,36 @@ class SongTile extends StatelessWidget {
           trailing: trailing ?? _buildTrailing(context),
           onTap: onTap ?? () => _playSong(context),
           onLongPress: onLongPress ?? () => _showOptions(context),
+        );
+
+        if (!enableSwipeToQueue) return tile;
+
+        return SwipeableSongTile(
+          onSwipeToQueue: () {
+            playerProvider.addToQueue(song);
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(CupertinoIcons.text_badge_plus, color: Colors.white, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '"${song.title}" added to queue',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            );
+          },
+          child: tile,
         );
       },
     );

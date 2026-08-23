@@ -1,7 +1,9 @@
+• Spotify-style Swipe to Queue gesture on songs
+• Configurable Smart Track Crossfade (0-12s) in playback settings
+• Musly Wrapped: 100% private, on-device seasonal annual retrospective
 • Smart Recommendations & Taste-Learning Engine (Made For You, Listen Again, Top Hits)
-• Dedicated Downloads screen with batch download for favorites & artists
-• Multi-server profiles and automatic Dual WAN / LAN fallback
-• Full Android Auto enhancements
-• Immersive Onboarding tour
-• Local files support alongside Subsonic and Jellyfin
+• Dedicated Downloads section with batch downloads for favorites and artists
+• Multi-Server Profiles with automatic LAN / WAN ping fallback
+• Comprehensive Android Auto improvements
+• Interactive Onboarding Welcome Experience
 • Performance optimizations and bug fixes

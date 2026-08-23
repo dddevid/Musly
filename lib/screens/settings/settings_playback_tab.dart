@@ -14,6 +14,8 @@ import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
+import 'package:musly/services/crossfade_service.dart';
+
 class SettingsPlaybackTab extends StatefulWidget {
   const SettingsPlaybackTab({super.key});
 
@@ -24,6 +26,7 @@ class SettingsPlaybackTab extends StatefulWidget {
 class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   final _replayGainService = ReplayGainService();
   final _fadeSettingsService = FadeSettingsService();
+  final _crossfadeService = CrossfadeService();
 
   ReplayGainMode _replayGainMode = ReplayGainMode.off;
   double _replayGainPreamp = 0.0;
@@ -45,6 +48,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     await _replayGainService.initialize();
     await _fadeSettingsService.initialize();
+    await _crossfadeService.initialize();
 
     final storageService = StorageService();
     final lrcLibFallback = await storageService.getLrcLibFallback();
@@ -79,6 +83,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ],
           ],
         ),
+        const SizedBox(height: 24),
+        _buildCrossfadeSection(),
         const SizedBox(height: 24),
         _buildGaplessSection(),
         const SizedBox(height: 24),
@@ -319,6 +325,70 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
               await storage.saveLrcLibFallback(v);
               setState(() => _lrcLibFallback = v);
             },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCrossfadeSection() {
+    final accent = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final crossfadeSec = _crossfadeService.getCrossfadeSeconds();
+
+    return SettingsSectionCard(
+      title: 'Smart Crossfade',
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [accent, accent.withValues(alpha: 0.6)]),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle, color: Colors.white, size: 18),
+          ),
+          title: const Text('Track Crossfade', style: TextStyle(fontSize: 16)),
+          subtitle: Text(
+            crossfadeSec == 0 ? 'Off (Instant transition)' : '$crossfadeSec seconds crossfade between songs',
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.5),
+            ),
+          ),
+          trailing: Text(
+            crossfadeSec == 0 ? 'Off' : '${crossfadeSec}s',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: accent),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Slider(
+                value: crossfadeSec.toDouble(),
+                min: 0,
+                max: 12,
+                divisions: 12,
+                activeColor: accent,
+                onChanged: (value) async {
+                  final sec = value.round();
+                  await _crossfadeService.setCrossfadeSeconds(sec);
+                  setState(() {});
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Off', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
+                  Text('6s', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
+                  Text('12s', style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38)),
+                ],
+              ),
+            ],
           ),
         ),
       ],

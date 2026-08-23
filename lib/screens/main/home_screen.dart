@@ -18,6 +18,8 @@ import 'package:musly/screens/detail/artist_screen.dart';
 import 'package:musly/screens/media/song_collection_screen.dart';
 import 'package:musly/screens/media/favorites_screen.dart';
 import 'package:musly/screens/settings/settings_screen.dart';
+import 'package:musly/screens/wrapped/wrapped_screen.dart';
+import 'package:musly/services/wrapped_service.dart';
 import 'package:musly/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -240,6 +242,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Seasonal Wrapped Banner (Late Nov to Mid Jan)
+                        if (WrappedService.isWrappedSeason()) ...[
+                          _buildWrappedBanner(context, hPad, isDesktop),
+                          const SizedBox(height: 12),
+                        ],
+
                         // Quick Access Top Grid
                         if (_selectedCategory == 'All' || _selectedCategory == 'Music') ...[
                           const SizedBox(height: 8),
@@ -617,4 +625,79 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildWrappedBanner(BuildContext context, double hPad, bool isDesktop) {
+    final year = WrappedService.getWrappedYear();
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            NavigationHelper.push(context, const WrappedScreen());
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFA243C), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFA243C).withValues(alpha: 0.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '#MuslyWrapped $year',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Your Year in Review is ready!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(CupertinoIcons.chevron_forward, color: Colors.white, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+

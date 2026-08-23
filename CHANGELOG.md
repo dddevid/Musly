@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Spotify-style Swipe to Queue**
+  - Smooth horizontal swipe-right gesture on song rows across all lists (Albums, Playlists, Search, Library) to instantly add songs to the playback queue with tactile haptic feedback and an animated queue confirmation pill.
+
+- **Smart Track Crossfade & Transitions**
+  - Configurable 0s to 12s seamless crossfade in Playback Settings with automated volume attenuation curves between tracks.
+
+- **Musly Wrapped (Year-in-Review Retrospective)**
+  - 100% on-device, private interactive retrospective story with animated ambient auras.
+  - Automatically unlocks during the seasonal window (late November to mid-January) with a prominent hero banner on the Home feed.
+  - Insights include: total minutes listened, top 5 songs, top 5 artists, musical personality trait, top genre, aesthetic recap card, and one-tap "Play Your Top Songs" button.
+  - Developer/tester preview toggle in Settings > About.
+
 - **Smart Recommendations & Taste-Learning Engine (YT Stream & Home)**
   - Algorithmic music taste profiling learning from play counts, ratings, skips, and completion rates with exponential recency decay.
   - Dynamically generated mixes: "Made For You", "Listen Again", "Your Top Hits", Artist Mixes, and Genre Mixes.
