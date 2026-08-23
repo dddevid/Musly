@@ -1,5 +1,4 @@
 • Musly Connect: scopri i dispositivi sulla rete locale e controlla la riproduzione da remoto
-• Musly BeatSync [BETA]: sincronizzazione audio multi-dispositivo con orologio NTP per feste
 • Gesto rapido Swipe-to-Queue in stile Spotify su tutti i brani
 • Smart Crossfade configurabile (0-12s) nelle impostazioni di riproduzione
 • Musly Wrapped: retrospettiva annuale stagionale 100% privata e locale

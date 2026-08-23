@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Zero-config LAN P2P UDP discovery and embedded WebSocket control server.
   - Discover nearby Musly devices running on the same server or streaming mode to control playback (Play, Pause, Next, Prev, Seek, Volume) and transfer the active queue and track position with 1 tap.
 
+<!--
 - **Musly BeatSync [BETA] (Multi-Device Synchronized Party Audio)**
   - High-precision NTP clock offset synchronization ($<5\text{ms}$ accuracy) inspired by BeatSync.
   - Host party rooms and synchronize multiple phones, computers, and tablets on the same Wi-Fi into a unified surround speaker system with scheduled playback and real-time audio drift phase correction.
   - Manual calibration nudge slider ($\pm 50\text{ms}$) for Bluetooth latency compensation.
+-->
 
 - **Spotify-style Swipe to Queue**
   - Smooth horizontal swipe-right gesture on song rows across all lists (Albums, Playlists, Search, Library) to instantly add songs to the playback queue with tactile haptic feedback and an animated queue confirmation pill.

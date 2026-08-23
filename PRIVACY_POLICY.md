@@ -24,8 +24,8 @@ Musly is built on a **privacy-first, zero-telemetry architecture**.
 - **Musly Wrapped & Milestone Tracking**: Your annual playback statistics and listening milestones (e.g. 50-song milestones) are calculated 100% locally without external analytics.
 - **Offline Downloads**: Music files downloaded for offline playback are stored encrypted/locally in your device's app storage directory.
 
-## 4. Musly Connect & Listening Party (LAN Peer-to-Peer)
-- **Local Network Only**: Musly Connect and Listening Party (BeatSync) utilize zero-configuration local network discovery (UDP beacon on port 43882 and embedded HTTP/WebSocket server on port 43883) to discover and synchronize playback across devices on the same Wi-Fi subnet.
+## 4. Musly Connect (LAN Peer-to-Peer Remote Control)
+- **Local Network Only**: Musly Connect utilizes zero-configuration local network discovery (UDP beacon on port 43882 and embedded HTTP/WebSocket server on port 43883) to discover and transfer playback across devices on the same Wi-Fi subnet. <!-- Listening Party (BeatSync) temporarily disabled -->
 - **Zero Cloud / No External Relay**: All communication is strictly peer-to-peer within your local area network (LAN). No device identifiers, playback queues, or IP addresses are ever sent to any external server.
 - **Complete User Control**: Musly Connect can be completely disabled at any time in **Settings → Musly Connect & Devices**, which immediately shuts down all local server sockets, beacon listeners, and background timers.
 

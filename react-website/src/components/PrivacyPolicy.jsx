@@ -83,7 +83,8 @@ function PrivacyPolicy({ onBack }) {
           <div className="data-grid">
             <div className="data-item">
               <h3>100% Peer-to-Peer LAN</h3>
-              <p>Musly Connect and Listening Party (BeatSync) communicate strictly over your local Wi-Fi network (UDP port 43882 / HTTP port 43883). No playback transfers, device names, or commands are ever routed through any external cloud server.</p>
+              <p>Musly Connect communicates strictly over your local Wi-Fi network (UDP port 43882 / HTTP port 43883). No playback transfers, device names, or commands are ever routed through any external cloud server.</p>
+              {/* Listening Party (BeatSync) temporarily disabled */}
             </div>
             <div className="data-item">
               <h3>Total User Control</h3>

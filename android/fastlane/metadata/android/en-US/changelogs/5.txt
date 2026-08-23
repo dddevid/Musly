@@ -1,5 +1,4 @@
 • Musly Connect: Discover nearby devices on LAN and control playback remotely
-• Musly BeatSync [BETA]: Multi-device synchronized audio broadcast with precision NTP clock sync
 • Spotify-style Swipe to Queue gesture on songs
 • Configurable Smart Track Crossfade (0-12s) in playback settings
 • Musly Wrapped: 100% private, on-device seasonal annual retrospective
