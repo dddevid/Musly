@@ -1,0 +1,7 @@
+• Motore di raccomandazione & Smart Mix intelligenti (Made For You, Listen Again, Top Hits)
+• Sezione Download dedicata con scaricamento in blocco per preferiti e artisti
+• Profili multi-server con fallback automatico LAN / WAN
+• Miglioramenti completi per Android Auto
+• Nuova esperienza di benvenuto e Onboarding interattivo
+• Supporto ai file locali integrato nativamente
+• Ottimizzazioni delle prestazioni e correzioni di bug

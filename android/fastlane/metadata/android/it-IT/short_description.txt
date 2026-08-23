@@ -1,0 +1,1 @@
+Client Subsonic e Jellyfin con riproduzione offline e interfaccia moderna.

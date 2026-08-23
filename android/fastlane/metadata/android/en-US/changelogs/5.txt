@@ -1,0 +1,7 @@
+• Smart Recommendations & Taste-Learning Engine (Made For You, Listen Again, Top Hits)
+• Dedicated Downloads screen with batch download for favorites & artists
+• Multi-server profiles and automatic Dual WAN / LAN fallback
+• Full Android Auto enhancements
+• Immersive Onboarding tour
+• Local files support alongside Subsonic and Jellyfin
+• Performance optimizations and bug fixes
