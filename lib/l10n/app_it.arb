@@ -1755,23 +1755,6 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
-
-  "lyricsSection": "LYRICS",
-  "wordByWordSync": "Word-by-Word Sync",
-  "wordByWordSyncSubtitle": "Analyzes audio locally with Whisper AI for precise word highlighting",
-  "whisperModel": "Whisper Model",
-  "whisperModelSubtitle": "Download a model for on-device speech recognition",
-  "whisperModelTiny": "Tiny (~40 MB) — Fast",
-  "whisperModelBase": "Base (~140 MB) — Balanced",
-  "whisperModelSmall": "Small (~470 MB) — Accurate",
-  "downloadModel": "Download",
-  "downloadingModel": "Downloading…",
-  "modelReady": "Ready",
-  "wordSyncProcessing": "Syncing words…",
-  "wordSyncClearCache": "Clear Word Sync Cache",
-  "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform",
-
   "@_SUPPORT": {},
   "supportGreeting": "Ciao! 👋",
   "supportParagraph1": "Sono Devid, lo sviluppatore di Musly. Ho creato questa app perché amo la musica e credo che tutti meritino un lettore musicale bellissimo e gratuito.",
