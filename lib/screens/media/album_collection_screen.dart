@@ -70,6 +70,7 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
   String? _error;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -88,6 +89,7 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -185,42 +187,49 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
     final isDesktop = ScreenHelper.isDesktop(context);
 
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _loadAlbums,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: 140,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  title,
-                  style: theme.appBarTheme.titleTextStyle ??
-                      const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                titlePadding: EdgeInsets.only(
-                  left: isDesktop ? 64 : 52,
-                  bottom: 16,
-                ),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: _loadAlbums,
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: 140,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(
+                      title,
+                      style: theme.appBarTheme.titleTextStyle ??
+                          const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    titlePadding: EdgeInsets.only(
+                      left: isDesktop ? 64 : 52,
+                      bottom: 16,
+                    ),
+                  ),
+                ),
+                if (_isLoading)
+                  _buildLoadingGrid(context)
+                else if (_error != null)
+                  _buildErrorState(theme)
+                else if (_filteredAlbums == null || _filteredAlbums!.isEmpty)
+                  _buildEmptyState(theme)
+                else
+                  _buildAlbumGrid(context),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
             ),
-            if (_isLoading)
-              _buildLoadingGrid(context)
-            else if (_error != null)
-              _buildErrorState(theme)
-            else if (_filteredAlbums == null || _filteredAlbums!.isEmpty)
-              _buildEmptyState(theme)
-            else
-              _buildAlbumGrid(context),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
+          ),
+          if (!_isLoading && _filteredAlbums != null && _filteredAlbums!.length >= 8)
+            _buildAlphabetSidebar(context),
+        ],
       ),
     );
   }
@@ -337,6 +346,80 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
     if (width > 900) return 5;
     if (width > 600) return 3;
     return 2;
+  }
+
+  void _scrollToLetter(String letter) {
+    if (_filteredAlbums == null || _filteredAlbums!.isEmpty) return;
+
+    int targetIndex = -1;
+    if (letter == '#') {
+      targetIndex = _filteredAlbums!.indexWhere((a) {
+        final first = a.name.trim().isNotEmpty ? a.name.trim()[0].toUpperCase() : '';
+        return first.isNotEmpty && !RegExp(r'[A-Z]').hasMatch(first);
+      });
+    } else {
+      targetIndex = _filteredAlbums!.indexWhere((a) {
+        return a.name.trim().toUpperCase().startsWith(letter);
+      });
+    }
+
+    if (targetIndex >= 0 && _scrollController.hasClients) {
+      final columns = _getColumnCount(context);
+      final width = MediaQuery.of(context).size.width;
+      final itemWidth = (width - 32 - (columns - 1) * 16) / columns;
+      final itemHeight = itemWidth / 0.76 + 16;
+      final row = targetIndex ~/ columns;
+      final targetOffset = (row * itemHeight).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      );
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  Widget _buildAlphabetSidebar(BuildContext context) {
+    final alphabet = List.generate(26, (i) => String.fromCharCode(65 + i))..add('#');
+
+    return Positioned(
+      right: 4,
+      top: 130,
+      bottom: 90,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: alphabet.map((letter) {
+                return InkWell(
+                  onTap: () => _scrollToLetter(letter),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 4),
+                    child: Text(
+                      letter,
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
