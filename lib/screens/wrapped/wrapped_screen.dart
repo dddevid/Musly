@@ -32,7 +32,6 @@ class _WrappedScreenState extends State<WrappedScreen>
   bool _isSuspenseLocked = false;
   int _suspenseCountdown = 3;
   bool _topSongRevealed = false;
-  bool _wasPlayingBefore = false;
 
   @override
   void initState() {
@@ -53,7 +52,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     // Pause active playback when entering Wrapped
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final player = Provider.of<PlayerProvider>(context, listen: false);
-      _wasPlayingBefore = player.isPlaying;
       if (player.isPlaying) {
         player.pause();
       }
@@ -798,14 +796,14 @@ class _WrappedScreenState extends State<WrappedScreen>
                       radius: 20,
                       backgroundColor: const Color(0xFF8E2DE2).withValues(alpha: 0.3),
                       child: Text(
-                        rank.artistName.isNotEmpty ? rank.artistName[0].toUpperCase() : '?',
+                        rank.name.isNotEmpty ? rank.name[0].toUpperCase() : '?',
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        rank.artistName,
+                        rank.name,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -857,7 +855,7 @@ class _WrappedScreenState extends State<WrappedScreen>
               const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 48),
               const SizedBox(height: 16),
               Text(
-                _data!.personalityTitle,
+                _data!.listeningPersonality,
                 style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
@@ -870,7 +868,7 @@ class _WrappedScreenState extends State<WrappedScreen>
             ],
           ),
         ),
-        if (_data!.topGenre != null) ...[
+        if (_data!.topGenre.isNotEmpty) ...[
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -944,7 +942,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                 children: [
                   _buildMetric('Minutes', '${_data!.totalMinutesListened}'),
                   Container(width: 1, height: 30, color: Colors.white24),
-                  _buildMetric('Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.artistName : 'N/A'),
+                  _buildMetric('Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'N/A'),
                 ],
               ),
             ],

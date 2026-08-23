@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/services/cast_service.dart';

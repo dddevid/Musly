@@ -52,6 +52,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
             title: l10n.sectionMusicFolders,
             children: [_buildMusicFoldersButton()],
           ),
+        ],
+
+        if (currentConfig != null && !isYoutube && !currentConfig.isJellyfin) ...[
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.sectionJukebox,
