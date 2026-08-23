@@ -122,7 +122,7 @@ class AnalyticsService {
     if (!_enabled || !_initialized) return;
 
     try {
-      await Countly.recordEvent({
+      await Countly.instance.events.recordEvent({
         'key': eventKey,
         'segmentation': segmentation ?? {},
         'count': 1,
@@ -156,7 +156,7 @@ class AnalyticsService {
 
       // Send feedback if provided
       if (feedback != null && feedback.isNotEmpty) {
-        await Countly.recordEvent({
+        await Countly.instance.events.recordEvent({
           'key': 'rating_feedback',
           'segmentation': {'rating': rating.toString(), 'feedback': feedback},
           'count': 1,
