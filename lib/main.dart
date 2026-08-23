@@ -282,16 +282,16 @@ void main() async {
   muslyConnectService.onRemotePrevious = () => playerProvider.skipPrevious();
   muslyConnectService.onRemoteSeek = (sec) => playerProvider.seek(Duration(seconds: sec));
   muslyConnectService.onRemoteVolume = (vol) => playerProvider.setVolume(vol);
-  muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) {
+  muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) async {
     if (queue.isNotEmpty) {
-      playerProvider.playSong(
-        queue[index.clamp(0, queue.length - 1)],
+      final safeIndex = index.clamp(0, queue.length - 1);
+      final initialPosition = posSec > 0 ? Duration(seconds: posSec) : null;
+      await playerProvider.playSong(
+        queue[safeIndex],
         playlist: queue,
-        startIndex: index,
+        startIndex: safeIndex,
+        initialPosition: initialPosition,
       );
-      if (posSec > 0) {
-        playerProvider.seek(Duration(seconds: posSec));
-      }
     }
   };
 

@@ -233,8 +233,25 @@ class MuslyConnectService extends ChangeNotifier {
     } else if (request.uri.path == '/status') {
       request.response
         ..headers.contentType = ContentType.json
-        ..write(jsonEncode({'status': 'ok', 'device': _localDeviceName}))
+        ..write(jsonEncode({'status': 'ok', 'device': _localDeviceName, 'id': _localDeviceId}))
         ..close();
+    } else if (request.uri.path == '/transfer' && request.method == 'POST') {
+      try {
+        final body = await utf8.decodeStream(request);
+        final json = jsonDecode(body) as Map<String, dynamic>;
+        final message = ConnectMessage.fromJson(json);
+        _dispatchIncomingMessage(message, null);
+        request.response
+          ..headers.contentType = ContentType.json
+          ..write(jsonEncode({'success': true}))
+          ..close();
+      } catch (e) {
+        debugPrint('[MuslyConnect] /transfer error: $e');
+        request.response
+          ..statusCode = HttpStatus.badRequest
+          ..write(jsonEncode({'error': e.toString()}))
+          ..close();
+      }
     } else {
       request.response
         ..statusCode = HttpStatus.notFound
@@ -259,7 +276,7 @@ class MuslyConnectService extends ChangeNotifier {
     );
   }
 
-  void _dispatchIncomingMessage(ConnectMessage message, WebSocket socket) {
+  void _dispatchIncomingMessage(ConnectMessage message, WebSocket? socket) {
     final beatSync = BeatSyncService();
 
     switch (message.type) {
@@ -291,6 +308,7 @@ class MuslyConnectService extends ChangeNotifier {
         final songs = rawSongs.map((s) => Song.fromJson(s as Map<String, dynamic>)).toList();
         final index = message.payload['startIndex'] as int? ?? 0;
         final posSec = message.payload['positionSeconds'] as int? ?? 0;
+        debugPrint('[MuslyConnect] ⇋ Incoming playback transfer: ${songs.length} tracks, index=$index, pos=${posSec}s');
         onRemoteTransferQueue?.call(songs, index, posSec);
         break;
 
@@ -304,7 +322,7 @@ class MuslyConnectService extends ChangeNotifier {
           payload: {'t0': t0, 't1': t1, 't2': t2},
           senderId: _localDeviceId,
         );
-        socket.add(response.serialize());
+        socket?.add(response.serialize());
         break;
 
       case ConnectCommandType.ntpResponse:
@@ -401,12 +419,51 @@ class MuslyConnectService extends ChangeNotifier {
   }
 
   /// Sends a playback transfer payload to migrate active playback seamlessly.
-  void transferPlaybackToRemote(List<Song> queue, int startIndex, int positionSeconds) {
-    sendCommand(ConnectCommandType.transferQueue, {
+  Future<bool> transferPlaybackToRemote(
+    List<Song> queue,
+    int startIndex,
+    int positionSeconds, {
+    ConnectDevice? targetDevice,
+  }) async {
+    final payload = {
       'queue': queue.map((s) => s.toJson()).toList(),
       'startIndex': startIndex,
       'positionSeconds': positionSeconds,
-    });
+    };
+
+    bool delivered = false;
+
+    // 1. WebSocket Delivery
+    if (_remoteWsClient != null && _remoteWsClient!.readyState == WebSocket.open) {
+      sendCommand(ConnectCommandType.transferQueue, payload);
+      delivered = true;
+    }
+
+    // 2. HTTP POST Fallback Delivery
+    final target = targetDevice ?? _activeRemoteDevice;
+    if (target != null) {
+      try {
+        final client = HttpClient();
+        client.connectionTimeout = const Duration(seconds: 3);
+        final uri = Uri.parse('http://${target.ip}:${target.port}/transfer');
+        final request = await client.postUrl(uri);
+        request.headers.contentType = ContentType.json;
+        final message = ConnectMessage(
+          type: ConnectCommandType.transferQueue,
+          payload: payload,
+          senderId: _localDeviceId,
+        );
+        request.write(message.serialize());
+        final response = await request.close();
+        if (response.statusCode == HttpStatus.ok) {
+          delivered = true;
+        }
+      } catch (e) {
+        debugPrint('[MuslyConnect] HTTP transfer error: $e');
+      }
+    }
+
+    return delivered;
   }
 
   // ──────────────────────────────────────────────────────────────────────────

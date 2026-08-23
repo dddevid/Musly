@@ -1640,9 +1640,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     Song song, {
     List<Song>? playlist,
     int? startIndex,
+    Duration? initialPosition,
   }) async {
     if (_currentSong?.id == song.id && !_isPlayingRadio) {
-      await togglePlayPause();
+      if (initialPosition != null && initialPosition > Duration.zero) {
+        await seek(initialPosition);
+      }
+      if (!_isPlaying) {
+        await play();
+      }
       return;
     }
 
@@ -1893,6 +1899,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
           await _applyReplayGain(song);
           await _ensureAudioFocus(() => _audioPlayer.play());
+        }
+
+        if (initialPosition != null && initialPosition > Duration.zero) {
+          await _audioPlayer.seek(initialPosition);
         }
       }
 

@@ -391,20 +391,51 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(CupertinoIcons.arrow_right_arrow_left_circle, size: 20),
+              icon: const Icon(CupertinoIcons.arrow_right_arrow_left_circle, size: 22),
               tooltip: 'Transfer playback here',
               onPressed: () async {
-                final ok = await connectService.connectToRemoteDevice(device);
-                if (ok && player.queue.isNotEmpty) {
-                  connectService.transferPlaybackToRemote(
-                    player.queue,
-                    player.currentIndex,
-                    player.position.inSeconds,
+                final queueToTransfer = player.queue.isNotEmpty
+                    ? player.queue
+                    : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
+
+                if (queueToTransfer.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No active playback to transfer')),
                   );
+                  return;
+                }
+
+                final currentPos = player.position.inSeconds;
+                final currentIndex = player.currentIndex.clamp(0, queueToTransfer.length - 1);
+
+                // Connect to remote device
+                await connectService.connectToRemoteDevice(device);
+
+                // Transfer playback with dual WebSocket + HTTP delivery
+                final delivered = await connectService.transferPlaybackToRemote(
+                  queueToTransfer,
+                  currentIndex,
+                  currentPos,
+                  targetDevice: device,
+                );
+
+                if (delivered) {
+                  // Pause local playback since it migrated to target device
+                  await player.pause();
+
                   if (context.mounted) {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Playback transferred to ${device.name}')),
+                      SnackBar(
+                        content: Text('Playback transferred to ${device.name}'),
+                        backgroundColor: const Color(0xFF1DB954),
+                      ),
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to transfer playback to ${device.name}')),
                     );
                   }
                 }
