@@ -161,7 +161,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get previous => 'Precedente';
 
   @override
-  String get shuffle => 'Riproduzione casuale';
+  String get shuffle => 'Casuale';
 
   @override
   String get repeat => 'Ripeti';

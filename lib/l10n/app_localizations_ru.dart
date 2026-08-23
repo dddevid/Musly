@@ -312,10 +312,10 @@ class AppLocalizationsRu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count песен',
-      one: '1 песня',
-      zero: 'Нет песен',
       many: '$count песен',
       few: '$count песни',
+      one: '1 песня',
+      zero: 'Нет песен',
     );
     return '$_temp0';
   }
@@ -326,10 +326,10 @@ class AppLocalizationsRu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count альбомов',
-      one: '1 альбом',
-      zero: 'Нет альбомов',
       many: '$count альбомов',
       few: '$count альбома',
+      one: '1 альбом',
+      zero: 'Нет альбомов',
     );
     return '$_temp0';
   }
