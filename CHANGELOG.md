@@ -32,9 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Insights include: total minutes listened, top 5 songs, top 5 artists, musical personality trait, top genre, aesthetic recap card, and one-tap "Play Your Top Songs" button.
   - Developer/tester preview toggle in Settings > About.
 
+- **Live Lyric under Artwork in Fullscreen Player**
+  - Optional setting in Display Settings (disabled by default) that displays a sleek frosted pill with the currently singing synced lyric line directly below the album artwork.
+  - Tapping the live lyric snippet instantly opens the full lyrics screen.
+  - Automatically hides and preserves standard player layout if the song has no synced lyrics.
+
 - **Smart Audio Focus & Auto-Resume with Fade Out**
-  - Smooth volume fade-out (~350ms) and auto-pause when external media apps request audio focus (e.g. YouTube, Instagram, TikTok video playback).
-  - Progressive volume fade-in and auto-resume when leaving external apps or navigating to silent sections (e.g. TikTok inbox), with full manual control support.
+  - Smooth volume fade-out and auto-pause when external media apps request audio focus (e.g. YouTube, Instagram, TikTok video playback).
+  - Progressive volume fade-in and immediate volume restoration when exiting external apps, with full manual playback override support.
 
 - **High-Fidelity 3-Color Album Palette Extraction**
   - Upgraded palette extraction using `PaletteGenerator` to extract the true 3 primary colors (dominant, vibrant, deep accent) from album artwork for the fullscreen player ambient mesh background.
