@@ -357,6 +357,81 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   ),
                 ),
               ),
+
+              // Live lyric under artwork (if enabled in settings and lyrics are available)
+              ValueListenableBuilder<bool>(
+                valueListenable: PlayerUiSettingsService().showLiveLyricUnderArtworkNotifier,
+                builder: (context, showLyric, _) {
+                  if (!showLyric || _fetchedLyrics.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return StreamBuilder<Duration>(
+                    stream: provider.positionStream,
+                    initialData: provider.position,
+                    builder: (context, snapshot) {
+                      final currentTime = snapshot.data ?? Duration.zero;
+                      LyricLine? activeLine;
+                      for (int i = 0; i < _fetchedLyrics.length; i++) {
+                        final line = _fetchedLyrics[i];
+                        final next = (i + 1 < _fetchedLyrics.length) ? _fetchedLyrics[i + 1] : null;
+                        if (currentTime >= line.startTime && (next == null || currentTime < next.startTime)) {
+                          activeLine = line;
+                          break;
+                        }
+                      }
+                      if (activeLine == null || activeLine.text.trim().isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return GestureDetector(
+                        onTap: () {
+                          _pageController.animateToPage(
+                            1,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(32.0, 0, 32.0, 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.music_note_rounded,
+                                size: 16,
+                                color: accentColor.withValues(alpha: 0.9),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  activeLine.text,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white.withValues(alpha: 0.95),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
           
           // Title & Artist
           Padding(

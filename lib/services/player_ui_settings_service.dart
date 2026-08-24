@@ -15,6 +15,7 @@ class PlayerUiSettingsService {
   static const String _keyLyricsBlurUnfocused = 'lyrics_blur_unfocused';
   static const String _keyLyricsAlignment = 'lyrics_alignment';
   static const String _keyLyricsGlowEffect = 'lyrics_glow_effect';
+  static const String _keyShowLiveLyricUnderArtwork = 'player_show_live_lyric_under_artwork';
 
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
@@ -41,6 +42,7 @@ class PlayerUiSettingsService {
   final ValueNotifier<bool> lyricsBlurUnfocusedNotifier = ValueNotifier(false);
   final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
   final ValueNotifier<bool> lyricsGlowEffectNotifier = ValueNotifier(true);
+  final ValueNotifier<bool> showLiveLyricUnderArtworkNotifier = ValueNotifier(false);
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -57,6 +59,17 @@ class PlayerUiSettingsService {
     lyricsBlurUnfocusedNotifier.value = getLyricsBlurUnfocused();
     lyricsAlignmentNotifier.value = getLyricsAlignment();
     lyricsGlowEffectNotifier.value = getLyricsGlowEffect();
+    showLiveLyricUnderArtworkNotifier.value = getShowLiveLyricUnderArtwork();
+  }
+
+  Future<void> setShowLiveLyricUnderArtwork(bool show) async {
+    await initialize();
+    await _prefs!.setBool(_keyShowLiveLyricUnderArtwork, show);
+    showLiveLyricUnderArtworkNotifier.value = show;
+  }
+
+  bool getShowLiveLyricUnderArtwork() {
+    return _prefs?.getBool(_keyShowLiveLyricUnderArtwork) ?? false;
   }
 
   Future<void> setShowVolumeSlider(bool show) async {

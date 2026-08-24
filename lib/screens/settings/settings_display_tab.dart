@@ -32,6 +32,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _showMiniPlayerHeart = false;
   bool _showMiniPlayerRepeat = false;
   bool _showMiniPlayerShuffle = false;
+  bool _showLiveLyricUnderArtwork = false;
   bool _liveSearch = true;
   bool _lyricsBlurUnfocused = false;
   String _lyricsAlignment = 'left';
@@ -65,6 +66,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _showMiniPlayerHeart = _playerUiSettings.getShowMiniPlayerHeart();
       _showMiniPlayerRepeat = _playerUiSettings.getShowMiniPlayerRepeat();
       _showMiniPlayerShuffle = _playerUiSettings.getShowMiniPlayerShuffle();
+      _showLiveLyricUnderArtwork = _playerUiSettings.getShowLiveLyricUnderArtwork();
       _liveSearch = _playerUiSettings.getLiveSearch();
       _lyricsBlurUnfocused = _playerUiSettings.getLyricsBlurUnfocused();
       _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
@@ -88,19 +90,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        SettingsSectionCard(
-          title: AppLocalizations.of(context)!.appearanceSection.toUpperCase(),
-          children: [_buildAppearanceEditor()],
-        ),
+        _buildThemeSection(),
         const SizedBox(height: 24),
-        SettingsSectionCard(
-          title: AppLocalizations.of(context)!.language.toUpperCase(),
-          children: [
-            _buildLanguageSelector(),
-            const SettingsDivider(),
-            _buildTranslationCredit(),
-          ],
-        ),
+        _buildAccentColorSection(),
+        const SizedBox(height: 24),
+        _buildAlbumArtCustomizerSection(),
+        const SizedBox(height: 24),
+        _buildLyricsCustomizationSection(),
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.playerInterface.toUpperCase(),
@@ -110,6 +106,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               const SettingsDivider(),
               _buildStarRatingsToggle(),
             ],
+            const SettingsDivider(),
+            _buildLiveLyricUnderArtworkToggle(),
             const SettingsDivider(),
             _buildMiniPlayerHeartToggle(),
             const SettingsDivider(),
@@ -399,6 +397,37 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
 
+
+  Widget _buildLiveLyricUnderArtworkToggle() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFFAF52DE)],
+        icon: CupertinoIcons.quote_bubble_fill,
+      ),
+      title: const Text(
+        'Testo sotto la copertina',
+        style: TextStyle(fontSize: 16),
+      ),
+      subtitle: Text(
+        'Mostra la riga sincronizzata corrente del testo sotto la copertina nel player a schermo intero',
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _showLiveLyricUnderArtwork,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
+        onChanged: (value) async {
+          setState(() => _showLiveLyricUnderArtwork = value);
+          await _playerUiSettings.setShowLiveLyricUnderArtwork(value);
+        },
+      ),
+    );
+  }
 
   Widget _buildLiveSearchToggle() {
     return ListTile(
