@@ -11,6 +11,7 @@ import 'package:musly/services/local_music_service.dart';
 import 'package:musly/services/offline_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/screens/media/download_playlist_status_screen.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
@@ -525,7 +526,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: const SettingsIconBadge(
         icon: CupertinoIcons.folder_badge_plus,
-        gradient: [Color(0xFF007AFF), Color(0xFF00C6FF)],
+        gradientColors: [Color(0xFF007AFF), Color(0xFF00C6FF)],
       ),
       title: const Text('Cartella di Download', style: TextStyle(fontSize: 16)),
       subtitle: Text(

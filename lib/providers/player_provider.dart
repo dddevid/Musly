@@ -1492,12 +1492,89 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// [onAudioFocusGain] wiring below, and `audio_handler.dart`, which disables
   /// just_audio's own automatic session-activation/interruption handling on
   /// Android to avoid two systems fighting over the same responsibility).
+  bool _wasPlayingBeforeInterruption = false;
+  bool _isManuallyPaused = false;
+  bool _isFading = false;
+
+  Future<void> _fadeOutAndPause({Duration duration = const Duration(milliseconds: 350)}) async {
+    if (_isFading) return;
+    _isFading = true;
+    try {
+      final currentVol = _audioPlayer.volume;
+      const steps = 8;
+      final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
+      for (int i = steps - 1; i >= 0; i--) {
+        await _audioPlayer.setVolume((currentVol * (i / steps)).clamp(0.0, 1.0));
+        await Future.delayed(stepDelay);
+      }
+      await _audioPlayer.pause();
+      _isPlaying = false;
+      notifyListeners();
+      _updateAndroidAuto();
+      await _audioPlayer.setVolume(currentVol);
+    } catch (_) {
+      await _audioPlayer.pause();
+      _isPlaying = false;
+      notifyListeners();
+    } finally {
+      _isFading = false;
+    }
+  }
+
+  Future<void> _fadeInAndResume({Duration duration = const Duration(milliseconds: 400)}) async {
+    if (_isFading || _currentSong == null) return;
+    _isFading = true;
+    try {
+      final targetVol = _volume;
+      await _audioPlayer.setVolume(0.0);
+      await _audioPlayer.play();
+      _isPlaying = true;
+      notifyListeners();
+      _updateAndroidAuto();
+      const steps = 10;
+      final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
+      for (int i = 1; i <= steps; i++) {
+        await _audioPlayer.setVolume((targetVol * (i / steps)).clamp(0.0, 1.0));
+        await Future.delayed(stepDelay);
+      }
+    } catch (_) {
+      await _audioPlayer.play();
+      _isPlaying = true;
+      notifyListeners();
+    } finally {
+      _isFading = false;
+    }
+  }
+
   Future<void> _configureAudioSession() async {
-    if (kIsWeb || !Platform.isAndroid) return;
+    if (kIsWeb) return;
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
       debugPrint('[Player] AudioSession configured for music playback');
+
+      session.interruptionEventStream.listen((event) async {
+        debugPrint('[Player AudioSession] Interruption: begin=${event.begin}, type=${event.type}');
+        if (event.begin) {
+          if (_isPlaying) {
+            _wasPlayingBeforeInterruption = true;
+            await _fadeOutAndPause();
+          }
+        } else {
+          if (_wasPlayingBeforeInterruption && !_isManuallyPaused) {
+            _wasPlayingBeforeInterruption = false;
+            await _fadeInAndResume();
+          }
+        }
+      });
+
+      session.becomingNoisyEventStream.listen((_) async {
+        if (_isPlaying) {
+          _wasPlayingBeforeInterruption = false;
+          _isManuallyPaused = true;
+          await _fadeOutAndPause();
+        }
+      });
     } catch (e) {
       debugPrint('[Player] AudioSession configuration failed: $e');
     }
@@ -2036,6 +2113,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> play() async {
+    _isManuallyPaused = false;
+    _wasPlayingBeforeInterruption = false;
     /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _isPlaying = true;
@@ -2093,6 +2172,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> pause() async {
+    _isManuallyPaused = true;
+    _wasPlayingBeforeInterruption = false;
     /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _isPlaying = false;

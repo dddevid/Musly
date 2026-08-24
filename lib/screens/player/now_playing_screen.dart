@@ -19,6 +19,7 @@ import 'package:musly/widgets/now_playing/queue_view.dart';
 import 'package:musly/widgets/now_playing/now_playing_more_menu.dart';
 import 'package:musly/widgets/now_playing/add_to_menu.dart';
 import 'package:musly/widgets/common/multi_artist_widget.dart';
+import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class NowPlayingScreen extends StatefulWidget {

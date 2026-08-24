@@ -535,10 +535,10 @@ class SubsonicService {
     }
     if (_youtube != null) return _youtube!.getStreamUrl(songId);
     final params = <String, String>{'id': songId};
-    if (maxBitRate != null) {
+    if (maxBitRate != null && maxBitRate > 0) {
       params['maxBitRate'] = maxBitRate.toString();
     }
-    if (format != null) {
+    if (format != null && format.isNotEmpty && format != 'raw') {
       params['format'] = format;
     }
     return _buildUrl('stream', params);

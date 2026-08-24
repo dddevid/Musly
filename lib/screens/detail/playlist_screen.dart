@@ -853,9 +853,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         playlist: displaySongs,
                         index: index,
                         showArtist: true,
-                        onLongPress: _isSelectMode
-                            ? () => _toggleSelection(index)
-                            : null,
                       );
                       return Dismissible(
                         key: ValueKey('${song.id}_$index'),
