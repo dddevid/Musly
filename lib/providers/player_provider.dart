@@ -1494,53 +1494,49 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Android to avoid two systems fighting over the same responsibility).
   bool _wasPlayingBeforeInterruption = false;
   bool _isManuallyPaused = false;
-  int _fadeGeneration = 0;
 
-  Future<void> _fadeOutAndPause({Duration duration = const Duration(milliseconds: 300)}) async {
-    final gen = ++_fadeGeneration;
+  Future<void> _fadeOutAndPause() async {
     try {
+      if (!_isPlaying) return;
       final currentVol = _audioPlayer.volume > 0 ? _audioPlayer.volume : _volume;
-      const steps = 6;
-      final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
-      for (int i = steps - 1; i >= 0; i--) {
-        if (_fadeGeneration != gen) return;
-        await _audioPlayer.setVolume((currentVol * (i / steps)).clamp(0.0, 1.0));
-        await Future.delayed(stepDelay);
-      }
-      if (_fadeGeneration != gen) return;
+      // Quick gentle fade out
+      await _audioPlayer.setVolume((currentVol * 0.4).clamp(0.0, 1.0));
+      await Future.delayed(const Duration(milliseconds: 100));
+      await _audioPlayer.setVolume(0.0);
       await _audioPlayer.pause();
       _isPlaying = false;
       notifyListeners();
       _updateAndroidAuto();
-      await _audioPlayer.setVolume(currentVol);
+      // Restore normal effective volume so the track is unmuted for playback
+      await _applyReplayGain(_currentSong);
     } catch (_) {
       await _audioPlayer.pause();
       _isPlaying = false;
       notifyListeners();
+      await _applyReplayGain(_currentSong);
     }
   }
 
-  Future<void> _fadeInAndResume({Duration duration = const Duration(milliseconds: 350)}) async {
+  Future<void> _fadeInAndResume() async {
     if (_currentSong == null) return;
-    final gen = ++_fadeGeneration;
     try {
-      final targetVol = _volume > 0 ? _volume : 1.0;
-      await _audioPlayer.setVolume(0.0);
+      if (!kIsWeb) {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      }
+      await _applyReplayGain(_currentSong);
       await _audioPlayer.play();
       _isPlaying = true;
       notifyListeners();
       _updateAndroidAuto();
-      const steps = 8;
-      final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
-      for (int i = 1; i <= steps; i++) {
-        if (_fadeGeneration != gen) return;
-        await _audioPlayer.setVolume((targetVol * (i / steps)).clamp(0.0, 1.0));
-        await Future.delayed(stepDelay);
-      }
-    } catch (_) {
-      await _audioPlayer.play();
-      _isPlaying = true;
-      notifyListeners();
+    } catch (e) {
+      debugPrint('[Player] Resume error: $e');
+      try {
+        await _applyReplayGain(_currentSong);
+        await _audioPlayer.play();
+        _isPlaying = true;
+        notifyListeners();
+      } catch (_) {}
     }
   }
 
