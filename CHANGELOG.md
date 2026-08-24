@@ -44,8 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **High-Fidelity 3-Color Album Palette Extraction**
   - Upgraded palette extraction using `PaletteGenerator` to extract the true 3 primary colors (dominant, vibrant, deep accent) from album artwork for the fullscreen player ambient mesh background.
 
-- **Web Stream (Online YouTube Music Streaming & Search)**
-  - Stream music directly from YouTube Music without requiring an active Subsonic or Jellyfin server.
+- **Web Stream (Online Music Streaming & Search)**
+  - Stream music directly from the web without requiring an active Subsonic or Jellyfin server.
   - Search global songs, albums, and artists with high-resolution artwork, gapless playback, and synchronized lyrics support.
   - Dynamic local caching in SQLite for fast replay and offline readiness.
   - Generates personalized mixes ("Made For You", "Listen Again", "Your Top Hits") based on web stream listening habits.
@@ -145,7 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced legacy bottom "Use Local Files" button with clean, inline scanning and access card.
 
 - **iOS Platform Guard & App Store Sandbox Compliance**
-  - Completely disabled and concealed Web Stream / YT Stream on iOS across login screens, server switcher sheets, storage profiles, and streaming handlers to strictly comply with iOS guidelines.
+  - Completely disabled and concealed Web Stream on iOS across login screens, server switcher sheets, storage profiles, and streaming handlers to strictly comply with iOS guidelines.
 
 - **Privacy-First Architecture**
   - Completely removed Countly SDK, analytics trackers, and remote telemetry. Musly is 100% private with no background telemetry.
