@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'package:provider/provider.dart';
-import '../../models/connect_device.dart';
-import '../../models/song.dart';
+// import '../../models/connect_device.dart';
+// import '../../models/song.dart';
 import '../../providers/player_provider.dart';
 // import '../../services/beatsync_service.dart';
-import '../../services/musly_connect_service.dart';
+// import '../../services/musly_connect_service.dart';
 import '../../services/cast_service.dart';
 import '../../services/upnp_service.dart';
 // import 'beatsync_party_screen.dart';
@@ -100,12 +100,9 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
         ? Colors.white.withValues(alpha: 0.06)
         : Colors.black.withValues(alpha: 0.06);
 
-    return Consumer3<MuslyConnectService, CastService, UpnpService>(
-      builder: (context, connectService, castService, upnpService, _) {
-        // final compatibleDevices = connectService.getCompatibleDevices();
-        // final partyRooms = connectService.getAvailablePartyRooms();
+    return Consumer2<CastService, UpnpService>(
+      builder: (context, castService, upnpService, _) {
         final player = Provider.of<PlayerProvider>(context, listen: false);
-        final isControlling = connectService.isControllingRemoteDevice;
         // final isInParty = beatSync.isInParty;
 
         return Container(
@@ -195,25 +192,9 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Active Remote Control Status Bar ──────────────────
-                        if (isControlling) ...[
-                          _buildActiveRemoteControlTile(
-                              context, connectService, isDark),
-                          const SizedBox(height: 14),
-                        ],
-
-                        // ── Active Party Banner (BeatSync Disabled) ───────────
-                        // if (isInParty) ...[
-                        //   _buildActivePartyTile(context, beatSync, isDark),
-                        //   const SizedBox(height: 14),
-                        // ],
-
                         // ── Current Device / Output ───────────────────────────
-                        if (!isControlling) ...[
-                          _buildCurrentDeviceTile(
-                              connectService, player, isDark),
-                          const SizedBox(height: 16),
-                        ],
+                        _buildCurrentDeviceTile(player, isDark),
+                        const SizedBox(height: 16),
 
                         // ── Group Session / Party Mode (BeatSync Disabled) ────
                         // if (!isInParty) ...[
@@ -304,7 +285,15 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
   // }
 
   Widget _buildCurrentDeviceTile(
-      MuslyConnectService connect, PlayerProvider player, bool isDark) {
+      PlayerProvider player, bool isDark) {
+    final deviceName = Platform.isWindows
+        ? 'Windows PC'
+        : (Platform.isMacOS
+            ? 'Mac'
+            : (Platform.isLinux
+                ? 'Linux PC'
+                : (Platform.isIOS ? 'iPhone' : 'This Device')));
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -329,7 +318,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  connect.localDeviceName,
+                  deviceName,
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.bold),
                   maxLines: 1,
@@ -354,6 +343,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
+  /*
   Widget _buildActiveRemoteControlTile(
     BuildContext context,
     MuslyConnectService connectService,
@@ -422,6 +412,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
       ),
     );
   }
+  */
 
   /*
   // BeatSync code commented out temporarily

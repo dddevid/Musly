@@ -10,7 +10,6 @@ import 'package:musly/theme/app_theme.dart';
 import 'airplay_button.dart';
 
 import '../../screens/connect/connect_devices_modal.dart';
-import '../../services/musly_connect_service.dart';
 
 class CastButton extends StatelessWidget {
   final Color? iconColor;
@@ -20,11 +19,7 @@ class CastButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muslyConnect = context.watch<MuslyConnectService>();
-    final isMuslyControlling = muslyConnect.isControllingRemoteDevice;
-    final activeMuslyDevice = muslyConnect.activeRemoteDevice;
-
-    if (Platform.isIOS && !isMuslyControlling) {
+    if (Platform.isIOS) {
       return AirPlayButton(
         tintColor: iconColor ?? Colors.white,
         size: iconSize,
@@ -40,11 +35,7 @@ class CastButton extends StatelessWidget {
     final Color color;
     final String tooltip;
 
-    if (isMuslyControlling) {
-      icon = Icons.devices_rounded;
-      color = const Color(0xFF1DB954);
-      tooltip = 'Musly Connect: ${activeMuslyDevice?.name ?? "Connected"}';
-    } else if (castState == CastState.connected) {
+    if (castState == CastState.connected) {
       icon = Icons.cast_connected;
       color = const Color(0xFF1DB954);
       tooltip = 'Cast: Connected';
@@ -56,7 +47,7 @@ class CastButton extends StatelessWidget {
     } else {
       icon = Icons.cast;
       color = iconColor ?? Colors.white;
-      tooltip = 'Connect to a Device (Musly Connect)';
+      tooltip = 'Connect to a Device';
     }
 
     return IconButton(

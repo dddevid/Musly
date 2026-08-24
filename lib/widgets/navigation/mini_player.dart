@@ -15,7 +15,7 @@ import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
-import 'package:musly/services/musly_connect_service.dart';
+// import 'package:musly/services/musly_connect_service.dart';
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onTap;
@@ -302,6 +302,7 @@ class _MiniPlayerRow extends StatelessWidget {
                 if (subtitle != null)
                   Row(
                     children: [
+                      /*
                       Consumer<MuslyConnectService>(
                         builder: (context, connect, _) {
                           if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
@@ -336,6 +337,7 @@ class _MiniPlayerRow extends StatelessWidget {
                           );
                         },
                       ),
+                      */
                       if (isPlayingRadio) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:volume_controller/volume_controller.dart';
 import '../../providers/player_provider.dart';
-import '../../services/musly_connect_service.dart';
+// import '../../services/musly_connect_service.dart';
 
 class VolumeSlider extends StatefulWidget {
   const VolumeSlider({super.key});
@@ -37,7 +37,7 @@ class _VolumeSliderState extends State<VolumeSlider> {
   }
 
   void _onVolumeChanged(double val, PlayerProvider player) {
-    if (MuslyConnectService().isControllingRemoteDevice || player.isRemotePlayback) {
+    if (player.isRemotePlayback) {
       player.setVolume(val);
     } else {
       VolumeController.instance.setVolume(val);
@@ -48,7 +48,7 @@ class _VolumeSliderState extends State<VolumeSlider> {
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
-    final isRemote = MuslyConnectService().isControllingRemoteDevice || player.isRemotePlayback;
+    final isRemote = player.isRemotePlayback;
     final baseVolume = isRemote ? player.volume : _systemVolume;
     final currentVolume = _isDragging ? _dragValue : baseVolume;
 

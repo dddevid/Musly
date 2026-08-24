@@ -1,3 +1,7 @@
+// ── Musly Connect Feature (Temporarily disabled) ──────────────────────────
+// All service code below is commented out.
+
+/*
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -5,10 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/connect_device.dart';
 import '../models/song.dart';
-// import '../services/beatsync_service.dart';
 import '../services/storage_service.dart';
 
-/// Core Service managing zero-config LAN device discovery and remote control.
 class MuslyConnectService extends ChangeNotifier {
   static final MuslyConnectService _instance = MuslyConnectService._internal();
   factory MuslyConnectService() => _instance;
@@ -17,13 +19,11 @@ class MuslyConnectService extends ChangeNotifier {
   static const int _beaconPort = 43882;
   static const int _httpWsPort = 43883;
 
-  // Local Device Identity
   late final String _localDeviceId;
   String _localDeviceName = 'Musly Device';
   ConnectMode _localMode = ConnectMode.webStream;
   String _localServerHash = 'web_stream';
 
-  // State
   bool _isInitialized = false;
   bool _enabled = true;
   final Map<String, ConnectDevice> _peers = {};
@@ -32,14 +32,12 @@ class MuslyConnectService extends ChangeNotifier {
   final List<WebSocket> _connectedClientSockets = [];
   final Map<WebSocket, String> _socketGuestNames = {};
 
-  // Network Sockets & Timers
   RawDatagramSocket? _udpBeaconSocket;
   HttpServer? _httpServer;
   Timer? _beaconBroadcastTimer;
   Timer? _peerCleanupTimer;
   Timer? _statusBroadcastTimer;
 
-  // Remote Control Callbacks
   Function()? onRemotePlay;
   Function()? onRemotePause;
   Function()? onRemoteTogglePlayPause;
@@ -52,7 +50,6 @@ class MuslyConnectService extends ChangeNotifier {
   Function(List<Song> queue, int startIndex, int positionSeconds)? onRemoteTransferQueue;
   Function()? onRemoteRequestState;
 
-  // Getters
   bool get enabled => _enabled;
   String get localDeviceId => _localDeviceId;
   String get localDeviceName => _localDeviceName;
@@ -60,7 +57,6 @@ class MuslyConnectService extends ChangeNotifier {
   ConnectDevice? get activeRemoteDevice => _activeRemoteDevice;
   bool get isControllingRemoteDevice => _activeRemoteDevice != null;
 
-  /// Initialize Musly Connect LAN Discovery and Server.
   Future<void> initialize({
     required String deviceName,
     required ConnectMode mode,
@@ -88,10 +84,8 @@ class MuslyConnectService extends ChangeNotifier {
 
     _isInitialized = true;
     notifyListeners();
-    debugPrint('[MuslyConnect] Initialized with device: $_localDeviceName (enabled=$_enabled)');
   }
 
-  /// Toggles Musly Connect completely on or off and persists setting.
   Future<void> setEnabled(bool enabled) async {
     if (_enabled == enabled) return;
     _enabled = enabled;
@@ -121,13 +115,11 @@ class MuslyConnectService extends ChangeNotifier {
 
       disconnectRemote();
       _peers.clear();
-      debugPrint('[MuslyConnect] Services completely stopped');
     } else {
       await _startHttpAndWebSocketServer();
       await _startUdpBeaconListener();
       _startBeaconBroadcaster();
       _startPeerCleanupTimer();
-      debugPrint('[MuslyConnect] Services restarted');
     }
     notifyListeners();
   }
@@ -143,10 +135,6 @@ class MuslyConnectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Peer Compatibility Filtering
-  // ──────────────────────────────────────────────────────────────────────────
-
   List<ConnectDevice> getCompatibleDevices() {
     if (!_enabled) return [];
     return _peers.values.where((p) {
@@ -154,15 +142,6 @@ class MuslyConnectService extends ChangeNotifier {
       return p.isCompatibleWith(myMode: _localMode, myServerHash: _localServerHash);
     }).toList();
   }
-
-  List<ConnectDevice> getAvailablePartyRooms() {
-    if (!_enabled) return [];
-    return _peers.values.where((p) => p.isPartyHost && p.id != _localDeviceId).toList();
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // UDP Beacon Discovery
-  // ──────────────────────────────────────────────────────────────────────────
 
   Future<void> _startUdpBeaconListener() async {
     try {
@@ -197,7 +176,6 @@ class MuslyConnectService extends ChangeNotifier {
   void _broadcastLocalBeacon() {
     if (_udpBeaconSocket == null) return;
 
-    // final beatSync = BeatSyncService();
     final localDevice = ConnectDevice(
       id: _localDeviceId,
       name: _localDeviceName,
@@ -206,9 +184,9 @@ class MuslyConnectService extends ChangeNotifier {
       port: _httpWsPort,
       mode: _localMode,
       serverHash: _localServerHash,
-      isPartyHost: false, // beatSync.isHost,
-      partyRoomName: null, // beatSync.isHost ? beatSync.partyRoomName : null,
-      partyGuestCount: 0, // beatSync.connectedGuestNames.length,
+      isPartyHost: false,
+      partyRoomName: null,
+      partyGuestCount: 0,
     );
 
     final rawJson = jsonEncode(localDevice.toJson());
@@ -221,7 +199,7 @@ class MuslyConnectService extends ChangeNotifier {
         _beaconPort,
       );
     } catch (e) {
-      // Ignored broadcast send error
+      // Ignored
     }
   }
 
@@ -237,7 +215,7 @@ class MuslyConnectService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {
-      // Ignore malformed beacons
+      // Ignore
     }
   }
 
@@ -261,10 +239,6 @@ class MuslyConnectService extends ChangeNotifier {
       }
     });
   }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Embedded HTTP / WebSocket Server
-  // ──────────────────────────────────────────────────────────────────────────
 
   Future<void> _startHttpAndWebSocketServer() async {
     try {
@@ -292,7 +266,6 @@ class MuslyConnectService extends ChangeNotifier {
   }
 
   void _handleHttpRequest(HttpRequest request) async {
-    // CSRF / DNS Rebinding protection: reject unauthorized web browser origins
     final origin = request.headers.value('origin');
     if (!_isAllowedOrigin(origin)) {
       request.response
@@ -316,7 +289,6 @@ class MuslyConnectService extends ChangeNotifier {
         ..write(jsonEncode({'status': 'ok', 'device': _localDeviceName, 'id': _localDeviceId}))
         ..close();
     } else if (request.uri.path == '/transfer' && request.method == 'POST') {
-      // Anti-DoS: reject oversized bodies (> 512 KB)
       if (request.contentLength > 512 * 1024) {
         request.response
           ..statusCode = HttpStatus.requestEntityTooLarge
@@ -335,7 +307,6 @@ class MuslyConnectService extends ChangeNotifier {
           ..write(jsonEncode({'success': true}))
           ..close();
       } catch (e) {
-        debugPrint('[MuslyConnect] /transfer error: $e');
         request.response
           ..statusCode = HttpStatus.badRequest
           ..write(jsonEncode({'error': e.toString()}))
@@ -363,29 +334,15 @@ class MuslyConnectService extends ChangeNotifier {
       onDone: () {
         _connectedClientSockets.remove(socket);
         _socketGuestNames.remove(socket);
-        /*
-        final guestName = _socketGuestNames.remove(socket);
-        if (guestName != null) {
-          BeatSyncService().removeGuest(guestName);
-        }
-        */
       },
       onError: (_) {
         _connectedClientSockets.remove(socket);
         _socketGuestNames.remove(socket);
-        /*
-        final guestName = _socketGuestNames.remove(socket);
-        if (guestName != null) {
-          BeatSyncService().removeGuest(guestName);
-        }
-        */
       },
     );
   }
 
   void _dispatchIncomingMessage(ConnectMessage message, WebSocket? socket) {
-    // final beatSync = BeatSyncService();
-
     switch (message.type) {
       case ConnectCommandType.play:
         onRemotePlay?.call();
@@ -423,70 +380,8 @@ class MuslyConnectService extends ChangeNotifier {
         final songs = rawSongs.map((s) => Song.fromJson(s as Map<String, dynamic>)).toList();
         final index = message.payload['startIndex'] as int? ?? 0;
         final posSec = message.payload['positionSeconds'] as int? ?? 0;
-        debugPrint('[MuslyConnect] ⇋ Incoming playback transfer: ${songs.length} tracks, index=$index, pos=${posSec}s');
         onRemoteTransferQueue?.call(songs, index, posSec);
         break;
-
-      /*
-      // ── BeatSync [BETA] NTP Protocol (Temporarily disabled) ───────────────
-      case ConnectCommandType.ntpProbe:
-        final t0 = message.payload['t0'] as int;
-        final t1 = DateTime.now().millisecondsSinceEpoch;
-        final t2 = DateTime.now().millisecondsSinceEpoch;
-        final response = ConnectMessage(
-          type: ConnectCommandType.ntpResponse,
-          payload: {'t0': t0, 't1': t1, 't2': t2},
-          senderId: _localDeviceId,
-        );
-        socket?.add(response.serialize());
-        break;
-
-      case ConnectCommandType.ntpResponse:
-        final t3 = DateTime.now().millisecondsSinceEpoch;
-        final t0 = message.payload['t0'] as int;
-        final t1 = message.payload['t1'] as int;
-        final t2 = message.payload['t2'] as int;
-        final measurement = NTPMeasurement.compute(t0: t0, t1: t1, t2: t2, t3: t3);
-        beatSync.recordNtpMeasurement(measurement);
-        break;
-
-      case ConnectCommandType.beatSyncSchedulePlay:
-        final songJson = message.payload['song'] as Map<String, dynamic>;
-        final song = Song.fromJson(songJson);
-        final targetEpochMs = message.payload['targetEpochMs'] as int;
-        final startPosMs = message.payload['startPositionMs'] as int? ?? 0;
-        beatSync.schedulePlay(
-          song: song,
-          targetEpochMs: targetEpochMs,
-          startPositionMs: startPosMs,
-        );
-        break;
-
-      case ConnectCommandType.beatSyncSchedulePause:
-        beatSync.onScheduledPause?.call();
-        break;
-
-      case ConnectCommandType.joinParty:
-        final guestName = message.payload['guestName'] as String? ?? 'Guest';
-        if (socket != null) {
-          _socketGuestNames[socket] = guestName;
-        }
-        beatSync.addGuest(guestName);
-        break;
-
-      case ConnectCommandType.leaveParty:
-        final guestName = message.payload['guestName'] as String? ?? 'Guest';
-        if (socket != null) {
-          _socketGuestNames.remove(socket);
-        }
-        beatSync.removeGuest(guestName);
-        if (message.payload['partyClosed'] == true && beatSync.isGuest) {
-          beatSync.leaveParty();
-          disconnectRemote();
-        }
-        break;
-      */
-
       case ConnectCommandType.stateUpdate:
         final currentSongMap = message.payload['currentSong'] as Map<String, dynamic>?;
         final currentSong = currentSongMap != null ? Song.fromJson(currentSongMap) : null;
@@ -518,29 +413,27 @@ class MuslyConnectService extends ChangeNotifier {
           notifyListeners();
         }
         break;
-
       case ConnectCommandType.requestState:
         onRemoteRequestState?.call();
         break;
-
       default:
         break;
     }
   }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Remote Controller Client
-  // ──────────────────────────────────────────────────────────────────────────
 
   Future<bool> connectToRemoteDevice(ConnectDevice device) async {
     disconnectRemote();
 
     try {
       final wsUri = 'ws://${device.ip}:${device.port}/ws';
-      _remoteWsClient = await WebSocket.connect(wsUri).timeout(const Duration(seconds: 4));
-      _activeRemoteDevice = device;
+      _remoteWsClient = await WebSocket.connect(wsUri).timeout(
+        const Duration(seconds: 4),
+      );
 
-      _remoteWsClient?.listen(
+      _activeRemoteDevice = device;
+      notifyListeners();
+
+      _remoteWsClient!.listen(
         (data) {
           if (data is String) {
             final message = ConnectMessage.deserialize(data);
@@ -553,13 +446,10 @@ class MuslyConnectService extends ChangeNotifier {
         onError: (_) => disconnectRemote(),
       );
 
-      // Request initial playback state from remote device
       sendCommand(ConnectCommandType.requestState);
-
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('[MuslyConnect] Failed to connect to ${device.name}: $e');
       disconnectRemote();
       return false;
     }
@@ -570,36 +460,6 @@ class MuslyConnectService extends ChangeNotifier {
     _remoteWsClient = null;
     _activeRemoteDevice = null;
     notifyListeners();
-  }
-
-  /// Guest leaves the active party room and notifies the host.
-  void leavePartySession() {
-    if (_remoteWsClient != null && _remoteWsClient!.readyState == WebSocket.open) {
-      try {
-        sendCommand(ConnectCommandType.leaveParty, {'guestName': _localDeviceName});
-      } catch (_) {}
-    }
-    disconnectRemote();
-    // BeatSyncService().leaveParty();
-  }
-
-  /// Host ends the party room and notifies all connected guests.
-  void endPartySession() {
-    final message = ConnectMessage(
-      type: ConnectCommandType.leaveParty,
-      payload: {'partyClosed': true, 'guestName': _localDeviceName},
-      senderId: _localDeviceId,
-    );
-    final raw = message.serialize();
-    for (final s in _connectedClientSockets) {
-      if (s.readyState == WebSocket.open) {
-        try {
-          s.add(raw);
-        } catch (_) {}
-      }
-    }
-    _socketGuestNames.clear();
-    // BeatSyncService().leaveParty();
   }
 
   void sendCommand(ConnectCommandType type, [Map<String, dynamic>? payload]) {
@@ -614,7 +474,6 @@ class MuslyConnectService extends ChangeNotifier {
     _remoteWsClient?.add(message.serialize());
   }
 
-  /// Sends a playback transfer payload to migrate active playback seamlessly.
   Future<bool> transferPlaybackToRemote(
     List<Song> queue,
     int startIndex,
@@ -629,13 +488,11 @@ class MuslyConnectService extends ChangeNotifier {
 
     bool delivered = false;
 
-    // 1. WebSocket Delivery
     if (_remoteWsClient != null && _remoteWsClient!.readyState == WebSocket.open) {
       sendCommand(ConnectCommandType.transferQueue, payload);
       delivered = true;
     }
 
-    // 2. HTTP POST Fallback Delivery
     final target = targetDevice ?? _activeRemoteDevice;
     if (target != null) {
       try {
@@ -662,7 +519,6 @@ class MuslyConnectService extends ChangeNotifier {
     return delivered;
   }
 
-  /// Broadcasts the local player state to all connected controller clients.
   void broadcastLocalState({
     required Song? currentSong,
     required bool isPlaying,
@@ -701,55 +557,6 @@ class MuslyConnectService extends ChangeNotifier {
     }
   }
 
-  /*
-  // ── BeatSync Broadcast Helper (Host -> All Guests) ──────────────────────────
-  void broadcastBeatSyncSchedulePlay(Song song, int targetEpochMs, int startPositionMs) {
-    final message = ConnectMessage(
-      type: ConnectCommandType.beatSyncSchedulePlay,
-      payload: {
-        'song': song.toJson(),
-        'targetEpochMs': targetEpochMs,
-        'startPositionMs': startPositionMs,
-      },
-      senderId: _localDeviceId,
-    );
-
-    final raw = message.serialize();
-    for (final socket in _connectedClientSockets) {
-      if (socket.readyState == WebSocket.open) {
-        socket.add(raw);
-      }
-    }
-  }
-
-  void broadcastBeatSyncSchedulePause() {
-    final message = ConnectMessage(
-      type: ConnectCommandType.beatSyncSchedulePause,
-      payload: {},
-      senderId: _localDeviceId,
-    );
-    final raw = message.serialize();
-    for (final socket in _connectedClientSockets) {
-      if (socket.readyState == WebSocket.open) {
-        socket.add(raw);
-      }
-    }
-  }
-
-  /// Sends NTP probe to Host WebSocket.
-  void sendNtpProbeToHost() {
-    if (_remoteWsClient == null || _remoteWsClient!.readyState != WebSocket.open) return;
-
-    final message = ConnectMessage(
-      type: ConnectCommandType.ntpProbe,
-      payload: {'t0': DateTime.now().millisecondsSinceEpoch},
-      senderId: _localDeviceId,
-    );
-
-    _remoteWsClient?.add(message.serialize());
-  }
-  */
-
   String _getPlatformName() {
     if (Platform.isAndroid) return 'android';
     if (Platform.isIOS) return 'ios';
@@ -757,6 +564,21 @@ class MuslyConnectService extends ChangeNotifier {
     if (Platform.isMacOS) return 'macos';
     if (Platform.isLinux) return 'linux';
     return 'mobile';
+  }
+
+  Future<void> stop() async {
+    _beaconBroadcastTimer?.cancel();
+    _peerCleanupTimer?.cancel();
+    _statusBroadcastTimer?.cancel();
+    _udpBeaconSocket?.close();
+    _udpBeaconSocket = null;
+    await _httpServer?.close(force: true);
+    _httpServer = null;
+    disconnectRemote();
+    for (final s in _connectedClientSockets) {
+      s.close();
+    }
+    _connectedClientSockets.clear();
   }
 
   @override
@@ -773,3 +595,4 @@ class MuslyConnectService extends ChangeNotifier {
     super.dispose();
   }
 }
+*/

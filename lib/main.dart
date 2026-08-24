@@ -18,10 +18,10 @@ import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
-import 'services/musly_connect_service.dart';
+// import 'services/musly_connect_service.dart';
 // import 'services/beatsync_service.dart';
 import 'services/tv_detection_service.dart';
-import 'models/connect_device.dart';
+// import 'models/connect_device.dart';
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
 import 'package:musly/widgets/dialogs/milestone_celebration_dialog.dart';
 import 'widgets/navigation/tv_remote_scope.dart';
@@ -271,9 +271,10 @@ void main() async {
   final libraryProvider = LibraryProvider(subsonicService, audioHandler);
   playerProvider.setLibraryProvider(libraryProvider);
 
-  final muslyConnectService = MuslyConnectService();
+  // final muslyConnectService = MuslyConnectService();
   // final beatSyncService = BeatSyncService();
 
+  /*
   // Wire Musly Connect remote execution callbacks
   muslyConnectService.onRemotePlay = () => playerProvider.play();
   muslyConnectService.onRemotePause = () => playerProvider.pause();
@@ -309,6 +310,7 @@ void main() async {
       currentIndex: playerProvider.currentIndex,
     );
   };
+  */
 
   /*
   // Wire BeatSync [BETA] scheduled playback callbacks (Temporarily disabled)
@@ -337,6 +339,7 @@ void main() async {
   final tvDetectionService = TvDetectionService();
   await tvDetectionService.initialize();
 
+  /*
   // Initialize Musly Connect LAN discovery
   final deviceName = Platform.isWindows
       ? 'Windows PC'
@@ -354,6 +357,7 @@ void main() async {
   ).catchError((e) {
     debugPrint('MuslyConnect initialization error: $e');
   });
+  */
 
   final Widget appWithProviders = MultiProvider(
     providers: [
@@ -372,7 +376,7 @@ void main() async {
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
-      ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
+      // ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
       // ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
       ChangeNotifierProvider<TvDetectionService>.value(value: tvDetectionService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),

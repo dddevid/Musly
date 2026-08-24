@@ -9,7 +9,7 @@ import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/connect/connect_devices_modal.dart';
-import 'package:musly/services/musly_connect_service.dart';
+// import 'package:musly/services/musly_connect_service.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -228,6 +228,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      /*
                       Consumer<MuslyConnectService>(
                         builder: (context, connect, _) {
                           if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
@@ -251,6 +252,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                           );
                         },
                       ),
+                      */
                       const SizedBox(height: 2),
                       if (currentSong.artist != null || currentSong.artistParticipants != null)
                         MultiArtistWidget(
@@ -311,29 +313,14 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Consumer<MuslyConnectService>(
-                  builder: (context, connectService, _) {
-                    if (!connectService.enabled) return const SizedBox.shrink();
-                    final isControlling = connectService.isControllingRemoteDevice;
-
-                    final iconColor = isControlling
-                        ? const Color(0xFF1DB954)
-                        : (isDark
-                            ? const Color(0xFFB3B3B3)
-                            : const Color(0xFF6B6B6B));
-
-                    return IconButton(
-                      icon: Icon(
-                        isControlling ? Icons.devices_rounded : Icons.devices_other_rounded,
-                        size: 20,
-                        color: iconColor,
-                      ),
-                      tooltip: isControlling
-                          ? 'Connected: ${connectService.activeRemoteDevice?.name}'
-                          : 'Connect to a Device',
-                      onPressed: () => ConnectDevicesModal.show(context),
-                    );
-                  },
+                IconButton(
+                  icon: Icon(
+                    Icons.devices_other_rounded,
+                    size: 20,
+                    color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B),
+                  ),
+                  tooltip: 'Connect to a Device',
+                  onPressed: () => ConnectDevicesModal.show(context),
                 ),
                 const SizedBox(width: 4),
                 ValueListenableBuilder<bool>(

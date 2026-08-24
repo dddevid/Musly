@@ -30,7 +30,7 @@ import '../services/fade_settings_service.dart';
 import '../services/crossfade_service.dart';
 
 import '../services/transcoding_service.dart';
-import '../services/musly_connect_service.dart';
+// import '../services/musly_connect_service.dart';
 import '../providers/library_provider.dart';
 
 enum RepeatMode { off, all, one }
@@ -155,7 +155,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _upnpService.addListener(_onUpnpStateChanged);
     _upnpService.onRendererLost = _onUpnpRendererLost;
     _jukeboxService.addListener(_onJukeboxEnabledChanged);
-    MuslyConnectService().addListener(_onMuslyConnectStateChanged);
+    // MuslyConnectService().addListener(_onMuslyConnectStateChanged);
     _initializePlayer();
     _onJukeboxEnabledChanged();
     try {
@@ -978,7 +978,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     // While rendering on a remote target the local just_audio player is
     // paused, so push the real playback state to the media session manually.
-    if (_isRenderingRemotely || _jukeboxService.enabled || MuslyConnectService().isControllingRemoteDevice) {
+    if (_isRenderingRemotely || _jukeboxService.enabled) {
       _audioHandler.updateRemotePlaybackState(
         playing: _isPlaying,
         position: _position,
@@ -1007,6 +1007,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
     _updateDiscordRpc();
 
+    /*
     MuslyConnectService().broadcastLocalState(
       currentSong: _currentSong,
       isPlaying: _isPlaying,
@@ -1017,6 +1018,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       repeatModeIndex: _repeatMode.index,
       currentIndex: _currentIndex,
     );
+    */
   }
 
   List<Song> get queue => _queue;
@@ -1024,9 +1026,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool get isPlaying => _isPlaying;
   bool get isLoading => _isLoading;
 
-  /// True when audio is playing on a remote renderer (UPnP, Cast, or Musly Connect).
-  bool get isRemotePlayback =>
-      _isRenderingRemotely || MuslyConnectService().isControllingRemoteDevice;
+  /// True when audio is playing on a remote renderer (UPnP, Cast).
+  bool get isRemotePlayback => _isRenderingRemotely;
   bool get shuffleEnabled => _shuffleEnabled;
   bool get gaplessEnabled => _gaplessEnabled;
   RepeatMode get repeatMode => _repeatMode;
@@ -2027,12 +2028,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> play() async {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _isPlaying = true;
       notifyListeners();
       MuslyConnectService().sendCommand(ConnectCommandType.play);
       return;
     }
+    */
     if (_jukeboxService.enabled) {
       _isPlaying = true;
       notifyListeners();
@@ -2082,12 +2085,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> pause() async {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _isPlaying = false;
       notifyListeners();
       MuslyConnectService().sendCommand(ConnectCommandType.pause);
       return;
     }
+    */
     if (_jukeboxService.enabled) {
       _isPlaying = false;
       notifyListeners();
@@ -2141,6 +2146,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  /*
   Timer? _muslyConnectPositionTimer;
 
   void _onMuslyConnectStateChanged() {
@@ -2211,6 +2217,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       });
     }
   }
+  */
 
   Future<void> stop() async {
     if (_castService.isConnected) {
@@ -2310,10 +2317,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
 
   Future<void> togglePlayPause() async {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(ConnectCommandType.togglePlayPause);
       return;
     }
+    */
     if (_isPlaying) {
       await pause();
     } else {
@@ -2324,10 +2333,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> seek(Duration position) async {
     _position = position;
     notifyListeners();
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(ConnectCommandType.seek, {'seconds': position.inSeconds});
       return;
     }
+    */
     if (_jukeboxService.enabled) {
       // Jukebox doesn't support seek by position; ignore.
       return;
@@ -2349,10 +2360,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipNext() async {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(ConnectCommandType.next);
       return;
     }
+    */
     if (_currentSong != null && _recommendationService != null) {
       final played = _position.inSeconds;
       final total = _duration.inSeconds;
@@ -2459,10 +2472,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipPrevious() async {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(ConnectCommandType.previous);
       return;
     }
+    */
     if (_jukeboxService.enabled) {
       await _jukeboxService.skipPrevious(_subsonicService);
       return;
@@ -2520,6 +2535,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void toggleShuffle({bool? forceValue}) {
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _shuffleEnabled = forceValue ?? !_shuffleEnabled;
       MuslyConnectService().sendCommand(
@@ -2529,6 +2545,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       return;
     }
+    */
 
     _shuffleEnabled = forceValue ?? !_shuffleEnabled;
     _shuffleHistory.clear();
@@ -2570,12 +2587,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         break;
     }
     _storageService.saveRepeatMode(_repeatMode.index);
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(
         ConnectCommandType.setRepeatMode,
         {'repeatMode': _repeatMode.index},
       );
     }
+    */
     notifyListeners();
     _updateAllServices();
   }
@@ -2586,6 +2605,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       RepeatMode.all => RepeatMode.one,
       RepeatMode.one => RepeatMode.off,
     };
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       _repeatMode = nextMode;
       MuslyConnectService().sendCommand(
@@ -2595,6 +2615,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       return;
     }
+    */
     setRepeatMode(nextMode);
   }
 
@@ -2772,9 +2793,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     _volume = clamped;
     await _storageService.saveVolume(_volume);
+    /*
     if (MuslyConnectService().isControllingRemoteDevice) {
       MuslyConnectService().sendCommand(ConnectCommandType.setVolume, {'volume': _volume});
     }
+    */
     if (_castService.isConnected) {
       await _castService.setVolume(_volume);
     } else if (_upnpService.isConnected) {
@@ -3173,8 +3196,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _persistDebounceTimer?.cancel();
     _jukeboxPollTimer?.cancel();
     _jukeboxService.removeListener(_onJukeboxEnabledChanged);
-    _muslyConnectPositionTimer?.cancel();
-    MuslyConnectService().removeListener(_onMuslyConnectStateChanged);
+    // _muslyConnectPositionTimer?.cancel();
+    // MuslyConnectService().removeListener(_onMuslyConnectStateChanged);
     _windowsPositionTimer?.cancel();
     _castService.removeListener(_onCastStateChanged);
     _upnpService.removeListener(_onUpnpStateChanged);
