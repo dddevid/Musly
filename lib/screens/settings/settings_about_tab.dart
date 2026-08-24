@@ -127,8 +127,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 icon: CupertinoIcons.gift_fill,
                 iconColor: const Color(0xFFFA243C),
                 title: kDebugMode && !WrappedService.isWrappedSeason()
-                    ? 'Musly Wrapped (Dev Preview)'
-                    : 'Musly Wrapped',
+                    ? 'Musly Playback (Dev Preview)'
+                    : 'Musly Playback',
                 subtitle: kDebugMode && !WrappedService.isWrappedSeason()
                     ? 'Developer test preview of Year-in-Review'
                     : 'Your annual Year in Review and listening insights',
@@ -235,7 +235,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${8 - _versionTapCount} taps away from Developer Wrapped Preview'),
+          content: Text('${8 - _versionTapCount} taps away from Developer Playback Preview'),
           duration: const Duration(milliseconds: 700),
           behavior: SnackBarBehavior.floating,
         ),
@@ -249,7 +249,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
             children: [
               Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
               SizedBox(width: 8),
-              Text('Developer Wrapped Preview unlocked!'),
+              Text('Developer Playback Preview unlocked!'),
             ],
           ),
           backgroundColor: const Color(0xFFFA243C),

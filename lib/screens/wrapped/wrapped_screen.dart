@@ -251,7 +251,7 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                'Unwrapping your ${WrappedService.getWrappedYear()}...',
+                'Preparazione di Musly Playback ${WrappedService.getWrappedYear()}...',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -369,13 +369,13 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 28),
               const Text(
-                'Musly Wrapped is Seasonal',
+                'Musly Playback è Stagionale',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               const Text(
-                'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to build up your sonic universe!',
+                'Il tuo Year-in-Review annuale si sblocca automaticamente ogni anno tra fine novembre e metà gennaio.\n\nContinua ad ascoltare musica per espandere il tuo universo sonoro!',
                 style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
                 textAlign: TextAlign.center,
               ),
@@ -389,7 +389,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                   );
                 },
                 icon: const Icon(CupertinoIcons.sparkles),
-                label: const Text('Preview Wrapped (Test Mode)'),
+                label: const Text('Anteprima Playback (Modalità Test)'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFFA243C),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
@@ -513,7 +513,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                         const Icon(CupertinoIcons.sparkles, color: Color(0xFFFA243C), size: 13),
                         const SizedBox(width: 5),
                         Text(
-                          'WRAPPED ${_data!.year}',
+                          'PLAYBACK ${_data!.year}',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
@@ -1221,7 +1221,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'MUSLY WRAPPED',
+                    'MUSLY PLAYBACK',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.8, color: Color(0xFFFA243C)),
                   ),
                   Text('${_data!.year}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70)),

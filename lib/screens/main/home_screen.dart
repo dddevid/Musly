@@ -671,7 +671,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '#MuslyWrapped $year',
+                        '#MuslyPlayback $year',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
