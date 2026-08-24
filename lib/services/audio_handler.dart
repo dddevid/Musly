@@ -35,7 +35,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   // keep the defaults (audio_session drives Control Center/lock-screen
   // interruptions there).
   final AudioPlayer _player = AudioPlayer(
-    handleAudioSessionActivation: true,
+    handleAudioSessionActivation: false,
     handleInterruptions: false,
   );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');

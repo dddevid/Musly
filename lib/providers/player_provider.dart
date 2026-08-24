@@ -1494,18 +1494,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Android to avoid two systems fighting over the same responsibility).
   bool _wasPlayingBeforeInterruption = false;
   bool _isManuallyPaused = false;
+  int _fadeGeneration = 0;
 
-  Future<void> _fadeOutAndPause({Duration duration = const Duration(milliseconds: 350)}) async {
-    if (_isFading) return;
-    _isFading = true;
+  Future<void> _fadeOutAndPause({Duration duration = const Duration(milliseconds: 300)}) async {
+    final gen = ++_fadeGeneration;
     try {
-      final currentVol = _audioPlayer.volume;
-      const steps = 8;
+      final currentVol = _audioPlayer.volume > 0 ? _audioPlayer.volume : _volume;
+      const steps = 6;
       final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
       for (int i = steps - 1; i >= 0; i--) {
+        if (_fadeGeneration != gen) return;
         await _audioPlayer.setVolume((currentVol * (i / steps)).clamp(0.0, 1.0));
         await Future.delayed(stepDelay);
       }
+      if (_fadeGeneration != gen) return;
       await _audioPlayer.pause();
       _isPlaying = false;
       notifyListeners();
@@ -1515,24 +1517,23 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _audioPlayer.pause();
       _isPlaying = false;
       notifyListeners();
-    } finally {
-      _isFading = false;
     }
   }
 
-  Future<void> _fadeInAndResume({Duration duration = const Duration(milliseconds: 400)}) async {
-    if (_isFading || _currentSong == null) return;
-    _isFading = true;
+  Future<void> _fadeInAndResume({Duration duration = const Duration(milliseconds: 350)}) async {
+    if (_currentSong == null) return;
+    final gen = ++_fadeGeneration;
     try {
-      final targetVol = _volume;
+      final targetVol = _volume > 0 ? _volume : 1.0;
       await _audioPlayer.setVolume(0.0);
       await _audioPlayer.play();
       _isPlaying = true;
       notifyListeners();
       _updateAndroidAuto();
-      const steps = 10;
+      const steps = 8;
       final stepDelay = Duration(milliseconds: (duration.inMilliseconds / steps).round());
       for (int i = 1; i <= steps; i++) {
+        if (_fadeGeneration != gen) return;
         await _audioPlayer.setVolume((targetVol * (i / steps)).clamp(0.0, 1.0));
         await Future.delayed(stepDelay);
       }
@@ -1540,8 +1541,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _audioPlayer.play();
       _isPlaying = true;
       notifyListeners();
-    } finally {
-      _isFading = false;
     }
   }
 
