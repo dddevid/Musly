@@ -326,17 +326,23 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         final title = currentSong?.title ?? widget.title;
         final artist = currentSong?.artist ?? widget.artist;
         final isStarred = currentSong?.starred ?? false;
+        final screenHeight = MediaQuery.of(context).size.height;
+        final isSmall = screenHeight < 720;
+        final isVerySmall = screenHeight < 620;
 
         return SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 56), // Space for header
+              SizedBox(height: isSmall ? 40 : 56), // Space for header
               
               // Album Art with horizontal swipe navigation (Issue #201)
               Expanded(
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmall ? 40.0 : 36.0,
+                      vertical: isVerySmall ? 2.0 : (isSmall ? 6.0 : 12.0),
+                    ),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onHorizontalDragEnd: (details) {
@@ -391,8 +397,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           );
                         },
                         child: Container(
-                          margin: const EdgeInsets.fromLTRB(32.0, 0, 32.0, 4.0),
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          margin: EdgeInsets.fromLTRB(32.0, 0, 32.0, isSmall ? 2.0 : 4.0),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSmall ? 12.0 : 16.0,
+                            vertical: isSmall ? 5.0 : 8.0,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.35),
                             borderRadius: BorderRadius.circular(20),
@@ -406,7 +415,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             children: [
                               Icon(
                                 Icons.music_note_rounded,
-                                size: 16,
+                                size: isSmall ? 14 : 16,
                                 color: accentColor.withValues(alpha: 0.9),
                               ),
                               const SizedBox(width: 8),
@@ -417,7 +426,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: isSmall ? 13 : 14,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white.withValues(alpha: 0.95),
                                     letterSpacing: -0.2,
@@ -435,7 +444,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           
           // Title & Artist
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: isVerySmall ? 4.0 : (isSmall ? 8.0 : 24.0),
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -444,20 +456,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     children: [
                       MarqueeText(
                         text: title,
-                        style: const TextStyle(
-                          fontSize: 24,
+                        style: TextStyle(
+                          fontSize: isSmall ? 20 : 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: isSmall ? 2 : 4),
                       MultiArtistWidget(
                         artists: currentSong?.artistParticipants,
                         artistFallback: artist,
                         artistIdFallback: currentSong?.artistId,
                         onBeforeNavigate: () => Navigator.pop(context),
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: isSmall ? 15 : 18,
                           color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
@@ -505,7 +517,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: isSmall ? 8 : 16),
 
           // Controls
           Padding(
@@ -523,7 +535,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: isVerySmall ? 4 : (isSmall ? 8 : 24)),
 
           // Volume Slider (Issue #200)
           ValueListenableBuilder<bool>(
@@ -558,7 +570,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             },
           ),
           
-          const SizedBox(height: 16),
+          SizedBox(height: isSmall ? 6 : 16),
         ],
       ),
     );

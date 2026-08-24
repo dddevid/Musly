@@ -540,114 +540,121 @@ class _WrappedScreenState extends State<WrappedScreen>
   }
 
   Widget _buildSuspenseCountdownSlide() {
-    return AnimatedBuilder(
-      animation: _suspenseController,
-      builder: (context, _) {
-        final scale = 1.0 + (_suspenseController.value * 0.18);
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: AnimatedBuilder(
+          animation: _suspenseController,
+          builder: (context, _) {
+            final scale = 1.0 + (_suspenseController.value * 0.18);
 
-        return Column(
-          key: const ValueKey('suspense'),
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF0844).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
-                  SizedBox(width: 7),
-                  Text(
-                    'RULLO DI TAMBURI...',
-                    style: TextStyle(
-                      color: Color(0xFFFF0844),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                      letterSpacing: 1.2,
-                    ),
+            return Column(
+              key: const ValueKey('suspense'),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF0844).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 36),
-            const Text(
-              'Pronto a scoprire\nil tuo brano #1?',
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                height: 1.15,
-                letterSpacing: -0.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 48),
-            Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const RadialGradient(
-                    colors: [Color(0xFFFF0844), Color(0xFFFFB199)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF0844).withValues(alpha: 0.6),
-                      blurRadius: 40 * scale,
-                      spreadRadius: 8 * scale,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    '$_suspenseCountdown',
-                    style: const TextStyle(
-                      fontSize: 58,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
+                      SizedBox(width: 7),
+                      Text(
+                        'RULLO DI TAMBURI...',
+                        style: TextStyle(
+                          color: Color(0xFFFF0844),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 48),
-            const Text(
-              'Preparati al drop sonoro...',
-              style: TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
-            ),
-          ],
-        );
-      },
+                const SizedBox(height: 36),
+                const Text(
+                  'Pronto a scoprire\nil tuo brano #1?',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1.15,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [Color(0xFFFF0844), Color(0xFFFFB199)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF0844).withValues(alpha: 0.6),
+                          blurRadius: 40 * scale,
+                          spreadRadius: 8 * scale,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$_suspenseCountdown',
+                        style: const TextStyle(
+                          fontSize: 58,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                const Text(
+                  'Preparati al drop sonoro...',
+                  style: TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
   Widget _buildSlideContent(int index) {
-    switch (index) {
-      case 0:
-        return _buildIntroSlide();
-      case 1:
-        return _buildMinutesSlide();
-      case 2:
-        return _buildChronotypeSlide();
-      case 3:
-        return _buildGenreGalaxySlide();
-      case 4:
-        return _buildTopSongsSlide();
-      case 5:
-        return _buildTopArtistsSlide();
-      case 6:
-        return _buildPersonalitySlide();
-      case 7:
-        return _buildSummaryCardSlide();
-      default:
-        return const SizedBox.shrink();
+    final Widget content = switch (index) {
+      0 => _buildIntroSlide(),
+      1 => _buildMinutesSlide(),
+      2 => _buildChronotypeSlide(),
+      3 => _buildGenreGalaxySlide(),
+      4 => _buildTopSongsSlide(),
+      5 => _buildTopArtistsSlide(),
+      6 => _buildPersonalitySlide(),
+      7 => _buildSummaryCardSlide(),
+      _ => const SizedBox.shrink(),
+    };
+
+    if (index == 3 || index == 4 || index == 5) {
+      return content;
     }
+
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: content,
+      ),
+    );
   }
 
   // ── Slide 0: Intro / Overture ─────────────────────────────────────────────
