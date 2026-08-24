@@ -1585,6 +1585,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   VoidCallback? onAudioFocusDenied;
 
   Future<void> _ensureAudioFocus(Future<void> Function() onGranted) async {
+    if (!kIsWeb) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e) {
+        debugPrint('[Player] setActive error: $e');
+      }
+    }
     await onGranted();
   }
 

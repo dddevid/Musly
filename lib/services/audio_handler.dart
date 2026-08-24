@@ -34,11 +34,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   // conflicting pause() on interruption/headphone-unplug. iOS/desktop/web
   // keep the defaults (audio_session drives Control Center/lock-screen
   // interruptions there).
-  static bool get _ownsFocusNatively => !kIsWeb && Platform.isAndroid;
-
   final AudioPlayer _player = AudioPlayer(
-    handleAudioSessionActivation: !_ownsFocusNatively,
-    handleInterruptions: !_ownsFocusNatively,
+    handleAudioSessionActivation: true,
+    handleInterruptions: false,
   );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
 
