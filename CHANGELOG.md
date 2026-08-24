@@ -26,17 +26,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Smart Track Crossfade & Transitions**
   - Configurable 0s to 12s seamless crossfade in Playback Settings with automated volume attenuation curves between tracks.
 
-- **Musly Wrapped (Year-in-Review Retrospective)**
+- **Musly Playback (Year-in-Review Retrospective)**
   - 100% on-device, private interactive retrospective story with animated ambient auras.
-  - Automatically unlocks during the seasonal window (late November to mid-January) with a prominent hero banner on the Home feed.
+  - Automatically unlocks during the seasonal window (late November to mid-January) with a prominent `#MuslyPlayback` hero banner on the Home feed.
   - Insights include: total minutes listened, top 5 songs, top 5 artists, musical personality trait, top genre, aesthetic recap card, and one-tap "Play Your Top Songs" button.
   - Developer/tester preview toggle in Settings > About.
+
+- **Smart Audio Focus & Auto-Resume with Fade Out**
+  - Smooth volume fade-out (~350ms) and auto-pause when external media apps request audio focus (e.g. YouTube, Instagram, TikTok video playback).
+  - Progressive volume fade-in and auto-resume when leaving external apps or navigating to silent sections (e.g. TikTok inbox), with full manual control support.
+
+- **High-Fidelity 3-Color Album Palette Extraction**
+  - Upgraded palette extraction using `PaletteGenerator` to extract the true 3 primary colors (dominant, vibrant, deep accent) from album artwork for the fullscreen player ambient mesh background.
 
 - **Smart Recommendations & Taste-Learning Engine (YT Stream & Home)**
   - Algorithmic music taste profiling learning from play counts, ratings, skips, and completion rates with exponential recency decay.
   - Dynamically generated mixes: "Made For You", "Listen Again", "Your Top Hits", Artist Mixes, and Genre Mixes.
   - Intelligent discovery search querying correlated songs based on user affinities.
   - Full local SQLite persistence for YT Stream caching and smart recommendation candidate pools.
+
+- **Custom Download Folder & SD Card Storage (#193)**
+  - Select custom storage directories (internal memory or external SD cards) for offline music downloads from Storage Settings.
 
 - **Automatic Octo-Fiesta Integration (#216)**
   - Seamless auto-detection and support for Octo-Fiesta extensions inside Subsonic and Jellyfin servers without creating separate source profiles.
@@ -52,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dual WAN / LAN Server Support (#187)**
   - Configure separate Local LAN and Remote WAN server URLs with automatic ping latency check and seamless fallback.
 
-- **Multi-Server Profiles (#185)**
+- **Multi-Server Profiles (#185, #196)**
   - Store and switch between multiple Subsonic / Jellyfin server accounts and credentials without overwriting previous profiles.
 
 - **Windows System Media Transport Controls (SMTC)**
@@ -96,8 +106,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hidden mobile-only "Circular Design" toggle on desktop platforms.
 
 - **Audio Playback & Scrobbling Quality of Life**
+  - **Now Playing Gesture Conflict Fix (#201)**: Restricted horizontal swipe-to-skip strictly to album art, avoiding accidental skips during Android edge-back navigation.
+  - **Volume Slider Customization (#200)**: Configurable setting to show or hide the volume slider on the Now Playing screen.
+  - **Long Press Consistency (#192)**: Long pressing playlist tracks consistently opens song options menu.
   - **Scrobble on Shuffle (#207)**: Only scrobbles to server after passing the minimum threshold (50% or 4 minutes) to prevent false scrobbles on skip.
   - **Now Playing Notification (#210)**: Sends "Now Playing" status to server on gapless automatic track advance.
+  - **Transcoding Settings & URL Parameters (#198, #194)**: Added dedicated options for WiFi vs Mobile streaming and verified `format` / `maxBitRate` stream parameters.
   - Immediate play/pause UI icon synchronization with safe audio fade transitions.
   - Rounded corners and dynamic ambient shadow support for non-1:1 aspect ratio artwork (#206).
   - Sort bottom sheet padding adjusted to remain fully visible above the mini player (#230).
@@ -122,6 +136,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Excessive Cover Art Requests (#199)**: Normalized cover art `cacheKey` in `AlbumArtwork` and disk cache to eliminate redundant duplicate network requests across sessions.
+- **Local Music Library Scan UI Freezes (#195)**: Added asynchronous batch micro-yielding and robust error recovery to eliminate UI isolate freezes and Android ANR errors during large local music folder scans.
+- **Mini-Player Navigation Visibility (#197)**: Modal bottom sheet now closes before navigating to artists from Now Playing, preserving mini-player visibility.
+- **Emby & Jellyfin Library Selection (#188)**: Added `ParentId` and view filtering to prevent audiobooks and non-music collections from mixing with music library.
+- **Android TV Remote Navigation (#183)**: Fixed D-Pad focus traversal and dedicated Android TV interface layout.
 - **Interactive Login Error Reporting**: Fixed an issue where failed login attempts would reset the screen without displaying the error, now keeping the form mounted and showing categorized diagnostic cards with troubleshooting hints.
 - **Desktop Onboarding Navigation**: Fixed `PageController` assertions on desktop and added full keyboard navigation shortcuts (`Arrow keys`, `Space`, `Enter`, `Escape`).
 - **mTLS Crash on Connect (#218)**: Handled mutual TLS handshake exceptions gracefully without crashing.
