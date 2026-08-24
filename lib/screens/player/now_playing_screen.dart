@@ -81,10 +81,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     if (_lastSong == null) return;
     final subsonic = Provider.of<SubsonicService>(context, listen: false);
     final coverUrl = _lastSong!.coverArt != null ? subsonic.getCoverArtUrl(_lastSong!.coverArt, size: 600) : null;
-    if (coverUrl != null) {
+    if (coverUrl != null && coverUrl.isNotEmpty) {
       _currentImageProvider = CachedNetworkImageProvider(coverUrl);
     } else {
-      _currentImageProvider = const AssetImage('assets/default_cover.png');
+      _currentImageProvider = const AssetImage('assets/logo.png');
     }
     _extractColors();
   }

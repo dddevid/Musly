@@ -8,9 +8,22 @@ import 'package:musly/services/offline_service.dart';
 
 bool isLocalFilePath(String? s) {
   if (s == null || s.isEmpty) return false;
-  if (s.startsWith('/')) return true;
-  if (s.length > 2 && s[1] == ':') return true;
-  return false;
+  final isPath = s.startsWith('/') || (s.length > 2 && s[1] == ':');
+  if (!isPath) return false;
+  final lower = s.toLowerCase();
+  final isImageExt = lower.endsWith('.jpg') ||
+      lower.endsWith('.jpeg') ||
+      lower.endsWith('.png') ||
+      lower.endsWith('.webp') ||
+      lower.endsWith('.bmp') ||
+      lower.endsWith('.gif');
+  if (!isImageExt) return false;
+  try {
+    final f = File(s);
+    return f.existsSync() && f.lengthSync() > 0;
+  } catch (_) {
+    return false;
+  }
 }
 
 class ImageUrlCache {

@@ -42,9 +42,9 @@ class MiniPlayer extends StatelessWidget {
           if (currentSong != null) {
             final subsonic = Provider.of<SubsonicService>(context, listen: false);
             final coverUrl = currentSong.coverArt != null ? subsonic.getCoverArtUrl(currentSong.coverArt, size: 600) : null;
-            final imageProvider = coverUrl != null 
+            final imageProvider = (coverUrl != null && coverUrl.isNotEmpty)
                 ? CachedNetworkImageProvider(coverUrl) as ImageProvider
-                : const AssetImage('assets/default_cover.png') as ImageProvider;
+                : const AssetImage('assets/logo.png') as ImageProvider;
             final topPadding = MediaQuery.of(context).padding.top;    
 
             showModalBottomSheet(

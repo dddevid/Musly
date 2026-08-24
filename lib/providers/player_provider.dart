@@ -1158,12 +1158,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     // 3. Preload cover artwork into Flutter image cache (800px)
-    if (nextSong.coverArt != null) {
+    if (nextSong.coverArt != null && nextSong.coverArt!.isNotEmpty) {
       final coverUrl =
           _subsonicService.getCoverArtUrl(nextSong.coverArt, size: 800);
       if (coverUrl.isNotEmpty) {
         try {
-          CachedNetworkImageProvider(coverUrl).resolve(ImageConfiguration.empty);
+          final provider = CachedNetworkImageProvider(coverUrl);
+          provider.resolve(ImageConfiguration.empty).addListener(
+            ImageStreamListener(
+              (info, sync) {},
+              onError: (dynamic error, StackTrace? stackTrace) {
+                // Silently swallow decode errors
+              },
+            ),
+          );
           DefaultCacheManager().downloadFile(coverUrl, key: '${nextSong.coverArt}_800').catchError((_) => null as dynamic);
         } catch (_) {}
       }
