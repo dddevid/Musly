@@ -107,11 +107,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed & Improved
 
 - **Desktop UI & Window Experience**
+  - Enforced minimum window dimensions ($800\times 560$) across Windows, macOS, and Linux to prevent extreme window narrowing and layout deformation.
+  - Added responsive scaling (`FittedBox`) and compact density to the desktop player bar right actions, eliminating `RenderFlex` layout overflows on narrow desktop viewports.
   - Closeable Queue right sidebar accessible via close button and toggleable from the desktop player bar.
   - Volume mute/unmute now accurately restores previous volume level instead of resetting.
   - Safe global spacebar shortcut: typing spaces in search and text fields is preserved without toggling Play/Pause.
   - Route deduplication: prevents opening identical screens or windows repeatedly on top of each other.
   - Hidden mobile-only "Circular Design" toggle on desktop platforms.
+
+- **Small-Screen Responsiveness & Accessibility (iPhone SE / Compact Android)**
+  - Dynamic scaling of vertical paddings, font sizes, live lyric pill, and album cover constraints in the Fullscreen Player for screens under 720px/620px height.
+  - Scrollable fallbacks for all static Musly Playback story slides ensuring complete button and metric accessibility on compact devices.
 
 - **Audio Playback & Scrobbling Quality of Life**
   - **Now Playing Gesture Conflict Fix (#201)**: Restricted horizontal swipe-to-skip strictly to album art, avoiding accidental skips during Android edge-back navigation.
