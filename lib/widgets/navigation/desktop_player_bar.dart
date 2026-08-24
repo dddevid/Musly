@@ -310,40 +310,51 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
           ),
           Expanded(
             flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.devices_other_rounded,
-                    size: 20,
-                    color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.devices_other_rounded,
+                      size: 20,
+                      color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Connect to a Device',
+                    onPressed: () => ConnectDevicesModal.show(context),
                   ),
-                  tooltip: 'Connect to a Device',
-                  onPressed: () => ConnectDevicesModal.show(context),
-                ),
-                const SizedBox(width: 4),
-                ValueListenableBuilder<bool>(
-                  valueListenable: NavigationHelper.isDesktopQueueOpen,
-                  builder: (context, isOpen, _) {
-                    return IconButton(
-                      icon: Icon(
-                        Icons.queue_music_rounded,
-                        size: 20,
-                        color: isOpen
-                            ? AppTheme.brandRed
-                            : (isDark
-                                ? const Color(0xFFB3B3B3)
-                                : const Color(0xFF6B6B6B)),
-                      ),
-                      onPressed: NavigationHelper.toggleDesktopQueue,
-                      tooltip: isOpen ? 'Hide Queue' : 'Show Queue',
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-                const _VolumeControl(),
-              ],
+                  const SizedBox(width: 6),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: NavigationHelper.isDesktopQueueOpen,
+                    builder: (context, isOpen, _) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.queue_music_rounded,
+                          size: 20,
+                          color: isOpen
+                              ? AppTheme.brandRed
+                              : (isDark
+                                  ? const Color(0xFFB3B3B3)
+                                  : const Color(0xFF6B6B6B)),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(6),
+                        constraints: const BoxConstraints(),
+                        onPressed: NavigationHelper.toggleDesktopQueue,
+                        tooltip: isOpen ? 'Hide Queue' : 'Show Queue',
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  const _VolumeControl(),
+                ],
+              ),
             ),
           ),
         ],

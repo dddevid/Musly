@@ -10,6 +10,7 @@ class DiscordRpcService {
 
   bool _initialized = false;
   bool _enabled = true;
+  bool _initFailed = false;
 
   DiscordRpcService(this._storageService);
 
@@ -24,18 +25,20 @@ class DiscordRpcService {
           _startRpc();
         }
       } catch (e) {
-        debugPrint('Discord RPC initialization failed: $e');
+        _initFailed = true;
+        debugPrint('Discord RPC initialization skipped: $e');
       }
     }
   }
 
   void _startRpc() {
-    if (_initialized || _rpc == null) return;
+    if (_initialized || _rpc == null || _initFailed) return;
     try {
       _rpc!.start(autoRegister: true);
       _initialized = true;
       debugPrint('Discord RPC started');
     } catch (e) {
+      _initFailed = true;
       debugPrint('Failed to start Discord RPC: $e');
     }
   }
@@ -56,6 +59,7 @@ class DiscordRpcService {
     } catch (_) {}
 
     if (enabled) {
+      if (_initFailed) return;
       try {
         if (_rpc == null) {
           DiscordRPC.initialize();
@@ -63,6 +67,7 @@ class DiscordRpcService {
         }
         _startRpc();
       } catch (e) {
+        _initFailed = true;
         debugPrint('Discord RPC setEnabled failed: $e');
       }
     } else {
@@ -90,12 +95,13 @@ class DiscordRpcService {
         !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       return;
     }
-    if (!_enabled) return;
+    if (!_enabled || _initFailed) return;
     if (_rpc == null) {
       try {
         DiscordRPC.initialize();
         _rpc = DiscordRPC(applicationId: _applicationId);
       } catch (e) {
+        _initFailed = true;
         debugPrint('Discord RPC init failed in updatePresence: $e');
         return;
       }
@@ -103,7 +109,7 @@ class DiscordRpcService {
     if (!_initialized) {
       _startRpc();
     }
-    if (_rpc == null || !_initialized) return;
+    if (_rpc == null || !_initialized || _initFailed) return;
 
     try {
       _rpc!.updatePresence(
