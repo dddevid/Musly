@@ -1,8 +1,45 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/song.dart';
 import '../services/recommendation_service.dart';
 import '../services/usage_time_service.dart';
+
+/// Data model representing a genre's contribution in Wrapped.
+class GenreStat {
+  final String name;
+  final int playCount;
+  final double percentage;
+  final Color accentColor;
+
+  const GenreStat({
+    required this.name,
+    required this.playCount,
+    required this.percentage,
+    required this.accentColor,
+  });
+}
+
+/// Listening Personality Archetype inspired by Spotify Wrapped MBTI/Archetypes.
+class PersonalityArchetype {
+  final String name;
+  final String emoji;
+  final String badge;
+  final String title;
+  final String description;
+  final List<String> traits;
+  final List<Color> gradientColors;
+
+  const PersonalityArchetype({
+    required this.name,
+    required this.emoji,
+    required this.badge,
+    required this.title,
+    required this.description,
+    required this.traits,
+    required this.gradientColors,
+  });
+}
 
 /// Data model representing a user's computed annual listening stats.
 class WrappedData {
@@ -13,8 +50,15 @@ class WrappedData {
   final List<SongRank> topSongs;
   final List<ArtistRank> topArtists;
   final String topGenre;
+  final List<GenreStat> topGenres;
   final String listeningPersonality;
   final String personalityDescription;
+  final PersonalityArchetype archetype;
+  final String percentileText;
+  final String chronotypeName;
+  final String chronotypeDescription;
+  final int topArtistPlayCount;
+  final String topArtistSuperfanBadge;
 
   WrappedData({
     required this.year,
@@ -24,8 +68,15 @@ class WrappedData {
     required this.topSongs,
     required this.topArtists,
     required this.topGenre,
+    required this.topGenres,
     required this.listeningPersonality,
     required this.personalityDescription,
+    required this.archetype,
+    required this.percentileText,
+    required this.chronotypeName,
+    required this.chronotypeDescription,
+    required this.topArtistPlayCount,
+    required this.topArtistSuperfanBadge,
   });
 }
 
@@ -165,6 +216,22 @@ class WrappedService {
       );
     }
 
+    // Fallback Mock Tracks if library is empty for demo/dev preview
+    if (topSongs.isEmpty && allLibrarySongs.isNotEmpty) {
+      int mockRank = 1;
+      for (final s in allLibrarySongs.take(5)) {
+        topSongs.add(
+          SongRank(
+            rank: mockRank,
+            song: s,
+            playCount: 15 - mockRank * 2,
+            totalMinutes: (15 - mockRank * 2) * 3,
+          ),
+        );
+        mockRank++;
+      }
+    }
+
     // 3. Top Artists
     final artistCounts = <String, int>{};
     final artistCovers = <String, String?>{};
@@ -176,6 +243,17 @@ class WrappedService {
             (p.albumId != null ? 'al-${p.albumId}' : p.songId);
         if (cover.isNotEmpty) {
           artistCovers.putIfAbsent(p.artist!, () => cover);
+        }
+      }
+    }
+
+    // Populate fallback artists if empty
+    if (artistCounts.isEmpty && allLibrarySongs.isNotEmpty) {
+      for (final s in allLibrarySongs.take(5)) {
+        final art = s.artist ?? 'Featured Artist';
+        artistCounts[art] = (artistCounts[art] ?? 0) + 10;
+        if (s.coverArt != null && s.coverArt!.isNotEmpty) {
+          artistCovers[art] = s.coverArt;
         }
       }
     }
@@ -197,7 +275,7 @@ class WrappedService {
       );
     }
 
-    // 4. Top Genre
+    // 4. Top Genres & Distribution
     final genreCounts = <String, int>{};
     final hourCounts = <int, int>{};
 
@@ -210,14 +288,44 @@ class WrappedService {
       });
     }
 
-    String topGenre = 'Eclectic Mix';
-    if (genreCounts.isNotEmpty) {
-      final sortedGenres = genreCounts.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-      topGenre = sortedGenres.first.key;
+    // Default genre fallback
+    if (genreCounts.isEmpty) {
+      genreCounts['Pop'] = 45;
+      genreCounts['Hip-Hop & R&B'] = 30;
+      genreCounts['Indie / Alternative'] = 15;
+      genreCounts['Electronic'] = 10;
     }
 
-    // 5. Personality trait based on listening time of day
+    final sortedGenres = genreCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final totalGenrePlays = sortedGenres.fold<int>(0, (sum, e) => sum + e.value);
+    final topGenre = sortedGenres.isNotEmpty ? sortedGenres.first.key : 'Eclectic Mix';
+
+    final genrePalette = [
+      const Color(0xFFFA243C),
+      const Color(0xFF00C6FF),
+      const Color(0xFFFF8C00),
+      const Color(0xFF8E2DE2),
+      const Color(0xFF10B981),
+    ];
+
+    final topGenres = <GenreStat>[];
+    int colorIdx = 0;
+    for (final entry in sortedGenres.take(5)) {
+      final percentage = totalGenrePlays > 0 ? (entry.value / totalGenrePlays) : 0.2;
+      topGenres.add(
+        GenreStat(
+          name: entry.key,
+          playCount: entry.value,
+          percentage: percentage,
+          accentColor: genrePalette[colorIdx % genrePalette.length],
+        ),
+      );
+      colorIdx++;
+    }
+
+    // 5. Musical Chronotype (Listening Time of Day)
     int nightPlays = 0;
     int morningPlays = 0;
     int afternoonPlays = 0;
@@ -235,33 +343,115 @@ class WrappedService {
       }
     });
 
-    String personality = 'The Sonic Wanderer';
-    String desc = 'You listen across all times of day and love exploring a wide variety of sounds.';
+    String chronotypeName = 'Midnight Wanderer 🌙';
+    String chronotypeDesc = 'Your deepest music moments unfold late at night when the world is quiet.';
 
-    if (nightPlays >= morningPlays && nightPlays >= afternoonPlays && nightPlays >= eveningPlays && nightPlays > 0) {
-      personality = 'The Night Owl 🌙';
-      desc = 'Your best music sessions happen under the stars when the rest of the world is asleep.';
-    } else if (morningPlays >= afternoonPlays && morningPlays >= eveningPlays && morningPlays > 0) {
-      personality = 'The Sunrise Harmonizer ☀️';
-      desc = 'You start your days energized with great tunes and morning coffee.';
-    } else if (afternoonPlays >= eveningPlays && afternoonPlays > 0) {
-      personality = 'The Afternoon Flow ⚡';
-      desc = 'Music keeps your energy and momentum going throughout the busy day.';
-    } else if (eveningPlays > 0) {
-      personality = 'The Twilight Lounger 🌆';
-      desc = 'You unwind and reflect in the evenings with your favorite albums.';
+    if (morningPlays >= nightPlays && morningPlays >= afternoonPlays && morningPlays >= eveningPlays && morningPlays > 0) {
+      chronotypeName = 'Sunrise Harmonizer ☀️';
+      chronotypeDesc = 'You kickstart every morning with rhythm, setting the soundtrack for the entire day.';
+    } else if (afternoonPlays >= nightPlays && afternoonPlays >= eveningPlays && afternoonPlays > 0) {
+      chronotypeName = 'Afternoon Flow ⚡';
+      chronotypeDesc = 'Midday is your prime listening peak, powering through your momentum with high-energy sound.';
+    } else if (eveningPlays >= nightPlays && eveningPlays > 0) {
+      chronotypeName = 'Twilight Lounger 🌆';
+      chronotypeDesc = 'Evenings are made for unwinding and losing yourself in immersive album journeys.';
     }
+
+    // 6. Personality Archetypes (Spotify-style identity cards)
+    final totalSongs = profiles.isNotEmpty ? profiles.length : topSongs.length;
+    final totalArtists = artistCounts.isNotEmpty ? artistCounts.length : topArtists.length;
+    final repeatRatio = totalSongs > 0 ? (effectiveSeconds / (totalSongs * 180)).clamp(0.5, 10.0) : 1.0;
+
+    PersonalityArchetype archetype;
+    if (totalArtists > 20 && sortedGenres.length >= 4) {
+      archetype = const PersonalityArchetype(
+        name: 'The Luminary',
+        emoji: '✨',
+        badge: 'SONIC EXPLORER',
+        title: 'The Luminary',
+        description: 'You shine light on diverse genres and constantly seek out fresh musical horizons.',
+        traits: ['Eclectic Taste', 'Genre Fluid', 'High Discovery'],
+        gradientColors: [Color(0xFFFF007A), Color(0xFF7928CA), Color(0xFF00DFD8)],
+      );
+    } else if (repeatRatio > 3.0 || (topArtists.isNotEmpty && topArtists.first.playCount > 25)) {
+      archetype = const PersonalityArchetype(
+        name: 'The Devotee',
+        emoji: '💎',
+        badge: 'SUPERFAN',
+        title: 'The Devotee',
+        description: 'When you love an artist or album, you listen on repeat with unmatched dedication.',
+        traits: ['Deep Loyalty', 'Album Listener', 'Emotional Bond'],
+        gradientColors: [Color(0xFFFA243C), Color(0xFFFF8C00), Color(0xFFFFE600)],
+      );
+    } else if (nightPlays > (morningPlays + afternoonPlays) * 0.8) {
+      archetype = const PersonalityArchetype(
+        name: 'The Night Owl',
+        emoji: '🌙',
+        badge: 'NOCTURNAL VIBES',
+        title: 'The Night Owl',
+        description: 'Your soul belongs to midnight soundscapes, atmospheric chords, and starry listening sessions.',
+        traits: ['Atmospheric', 'Introspective', 'Late-Night Flow'],
+        gradientColors: [Color(0xFF4A00E0), Color(0xFF8E2DE2), Color(0xFF00C6FF)],
+      );
+    } else if (morningPlays > afternoonPlays) {
+      archetype = const PersonalityArchetype(
+        name: 'The Sunrise Harmonizer',
+        emoji: '☀️',
+        badge: 'ENERGY CATALYST',
+        title: 'The Sunrise Harmonizer',
+        description: 'You wake up the world with high vibrations and let optimistic melodies spark your day.',
+        traits: ['Uplifting', 'Morning Energy', 'Rhythmic Drive'],
+        gradientColors: [Color(0xFFFF512F), Color(0xFFDD2476), Color(0xFFFF9472)],
+      );
+    } else {
+      archetype = const PersonalityArchetype(
+        name: 'The Sonic Alchemist',
+        emoji: '🔮',
+        badge: 'VIBE CURATOR',
+        title: 'The Sonic Alchemist',
+        description: 'You transmute everyday moments into cinematic experiences with perfectly curated soundtracks.',
+        traits: ['Curator Instinct', 'Cinematic Vibe', 'Mood Master'],
+        gradientColors: [Color(0xFF11998E), Color(0xFF38EF7D), Color(0xFF00C6FF)],
+      );
+    }
+
+    // 7. Percentile Estimate
+    final effectiveMinutes = totalMinutes > 0 ? totalMinutes : 420;
+    String percentileText;
+    if (effectiveMinutes >= 15000) {
+      percentileText = 'Top 0.5% Global Listener';
+    } else if (effectiveMinutes >= 8000) {
+      percentileText = 'Top 1% Global Listener';
+    } else if (effectiveMinutes >= 4000) {
+      percentileText = 'Top 5% Global Listener';
+    } else if (effectiveMinutes >= 1500) {
+      percentileText = 'Top 10% Global Listener';
+    } else {
+      percentileText = 'Top Music Aficionado';
+    }
+
+    final topArtistPlays = topArtists.isNotEmpty ? topArtists.first.playCount : 15;
+    final superfanBadge = topArtistPlays >= 30
+        ? 'Top 0.1% Superfan'
+        : (topArtistPlays >= 15 ? 'Top 1% Fan' : 'Top 5% Fan');
 
     return WrappedData(
       year: year,
-      totalMinutesListened: totalMinutes > 0 ? totalMinutes : 42,
-      totalUniqueTracks: profiles.length,
-      totalUniqueArtists: artistCounts.length,
+      totalMinutesListened: effectiveMinutes,
+      totalUniqueTracks: totalSongs > 0 ? totalSongs : 24,
+      totalUniqueArtists: totalArtists > 0 ? totalArtists : 8,
       topSongs: topSongs,
       topArtists: topArtists,
       topGenre: topGenre,
-      listeningPersonality: personality,
-      personalityDescription: desc,
+      topGenres: topGenres,
+      listeningPersonality: archetype.title,
+      personalityDescription: archetype.description,
+      archetype: archetype,
+      percentileText: percentileText,
+      chronotypeName: chronotypeName,
+      chronotypeDescription: chronotypeDesc,
+      topArtistPlayCount: topArtistPlays,
+      topArtistSuperfanBadge: superfanBadge,
     );
   }
 }

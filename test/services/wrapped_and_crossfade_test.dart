@@ -176,4 +176,23 @@ void main() {
       expect(prefs.getBool('milestone_50_songs_shown'), isTrue);
     });
   });
+
+  group('Wrapped Archetype & Model Tests', () {
+    test('PersonalityArchetype initializes and provides valid properties', () {
+      const archetype = PersonalityArchetype(
+        name: 'The Luminary',
+        emoji: '✨',
+        badge: 'SONIC EXPLORER',
+        title: 'The Luminary',
+        description: 'You shine light on diverse genres.',
+        traits: ['Eclectic Taste', 'Genre Fluid'],
+        gradientColors: [],
+      );
+
+      expect(archetype.name, equals('The Luminary'));
+      expect(archetype.emoji, equals('✨'));
+      expect(archetype.badge, equals('SONIC EXPLORER'));
+      expect(archetype.traits.length, equals(2));
+    });
+  });
 }
