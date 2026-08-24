@@ -23,6 +23,7 @@ class PlayerUiSettingsService {
 
   SharedPreferences? _prefs;
 
+  final ValueNotifier<bool> showVolumeSliderNotifier = ValueNotifier(true);
   final ValueNotifier<bool> showStarRatingsNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerHeartNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerRepeatNotifier = ValueNotifier(false);
@@ -43,6 +44,7 @@ class PlayerUiSettingsService {
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
+    showVolumeSliderNotifier.value = getShowVolumeSlider();
     showStarRatingsNotifier.value = getShowStarRatings();
     showMiniPlayerHeartNotifier.value = getShowMiniPlayerHeart();
     showMiniPlayerRepeatNotifier.value = getShowMiniPlayerRepeat();
@@ -60,6 +62,7 @@ class PlayerUiSettingsService {
   Future<void> setShowVolumeSlider(bool show) async {
     await initialize();
     await _prefs!.setBool(_keyShowVolumeSlider, show);
+    showVolumeSliderNotifier.value = show;
   }
 
   bool getShowVolumeSlider() {

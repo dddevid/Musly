@@ -331,11 +331,11 @@ class LocalMusicService extends ChangeNotifier {
           debugPrint('Error processing ${file.path}: $e');
         }
 
-        _scanProgress = (i + 1) / totalFiles;
-        if (i % 10 == 0) {
+        _scanProgress = totalFiles > 0 ? (i + 1) / totalFiles : 1.0;
+        if (i % 3 == 0 || i == totalFiles - 1) {
           _scanStatus = 'Processing: ${i + 1} / $totalFiles';
           notifyListeners();
-          await Future<void>.delayed(Duration.zero);
+          await Future<void>.delayed(const Duration(milliseconds: 1));
         }
       }
 

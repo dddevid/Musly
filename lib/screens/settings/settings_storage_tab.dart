@@ -158,6 +158,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionOfflineDownloads,
           children: [
+            _buildDownloadLocationTile(),
+            const SettingsDivider(),
             _buildParallelDownloadsTile(),
             const SettingsDivider(),
             _buildKeepScreenOnTile(),
@@ -515,6 +517,58 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
       onTap: _showParallelDownloadsDialog,
     );
+  }
+
+  Widget _buildDownloadLocationTile() {
+    final customPath = _offlineService.getCustomDownloadPath();
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: const SettingsIconBadge(
+        icon: CupertinoIcons.folder_badge_plus,
+        gradient: [Color(0xFF007AFF), Color(0xFF00C6FF)],
+      ),
+      title: const Text('Cartella di Download', style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        customPath != null && customPath.isNotEmpty ? customPath : 'Predefinita (Memoria interna)',
+        style: TextStyle(
+          fontSize: 12,
+          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (customPath != null && customPath.isNotEmpty)
+            IconButton(
+              icon: const Icon(CupertinoIcons.clear_circled, size: 20),
+              onPressed: () async {
+                await _offlineService.setCustomDownloadPath(null);
+                if (mounted) setState(() {});
+              },
+            ),
+          Icon(
+            CupertinoIcons.chevron_right,
+            size: 16,
+            color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          ),
+        ],
+      ),
+      onTap: _pickCustomDownloadDirectory,
+    );
+  }
+
+  Future<void> _pickCustomDownloadDirectory() async {
+    try {
+      final selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      if (selectedDirectory != null && selectedDirectory.isNotEmpty) {
+        await _offlineService.setCustomDownloadPath(selectedDirectory);
+        if (mounted) setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error picking download folder: $e');
+    }
   }
 
   Future<void> _showParallelDownloadsDialog() async {

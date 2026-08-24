@@ -457,6 +457,17 @@ class SubsonicService {
   }
 
   Future<List<MusicFolder>> getMusicFolders() async {
+    if (_jellyfin != null) {
+      final libs = await _jellyfin!.getMusicLibraries();
+      return libs
+          .map(
+            (l) => MusicFolder(
+              id: l['Id']?.toString() ?? '',
+              name: l['Name']?.toString() ?? 'Music',
+            ),
+          )
+          .toList();
+    }
     try {
       final response = await _request('getMusicFolders');
       final folders = <MusicFolder>[];

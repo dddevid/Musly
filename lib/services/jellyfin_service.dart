@@ -12,6 +12,7 @@ class JellyfinService {
   String? _userId;
   String _deviceId = 'musly-app';
   bool _allowSelfSigned = false;
+  String? _selectedLibraryId;
 
   static const _clientName = 'Musly';
   static const _clientVersion = '1.0.0';
@@ -33,6 +34,9 @@ class JellyfinService {
     _userId = config.userId;
     _deviceId = 'musly-${config.username}-${config.serverUrl.hashCode.abs()}';
     _allowSelfSigned = config.allowSelfSignedCertificates;
+    _selectedLibraryId = config.selectedMusicFolderIds.isNotEmpty
+        ? config.selectedMusicFolderIds.first
+        : null;
     _buildDio();
   }
 
@@ -251,6 +255,25 @@ class JellyfinService {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getMusicLibraries() async {
+    if (_userId == null) return [];
+    try {
+      final data = await _get('/Users/$_userId/Views');
+      final items = data['Items'] as List<dynamic>? ?? [];
+      return items
+          .where((e) {
+            final map = e as Map<String, dynamic>;
+            final colType = map['CollectionType'] as String?;
+            return colType == 'music' || colType == 'audio' || colType == null;
+          })
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      debugPrint('[Jellyfin] getMusicLibraries error: $e');
+      return [];
+    }
+  }
+
   Future<List<Album>> getAlbumList({
     String type = 'recent',
     int size = 20,
@@ -290,6 +313,7 @@ class JellyfinService {
           'Limit': size.toString(),
           'StartIndex': offset.toString(),
           if (filters != null) 'Filters': filters,
+          if (_selectedLibraryId != null) 'ParentId': _selectedLibraryId,
           'Fields': 'Genres,ChildCount',
         },
       );
@@ -349,6 +373,7 @@ class JellyfinService {
             'SortOrder': 'Ascending',
             'Limit': pageSize.toString(),
             'StartIndex': offset.toString(),
+            if (_selectedLibraryId != null) 'ParentId': _selectedLibraryId,
             'Fields': 'Genres,UserData,Album,AlbumId,AlbumArtist,AlbumArtistId',
           },
         );
@@ -378,6 +403,7 @@ class JellyfinService {
           'SortBy': 'SortName',
           'SortOrder': 'Ascending',
           'Limit': '1000',
+          if (_selectedLibraryId != null) 'ParentId': _selectedLibraryId,
           'Fields': 'AlbumCount',
         },
       );

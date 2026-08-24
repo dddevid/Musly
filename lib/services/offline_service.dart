@@ -90,6 +90,7 @@ class OfflineService {
   static const String _keyDownloadedPlaylists = 'offline_downloaded_playlists';
   static const String _keyParallelDownloads = 'parallel_downloads_count';
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
+  static const String _keyCustomDownloadPath = 'offline_custom_download_path';
 
   static const int _defaultParallelDownloads = 3;
   static const int _maxParallelDownloads = 5;
@@ -114,10 +115,36 @@ class OfflineService {
   bool _queueProcessorRunning = false;
   String? _activePlaylistId;
 
+  String? getCustomDownloadPath() {
+    return _prefs?.getString(_keyCustomDownloadPath);
+  }
+
+  Future<void> setCustomDownloadPath(String? customPath) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    if (customPath != null && customPath.isNotEmpty) {
+      await _prefs!.setString(_keyCustomDownloadPath, customPath);
+      _offlineDir = customPath;
+    } else {
+      await _prefs!.remove(_keyCustomDownloadPath);
+      final dir = await getApplicationDocumentsDirectory();
+      _offlineDir = '${dir.path}/offline_music';
+    }
+    final offlineDirectory = Directory(_offlineDir!);
+    if (!await offlineDirectory.exists()) {
+      await offlineDirectory.create(recursive: true);
+    }
+    await initialize();
+  }
+
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
-    final dir = await getApplicationDocumentsDirectory();
-    _offlineDir = '${dir.path}/offline_music';
+    final customPath = _prefs?.getString(_keyCustomDownloadPath);
+    if (customPath != null && customPath.isNotEmpty && Directory(customPath).existsSync()) {
+      _offlineDir = customPath;
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      _offlineDir = '${dir.path}/offline_music';
+    }
 
     final offlineDirectory = Directory(_offlineDir!);
     if (!await offlineDirectory.exists()) {

@@ -242,7 +242,7 @@ class StorageService {
           (p.serverFamily == config.serverFamily &&
            p.serverUrl == config.serverUrl &&
            p.username == config.username &&
-           (config.name == null || config.name!.isEmpty || p.name == config.name)),
+           p.name == config.name),
     );
     
     final pKey = _profileKey(config);
@@ -288,7 +288,7 @@ class StorageService {
           (p.serverFamily == config.serverFamily &&
            p.serverUrl == config.serverUrl &&
            p.username == config.username &&
-           (config.name == null || config.name!.isEmpty || p.name == config.name)),
+           p.name == config.name),
     );
     
     if (idx >= 0) {

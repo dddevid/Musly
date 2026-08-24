@@ -331,14 +331,27 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             children: [
               const SizedBox(height: 56), // Space for header
               
-              // Album Art
+              // Album Art with horizontal swipe navigation (Issue #201)
               Expanded(
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
-                    child: AlbumArtView(
-                      image: _currentImageProvider ?? widget.image,
-                      tag: currentSong?.id ?? widget.heroTag,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragEnd: (details) {
+                        final vel = details.primaryVelocity;
+                        if (vel != null) {
+                          if (vel < -250) {
+                            provider.skipNext();
+                          } else if (vel > 250) {
+                            provider.skipPrevious();
+                          }
+                        }
+                      },
+                      child: AlbumArtView(
+                        image: _currentImageProvider ?? widget.image,
+                        tag: currentSong?.id ?? widget.heroTag,
+                      ),
                     ),
                   ),
                 ),
@@ -436,10 +449,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
           const SizedBox(height: 24),
 
-          // Volume
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32.0),
-            child: VolumeSlider(),
+          // Volume Slider (Issue #200)
+          ValueListenableBuilder<bool>(
+            valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+            builder: (context, showVolume, _) {
+              if (!showVolume) return const SizedBox.shrink();
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.0),
+                child: VolumeSlider(),
+              );
+            },
           ),
 
           // Bottom Actions
