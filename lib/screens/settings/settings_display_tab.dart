@@ -90,13 +90,19 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
-        _buildThemeSection(),
+        SettingsSectionCard(
+          title: AppLocalizations.of(context)!.appearanceSection.toUpperCase(),
+          children: [_buildAppearanceEditor()],
+        ),
         const SizedBox(height: 24),
-        _buildAccentColorSection(),
-        const SizedBox(height: 24),
-        _buildAlbumArtCustomizerSection(),
-        const SizedBox(height: 24),
-        _buildLyricsCustomizationSection(),
+        SettingsSectionCard(
+          title: AppLocalizations.of(context)!.language.toUpperCase(),
+          children: [
+            _buildLanguageSelector(),
+            const SettingsDivider(),
+            _buildTranslationCredit(),
+          ],
+        ),
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.playerInterface.toUpperCase(),
