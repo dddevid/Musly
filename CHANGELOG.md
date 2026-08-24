@@ -85,6 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Synced Lyrics Customization (#184)**
   - Customization options for the time-synced lyrics view including background blur toggle, text alignment, and active lyric glow.
 
+- **Android 13+ Material You Dynamic Themed Icons**
+  - Full support for Android 13+ dynamic themed icons (`<monochrome>` adaptive icon mask) adapting automatically to system color palettes on Google Pixel, Samsung One UI, Xiaomi, and other modern Android launchers.
+
 - **Dolby Atmos Audio Stream Support (#188)**
   - Audio stream badge and playback detection for Dolby Atmos content.
 
