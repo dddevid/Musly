@@ -44,11 +44,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **High-Fidelity 3-Color Album Palette Extraction**
   - Upgraded palette extraction using `PaletteGenerator` to extract the true 3 primary colors (dominant, vibrant, deep accent) from album artwork for the fullscreen player ambient mesh background.
 
-- **Smart Recommendations & Taste-Learning Engine (YT Stream & Home)**
+- **Web Stream (Online YouTube Music Streaming & Search)**
+  - Stream music directly from YouTube Music without requiring an active Subsonic or Jellyfin server.
+  - Search global songs, albums, and artists with high-resolution artwork, gapless playback, and synchronized lyrics support.
+  - Dynamic local caching in SQLite for fast replay and offline readiness.
+  - Generates personalized mixes ("Made For You", "Listen Again", "Your Top Hits") based on web stream listening habits.
+  - Seamlessly switch between Subsonic, Jellyfin, Local Music, and Web Stream from the server switcher.
+
+- **Smart Recommendations & Taste-Learning Engine (Home & Web Stream)**
   - Algorithmic music taste profiling learning from play counts, ratings, skips, and completion rates with exponential recency decay.
   - Dynamically generated mixes: "Made For You", "Listen Again", "Your Top Hits", Artist Mixes, and Genre Mixes.
   - Intelligent discovery search querying correlated songs based on user affinities.
-  - Full local SQLite persistence for YT Stream caching and smart recommendation candidate pools.
+  - Full local SQLite persistence for stream caching and smart recommendation candidate pools.
 
 - **Custom Download Folder & SD Card Storage (#193)**
   - Select custom storage directories (internal memory or external SD cards) for offline music downloads from Storage Settings.
