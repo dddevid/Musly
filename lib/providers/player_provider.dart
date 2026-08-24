@@ -1494,7 +1494,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Android to avoid two systems fighting over the same responsibility).
   bool _wasPlayingBeforeInterruption = false;
   bool _isManuallyPaused = false;
-  bool _isFading = false;
 
   Future<void> _fadeOutAndPause({Duration duration = const Duration(milliseconds: 350)}) async {
     if (_isFading) return;
