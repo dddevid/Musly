@@ -6,6 +6,7 @@ import 'package:musly/models/models.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/theme/app_theme.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class RadioScreen extends StatefulWidget {
   const RadioScreen({super.key});
@@ -32,11 +33,9 @@ class _RadioScreenState extends State<RadioScreen> {
     });
 
     try {
-      final subsonicService = Provider.of<SubsonicService>(
-        context,
-        listen: false,
-      );
-      final stations = await subsonicService.getInternetRadioStations();
+      final subsonic = Provider.of<SubsonicService>(context, listen: false);
+      final stations = await subsonic.getInternetRadioStations();
+
       if (mounted) {
         setState(() {
           _stations = stations;
@@ -60,8 +59,9 @@ class _RadioScreenState extends State<RadioScreen> {
 
   Future<void> _openHomePage(RadioStation station) async {
     if (station.homePageUrl == null || station.homePageUrl!.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No homepage URL available')),
+        SnackBar(content: Text(l10n.noHomepageUrl)),
       );
       return;
     }
@@ -74,49 +74,33 @@ class _RadioScreenState extends State<RadioScreen> {
 
   void _showStationOptions(RadioStation station) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: SafeArea(
+      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 8),
               Container(
                 width: 36,
-                height: 5,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white30 : Colors.black26,
-                  borderRadius: BorderRadius.circular(2.5),
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  station.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 16),
               ListTile(
-                leading: Icon(
-                  CupertinoIcons.play_fill,
-                  color: AppTheme.brandRed,
-                ),
+                leading: const Icon(CupertinoIcons.play_circle),
                 title: Text(
-                  'Play Station',
+                  l10n.playAll,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 ),
                 onTap: () {
@@ -124,27 +108,12 @@ class _RadioScreenState extends State<RadioScreen> {
                   _playStation(station);
                 },
               ),
-              if (station.homePageUrl != null &&
-                  station.homePageUrl!.isNotEmpty)
+              if (station.homePageUrl != null && station.homePageUrl!.isNotEmpty)
                 ListTile(
-                  leading: Icon(
-                    CupertinoIcons.globe,
-                    color: isDark ? Colors.white70 : Colors.black54,
-                  ),
+                  leading: const Icon(CupertinoIcons.globe),
                   title: Text(
-                    'Open Homepage',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  subtitle: Text(
-                    station.homePageUrl!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white54 : Colors.black45,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    'Homepage',
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -152,19 +121,15 @@ class _RadioScreenState extends State<RadioScreen> {
                   },
                 ),
               ListTile(
-                leading: Icon(
-                  CupertinoIcons.doc_on_doc,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
+                leading: const Icon(CupertinoIcons.link),
                 title: Text(
-                  'Copy Stream URL',
+                  l10n.copyStreamUrl,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Stream URL: ${station.streamUrl}')),
+                    SnackBar(content: Text(l10n.streamUrlLabel(station.streamUrl))),
                   );
                 },
               ),
@@ -179,16 +144,17 @@ class _RadioScreenState extends State<RadioScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Radio Stations'),
+        title: Text(l10n.radioStations),
         backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.refresh),
             onPressed: _loadStations,
-            tooltip: 'Refresh',
+            tooltip: l10n.refresh,
           ),
         ],
       ),
@@ -197,6 +163,8 @@ class _RadioScreenState extends State<RadioScreen> {
   }
 
   Widget _buildBody(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -208,15 +176,15 @@ class _RadioScreenState extends State<RadioScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 CupertinoIcons.exclamationmark_triangle,
                 size: 64,
                 color: Colors.orange,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Failed to load radio stations',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                l10n.failedToLoadRadioStations,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -228,7 +196,7 @@ class _RadioScreenState extends State<RadioScreen> {
               ElevatedButton.icon(
                 onPressed: _loadStations,
                 icon: const Icon(CupertinoIcons.refresh),
-                label: const Text('Retry'),
+                label: Text(l10n.retry),
               ),
             ],
           ),
@@ -249,13 +217,13 @@ class _RadioScreenState extends State<RadioScreen> {
                 color: Colors.grey[400],
               ),
               const SizedBox(height: 16),
-              const Text(
-                'No Radio Stations',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                l10n.noRadioStations,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'Add radio stations in your Navidrome server settings to see them here.',
+                l10n.addRadioStationsHint,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),

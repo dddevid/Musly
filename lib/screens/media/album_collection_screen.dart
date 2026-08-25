@@ -267,14 +267,14 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Error loading albums',
+              AppLocalizations.of(context)!.errorLoadingAlbums,
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loadAlbums,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),
@@ -296,7 +296,7 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No albums found',
+              AppLocalizations.of(context)!.noAlbumsFound,
               style: theme.textTheme.headlineSmall,
             ),
           ],

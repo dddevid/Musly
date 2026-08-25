@@ -6,6 +6,7 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
 import 'package:musly/utils/navigation_helper.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class RightSidebar extends StatelessWidget {
   final VoidCallback? onClose;
@@ -18,22 +19,26 @@ class RightSidebar extends StatelessWidget {
 
     return Container(
       width: 320,
-      color: isDark ? AppTheme.sidebarBackground : const Color(0xFFF8F8F8),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkBackground : Colors.white,
+        border: Border(
+          left: BorderSide(
+            color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
+          ),
+        ),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    'Queue',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                Text(
+                  AppLocalizations.of(context)!.queue,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
@@ -47,7 +52,7 @@ class RightSidebar extends StatelessWidget {
                     onClose?.call();
                     NavigationHelper.isDesktopQueueOpen.value = false;
                   },
-                  tooltip: 'Close Queue',
+                  tooltip: AppLocalizations.of(context)!.closeQueue,
                 ),
               ],
             ),

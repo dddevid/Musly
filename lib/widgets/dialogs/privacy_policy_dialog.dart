@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Dialog shown on first app launch for privacy policy consent
 class PrivacyPolicyDialog extends StatefulWidget {
@@ -58,6 +59,7 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -96,9 +98,9 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Privacy First',
-                    style: TextStyle(
+                  Text(
+                    l10n.privacyFirstTitle,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -106,7 +108,7 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Your data stays with you. Always.',
+                    l10n.privacyFirstSubtitle,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.9),
@@ -128,25 +130,22 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                     _buildPrivacyPoint(
                       icon: CupertinoIcons.lock_fill,
                       color: const Color(0xFF22C55E),
-                      title: 'No Data Selling',
-                      description:
-                          'We never sell, share, or transfer your personal data to third parties.',
+                      title: l10n.noDataSellingTitle,
+                      description: l10n.noDataSellingDescription,
                     ),
                     const SizedBox(height: 16),
                     _buildPrivacyPoint(
                       icon: CupertinoIcons.device_phone_portrait,
                       color: const Color(0xFF3B82F6),
-                      title: 'Local-First Storage',
-                      description:
-                          'Your music library and credentials stay on your device.',
+                      title: l10n.localFirstStorageTitle,
+                      description: l10n.localFirstStorageDescription,
                     ),
                     const SizedBox(height: 16),
                     _buildPrivacyPoint(
                       icon: CupertinoIcons.shield_fill,
                       color: const Color(0xFFF59E0B),
-                      title: '100% Private & Open',
-                      description:
-                          'Musly is completely telemetry-free. No personal identifiers, usage tracking, or analytics are collected.',
+                      title: l10n.privateOpenTitle,
+                      description: l10n.privateOpenDescription,
                     ),
 
                     const SizedBox(height: 24),
@@ -190,16 +189,16 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Read Full Privacy Policy',
-                                      style: TextStyle(
+                                    Text(
+                                      l10n.readFullPrivacyPolicy,
+                                      style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'View complete details on our website',
+                                      l10n.viewCompleteDetailsWebsite,
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[500],
@@ -208,9 +207,9 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                                   ],
                                 ),
                               ),
-                              Icon(
+                              const Icon(
                                 CupertinoIcons.chevron_forward,
-                                color: const Color(0xFF3B82F6),
+                                color: Color(0xFF3B82F6),
                                 size: 18,
                               ),
                             ],
@@ -241,9 +240,9 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'I Understand & Continue',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.understandAndContinue,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -256,9 +255,9 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.grey[500],
                     ),
-                    child: const Text(
-                      'Decline & Exit',
-                      style: TextStyle(fontSize: 14),
+                    child: Text(
+                      l10n.declineAndExit,
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 ],

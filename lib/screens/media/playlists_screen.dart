@@ -6,6 +6,7 @@ import 'package:musly/providers/providers.dart';
 import 'package:musly/services/offline_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/widgets.dart';
+import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/screens/detail/playlist_screen.dart';
 
 class PlaylistsScreen extends StatelessWidget {
@@ -15,13 +16,15 @@ class PlaylistsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final libraryProvider = Provider.of<LibraryProvider>(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Playlists'),
+        title: Text(l10n.playlists),
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.add),
+            tooltip: l10n.newPlaylist,
             onPressed: () => _showCreatePlaylistDialog(context),
           ),
         ],
@@ -37,10 +40,10 @@ class PlaylistsScreen extends StatelessWidget {
                     color: AppTheme.lightSecondaryText,
                   ),
                   const SizedBox(height: 16),
-                  Text('No Playlists', style: theme.textTheme.headlineMedium),
+                  Text(l10n.noPlaylists, style: theme.textTheme.headlineMedium),
                   const SizedBox(height: 8),
                   Text(
-                    'Create a playlist to get started',
+                    l10n.createPlaylistToGetStarted,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppTheme.lightSecondaryText,
                     ),
@@ -49,7 +52,7 @@ class PlaylistsScreen extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () => _showCreatePlaylistDialog(context),
                     icon: const Icon(CupertinoIcons.add),
-                    label: const Text('New Playlist'),
+                    label: Text(l10n.newPlaylist),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.brandRed,
                       foregroundColor: Colors.white,
@@ -88,20 +91,21 @@ class PlaylistsScreen extends StatelessWidget {
 
   Future<void> _showCreatePlaylistDialog(BuildContext context) async {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New Playlist'),
+        title: Text(l10n.newPlaylist),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Playlist name'),
+          decoration: InputDecoration(hintText: l10n.playlistNameHint),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -116,7 +120,7 @@ class PlaylistsScreen extends StatelessWidget {
                 }
               }
             },
-            child: const Text('Create'),
+            child: Text(l10n.create),
           ),
         ],
       ),
@@ -130,6 +134,7 @@ class PlaylistsScreen extends StatelessWidget {
       listen: false,
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -155,7 +160,7 @@ class PlaylistsScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(CupertinoIcons.trash, color: Colors.red),
-                title: const Text('Delete Playlist'),
+                title: Text(l10n.deletePlaylist),
                 onTap: () async {
                   Navigator.pop(context);
                   await OfflineService().cancelPlaylistDownload(playlist.id);

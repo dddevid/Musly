@@ -90,8 +90,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 child: const Icon(CupertinoIcons.music_note_list, color: Color(0xFF1DB954), size: 22),
               ),
-              title: const Text('Create Playlist', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Build a custom playlist with your favorite tracks', style: TextStyle(fontSize: 12)),
+              title: Text(AppLocalizations.of(context)!.createPlaylist, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(AppLocalizations.of(context)!.createPlaylistSubtitle, style: const TextStyle(fontSize: 12)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showCreatePlaylistDialog(context);
@@ -108,8 +108,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 child: const Icon(Icons.dns_rounded, color: Color(0xFF6366F1), size: 22),
               ),
-              title: const Text('Add Music Source', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Connect Navidrome, Jellyfin, or Web Stream', style: TextStyle(fontSize: 12)),
+              title: Text(AppLocalizations.of(context)!.addMusicSource, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(AppLocalizations.of(context)!.addMusicSourceSubtitle, style: const TextStyle(fontSize: 12)),
               onTap: () {
                 Navigator.pop(ctx);
                 NavigationHelper.push(context, const AddServerScreen());
@@ -260,17 +260,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 actions: [
                   IconButton(
                     icon: Icon(CupertinoIcons.search, color: isDark ? Colors.white : Colors.black87, size: 22),
-                    tooltip: 'Search in Library',
+                    tooltip: AppLocalizations.of(context)!.searchInLibrary,
                     onPressed: () => _showLibrarySearch(context),
                   ),
                   IconButton(
                     icon: Icon(CupertinoIcons.plus, color: isDark ? Colors.white : Colors.black87, size: 24),
-                    tooltip: 'Add',
+                    tooltip: AppLocalizations.of(context)!.add,
                     onPressed: () => _showAddMenu(context),
                   ),
                   IconButton(
                     icon: Icon(CupertinoIcons.gear_alt, color: isDark ? Colors.white : Colors.black87, size: 22),
-                    tooltip: 'Settings',
+                    tooltip: AppLocalizations.of(context)!.settings,
                     onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
                   ),
                   if (_isDesktop) const SizedBox(width: 12),
@@ -549,8 +549,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
               child: const Icon(CupertinoIcons.antenna_radiowaves_left_right, color: Color(0xFF34C759), size: 24),
             ),
-            title: const Text('Radio Stations', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-            subtitle: const Text('Radios', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            title: Text(AppLocalizations.of(context)!.radioStations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            subtitle: Text(AppLocalizations.of(context)!.radios, style: const TextStyle(fontSize: 13, color: Colors.grey)),
             onTap: () => _navigate(context, const RadioScreen()),
           ),
           ListTile(
@@ -564,8 +564,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
               child: const Icon(CupertinoIcons.star_fill, color: Color(0xFFFF9500), size: 24),
             ),
-            title: const Text('Liked Albums', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-            subtitle: const Text('Albums', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            title: Text(AppLocalizations.of(context)!.likedAlbums, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            subtitle: Text(AppLocalizations.of(context)!.albums, style: const TextStyle(fontSize: 13, color: Colors.grey)),
             onTap: () => _navigate(context, const LikedAlbumsScreen()),
           ),
         ],

@@ -215,9 +215,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
     }
 
     if (mounted && queuedSongs > 0) {
+      final l10n = AppLocalizations.of(context)!;
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Queued $queuedSongs songs from ${_albums.length} albums for download…'),
+          content: Text(l10n.queuedSongsFromAlbumsForDownload(queuedSongs, _albums.length)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -306,7 +307,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
             actions: [
               IconButton(
                 icon: const Icon(CupertinoIcons.cloud_download),
-                tooltip: 'Download All Albums', // Can use localized string if available
+                tooltip: AppLocalizations.of(context)!.downloadAllAlbums,
                 onPressed: _albums.isEmpty ? null : () => _downloadArtistAlbums(),
               ),
               IconButton(

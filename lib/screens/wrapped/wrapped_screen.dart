@@ -8,6 +8,7 @@ import '../../providers/library_provider.dart';
 import '../../services/recommendation_service.dart';
 import '../../services/wrapped_service.dart';
 import '../../widgets/common/album_artwork.dart';
+import '../../l10n/app_localizations.dart';
 
 class WrappedScreen extends StatefulWidget {
   final bool devPreview;
@@ -251,7 +252,7 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                'Preparazione di Musly Playback ${WrappedService.getWrappedYear()}...',
+                'Musly Playback ${WrappedService.getWrappedYear()}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -334,6 +335,7 @@ class _WrappedScreenState extends State<WrappedScreen>
   }
 
   Widget _buildOutOfSeasonScreen() {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFF090A0F),
       appBar: AppBar(
@@ -368,15 +370,16 @@ class _WrappedScreenState extends State<WrappedScreen>
                 child: const Icon(CupertinoIcons.gift_fill, color: Colors.white, size: 44),
               ),
               const SizedBox(height: 28),
-              const Text(
-                'Musly Playback è Stagionale',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+              Text(
+                l10n?.wrappedSeasonal ?? 'Musly Playback is Seasonal',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Il tuo Year-in-Review annuale si sblocca automaticamente ogni anno tra fine novembre e metà gennaio.\n\nContinua ad ascoltare musica per espandere il tuo universo sonoro!',
-                style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
+              Text(
+                l10n?.muslyPlaybackAnnualSubtitle ??
+                    'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!',
+                style: const TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
@@ -389,7 +392,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                   );
                 },
                 icon: const Icon(CupertinoIcons.sparkles),
-                label: const Text('Anteprima Playback (Modalità Test)'),
+                label: Text(l10n?.muslyPlaybackDev ?? 'Playback Preview (Test Mode)'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFFA243C),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
@@ -559,14 +562,14 @@ class _WrappedScreenState extends State<WrappedScreen>
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
-                      SizedBox(width: 7),
+                      const Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
+                      const SizedBox(width: 7),
                       Text(
-                        'RULLO DI TAMBURI...',
-                        style: TextStyle(
+                        AppLocalizations.of(context)?.drumroll ?? 'DRUMROLL...',
+                        style: const TextStyle(
                           color: Color(0xFFFF0844),
                           fontWeight: FontWeight.w900,
                           fontSize: 12,
@@ -577,9 +580,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                   ),
                 ),
                 const SizedBox(height: 36),
-                const Text(
-                  'Pronto a scoprire\nil tuo brano #1?',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)?.readyToDiscoverTopSong ??
+                      'Ready to discover\nyour #1 song?',
+                  style: const TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
@@ -718,12 +722,15 @@ class _WrappedScreenState extends State<WrappedScreen>
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white24),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Tocca per iniziare', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-              SizedBox(width: 8),
-              Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 15),
+              Text(
+                AppLocalizations.of(context)?.tapToBegin ?? 'Tap to begin',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(width: 8),
+              const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 15),
             ],
           ),
         ),
@@ -735,6 +742,7 @@ class _WrappedScreenState extends State<WrappedScreen>
   Widget _buildMinutesSlide() {
     final mins = _data!.totalMinutesListened;
     final hours = (mins / 60).toStringAsFixed(1);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       key: const ValueKey('minutes'),
@@ -774,9 +782,9 @@ class _WrappedScreenState extends State<WrappedScreen>
             );
           },
         ),
-        const Text(
-          'MINUTI DI ASCOLTO',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2.2),
+        Text(
+          l10n?.minutesListened ?? 'MINUTES LISTENED',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2.2),
         ),
         const SizedBox(height: 36),
         Container(
@@ -789,11 +797,11 @@ class _WrappedScreenState extends State<WrappedScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMetric('Ore totali', hours),
+              _buildMetric(l10n?.totalHours ?? 'Total hours', hours),
               Container(width: 1, height: 40, color: Colors.white24),
-              _buildMetric('Brani unici', '${_data!.totalUniqueTracks}'),
+              _buildMetric(l10n?.uniqueTracks ?? 'Unique tracks', '${_data!.totalUniqueTracks}'),
               Container(width: 1, height: 40, color: Colors.white24),
-              _buildMetric('Artisti', '${_data!.totalUniqueArtists}'),
+              _buildMetric(l10n?.artists ?? 'Artists', '${_data!.totalUniqueArtists}'),
             ],
           ),
         ),
@@ -931,6 +939,7 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 4: Top Songs & Reveal ───────────────────────────────────────────
   Widget _buildTopSongsSlide() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('songs'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,9 +947,9 @@ class _WrappedScreenState extends State<WrappedScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'TOP BRANI',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF0844), letterSpacing: 1.5),
+            Text(
+              l10n?.topSongsHeader ?? 'TOP SONGS',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF0844), letterSpacing: 1.5),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -949,20 +958,23 @@ class _WrappedScreenState extends State<WrappedScreen>
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(CupertinoIcons.speaker_2_fill, color: Color(0xFF10B981), size: 12),
-                  SizedBox(width: 5),
-                  Text('IN RIPRODUZIONE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF10B981))),
+                  const Icon(CupertinoIcons.speaker_2_fill, color: Color(0xFF10B981), size: 12),
+                  const SizedBox(width: 5),
+                  Text(
+                    l10n?.nowPlayingHeader ?? 'NOW PLAYING',
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF10B981)),
+                  ),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        const Text(
-          'I tuoi brani più ascoltati',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+        Text(
+          l10n?.yourMostListenedSongs ?? 'Your most listened songs',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
         ),
         const SizedBox(height: 20),
         Expanded(
@@ -1009,7 +1021,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            rank.song.artist ?? 'Artista sconosciuto',
+                            rank.song.artist ?? (l10n?.unknownArtist ?? 'Unknown Artist'),
                             style: const TextStyle(fontSize: 12, color: Colors.white60),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1018,7 +1030,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                     ),
                     Text(
-                      '${rank.playCount} ascolti',
+                      l10n?.playsCount(rank.playCount) ?? '${rank.playCount} plays',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
                     ),
                   ],
@@ -1033,6 +1045,7 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 5: Top Artists ──────────────────────────────────────────────────
   Widget _buildTopArtistsSlide() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('artists'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1040,9 +1053,9 @@ class _WrappedScreenState extends State<WrappedScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'TOP ARTISTI',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF11998E), letterSpacing: 1.5),
+            Text(
+              l10n?.topArtistsHeader ?? 'TOP ARTISTS',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF11998E), letterSpacing: 1.5),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -1060,7 +1073,7 @@ class _WrappedScreenState extends State<WrappedScreen>
         ),
         const SizedBox(height: 6),
         const Text(
-          'Gli autori del tuo anno',
+          'Your musical anchors',
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
         ),
         const SizedBox(height: 20),
@@ -1115,7 +1128,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                     ),
                     Text(
-                      '${rank.playCount} ascolti',
+                      l10n?.playsCount(rank.playCount) ?? '${rank.playCount} plays',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
                     ),
                   ],
@@ -1137,7 +1150,7 @@ class _WrappedScreenState extends State<WrappedScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          'LA TUA PERSONALITÀ MUSICALE',
+          'YOUR LISTENING PERSONALITY',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.5),
         ),
         const SizedBox(height: 24),
@@ -1211,6 +1224,7 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 7: Bento Summary & Share Card ───────────────────────────────────
   Widget _buildSummaryCardSlide() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('summary'),
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1227,9 +1241,9 @@ class _WrappedScreenState extends State<WrappedScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'MUSLY PLAYBACK',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.8, color: Color(0xFFFA243C)),
+                  Text(
+                    l10n?.muslyPlaybackHeader ?? 'MUSLY PLAYBACK',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.8, color: Color(0xFFFA243C)),
                   ),
                   Text('${_data!.year}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70)),
                 ],
@@ -1244,7 +1258,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Brano #1', style: TextStyle(fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w600)),
+                          Text(
+                            l10n?.topSongBadge ?? 'Song #1',
+                            style: const TextStyle(fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w600),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             _data!.topSongs.first.song.title,
@@ -1268,11 +1285,11 @@ class _WrappedScreenState extends State<WrappedScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMetric('Minuti', '${_data!.totalMinutesListened}'),
+                  _buildMetric(l10n?.minutes ?? 'Minutes', '${_data!.totalMinutesListened}'),
                   Container(width: 1, height: 32, color: Colors.white24),
-                  _buildMetric('Top Artista', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'N/A'),
+                  _buildMetric(l10n?.topArtistMetric ?? 'Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'N/A'),
                   Container(width: 1, height: 32, color: Colors.white24),
-                  _buildMetric('Genere', _data!.topGenre),
+                  _buildMetric(l10n?.genreMetric ?? 'Genre', _data!.topGenre),
                 ],
               ),
             ],
@@ -1284,7 +1301,10 @@ class _WrappedScreenState extends State<WrappedScreen>
           child: ElevatedButton.icon(
             onPressed: _playTopSongs,
             icon: const Icon(CupertinoIcons.play_circle_fill, size: 22),
-            label: const Text('Ascolta i tuoi Top Brani', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            label: Text(
+              l10n?.playYourTopSongs ?? 'Play Your Top Songs',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFA243C),
               foregroundColor: Colors.white,

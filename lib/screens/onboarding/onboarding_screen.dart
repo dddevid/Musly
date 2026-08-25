@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:musly/services/storage_service.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback? onFinished;
@@ -54,103 +55,100 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final FocusNode _keyboardFocusNode = FocusNode();
   int _currentPage = 0;
 
-  static const List<_OnboardingItem> _slides = [
+  List<_OnboardingItem> _getSlides(AppLocalizations l10n) => [
     _OnboardingItem(
-      titlePrefix: 'Your Music Library,\n',
-      titleHighlight: 'In Your Pocket.',
-      description:
-          'Connect to Navidrome, Subsonic, Jellyfin, or play local files with bit-perfect lossless quality.',
-      highlightColor: Color(0xFF60A5FA),
-      auraColors: [
+      titlePrefix: l10n.onboardingSlide1TitlePrefix,
+      titleHighlight: l10n.onboardingSlide1TitleHighlight,
+      description: l10n.onboardingSlide1Description,
+      highlightColor: const Color(0xFF60A5FA),
+      auraColors: const [
         Color(0xFF1E3A8A),
         Color(0xFF2563EB),
         Color(0xFF38BDF8),
         Color(0xFF60A5FA),
       ],
-      buttonGradient: [Color(0xFF2563EB), Color(0xFF38BDF8)],
-      glowColor: Color(0xFF2563EB),
-      buttonText: 'Next',
+      buttonGradient: const [Color(0xFF2563EB), Color(0xFF38BDF8)],
+      glowColor: const Color(0xFF2563EB),
+      buttonText: l10n.onboardingNext,
       features: [
         _OnboardingFeature(
           icon: CupertinoIcons.music_note_2,
-          title: 'Self-Hosted Freedom',
-          description: 'Full compatibility with Subsonic, Navidrome, and Jellyfin APIs.',
+          title: l10n.onboardingSlide1Feature1Title,
+          description: l10n.onboardingSlide1Feature1Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.folder_fill,
-          title: 'Local Music Support',
-          description: 'Play your offline collection directly without server setup.',
+          title: l10n.onboardingSlide1Feature2Title,
+          description: l10n.onboardingSlide1Feature2Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.waveform,
-          title: 'Lossless Hi-Res Audio',
-          description: 'Bit-perfect FLAC, ALAC, Opus, and gapless audio playback.',
+          title: l10n.onboardingSlide1Feature3Title,
+          description: l10n.onboardingSlide1Feature3Desc,
         ),
       ],
     ),
     _OnboardingItem(
-      titlePrefix: 'Smart Mixes,\n',
-      titleHighlight: 'Built Around You.',
-      description:
-          'Musly learns your listening habits on-device to craft dynamic daily mixes and surface forgotten favorites.',
-      highlightColor: Color(0xFFFB923C),
-      auraColors: [
+      titlePrefix: l10n.onboardingSlide2TitlePrefix,
+      titleHighlight: l10n.onboardingSlide2TitleHighlight,
+      description: l10n.onboardingSlide2Description,
+      highlightColor: const Color(0xFFFB923C),
+      auraColors: const [
         Color(0xFF7C2D12),
         Color(0xFFEA580C),
         Color(0xFFF97316),
         Color(0xFFFBBF24),
       ],
-      buttonGradient: [Color(0xFFEA580C), Color(0xFFF97316)],
-      glowColor: Color(0xFFEA580C),
-      buttonText: 'Next',
+      buttonGradient: const [Color(0xFFEA580C), Color(0xFFF97316)],
+      glowColor: const Color(0xFFEA580C),
+      buttonText: l10n.onboardingNext,
       features: [
         _OnboardingFeature(
           icon: CupertinoIcons.sparkles,
-          title: 'Algorithmic Taste Profiling',
-          description: 'Learns play frequencies, skips, and ratings with recency decay.',
+          title: l10n.onboardingSlide2Feature1Title,
+          description: l10n.onboardingSlide2Feature1Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.antenna_radiowaves_left_right,
-          title: 'Personalized Daily Mixes',
-          description: 'Automatic Made For You, Listen Again, and Top Hits playlists.',
+          title: l10n.onboardingSlide2Feature2Title,
+          description: l10n.onboardingSlide2Feature2Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.device_laptop,
-          title: '100% On-Device Processing',
-          description: 'Your listening profile stays strictly on your hardware.',
+          title: l10n.onboardingSlide2Feature3Title,
+          description: l10n.onboardingSlide2Feature3Desc,
         ),
       ],
     ),
     _OnboardingItem(
-      titlePrefix: 'Completely Private.\n',
-      titleHighlight: 'No Ads, No Tracking.',
-      description:
-          'Zero analytics, zero telemetry. Enjoy time-synced lyrics, offline downloads, and desktop sync in total privacy.',
-      highlightColor: Color(0xFF34D399),
-      auraColors: [
+      titlePrefix: l10n.onboardingSlide3TitlePrefix,
+      titleHighlight: l10n.onboardingSlide3TitleHighlight,
+      description: l10n.onboardingSlide3Description,
+      highlightColor: const Color(0xFF34D399),
+      auraColors: const [
         Color(0xFF064E3B),
         Color(0xFF059669),
         Color(0xFF10B981),
         Color(0xFF34D399),
       ],
-      buttonGradient: [Color(0xFF059669), Color(0xFF10B981)],
-      glowColor: Color(0xFF10B981),
-      buttonText: 'Get Started',
+      buttonGradient: const [Color(0xFF059669), Color(0xFF10B981)],
+      glowColor: const Color(0xFF10B981),
+      buttonText: l10n.onboardingGetStarted,
       features: [
         _OnboardingFeature(
           icon: CupertinoIcons.shield_fill,
-          title: 'Zero Telemetry & Tracking',
-          description: 'No third-party SDKs, no trackers, no ads, completely open source.',
+          title: l10n.onboardingSlide3Feature1Title,
+          description: l10n.onboardingSlide3Feature1Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.text_quote,
-          title: 'Time-Synced Lyrics',
-          description: 'Real-time synchronized karaoke lyrics with LRCLIB fallback.',
+          title: l10n.onboardingSlide3Feature2Title,
+          description: l10n.onboardingSlide3Feature2Desc,
         ),
         _OnboardingFeature(
           icon: CupertinoIcons.arrow_down_circle_fill,
-          title: 'Offline Download Manager',
-          description: 'Cache full playlists and albums with batch downloading.',
+          title: l10n.onboardingSlide3Feature3Title,
+          description: l10n.onboardingSlide3Feature3Desc,
         ),
       ],
     ),
@@ -184,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _goToPage(int page) {
-    if (page < 0 || page >= _slides.length) return;
+    if (page < 0 || page >= 3) return;
     HapticFeedback.lightImpact();
     setState(() => _currentPage = page);
     if (_pageController.hasClients) {
@@ -197,7 +195,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onNextPressed() {
-    if (_currentPage < _slides.length - 1) {
+    if (_currentPage < 2) {
       _goToPage(_currentPage + 1);
     } else {
       _completeOnboarding();
@@ -227,7 +225,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentItem = _slides[_currentPage];
+    final l10n = AppLocalizations.of(context)!;
+    final slides = _getSlides(l10n);
+    final currentItem = slides[_currentPage];
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width >= 820;
 
@@ -298,17 +298,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     top: size.height / 2 - 24,
                     child: _buildFloatingNavButton(
                       icon: CupertinoIcons.chevron_left,
-                      tooltip: 'Previous (Left Arrow)',
+                      tooltip: l10n.previousSlideTooltip,
                       onTap: _onPrevPressed,
                     ),
                   ),
-                if (_currentPage < _slides.length - 1)
+                if (_currentPage < slides.length - 1)
                   Positioned(
                     right: 24,
                     top: size.height / 2 - 24,
                     child: _buildFloatingNavButton(
                       icon: CupertinoIcons.chevron_right,
-                      tooltip: 'Next (Right Arrow / Space)',
+                      tooltip: l10n.nextSlideTooltip,
                       onTap: _onNextPressed,
                     ),
                   ),
@@ -379,7 +379,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            widget.onFinished == null ? 'Close' : 'Skip Tour',
+                            widget.onFinished == null
+                                ? AppLocalizations.of(context)!.close
+                                : AppLocalizations.of(context)!.skip,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -523,7 +525,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             children: [
                               // Slide Indicators
                               Row(
-                                children: List.generate(_slides.length, (index) {
+                                children: List.generate(3, (index) {
                                   final isActive = index == _currentPage;
                                   return GestureDetector(
                                     onTap: () => _goToPage(index),
@@ -552,7 +554,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     foregroundColor: Colors.white70,
                                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                                   ),
-                                  child: const Text('Back'),
+                                  child: Text(AppLocalizations.of(context)!.back),
                                 ),
                                 const SizedBox(width: 8),
                               ],
@@ -587,8 +589,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              widget.onFinished == null && _currentPage == _slides.length - 1
-                                                  ? 'Finish Tour'
+                                              widget.onFinished == null && _currentPage == 2
+                                                  ? AppLocalizations.of(context)!.finishTour
                                                   : currentItem.buttonText,
                                               style: const TextStyle(
                                                 fontSize: 15,
@@ -773,6 +775,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // ── Mobile Layout ──────────────────────────────────────────────────────────
 
   Widget _buildMobileLayout(BuildContext context, _OnboardingItem currentItem) {
+    final l10n = AppLocalizations.of(context)!;
+    final slides = _getSlides(l10n);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -821,9 +826,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPageChanged: (index) {
               setState(() => _currentPage = index);
             },
-            itemCount: _slides.length,
+            itemCount: slides.length,
             itemBuilder: (context, index) {
-              final slide = _slides[index];
+              final slide = slides[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Column(
@@ -882,7 +887,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               // Slide Indicators
               Row(
-                children: List.generate(_slides.length, (index) {
+                children: List.generate(3, (index) {
                   final isActive = index == _currentPage;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 260),
@@ -927,8 +932,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     borderRadius: BorderRadius.circular(26),
                     child: Center(
                       child: Text(
-                        widget.onFinished == null && _currentPage == _slides.length - 1
-                            ? 'Finish Tour'
+                        widget.onFinished == null && _currentPage == 2
+                            ? AppLocalizations.of(context)!.finishTour
                             : currentItem.buttonText,
                         style: const TextStyle(
                           fontSize: 16.5,
@@ -956,7 +961,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   child: Text(
-                    widget.onFinished == null ? 'Close' : 'Skip',
+                    widget.onFinished == null
+                        ? AppLocalizations.of(context)!.close
+                        : AppLocalizations.of(context)!.skip,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,

@@ -4,6 +4,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/detail/playlist_screen.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class LibrarySearchDelegate extends SearchDelegate<String> {
   final LibraryProvider libraryProvider;
@@ -138,7 +139,7 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
               ),
             ),
             title: Text(playlist.name),
-            subtitle: Text('${playlist.songCount} songs'),
+            subtitle: Text(AppLocalizations.of(context)!.songsCount(playlist.songCount ?? 0)),
             onTap: () {
               close(context, '');
               NavigationHelper.push(

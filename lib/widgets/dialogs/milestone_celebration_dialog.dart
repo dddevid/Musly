@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 
 class MilestoneCelebrationDialog extends StatefulWidget {
   final VoidCallback? onResume;
@@ -67,6 +68,7 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Stack(
       children: [
@@ -147,9 +149,9 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                         color: const Color(0xFFFFD700).withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        '🏆 50 BRANI ASCOLTATI',
-                        style: TextStyle(
+                      child: Text(
+                        '🏆 ${l10n.milestone50SongsBadge}',
+                        style: const TextStyle(
                           color: Color(0xFFFFD700),
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
@@ -160,9 +162,9 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                     const SizedBox(height: 14),
 
                     // Title
-                    const Text(
-                      'Grazie di cuore!',
-                      style: TextStyle(
+                    Text(
+                      l10n.milestone50SongsTitle,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -172,7 +174,7 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
 
                     // Message
                     Text(
-                      'Hai appena raggiunto il traguardo di 50 canzoni su Musly! Grazie per aver scelto quest\'app per vivere e accompagnare la tua passione musicale ogni giorno. 🎶✨',
+                      l10n.milestone50SongsMessage,
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark ? Colors.white70 : Colors.black87,
@@ -191,9 +193,9 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                           widget.onResume?.call();
                         },
                         icon: const Icon(CupertinoIcons.play_arrow_solid, size: 18),
-                        label: const Text(
-                          'Continua ad ascoltare',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        label: Text(
+                          l10n.continueListening,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),

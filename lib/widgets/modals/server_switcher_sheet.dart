@@ -405,6 +405,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
 
     // Brand specific icons & colors
     final (IconData icon, List<Color> gradient) = switch (profile.serverFamily) {
@@ -553,34 +554,34 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                   },
                   itemBuilder: (ctx) => [
                     if (!isActive)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'switch',
                         child: Row(
                           children: [
-                            Icon(CupertinoIcons.arrow_2_squarepath, size: 18),
-                            SizedBox(width: 10),
-                            Text('Connect to Server'),
+                            const Icon(CupertinoIcons.arrow_2_squarepath, size: 18),
+                            const SizedBox(width: 10),
+                            Text(l10n.connectToServer),
                           ],
                         ),
                       ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'rename',
                       child: Row(
                         children: [
-                          Icon(CupertinoIcons.pencil, size: 18),
-                          SizedBox(width: 10),
-                          Text('Rename Profile'),
+                          const Icon(CupertinoIcons.pencil, size: 18),
+                          const SizedBox(width: 10),
+                          Text(l10n.renameProfile),
                         ],
                       ),
                     ),
                     if (!profile.isYoutube)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(CupertinoIcons.trash, size: 18, color: Colors.red),
-                            SizedBox(width: 10),
-                            Text('Remove', style: TextStyle(color: Colors.red)),
+                            const Icon(CupertinoIcons.trash, size: 18, color: Colors.red),
+                            const SizedBox(width: 10),
+                            Text(l10n.remove, style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -595,6 +596,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
 
   Widget _buildQuickAddYtStreamTile(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[100],
@@ -614,8 +617,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           ),
           child: const Icon(CupertinoIcons.play_rectangle_fill, color: Color(0xFFFF3B30), size: 18),
         ),
-        title: const Text('Add Web Stream', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        subtitle: const Text('Instant streaming with no login required', style: TextStyle(fontSize: 12)),
+        title: Text(l10n.addWebStream, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        subtitle: Text(l10n.addWebStreamSubtitle, style: const TextStyle(fontSize: 12)),
         trailing: FilledButton.tonal(
           onPressed: () => _openAddServerScreen(family: 'youtube'),
           style: FilledButton.styleFrom(
@@ -623,7 +626,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
             foregroundColor: const Color(0xFFFF3B30),
             padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
-          child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(l10n.add, style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
     );

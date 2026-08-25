@@ -770,14 +770,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       // Push a "loading" MediaItem so Auto shows a title immediately.
       _audioHandler.updateNowPlaying(
         id: mediaId,
-        title: 'Caricamento…',
+        title: 'Loading…',
         artist: 'YouTube',
       );
 
       // Start playback with placeholder song immediately.
       final tempSong = Song(
         id: mediaId,
-        title: 'Caricamento…',
+        title: 'Loading…',
         artist: 'YouTube',
         duration: 0,
       );

@@ -3,12 +3,14 @@ import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/subsonic_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class QueueView extends StatelessWidget {
   const QueueView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<PlayerProvider>(
       builder: (context, provider, child) {
         final queue = provider.queue;
@@ -16,10 +18,10 @@ class QueueView extends StatelessWidget {
         final subsonic = Provider.of<SubsonicService>(context, listen: false);
 
         if (queue.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              "Nessun brano in coda",
-              style: TextStyle(color: Colors.white70, fontSize: 18),
+              l10n.noSongsInQueue,
+              style: const TextStyle(color: Colors.white70, fontSize: 18),
             ),
           );
         }
@@ -29,11 +31,11 @@ class QueueView extends StatelessWidget {
           itemCount: queue.length + 1, // +1 for the "Up Next" header
           itemBuilder: (context, index) {
             if (index == 0) {
-              return const Padding(
-                padding: EdgeInsets.only(bottom: 24.0, left: 8.0),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24.0, left: 8.0),
                 child: Text(
-                  "Up Next",
-                  style: TextStyle(
+                  l10n.upNext,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -82,7 +84,7 @@ class QueueView extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(
-                song.artist ?? 'Artista Sconosciuto',
+                song.artist ?? l10n.unknownArtist,
                 style: TextStyle(
                   color: isPlaying ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.8) : (isPast ? Colors.white24 : Colors.white70),
                   fontSize: 14,

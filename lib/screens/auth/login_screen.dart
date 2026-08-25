@@ -191,15 +191,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 IconButton(
                   icon: Icon(Icons.copy_rounded, size: 16, color: color.withValues(alpha: 0.7)),
-                  tooltip: 'Copy error',
+                  tooltip: AppLocalizations.of(context)?.copyError ?? 'Copy error',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: error));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Error copied to clipboard'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context)?.errorCopiedToClipboard ??
+                              'Error copied to clipboard',
+                        ),
+                        duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
                         width: 260,
                       ),
@@ -710,7 +713,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _usernameFocusNode.requestFocus(),
                       decoration: InputDecoration(
-                        labelText: 'Server URL',
+                        labelText: AppLocalizations.of(context)?.serverUrl ?? 'Server URL',
                         hintText: _serverFamily == 'jellyfin'
                             ? 'https://jellyfin.example.com'
                             : 'https://your-server.com',
@@ -766,7 +769,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
                       decoration: InputDecoration(
-                        labelText: 'Username',
+                        labelText: AppLocalizations.of(context)?.username ?? 'Username',
                         prefixIcon: const Icon(CupertinoIcons.person),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -788,7 +791,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) { if (!isBusy) _login(); },
                       decoration: InputDecoration(
-                        labelText: 'Password',
+                        labelText: AppLocalizations.of(context)?.password ?? 'Password',
                         prefixIcon: const Icon(CupertinoIcons.lock),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -913,7 +916,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _profileNameController,
                         autocorrect: false,
                         decoration: InputDecoration(
-                          labelText: 'Profile Name (optional)',
+                          labelText: AppLocalizations.of(context)?.profileNameOptional ?? 'Profile Name (optional)',
                           hintText: 'e.g. Home, Work, VPN',
                           prefixIcon: const Icon(CupertinoIcons.tag),
                           border: OutlineInputBorder(
@@ -1080,7 +1083,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _clientCertPasswordController,
                                 obscureText: _obscureClientCertPassword,
                                 decoration: InputDecoration(
-                                  labelText: 'Certificate Password',
+                                  labelText: AppLocalizations.of(context)?.clientCertPassword ?? 'Certificate Password',
                                   hintText: 'Password for .p12 / .pfx (optional)',
                                   prefixIcon: const Icon(CupertinoIcons.lock_shield),
                                   suffixIcon: IconButton(

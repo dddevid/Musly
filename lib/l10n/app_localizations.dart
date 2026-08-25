@@ -88,7 +88,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -111,11 +111,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -145,7 +145,7 @@ abstract class AppLocalizations {
     Locale('tr'),
     Locale('uk'),
     Locale('vi'),
-    Locale('zh'),
+    Locale('zh')
   ];
 
   /// Application name
@@ -280,7 +280,7 @@ abstract class AppLocalizations {
   /// **'No songs in this genre'**
   String get noSongsInGenre;
 
-  /// Error message when albums fail to load
+  /// Error loading albums message
   ///
   /// In en, this message translates to:
   /// **'Error loading albums'**
@@ -520,7 +520,7 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
-  /// Close button label
+  /// Close button
   ///
   /// In en, this message translates to:
   /// **'Close'**
@@ -1966,7 +1966,7 @@ abstract class AppLocalizations {
   /// **'Create Playlist'**
   String get createPlaylistTitle;
 
-  /// Hint text for the playlist name input field
+  /// Hint text for playlist name input
   ///
   /// In en, this message translates to:
   /// **'Playlist name'**
@@ -2074,7 +2074,7 @@ abstract class AppLocalizations {
   /// **'No songs found'**
   String get noSongsFound;
 
-  /// Empty state when no albums match a filter
+  /// No albums found message
   ///
   /// In en, this message translates to:
   /// **'No albums found'**
@@ -2104,13 +2104,13 @@ abstract class AppLocalizations {
   /// **'Copy Stream URL'**
   String get copyStreamUrl;
 
-  /// Error state message on the radio screen
+  /// Error message when radio stations fail to load
   ///
   /// In en, this message translates to:
   /// **'Failed to load radio stations'**
   String get failedToLoadRadioStations;
 
-  /// Empty state headline on the radio screen
+  /// Empty state title for radio stations
   ///
   /// In en, this message translates to:
   /// **'No Radio Stations'**
@@ -4251,6 +4251,900 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maybe Later'**
   String get maybeLater;
+
+  /// Menu action to add all songs in the album or playlist to the playback queue
+  ///
+  /// In en, this message translates to:
+  /// **'Add all to queue'**
+  String get addAllToQueue;
+
+  /// Notification shown when songs are added to the queue
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song added to queue} other{{count} songs added to queue}}'**
+  String songsAddedToQueue(int count);
+
+  /// Tooltip for searching within an album
+  ///
+  /// In en, this message translates to:
+  /// **'Search in album'**
+  String get searchInAlbum;
+
+  /// Tooltip for searching within a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Search in playlist'**
+  String get searchInPlaylist;
+
+  /// Placeholder text for filtering tracks in an album
+  ///
+  /// In en, this message translates to:
+  /// **'Filter tracks...'**
+  String get filterTracks;
+
+  /// Placeholder text for filtering songs in a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Filter songs...'**
+  String get filterSongs;
+
+  /// Empty state message when playback queue is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No songs in queue'**
+  String get noSongsInQueue;
+
+  /// Tooltip for more options menu
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// Header for upcoming tracks in the queue list
+  ///
+  /// In en, this message translates to:
+  /// **'Up Next'**
+  String get upNext;
+
+  /// Tooltip to remove selected items from playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Remove selected'**
+  String get removeSelected;
+
+  /// Tooltip or title to reorder songs in a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder songs'**
+  String get reorderSongs;
+
+  /// Tooltip to enter multi-select mode in a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Select songs'**
+  String get selectSongs;
+
+  /// Tooltip to finish reordering songs
+  ///
+  /// In en, this message translates to:
+  /// **'Done reordering'**
+  String get doneReordering;
+
+  /// Tooltip to download the whole album
+  ///
+  /// In en, this message translates to:
+  /// **'Download album'**
+  String get downloadAlbum;
+
+  /// Tooltip to download the whole playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Download playlist'**
+  String get downloadPlaylist;
+
+  /// Tooltip when content is downloaded
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded — tap to remove'**
+  String get downloadedTapToRemove;
+
+  /// Tooltip when download is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading — tap to cancel'**
+  String get downloadingTapToCancel;
+
+  /// Dialog title for removing downloaded songs
+  ///
+  /// In en, this message translates to:
+  /// **'Remove downloads?'**
+  String get removeDownloadsTitle;
+
+  /// Confirmation message to remove downloaded songs from an album
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all {count} downloaded songs from \"{name}\"?'**
+  String removeAlbumDownloadsConfirm(int count, String name);
+
+  /// Confirmation message to remove downloaded songs from a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all {count} downloaded songs from \"{name}\"?'**
+  String removePlaylistDownloadsConfirm(int count, String name);
+
+  /// Notification when songs are queued for download
+  ///
+  /// In en, this message translates to:
+  /// **'Queued {count} songs for download…'**
+  String queuedSongsForDownload(int count);
+
+  /// Snackbar message when a song is removed from playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Song removed from playlist'**
+  String get songRemovedFromPlaylist;
+
+  /// Error snackbar when removing a song from playlist fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error removing song: {error}'**
+  String errorRemovingSong(String error);
+
+  /// Error snackbar when reordering song fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error reordering song: {error}'**
+  String errorReorderingSong(String error);
+
+  /// Dialog title for removing multiple songs from playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Remove songs'**
+  String get removeSongsTitle;
+
+  /// Confirmation dialog message to remove songs from playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count} song(s) from \"{name}\"?'**
+  String removePlaylistSongsConfirm(int count, String name);
+
+  /// Snackbar message after removing multiple songs
+  ///
+  /// In en, this message translates to:
+  /// **'Removed {count} song(s) from playlist'**
+  String removedSongsFromPlaylist(int count);
+
+  /// Dialog title when adding duplicate song to playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Already in playlist'**
+  String get alreadyInPlaylist;
+
+  /// Dialog message when adding duplicate song to playlist
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" is already in \"{playlist}\". Do you still want to add it?'**
+  String alreadyInPlaylistConfirm(String title, String playlist);
+
+  /// Button to add duplicate song anyway
+  ///
+  /// In en, this message translates to:
+  /// **'Add anyway'**
+  String get addAnyway;
+
+  /// Button label asking if user wants to enter offline mode
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode?'**
+  String get offlineModeQuestion;
+
+  /// Playback countdown slide label
+  ///
+  /// In en, this message translates to:
+  /// **'DRUMROLL...'**
+  String get drumroll;
+
+  /// Playback suspense slide title
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to discover\nyour #1 song?'**
+  String get readyToDiscoverTopSong;
+
+  /// Playback welcome slide button
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to begin'**
+  String get tapToBegin;
+
+  /// Playback minutes header
+  ///
+  /// In en, this message translates to:
+  /// **'MINUTES LISTENED'**
+  String get minutesListened;
+
+  /// Playback total hours metric label
+  ///
+  /// In en, this message translates to:
+  /// **'Total hours'**
+  String get totalHours;
+
+  /// Playback unique tracks metric label
+  ///
+  /// In en, this message translates to:
+  /// **'Unique tracks'**
+  String get uniqueTracks;
+
+  /// Playback top songs slide header
+  ///
+  /// In en, this message translates to:
+  /// **'TOP SONGS'**
+  String get topSongsHeader;
+
+  /// Playback top songs title
+  ///
+  /// In en, this message translates to:
+  /// **'Your most listened songs'**
+  String get yourMostListenedSongs;
+
+  /// Playback top artists header
+  ///
+  /// In en, this message translates to:
+  /// **'TOP ARTISTS'**
+  String get topArtistsHeader;
+
+  /// Number of plays for a track in Wrapped/Playback
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 play} other{{count} plays}}'**
+  String playsCount(int count);
+
+  /// Badge for the #1 song in Wrapped
+  ///
+  /// In en, this message translates to:
+  /// **'Song #1'**
+  String get topSongBadge;
+
+  /// Top artist metric label in Wrapped summary
+  ///
+  /// In en, this message translates to:
+  /// **'Top Artist'**
+  String get topArtistMetric;
+
+  /// Genre metric label in Wrapped summary
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get genreMetric;
+
+  /// Header in Wrapped summary slide
+  ///
+  /// In en, this message translates to:
+  /// **'MUSLY PLAYBACK'**
+  String get muslyPlaybackHeader;
+
+  /// Enable Musly connect setting title
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Musly Connect'**
+  String get enableMuslyConnect;
+
+  /// Subtitle for enable Musly Connect setting
+  ///
+  /// In en, this message translates to:
+  /// **'Discover nearby devices over Wi-Fi for remote control and listening sessions'**
+  String get enableMuslyConnectSubtitle;
+
+  /// Available devices section title
+  ///
+  /// In en, this message translates to:
+  /// **'Available Devices'**
+  String get availableDevices;
+
+  /// Subtitle when connect discovery is active but no devices found
+  ///
+  /// In en, this message translates to:
+  /// **'LAN Discovery active • No nearby devices'**
+  String get lanDiscoveryActive;
+
+  /// Count of nearby connect devices found
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 nearby device found} other{{count} nearby devices found}}'**
+  String nearbyDevicesFound(int count);
+
+  /// Minutes label
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get minutes;
+
+  /// Now playing upper-case badge/header
+  ///
+  /// In en, this message translates to:
+  /// **'NOW PLAYING'**
+  String get nowPlayingHeader;
+
+  /// Privacy policy title
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy First'**
+  String get privacyFirstTitle;
+
+  /// Privacy policy subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays with you. Always.'**
+  String get privacyFirstSubtitle;
+
+  /// No data selling title
+  ///
+  /// In en, this message translates to:
+  /// **'No Data Selling'**
+  String get noDataSellingTitle;
+
+  /// No data selling description
+  ///
+  /// In en, this message translates to:
+  /// **'We never sell, share, or transfer your personal data to third parties.'**
+  String get noDataSellingDescription;
+
+  /// Local first storage title
+  ///
+  /// In en, this message translates to:
+  /// **'Local-First Storage'**
+  String get localFirstStorageTitle;
+
+  /// Local first storage description
+  ///
+  /// In en, this message translates to:
+  /// **'Your music library and credentials stay on your device.'**
+  String get localFirstStorageDescription;
+
+  /// 100% private and open title
+  ///
+  /// In en, this message translates to:
+  /// **'100% Private & Open'**
+  String get privateOpenTitle;
+
+  /// Telemetry free description
+  ///
+  /// In en, this message translates to:
+  /// **'Musly is completely telemetry-free. No personal identifiers, usage tracking, or analytics are collected.'**
+  String get privateOpenDescription;
+
+  /// Read full privacy policy link
+  ///
+  /// In en, this message translates to:
+  /// **'Read Full Privacy Policy'**
+  String get readFullPrivacyPolicy;
+
+  /// View details on website subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View complete details on our website'**
+  String get viewCompleteDetailsWebsite;
+
+  /// Accept privacy button
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand & Continue'**
+  String get understandAndContinue;
+
+  /// Decline privacy button
+  ///
+  /// In en, this message translates to:
+  /// **'Decline & Exit'**
+  String get declineAndExit;
+
+  /// Exit application button
+  ///
+  /// In en, this message translates to:
+  /// **'Exit App'**
+  String get exitApp;
+
+  /// Stop playback
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
+  /// Close queue sidebar
+  ///
+  /// In en, this message translates to:
+  /// **'Close Queue'**
+  String get closeQueue;
+
+  /// Timer turned off label
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get timerOff;
+
+  /// History navigation tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// Search in library tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Search in Library'**
+  String get searchInLibrary;
+
+  /// Add generic button/tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Clear button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// Back button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// Previous slide tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previousSlide;
+
+  /// Next slide tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextSlide;
+
+  /// Radios subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Radios'**
+  String get radios;
+
+  /// Downloads screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloads;
+
+  /// No downloaded songs empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded songs yet'**
+  String get noDownloadedSongsYet;
+
+  /// No downloaded albums empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded albums yet'**
+  String get noDownloadedAlbumsYet;
+
+  /// Connected to web stream status
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to Web Stream'**
+  String get connectedToWebStream;
+
+  /// Self signed certs subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Useful for internal LAN or custom self-signed SSL'**
+  String get allowSelfSignedCertificatesSubtitle;
+
+  /// Legacy auth subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Required for older Subsonic API implementations'**
+  String get legacyAuthenticationSubtitle;
+
+  /// Certificate file subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'.crt, .pem or .cer file'**
+  String get certificateFileSubtitle;
+
+  /// Client identity file subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'.p12 or .pfx client identity file'**
+  String get clientIdentityFileSubtitle;
+
+  /// Copy error tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Copy error'**
+  String get copyError;
+
+  /// Error copied snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Error copied to clipboard'**
+  String get errorCopiedToClipboard;
+
+  /// Failed to update liked status snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update liked status'**
+  String get failedToUpdateFavorite;
+
+  /// Queued songs from albums for download snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Queued {songCount} songs from {albumCount} albums for download…'**
+  String queuedSongsFromAlbumsForDownload(int songCount, int albumCount);
+
+  /// Download all albums tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Download All Albums'**
+  String get downloadAllAlbums;
+
+  /// Download all favorites tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Download All Favorites'**
+  String get downloadAllFavorites;
+
+  /// Download all tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Download All'**
+  String get downloadAll;
+
+  /// Create playlist subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Build a custom playlist with your favorite tracks'**
+  String get createPlaylistSubtitle;
+
+  /// Add music source title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Music Source'**
+  String get addMusicSource;
+
+  /// Add music source subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Navidrome, Jellyfin, or Web Stream'**
+  String get addMusicSourceSubtitle;
+
+  /// Remove from favorites dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Favorites?'**
+  String get removeFromFavoritesTitle;
+
+  /// Remove from favorites confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to remove \"{title}\" from favorites?'**
+  String removeFromFavoritesConfirm(String title);
+
+  /// Failed to remove item
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove: {error}'**
+  String failedToRemove(String error);
+
+  /// Stream URL snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Stream URL: {url}'**
+  String streamUrlLabel(String url);
+
+  /// Shuffle new selection tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle New Selection'**
+  String get shuffleNewSelection;
+
+  /// Sort duration longest option
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (Longest first)'**
+  String get sortDurationLongest;
+
+  /// Connect to server option
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Server'**
+  String get connectToServer;
+
+  /// Rename profile option
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Profile'**
+  String get renameProfile;
+
+  /// Add web stream option
+  ///
+  /// In en, this message translates to:
+  /// **'Add Web Stream'**
+  String get addWebStream;
+
+  /// Add web stream subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Instant streaming with no login required'**
+  String get addWebStreamSubtitle;
+
+  /// Recent searches header
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Searches'**
+  String get recentSearches;
+
+  /// Empty state subtitle for playlists
+  ///
+  /// In en, this message translates to:
+  /// **'Create a playlist to get started'**
+  String get createPlaylistToGetStarted;
+
+  /// Empty state subtitle for radio stations
+  ///
+  /// In en, this message translates to:
+  /// **'Add radio stations in your server settings to see them here.'**
+  String get addRadioStationsHint;
+
+  /// Next button in onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// Get Started button in onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingGetStarted;
+
+  /// Previous slide tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Previous (Left Arrow)'**
+  String get previousSlideTooltip;
+
+  /// Next slide tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Next (Right Arrow / Space)'**
+  String get nextSlideTooltip;
+
+  /// Onboarding slide 1 title prefix
+  ///
+  /// In en, this message translates to:
+  /// **'Your Music Library,\n'**
+  String get onboardingSlide1TitlePrefix;
+
+  /// Onboarding slide 1 title highlight
+  ///
+  /// In en, this message translates to:
+  /// **'In Your Pocket.'**
+  String get onboardingSlide1TitleHighlight;
+
+  /// Onboarding slide 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Navidrome, Subsonic, Jellyfin, or play local files with bit-perfect lossless quality.'**
+  String get onboardingSlide1Description;
+
+  /// Onboarding slide 1 feature 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Self-Hosted Freedom'**
+  String get onboardingSlide1Feature1Title;
+
+  /// Onboarding slide 1 feature 1 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Full compatibility with Subsonic, Navidrome, and Jellyfin APIs.'**
+  String get onboardingSlide1Feature1Desc;
+
+  /// Onboarding slide 1 feature 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Local Music Support'**
+  String get onboardingSlide1Feature2Title;
+
+  /// Onboarding slide 1 feature 2 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Play your offline collection directly without server setup.'**
+  String get onboardingSlide1Feature2Desc;
+
+  /// Onboarding slide 1 feature 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Lossless Hi-Res Audio'**
+  String get onboardingSlide1Feature3Title;
+
+  /// Onboarding slide 1 feature 3 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Bit-perfect FLAC, ALAC, Opus, and gapless audio playback.'**
+  String get onboardingSlide1Feature3Desc;
+
+  /// Onboarding slide 2 title prefix
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Mixes,\n'**
+  String get onboardingSlide2TitlePrefix;
+
+  /// Onboarding slide 2 title highlight
+  ///
+  /// In en, this message translates to:
+  /// **'Built Around You.'**
+  String get onboardingSlide2TitleHighlight;
+
+  /// Onboarding slide 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'Musly learns your listening habits on-device to craft dynamic daily mixes and surface forgotten favorites.'**
+  String get onboardingSlide2Description;
+
+  /// Onboarding slide 2 feature 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Algorithmic Taste Profiling'**
+  String get onboardingSlide2Feature1Title;
+
+  /// Onboarding slide 2 feature 1 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Learns play frequencies, skips, and ratings with recency decay.'**
+  String get onboardingSlide2Feature1Desc;
+
+  /// Onboarding slide 2 feature 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized Daily Mixes'**
+  String get onboardingSlide2Feature2Title;
+
+  /// Onboarding slide 2 feature 2 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic Made For You, Listen Again, and Top Hits playlists.'**
+  String get onboardingSlide2Feature2Desc;
+
+  /// Onboarding slide 2 feature 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'100% On-Device Processing'**
+  String get onboardingSlide2Feature3Title;
+
+  /// Onboarding slide 2 feature 3 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Your listening profile stays strictly on your hardware.'**
+  String get onboardingSlide2Feature3Desc;
+
+  /// Onboarding slide 3 title prefix
+  ///
+  /// In en, this message translates to:
+  /// **'Completely Private.\n'**
+  String get onboardingSlide3TitlePrefix;
+
+  /// Onboarding slide 3 title highlight
+  ///
+  /// In en, this message translates to:
+  /// **'No Ads, No Tracking.'**
+  String get onboardingSlide3TitleHighlight;
+
+  /// Onboarding slide 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Zero analytics, zero telemetry. Enjoy time-synced lyrics, offline downloads, and desktop sync in total privacy.'**
+  String get onboardingSlide3Description;
+
+  /// Onboarding slide 3 feature 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Telemetry & Tracking'**
+  String get onboardingSlide3Feature1Title;
+
+  /// Onboarding slide 3 feature 1 desc
+  ///
+  /// In en, this message translates to:
+  /// **'No third-party SDKs, no trackers, no ads, completely open source.'**
+  String get onboardingSlide3Feature1Desc;
+
+  /// Onboarding slide 3 feature 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Time-Synced Lyrics'**
+  String get onboardingSlide3Feature2Title;
+
+  /// Onboarding slide 3 feature 2 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time synchronized karaoke lyrics with LRCLIB fallback.'**
+  String get onboardingSlide3Feature2Desc;
+
+  /// Onboarding slide 3 feature 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Download Manager'**
+  String get onboardingSlide3Feature3Title;
+
+  /// Onboarding slide 3 feature 3 desc
+  ///
+  /// In en, this message translates to:
+  /// **'Cache full playlists and albums with batch downloading.'**
+  String get onboardingSlide3Feature3Desc;
+
+  /// Finish tour button
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Tour'**
+  String get finishTour;
+
+  /// Skip button
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// Optional profile name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Name (Optional)'**
+  String get profileNameOptional;
+
+  /// Required server URL field label
+  ///
+  /// In en, this message translates to:
+  /// **'Server URL *'**
+  String get serverUrlRequired;
+
+  /// Optional LAN server URL field label
+  ///
+  /// In en, this message translates to:
+  /// **'LAN Server URL (Optional)'**
+  String get lanServerUrlOptional;
+
+  /// Required username field label
+  ///
+  /// In en, this message translates to:
+  /// **'Username *'**
+  String get usernameRequired;
+
+  /// Required password field label
+  ///
+  /// In en, this message translates to:
+  /// **'Password *'**
+  String get passwordRequired;
+
+  /// Playing in sync status label
+  ///
+  /// In en, this message translates to:
+  /// **'Playing in sync'**
+  String get playingInSync;
+
+  /// Switched back to this device snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Switched back to this device'**
+  String get switchedBackToThisDevice;
+
+  /// Connected to device snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {device}'**
+  String connectedToDeviceName(String device);
+
+  /// Search input hint text
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to play?'**
+  String get whatDoYouWantToPlay;
 }
 
 class _AppLocalizationsDelegate
@@ -4264,34 +5158,34 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-    'ar',
-    'az',
-    'bn',
-    'da',
-    'de',
-    'el',
-    'en',
-    'es',
-    'fi',
-    'fr',
-    'ga',
-    'hi',
-    'id',
-    'it',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'ro',
-    'ru',
-    'sq',
-    'sv',
-    'te',
-    'tr',
-    'uk',
-    'vi',
-    'zh',
-  ].contains(locale.languageCode);
+        'ar',
+        'az',
+        'bn',
+        'da',
+        'de',
+        'el',
+        'en',
+        'es',
+        'fi',
+        'fr',
+        'ga',
+        'hi',
+        'id',
+        'it',
+        'nl',
+        'no',
+        'pl',
+        'pt',
+        'ro',
+        'ru',
+        'sq',
+        'sv',
+        'te',
+        'tr',
+        'uk',
+        'vi',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -4357,9 +5251,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

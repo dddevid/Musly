@@ -6,6 +6,7 @@ import '../../services/offline_service.dart';
 import '../../providers/player_provider.dart';
 import '../../utils/navigation_helper.dart';
 import '../../widgets/widgets.dart';
+import '../../l10n/app_localizations.dart';
 import '../detail/album_screen.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -31,13 +32,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Future<void> _loadFavorites() async {
     setState(() => _isLoading = true);
 
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
     try {
-      final starred = await subsonicService.getStarred();
+      final subsonic = Provider.of<SubsonicService>(context, listen: false);
+      final starred = await subsonic.getStarred();
 
       if (mounted) {
         setState(() {
@@ -53,60 +50,60 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
   }
 
+  void _playAll({bool shuffle = false}) {
+    if (_favoriteSongs.isEmpty) return;
+
+    final player = Provider.of<PlayerProvider>(context, listen: false);
+    final songs = List<Song>.from(_favoriteSongs);
+
+    if (shuffle) {
+      songs.shuffle();
+    }
+
+    player.playSong(songs.first, playlist: songs, startIndex: 0);
+  }
+
   Future<void> _downloadAllFavorites() async {
     if (_favoriteSongs.isEmpty) return;
-    final offlineService = OfflineService();
-    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
+
+    final offlineService = Provider.of<OfflineService>(context, listen: false);
+    final subsonic = Provider.of<SubsonicService>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
+
     await offlineService.initialize();
-    offlineService.queuePlaylistDownload('favorites_all', _favoriteSongs, subsonicService);
+
+    for (final song in _favoriteSongs) {
+      await offlineService.downloadSong(song, subsonic);
+    }
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              const Icon(CupertinoIcons.arrow_down_circle_fill, color: Color(0xFF34C759), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Queued ${_favoriteSongs.length} favorite songs for download…',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          content: Text(l10n.queuedSongsForDownload(_favoriteSongs.length)),
         ),
       );
     }
   }
 
-  void _playAll({bool shuffle = false}) {
-    if (_favoriteSongs.isEmpty) return;
-    final player = Provider.of<PlayerProvider>(context, listen: false);
-    final songs = List<Song>.from(_favoriteSongs);
-    if (shuffle) songs.shuffle();
-    player.playSong(songs.first, playlist: songs, startIndex: 0);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favorites'),
+        title: Text(l10n.favorites),
         actions: [
           if (!_isLoading && _favoriteSongs.isNotEmpty && _selectedTab == 0)
             IconButton(
               icon: const Icon(CupertinoIcons.arrow_down_circle),
-              tooltip: 'Download All Favorites',
+              tooltip: l10n.downloadAllFavorites,
               onPressed: _downloadAllFavorites,
             ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: PillTabBar(
-            tabs: const ['Songs', 'Albums'],
+            tabs: [l10n.songs, l10n.albums],
             selectedIndex: _selectedTab,
             onTabSelected: (idx) => setState(() => _selectedTab = idx),
           ),
@@ -121,14 +118,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildSongsList() {
+    final l10n = AppLocalizations.of(context)!;
     if (_favoriteSongs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_border_rounded, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No favorite songs yet'),
+            const Icon(Icons.favorite_border_rounded, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(l10n.noFavoriteSongsYet),
           ],
         ),
       );
@@ -147,7 +145,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   child: FilledButton.icon(
                     onPressed: () => _playAll(shuffle: false),
                     icon: const Icon(CupertinoIcons.play_fill, size: 16),
-                    label: const Text('Play All'),
+                    label: Text(l10n.playAll),
                     style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -158,7 +156,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => _playAll(shuffle: true),
                     icon: const Icon(CupertinoIcons.shuffle, size: 16),
-                    label: const Text('Shuffle'),
+                    label: Text(l10n.shuffle),
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -168,7 +166,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 IconButton.filledTonal(
                   onPressed: _downloadAllFavorites,
                   icon: const Icon(CupertinoIcons.arrow_down_circle, size: 18),
-                  tooltip: 'Download All',
+                  tooltip: l10n.downloadAll,
                   style: IconButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -177,34 +175,46 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           );
         }
+
         final songIndex = index - 1;
         final song = _favoriteSongs[songIndex];
-        return SongTile(
-          song: song,
-          playlist: _favoriteSongs,
-          index: songIndex,
-          showAlbum: true,
-          onLongPress: () =>
-              _showRemoveFromFavoritesDialog(context, song, songIndex),
+
+        return Dismissible(
+          key: Key('fav_${song.id}'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            child: const Icon(CupertinoIcons.heart_slash, color: Colors.white),
+          ),
+          onDismissed: (_) => _removeFavorite(context, song, songIndex),
+          child: SongTile(
+            song: song,
+            playlist: _favoriteSongs,
+            index: songIndex,
+            showAlbum: true,
+          ),
         );
       },
     );
   }
 
-  void _showRemoveFromFavoritesDialog(
+  void _removeFavorite(
     BuildContext context,
     Song song,
     int index,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove from Favorites?'),
-        content: Text('Do you want to remove "${song.title}" from favorites?'),
+        title: Text(l10n.removeFromFavoritesTitle),
+        content: Text(l10n.removeFromFavoritesConfirm(song.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -220,18 +230,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 });
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Removed from favorites')),
+                    SnackBar(content: Text(l10n.removedFromFavorites)),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to remove: $e')),
+                    SnackBar(content: Text(l10n.failedToRemove(e.toString()))),
                   );
                 }
               }
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -239,14 +249,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildAlbumsList() {
+    final l10n = AppLocalizations.of(context)!;
     if (_favoriteAlbums.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.album_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No favorite albums yet'),
+            const Icon(Icons.album_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(l10n.noFavoriteAlbumsYet),
           ],
         ),
       );

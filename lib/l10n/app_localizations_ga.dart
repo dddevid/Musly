@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -2271,4 +2270,523 @@ class AppLocalizationsGa extends AppLocalizations {
 
   @override
   String get maybeLater => 'Maybe Later';
+
+  @override
+  String get addAllToQueue => 'Add all to queue';
+
+  @override
+  String songsAddedToQueue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs added to queue',
+      one: '1 song added to queue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchInAlbum => 'Search in album';
+
+  @override
+  String get searchInPlaylist => 'Search in playlist';
+
+  @override
+  String get filterTracks => 'Filter tracks...';
+
+  @override
+  String get filterSongs => 'Filter songs...';
+
+  @override
+  String get noSongsInQueue => 'No songs in queue';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get upNext => 'Up Next';
+
+  @override
+  String get removeSelected => 'Remove selected';
+
+  @override
+  String get reorderSongs => 'Reorder songs';
+
+  @override
+  String get selectSongs => 'Select songs';
+
+  @override
+  String get doneReordering => 'Done reordering';
+
+  @override
+  String get downloadAlbum => 'Download album';
+
+  @override
+  String get downloadPlaylist => 'Download playlist';
+
+  @override
+  String get downloadedTapToRemove => 'Downloaded — tap to remove';
+
+  @override
+  String get downloadingTapToCancel => 'Downloading — tap to cancel';
+
+  @override
+  String get removeDownloadsTitle => 'Remove downloads?';
+
+  @override
+  String removeAlbumDownloadsConfirm(int count, String name) {
+    return 'Remove all $count downloaded songs from \"$name\"?';
+  }
+
+  @override
+  String removePlaylistDownloadsConfirm(int count, String name) {
+    return 'Remove all $count downloaded songs from \"$name\"?';
+  }
+
+  @override
+  String queuedSongsForDownload(int count) {
+    return 'Queued $count songs for download…';
+  }
+
+  @override
+  String get songRemovedFromPlaylist => 'Song removed from playlist';
+
+  @override
+  String errorRemovingSong(String error) {
+    return 'Error removing song: $error';
+  }
+
+  @override
+  String errorReorderingSong(String error) {
+    return 'Error reordering song: $error';
+  }
+
+  @override
+  String get removeSongsTitle => 'Remove songs';
+
+  @override
+  String removePlaylistSongsConfirm(int count, String name) {
+    return 'Remove $count song(s) from \"$name\"?';
+  }
+
+  @override
+  String removedSongsFromPlaylist(int count) {
+    return 'Removed $count song(s) from playlist';
+  }
+
+  @override
+  String get alreadyInPlaylist => 'Already in playlist';
+
+  @override
+  String alreadyInPlaylistConfirm(String title, String playlist) {
+    return '\"$title\" is already in \"$playlist\". Do you still want to add it?';
+  }
+
+  @override
+  String get addAnyway => 'Add anyway';
+
+  @override
+  String get offlineModeQuestion => 'Offline mode?';
+
+  @override
+  String get drumroll => 'DRUMROLL...';
+
+  @override
+  String get readyToDiscoverTopSong => 'Ready to discover\nyour #1 song?';
+
+  @override
+  String get tapToBegin => 'Tap to begin';
+
+  @override
+  String get minutesListened => 'MINUTES LISTENED';
+
+  @override
+  String get totalHours => 'Total hours';
+
+  @override
+  String get uniqueTracks => 'Unique tracks';
+
+  @override
+  String get topSongsHeader => 'TOP SONGS';
+
+  @override
+  String get yourMostListenedSongs => 'Your most listened songs';
+
+  @override
+  String get topArtistsHeader => 'TOP ARTISTS';
+
+  @override
+  String playsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plays',
+      one: '1 play',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get topSongBadge => 'Song #1';
+
+  @override
+  String get topArtistMetric => 'Top Artist';
+
+  @override
+  String get genreMetric => 'Genre';
+
+  @override
+  String get muslyPlaybackHeader => 'MUSLY PLAYBACK';
+
+  @override
+  String get enableMuslyConnect => 'Enable Musly Connect';
+
+  @override
+  String get enableMuslyConnectSubtitle =>
+      'Discover nearby devices over Wi-Fi for remote control and listening sessions';
+
+  @override
+  String get availableDevices => 'Available Devices';
+
+  @override
+  String get lanDiscoveryActive => 'LAN Discovery active • No nearby devices';
+
+  @override
+  String nearbyDevicesFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nearby devices found',
+      one: '1 nearby device found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get minutes => 'Minutes';
+
+  @override
+  String get nowPlayingHeader => 'NOW PLAYING';
+
+  @override
+  String get privacyFirstTitle => 'Privacy First';
+
+  @override
+  String get privacyFirstSubtitle => 'Your data stays with you. Always.';
+
+  @override
+  String get noDataSellingTitle => 'No Data Selling';
+
+  @override
+  String get noDataSellingDescription =>
+      'We never sell, share, or transfer your personal data to third parties.';
+
+  @override
+  String get localFirstStorageTitle => 'Local-First Storage';
+
+  @override
+  String get localFirstStorageDescription =>
+      'Your music library and credentials stay on your device.';
+
+  @override
+  String get privateOpenTitle => '100% Private & Open';
+
+  @override
+  String get privateOpenDescription =>
+      'Musly is completely telemetry-free. No personal identifiers, usage tracking, or analytics are collected.';
+
+  @override
+  String get readFullPrivacyPolicy => 'Read Full Privacy Policy';
+
+  @override
+  String get viewCompleteDetailsWebsite =>
+      'View complete details on our website';
+
+  @override
+  String get understandAndContinue => 'I Understand & Continue';
+
+  @override
+  String get declineAndExit => 'Decline & Exit';
+
+  @override
+  String get exitApp => 'Exit App';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get closeQueue => 'Close Queue';
+
+  @override
+  String get timerOff => 'Off';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get searchInLibrary => 'Search in Library';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get previousSlide => 'Previous';
+
+  @override
+  String get nextSlide => 'Next';
+
+  @override
+  String get radios => 'Radios';
+
+  @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get noDownloadedSongsYet => 'No downloaded songs yet';
+
+  @override
+  String get noDownloadedAlbumsYet => 'No downloaded albums yet';
+
+  @override
+  String get connectedToWebStream => 'Connected to Web Stream';
+
+  @override
+  String get allowSelfSignedCertificatesSubtitle =>
+      'Useful for internal LAN or custom self-signed SSL';
+
+  @override
+  String get legacyAuthenticationSubtitle =>
+      'Required for older Subsonic API implementations';
+
+  @override
+  String get certificateFileSubtitle => '.crt, .pem or .cer file';
+
+  @override
+  String get clientIdentityFileSubtitle => '.p12 or .pfx client identity file';
+
+  @override
+  String get copyError => 'Copy error';
+
+  @override
+  String get errorCopiedToClipboard => 'Error copied to clipboard';
+
+  @override
+  String get failedToUpdateFavorite => 'Failed to update liked status';
+
+  @override
+  String queuedSongsFromAlbumsForDownload(int songCount, int albumCount) {
+    return 'Queued $songCount songs from $albumCount albums for download…';
+  }
+
+  @override
+  String get downloadAllAlbums => 'Download All Albums';
+
+  @override
+  String get downloadAllFavorites => 'Download All Favorites';
+
+  @override
+  String get downloadAll => 'Download All';
+
+  @override
+  String get createPlaylistSubtitle =>
+      'Build a custom playlist with your favorite tracks';
+
+  @override
+  String get addMusicSource => 'Add Music Source';
+
+  @override
+  String get addMusicSourceSubtitle =>
+      'Connect Navidrome, Jellyfin, or Web Stream';
+
+  @override
+  String get removeFromFavoritesTitle => 'Remove from Favorites?';
+
+  @override
+  String removeFromFavoritesConfirm(String title) {
+    return 'Do you want to remove \"$title\" from favorites?';
+  }
+
+  @override
+  String failedToRemove(String error) {
+    return 'Failed to remove: $error';
+  }
+
+  @override
+  String streamUrlLabel(String url) {
+    return 'Stream URL: $url';
+  }
+
+  @override
+  String get shuffleNewSelection => 'Shuffle New Selection';
+
+  @override
+  String get sortDurationLongest => 'Duration (Longest first)';
+
+  @override
+  String get connectToServer => 'Connect to Server';
+
+  @override
+  String get renameProfile => 'Rename Profile';
+
+  @override
+  String get addWebStream => 'Add Web Stream';
+
+  @override
+  String get addWebStreamSubtitle => 'Instant streaming with no login required';
+
+  @override
+  String get recentSearches => 'Recent Searches';
+
+  @override
+  String get createPlaylistToGetStarted => 'Create a playlist to get started';
+
+  @override
+  String get addRadioStationsHint =>
+      'Add radio stations in your server settings to see them here.';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingGetStarted => 'Get Started';
+
+  @override
+  String get previousSlideTooltip => 'Previous (Left Arrow)';
+
+  @override
+  String get nextSlideTooltip => 'Next (Right Arrow / Space)';
+
+  @override
+  String get onboardingSlide1TitlePrefix => 'Your Music Library,\n';
+
+  @override
+  String get onboardingSlide1TitleHighlight => 'In Your Pocket.';
+
+  @override
+  String get onboardingSlide1Description =>
+      'Connect to Navidrome, Subsonic, Jellyfin, or play local files with bit-perfect lossless quality.';
+
+  @override
+  String get onboardingSlide1Feature1Title => 'Self-Hosted Freedom';
+
+  @override
+  String get onboardingSlide1Feature1Desc =>
+      'Full compatibility with Subsonic, Navidrome, and Jellyfin APIs.';
+
+  @override
+  String get onboardingSlide1Feature2Title => 'Local Music Support';
+
+  @override
+  String get onboardingSlide1Feature2Desc =>
+      'Play your offline collection directly without server setup.';
+
+  @override
+  String get onboardingSlide1Feature3Title => 'Lossless Hi-Res Audio';
+
+  @override
+  String get onboardingSlide1Feature3Desc =>
+      'Bit-perfect FLAC, ALAC, Opus, and gapless audio playback.';
+
+  @override
+  String get onboardingSlide2TitlePrefix => 'Smart Mixes,\n';
+
+  @override
+  String get onboardingSlide2TitleHighlight => 'Built Around You.';
+
+  @override
+  String get onboardingSlide2Description =>
+      'Musly learns your listening habits on-device to craft dynamic daily mixes and surface forgotten favorites.';
+
+  @override
+  String get onboardingSlide2Feature1Title => 'Algorithmic Taste Profiling';
+
+  @override
+  String get onboardingSlide2Feature1Desc =>
+      'Learns play frequencies, skips, and ratings with recency decay.';
+
+  @override
+  String get onboardingSlide2Feature2Title => 'Personalized Daily Mixes';
+
+  @override
+  String get onboardingSlide2Feature2Desc =>
+      'Automatic Made For You, Listen Again, and Top Hits playlists.';
+
+  @override
+  String get onboardingSlide2Feature3Title => '100% On-Device Processing';
+
+  @override
+  String get onboardingSlide2Feature3Desc =>
+      'Your listening profile stays strictly on your hardware.';
+
+  @override
+  String get onboardingSlide3TitlePrefix => 'Completely Private.\n';
+
+  @override
+  String get onboardingSlide3TitleHighlight => 'No Ads, No Tracking.';
+
+  @override
+  String get onboardingSlide3Description =>
+      'Zero analytics, zero telemetry. Enjoy time-synced lyrics, offline downloads, and desktop sync in total privacy.';
+
+  @override
+  String get onboardingSlide3Feature1Title => 'Zero Telemetry & Tracking';
+
+  @override
+  String get onboardingSlide3Feature1Desc =>
+      'No third-party SDKs, no trackers, no ads, completely open source.';
+
+  @override
+  String get onboardingSlide3Feature2Title => 'Time-Synced Lyrics';
+
+  @override
+  String get onboardingSlide3Feature2Desc =>
+      'Real-time synchronized karaoke lyrics with LRCLIB fallback.';
+
+  @override
+  String get onboardingSlide3Feature3Title => 'Offline Download Manager';
+
+  @override
+  String get onboardingSlide3Feature3Desc =>
+      'Cache full playlists and albums with batch downloading.';
+
+  @override
+  String get finishTour => 'Finish Tour';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get profileNameOptional => 'Profile Name (Optional)';
+
+  @override
+  String get serverUrlRequired => 'Server URL *';
+
+  @override
+  String get lanServerUrlOptional => 'LAN Server URL (Optional)';
+
+  @override
+  String get usernameRequired => 'Username *';
+
+  @override
+  String get passwordRequired => 'Password *';
+
+  @override
+  String get playingInSync => 'Playing in sync';
+
+  @override
+  String get switchedBackToThisDevice => 'Switched back to this device';
+
+  @override
+  String connectedToDeviceName(String device) {
+    return 'Connected to $device';
+  }
+
+  @override
+  String get whatDoYouWantToPlay => 'What do you want to play?';
 }

@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: isDark ? Colors.white : Colors.black87,
                     size: 22,
                   ),
-                  tooltip: 'History',
+                  tooltip: AppLocalizations.of(context)!.history,
                   onPressed: () => NavigationHelper.push(context, const HistoryScreen()),
                 ),
                 IconButton(
@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: isDark ? Colors.white : Colors.black87,
                     size: 22,
                   ),
-                  tooltip: 'Settings',
+                  tooltip: AppLocalizations.of(context)!.settings,
                   onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
                 ),
                 if (isDesktop) const SizedBox(width: 12),

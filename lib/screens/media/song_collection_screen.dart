@@ -268,41 +268,44 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                 if (widget.type == SongCollectionType.madeForYou)
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
-                    tooltip: 'Shuffle New Selection',
+                    tooltip: AppLocalizations.of(context)!.shuffleNewSelection,
                     onPressed: _loadSongs,
                   ),
                 if (widget.type == SongCollectionType.allSongs)
                   PopupMenuButton<SongSortOption>(
                     icon: const Icon(Icons.sort_rounded),
-                    tooltip: 'Sort Options',
+                    tooltip: AppLocalizations.of(context)!.sortBy,
                     onSelected: (opt) {
                       setState(() {
                         _currentSort = opt;
                         _applySortAndFilter();
                       });
                     },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: SongSortOption.titleAsc,
-                        child: Text('Title (A to Z)'),
-                      ),
-                      const PopupMenuItem(
-                        value: SongSortOption.titleDesc,
-                        child: Text('Title (Z to A)'),
-                      ),
-                      const PopupMenuItem(
-                        value: SongSortOption.artistAsc,
-                        child: Text('Artist (A to Z)'),
-                      ),
-                      const PopupMenuItem(
-                        value: SongSortOption.albumAsc,
-                        child: Text('Album (A to Z)'),
-                      ),
-                      const PopupMenuItem(
-                        value: SongSortOption.duration,
-                        child: Text('Duration (Longest first)'),
-                      ),
-                    ],
+                    itemBuilder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return [
+                        PopupMenuItem(
+                          value: SongSortOption.titleAsc,
+                          child: Text(l10n.sortByTitleAZ),
+                        ),
+                        PopupMenuItem(
+                          value: SongSortOption.titleDesc,
+                          child: Text(l10n.sortByTitleZA),
+                        ),
+                        PopupMenuItem(
+                          value: SongSortOption.artistAsc,
+                          child: Text(l10n.sortByArtistAZ),
+                        ),
+                        PopupMenuItem(
+                          value: SongSortOption.albumAsc,
+                          child: Text(l10n.sortByAlbumAZ),
+                        ),
+                        PopupMenuItem(
+                          value: SongSortOption.duration,
+                          child: Text(l10n.sortDurationLongest),
+                        ),
+                      ];
+                    },
                   ),
               ],
             ),
@@ -316,14 +319,14 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                     children: [
                       MediaPlayButton(
                         icon: Icons.play_arrow_rounded,
-                        label: 'Play All',
+                        label: AppLocalizations.of(context)!.playAll,
                         onTap: () => _playAll(shuffle: false),
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton.icon(
                         onPressed: () => _playAll(shuffle: true),
                         icon: const Icon(Icons.shuffle_rounded, size: 20),
-                        label: const Text('Shuffle'),
+                        label: Text(AppLocalizations.of(context)!.shuffle),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -331,7 +334,7 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        '${_filteredSongs.length} songs • ${FormatUtils.formatDurationSummary(totalDuration)}',
+                        '${AppLocalizations.of(context)!.songsCount(_filteredSongs.length)} • ${FormatUtils.formatDurationSummary(totalDuration)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -342,34 +345,33 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                 ),
               ),
 
-            // Content Sliver
+            // Song list or Loading/Error/Empty States
             if (_isLoading)
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => const SongTileShimmer(),
-                  childCount: 12,
-                ),
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
               )
             else if (_error != null)
               _buildErrorState(theme)
             else if (_filteredSongs.isEmpty)
               _buildEmptyState(theme)
             else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index == _filteredSongs.length) {
-                      return const SizedBox(height: 100);
-                    }
-                    return SongTile(
-                      song: _filteredSongs[index],
-                      playlist: _filteredSongs,
-                      index: index,
-                      showArtist: true,
-                      showAlbum: true,
-                    );
-                  },
-                  childCount: _filteredSongs.length + 1,
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 120),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final song = _filteredSongs[index];
+                      return SongTile(
+                        key: ValueKey(song.id),
+                        song: song,
+                        playlist: _filteredSongs,
+                        index: index,
+                        showAlbum: true,
+                        showArtist: true,
+                      );
+                    },
+                    childCount: _filteredSongs.length,
+                  ),
                 ),
               ),
           ],
@@ -379,6 +381,7 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
   }
 
   Widget _buildErrorState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
@@ -387,12 +390,12 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
           children: [
             Icon(Icons.error_outline_rounded, size: 64, color: AppTheme.lightSecondaryText),
             const SizedBox(height: 16),
-            Text('Error loading songs', style: theme.textTheme.headlineSmall),
+            Text(l10n.errorLoadingSongs, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loadSongs,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.retry),
             ),
           ],
         ),
@@ -401,6 +404,7 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
@@ -409,7 +413,7 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
           children: [
             Icon(Icons.music_off_outlined, size: 64, color: AppTheme.lightSecondaryText),
             const SizedBox(height: 16),
-            Text('No songs available', style: theme.textTheme.headlineSmall),
+            Text(l10n.noSongsAvailable, style: theme.textTheme.headlineSmall),
           ],
         ),
       ),

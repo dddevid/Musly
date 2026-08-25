@@ -9,6 +9,7 @@ import 'package:musly/providers/player_provider.dart';
 import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/local_music_service.dart';
 import 'package:musly/theme/app_theme.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class AddServerScreen extends StatefulWidget {
   final String? initialFamily;
@@ -148,14 +149,15 @@ class _AddServerScreenState extends State<AddServerScreen> {
       if (success) {
         await libraryProvider.refresh();
         if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
-                SizedBox(width: 10),
-                Text('Connected to Web Stream', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
+                const SizedBox(width: 10),
+                Text(l10n.connectedToWebStream, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
             duration: const Duration(seconds: 2),
@@ -751,8 +753,9 @@ class _AddServerScreenState extends State<AddServerScreen> {
     final granted = await localService.requestPermission();
     if (!granted) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Storage permission is required to access local music.')),
+          SnackBar(content: Text(l10n.storagePermissionRequired)),
         );
       }
       return;
@@ -780,6 +783,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
   Widget _buildServerForm(bool isDark) {
     final isJellyfin = _selectedFamily == 'jellyfin';
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
       key: _formKey,
@@ -805,7 +809,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'Profile Name (Optional)',
+                labelText: AppLocalizations.of(context)!.profileNameOptional,
                 hintText: isJellyfin ? 'e.g. Home Jellyfin' : 'e.g. Navidrome Cloud',
                 prefixIcon: const Icon(CupertinoIcons.tag),
                 filled: true,
@@ -823,11 +827,11 @@ class _AddServerScreenState extends State<AddServerScreen> {
               controller: _urlController,
               keyboardType: TextInputType.url,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Server URL is required';
+                if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.serverUrlRequired;
                 return null;
               },
               decoration: InputDecoration(
-                labelText: 'Server URL *',
+                labelText: AppLocalizations.of(context)!.serverUrlRequired,
                 hintText: isJellyfin ? 'https://jellyfin.example.com' : 'https://music.example.com',
                 prefixIcon: const Icon(CupertinoIcons.link),
                 filled: true,
@@ -871,7 +875,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
               controller: _lanUrlController,
               keyboardType: TextInputType.url,
               decoration: InputDecoration(
-                labelText: 'LAN Server URL (Optional)',
+                labelText: AppLocalizations.of(context)!.lanServerUrlOptional,
                 hintText: 'e.g. http://192.168.1.5:4533',
                 prefixIcon: const Icon(CupertinoIcons.wifi),
                 filled: true,
@@ -888,11 +892,11 @@ class _AddServerScreenState extends State<AddServerScreen> {
             TextFormField(
               controller: _userController,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Username is required';
+                if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.usernameRequired;
                 return null;
               },
               decoration: InputDecoration(
-                labelText: 'Username *',
+                labelText: AppLocalizations.of(context)!.usernameRequired,
                 prefixIcon: const Icon(CupertinoIcons.person),
                 filled: true,
                 fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
@@ -909,11 +913,11 @@ class _AddServerScreenState extends State<AddServerScreen> {
               controller: _passController,
               obscureText: _obscurePassword,
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Password is required';
+                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordRequired;
                 return null;
               },
               decoration: InputDecoration(
-                labelText: 'Password *',
+                labelText: AppLocalizations.of(context)!.passwordRequired,
                 prefixIcon: const Icon(CupertinoIcons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -972,8 +976,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                     SwitchListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Allow Self-Signed Certificates', style: TextStyle(fontSize: 13)),
-                      subtitle: const Text('Useful for internal LAN or custom self-signed SSL', style: TextStyle(fontSize: 11)),
+                      title: Text(l10n.allowSelfSignedCerts, style: const TextStyle(fontSize: 13)),
+                      subtitle: Text(l10n.allowSelfSignedCertificatesSubtitle, style: const TextStyle(fontSize: 11)),
                       value: _allowSelfSigned,
                       onChanged: (v) => setState(() => _allowSelfSigned = v),
                     ),
@@ -982,8 +986,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                       SwitchListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Legacy Authentication', style: TextStyle(fontSize: 13)),
-                        subtitle: const Text('Required for older Subsonic API implementations', style: TextStyle(fontSize: 11)),
+                        title: Text(l10n.legacyAuthentication, style: const TextStyle(fontSize: 13)),
+                        subtitle: Text(l10n.legacyAuthenticationSubtitle, style: const TextStyle(fontSize: 11)),
                         value: _useLegacyAuth,
                         onChanged: (v) => setState(() => _useLegacyAuth = v),
                       ),
@@ -993,10 +997,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                        _customCertName ?? 'Custom CA Certificate (Optional)',
+                        _customCertName ?? l10n.customTlsCertificate,
                         style: const TextStyle(fontSize: 13),
                       ),
-                      subtitle: const Text('.crt, .pem or .cer file', style: TextStyle(fontSize: 11)),
+                      subtitle: Text(l10n.certificateFileSubtitle, style: const TextStyle(fontSize: 11)),
                       trailing: IconButton(
                         icon: const Icon(CupertinoIcons.folder, size: 18),
                         onPressed: _pickCustomCertificate,
@@ -1007,10 +1011,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                        _clientCertName ?? 'Client Certificate (mTLS)',
+                        _clientCertName ?? l10n.clientCertificate,
                         style: const TextStyle(fontSize: 13),
                       ),
-                      subtitle: const Text('.p12 or .pfx client identity file', style: TextStyle(fontSize: 11)),
+                      subtitle: Text(l10n.clientIdentityFileSubtitle, style: const TextStyle(fontSize: 11)),
                       trailing: IconButton(
                         icon: const Icon(CupertinoIcons.folder, size: 18),
                         onPressed: _pickClientCertificate,
@@ -1022,7 +1026,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
                         controller: _clientCertPassController,
                         obscureText: _obscureClientCertPass,
                         decoration: InputDecoration(
-                          labelText: 'Certificate Password',
+                          labelText: l10n.clientCertPassword,
                           prefixIcon: const Icon(CupertinoIcons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(

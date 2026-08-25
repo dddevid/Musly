@@ -646,7 +646,7 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                 (playlist) => ListTile(
                   leading: const Icon(Icons.queue_music_rounded),
                   title: Text(playlist.name),
-                  subtitle: Text('${playlist.songCount ?? 0} songs'),
+                  subtitle: Text(AppLocalizations.of(context)!.songsCount(playlist.songCount ?? 0)),
                   onTap: () async {
                     Navigator.pop(context);
 
@@ -683,18 +683,18 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Already in playlist'),
+                          title: Text(l10n.alreadyInPlaylist),
                           content: Text(
-                            '"${song.title}" is already in "${playlist.name}". Do you still want to add it?',
+                            l10n.alreadyInPlaylistConfirm(song.title, playlist.name),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
+                              child: Text(l10n.cancel),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Add anyway'),
+                              child: Text(l10n.addAnyway),
                             ),
                           ],
                         ),

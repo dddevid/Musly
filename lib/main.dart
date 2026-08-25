@@ -128,7 +128,9 @@ class _EmulatorWarningScreen extends StatelessWidget {
                         exit(0);
                       },
                       icon: const Icon(Icons.exit_to_app),
-                      label: const Text('Exit App'),
+                      label: Text(
+                        AppLocalizations.of(context)?.exitApp ?? 'Exit App',
+                      ),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(200, 50),
                       ),
@@ -611,7 +613,9 @@ class _ServerUnreachableScreen extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => authProvider.retryConnection(),
                   icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Retry'),
+                  label: Text(
+                    AppLocalizations.of(context)?.retry ?? 'Retry',
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -805,7 +809,10 @@ class _AuthenticatingScreenState extends State<_AuthenticatingScreen> {
                 FilledButton.icon(
                   onPressed: widget.onEnterOfflineMode,
                   icon: const Icon(Icons.offline_pin_rounded),
-                  label: Text('Modalità offline?'),
+                  label: Text(
+                    AppLocalizations.of(context)?.offlineModeQuestion ??
+                        'Offline mode?',
+                  ),
                 ),
               ],
             ],

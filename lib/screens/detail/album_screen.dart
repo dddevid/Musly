@@ -117,9 +117,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
     await offlineService.initialize();
     offlineService.queuePlaylistDownload(_album!.id, _songs, subsonicService);
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Queued ${_songs.length} songs for download…'),
+          content: Text(l10n.queuedSongsForDownload(_songs.length)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -133,16 +134,17 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   Future<void> _removeDownloads() async {
     if (_songs.isEmpty || _album == null) return;
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove downloads?'),
-        content: Text('Remove all ${_songs.length} downloaded songs from "${_album!.name}"?'),
+        title: Text(l10n.removeDownloadsTitle),
+        content: Text(l10n.removeAlbumDownloadsConfirm(_songs.length, _album!.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -154,16 +156,17 @@ class _AlbumScreenState extends State<AlbumScreen> {
   }
 
   Widget _buildDownloadButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_allDownloaded) {
       return IconButton(
-        tooltip: 'Downloaded — tap to remove',
+        tooltip: l10n.downloadedTapToRemove,
         onPressed: _removeDownloads,
         icon: const Icon(Icons.cloud_done, color: Colors.green),
       );
     }
     if (_isQueued) {
       return IconButton(
-        tooltip: 'Downloading — tap to cancel',
+        tooltip: l10n.downloadingTapToCancel,
         onPressed: _cancelDownload,
         icon: const SizedBox(
           width: 20,
@@ -173,7 +176,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
       );
     }
     return IconButton(
-      tooltip: 'Download album',
+      tooltip: l10n.downloadAlbum,
       onPressed: _downloadAlbum,
       icon: const Icon(CupertinoIcons.cloud_download),
     );
@@ -201,8 +204,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
         _album!.starred = isStarred;
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update liked status')),
+          SnackBar(content: Text(l10n.failedToUpdateFavorite)),
         );
       }
     }
@@ -212,9 +216,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (_album == null) return const SizedBox.shrink();
     final isStarred = _album!.starred == true;
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
     
     return IconButton(
-      tooltip: isStarred ? 'Unlike' : 'Like',
+      tooltip: isStarred ? l10n.removeFromFavorites : l10n.addToFavorites,
       onPressed: _toggleLike,
       icon: Icon(
         isStarred ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
@@ -372,7 +377,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 ),
                 actions: [
                   IconButton(
-                    tooltip: 'Cerca nell\'album',
+                    tooltip: AppLocalizations.of(context)!.searchInAlbum,
                     icon: Icon(_showSearch ? CupertinoIcons.search_circle_fill : CupertinoIcons.search),
                     onPressed: () {
                       setState(() {
@@ -383,7 +388,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   ),
                   PopupMenuButton<String>(
                     icon: const Icon(CupertinoIcons.ellipsis_circle),
-                    tooltip: 'Altro',
+                    tooltip: AppLocalizations.of(context)!.moreOptions,
                     onSelected: (value) {
                       if (value == 'queue_all') {
                         final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
@@ -391,18 +396,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           playerProvider.addToQueue(s);
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${_songs.length} brani aggiunti alla coda')),
+                          SnackBar(content: Text(AppLocalizations.of(context)!.songsAddedToQueue(_songs.length))),
                         );
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'queue_all',
                         child: Row(
                           children: [
-                            Icon(CupertinoIcons.text_badge_plus, size: 18),
-                            SizedBox(width: 12),
-                            Text('Aggiungi tutti alla coda'),
+                            const Icon(CupertinoIcons.text_badge_plus, size: 18),
+                            const SizedBox(width: 12),
+                            Text(AppLocalizations.of(context)!.addAllToQueue),
                           ],
                         ),
                       ),
@@ -443,7 +448,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       const SizedBox(height: 4),
                       Text(
                         [
-                          '${_songs.length} brani',
+                          AppLocalizations.of(context)!.songsCount(_songs.length),
                           if (_album!.genre != null)
                             _album!.genre!.toUpperCase(),
                           if (_album!.year != null) _album!.year.toString(),
@@ -480,7 +485,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       if (_showSearch) ...[
                         const SizedBox(height: 16),
                         CupertinoSearchTextField(
-                          placeholder: 'Filtra tracce...',
+                          placeholder: AppLocalizations.of(context)!.filterTracks,
                           style: TextStyle(color: isDark ? Colors.white : Colors.black),
                           onChanged: (val) {
                             setState(() {

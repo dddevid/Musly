@@ -80,7 +80,7 @@ class NowPlayingMoreMenu extends StatelessWidget {
                       title: Text(AppLocalizations.of(context)!.sleepTimer),
                       children: [
                         SimpleDialogOption(
-                          child: const Text("Off"),
+                          child: Text(AppLocalizations.of(context)!.timerOff),
                           onPressed: () => _setSleepTimer(context, 0, provider),
                         ),
                         SimpleDialogOption(
@@ -119,7 +119,7 @@ class NowPlayingMoreMenu extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Velocità Riproduzione", style: TextStyle(fontSize: 16)),
+                        Text(AppLocalizations.of(context)!.playbackSpeed, style: const TextStyle(fontSize: 16)),
                         Text(
                           "${provider.playbackSpeed.toStringAsFixed(2)}x",
                           style: TextStyle(
@@ -145,8 +145,8 @@ class NowPlayingMoreMenu extends StatelessWidget {
               // Pitch Correction Section
               SwitchListTile(
                 secondary: const Icon(Icons.music_note_rounded),
-                title: const Text("Mantieni Pitch originale"),
-                subtitle: const Text("Mantiene il tono inalterato quando cambi velocità"),
+                title: Text(AppLocalizations.of(context)!.preservePitch),
+                subtitle: Text(AppLocalizations.of(context)!.preservePitchSubtitle),
                 value: provider.pitchCorrection,
                 onChanged: (val) {
                   provider.togglePitchCorrection();

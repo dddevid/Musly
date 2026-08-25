@@ -4,6 +4,7 @@ import '../../models/models.dart';
 import '../../providers/library_provider.dart';
 import '../../services/offline_service.dart';
 import '../../widgets/widgets.dart';
+import '../../l10n/app_localizations.dart';
 import '../detail/album_screen.dart';
 
 class DownloadsScreen extends StatefulWidget {
@@ -25,39 +26,50 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     _loadDownloads();
   }
 
-  void _loadDownloads() {
+  Future<void> _loadDownloads() async {
     setState(() => _isLoading = true);
 
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-    final offlineService = OfflineService();
-    final downloadedIds = offlineService.getDownloadedSongIds().toSet();
+    try {
+      final offlineService = Provider.of<OfflineService>(context, listen: false);
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
 
-    final allSongs = libraryProvider.cachedAllSongs;
-    final allAlbums = libraryProvider.recentAlbums;
+      await offlineService.initialize();
+      final downloadedIds = offlineService.getDownloadedSongIds();
 
-    final songs = allSongs.where((s) => downloadedIds.contains(s.id)).toList();
+      // Filter library songs that are downloaded
+      _downloadedSongs = libraryProvider.cachedAllSongs
+          .where((s) => downloadedIds.contains(s.id))
+          .toList();
 
-    final albumIdsWithDownloads = songs.map((s) => s.albumId).toSet();
-    final albums = allAlbums.where((a) => albumIdsWithDownloads.contains(a.id)).toList();
+      // Find albums that have downloaded songs
+      final albumIdsWithDownloads = _downloadedSongs
+          .map((s) => s.albumId)
+          .where((id) => id != null)
+          .toSet();
+
+      _downloadedAlbums = libraryProvider.recentAlbums
+          .where((a) => albumIdsWithDownloads.contains(a.id))
+          .toList();
+    } catch (e) {
+      debugPrint('Error loading downloads: $e');
+    }
 
     if (mounted) {
-      setState(() {
-        _downloadedSongs = songs;
-        _downloadedAlbums = albums;
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Downloads'),
+        title: Text(l10n.downloads),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: PillTabBar(
-            tabs: const ['Songs', 'Albums'],
+            tabs: [l10n.songs, l10n.albums],
             selectedIndex: _selectedTab,
             onTabSelected: (idx) => setState(() => _selectedTab = idx),
           ),
@@ -72,14 +84,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   }
 
   Widget _buildSongsList() {
+    final l10n = AppLocalizations.of(context)!;
     if (_downloadedSongs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.download_done_rounded, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No downloaded songs yet'),
+            const Icon(Icons.download_done_rounded, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(l10n.noDownloadedSongsYet),
           ],
         ),
       );
@@ -102,14 +115,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   }
 
   Widget _buildAlbumsList() {
+    final l10n = AppLocalizations.of(context)!;
     if (_downloadedAlbums.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.album_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No downloaded albums yet'),
+            const Icon(Icons.album_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(l10n.noDownloadedAlbumsYet),
           ],
         ),
       );

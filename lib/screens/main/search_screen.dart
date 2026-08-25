@@ -20,6 +20,7 @@ import 'package:musly/screens/media/song_collection_screen.dart';
 import 'package:musly/screens/media/favorites_screen.dart';
 import 'package:musly/screens/media/radio_screen.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -182,7 +183,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'What do you want to play?',
+                      hintText: AppLocalizations.of(context)!.whatDoYouWantToPlay,
                       hintStyle: TextStyle(
                         color: Colors.black.withValues(alpha: 0.6),
                         fontSize: 15,
@@ -299,13 +300,13 @@ class _SearchScreenState extends State<SearchScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Recent searches',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Text(
+                  AppLocalizations.of(context)!.recentSearches,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _recentQueries.clear()),
-                  child: const Text('Clear', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  child: Text(AppLocalizations.of(context)!.clear, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 ),
               ],
             ),

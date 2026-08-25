@@ -286,21 +286,22 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
 
                       if (isDuplicate) {
                         if (!context.mounted) return;
+                        final l10n = AppLocalizations.of(context)!;
                         final confirmed = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Already in playlist'),
+                            title: Text(l10n.alreadyInPlaylist),
                             content: Text(
-                              '"${widget.song.title}" is already in "${playlist.name}". Do you still want to add it?',
+                              l10n.alreadyInPlaylistConfirm(widget.song.title, playlist.name),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel'),
+                                child: Text(l10n.cancel),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Add anyway'),
+                                child: Text(l10n.addAnyway),
                               ),
                             ],
                           ),
