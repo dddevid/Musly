@@ -471,13 +471,18 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      Provider.of<PlayerProvider>(context, listen: false).checkPending50Milestone();
+      try {
+        Provider.of<PlayerProvider>(context, listen: false).checkPending50Milestone();
+      } catch (_) {}
     }
   }
 
   Future<void> _checkOnboarding() async {
-    final tvService = Provider.of<TvDetectionService>(context, listen: false);
-    if (tvService.isTvMode) {
+    TvDetectionService? tvService;
+    try {
+      tvService = Provider.of<TvDetectionService>(context, listen: false);
+    } catch (_) {}
+    if (tvService?.isTvMode == true) {
       await StorageService().setOnboardingCompleted(true);
       if (mounted) {
         setState(() {

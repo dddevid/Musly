@@ -13,31 +13,37 @@ class TvRemoteScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tvService = Provider.of<TvDetectionService>(context);
-    final player = Provider.of<PlayerProvider>(context, listen: false);
+    TvDetectionService? tvService;
+    PlayerProvider? player;
+    try {
+      tvService = Provider.of<TvDetectionService>(context);
+    } catch (_) {}
+    try {
+      player = Provider.of<PlayerProvider>(context, listen: false);
+    } catch (_) {}
 
     return FocusTraversalGroup(
       policy: ReadingOrderTraversalPolicy(),
       child: CallbackShortcuts(
         bindings: {
           // Play / Pause media keys on TV remote controls
-          const SingleActivator(LogicalKeyboardKey.mediaPlayPause): () => player.togglePlayPause(),
-          const SingleActivator(LogicalKeyboardKey.mediaPlay): () => player.play(),
-          const SingleActivator(LogicalKeyboardKey.mediaPause): () => player.pause(),
-          const SingleActivator(LogicalKeyboardKey.mediaTrackNext): () => player.skipNext(),
-          const SingleActivator(LogicalKeyboardKey.mediaFastForward): () => player.skipNext(),
-          const SingleActivator(LogicalKeyboardKey.mediaTrackPrevious): () => player.skipPrevious(),
-          const SingleActivator(LogicalKeyboardKey.mediaRewind): () => player.skipPrevious(),
+          const SingleActivator(LogicalKeyboardKey.mediaPlayPause): () => player?.togglePlayPause(),
+          const SingleActivator(LogicalKeyboardKey.mediaPlay): () => player?.play(),
+          const SingleActivator(LogicalKeyboardKey.mediaPause): () => player?.pause(),
+          const SingleActivator(LogicalKeyboardKey.mediaTrackNext): () => player?.skipNext(),
+          const SingleActivator(LogicalKeyboardKey.mediaFastForward): () => player?.skipNext(),
+          const SingleActivator(LogicalKeyboardKey.mediaTrackPrevious): () => player?.skipPrevious(),
+          const SingleActivator(LogicalKeyboardKey.mediaRewind): () => player?.skipPrevious(),
           const SingleActivator(LogicalKeyboardKey.space): () {
             // Space toggles playback if focus is not on an editable text field
             final currentFocus = FocusManager.instance.primaryFocus;
             if (currentFocus == null || currentFocus.context?.widget is! EditableText) {
-              player.togglePlayPause();
+              player?.togglePlayPause();
             }
           },
         },
         child: FocusScope(
-          autofocus: tvService.isTvMode,
+          autofocus: tvService?.isTvMode ?? false,
           child: child,
         ),
       ),
