@@ -308,21 +308,15 @@ jobs:
             "$APP_PATH" || true
 
           if [ ! -f "$DMG_NAME" ]; then
-            echo "Error: DMG was not created by create-dmg! Falling back to hdiutil..."
-            TEMP_DIR=$(mktemp -d)
-            cp -r "$APP_PATH" "$TEMP_DIR/"
-            ln -s /Applications "$TEMP_DIR/Applications"
-            hdiutil create -srcfolder "$TEMP_DIR" -volname "Musly" -fs HFS+ -format UDZO "$DMG_NAME"
-            rm -rf "$TEMP_DIR"
-          fi
-
-          if [ ! -f "$DMG_NAME" ]; then
-            echo "::error::Fatal: DMG file was not created!"
+            echo "::error::Fatal: create-dmg failed to create $DMG_NAME!"
             exit 1
           fi
 
+          echo "Verifying DMG integrity with hdiutil..."
+          hdiutil imageinfo "$DMG_NAME" > /dev/null
+
           ls -lh "$DMG_NAME"
-          echo "✅ DMG created successfully!"
+          echo "✅ DMG created and verified successfully!"
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4

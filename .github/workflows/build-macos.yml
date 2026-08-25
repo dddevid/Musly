@@ -1,0 +1,104 @@
+name: Build & Update macOS DMG
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to update (e.g. v2.0.0)'
+        required: true
+        default: 'v2.0.0'
+        type: string
+
+env:
+  FLUTTER_VERSION: '3.41.7'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-update-macos-dmg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 'stable'
+
+      - name: Verify Dart SDK Version
+        run: |
+          DART_VERSION=$(dart --version | grep -oP 'Dart SDK version: \K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          echo "✅ Dart SDK version: $DART_VERSION"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS Application
+        run: |
+          flutter build macos --release
+
+      - name: Verify App Bundle Exists
+        run: |
+          APP_PATH="build/macos/Build/Products/Release/musly.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::musly.app not found at $APP_PATH"
+            exit 1
+          fi
+          echo "✅ Verified musly.app exists"
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Generate DMG Installer
+        run: |
+          set -e
+          APP_PATH="build/macos/Build/Products/Release/musly.app"
+          DMG_NAME="musly-macos.dmg"
+
+          if [ ! -f "packaging/macos/dmg_background.png" ]; then
+            echo "::error::packaging/macos/dmg_background.png is missing!"
+            exit 1
+          fi
+
+          rm -f "$DMG_NAME"
+
+          echo "Building styled DMG with create-dmg..."
+          create-dmg \
+            --volname "Musly" \
+            --background "packaging/macos/dmg_background.png" \
+            --window-pos 200 120 \
+            --window-size 660 400 \
+            --icon-size 120 \
+            --icon "musly.app" 180 190 \
+            --hide-extension "musly.app" \
+            --app-drop-link 480 190 \
+            --no-strip \
+            "$DMG_NAME" \
+            "$APP_PATH" || true
+
+          if [ ! -f "$DMG_NAME" ]; then
+            echo "::error::create-dmg failed to generate $DMG_NAME!"
+            exit 1
+          fi
+
+          echo "Verifying DMG integrity with hdiutil..."
+          hdiutil imageinfo "$DMG_NAME" > /dev/null
+
+          ls -lh "$DMG_NAME"
+          echo "✅ DMG successfully built and verified!"
+
+      - name: Replace DMG in GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          echo "Uploading and replacing musly-macos.dmg in release $TAG..."
+          gh release upload "$TAG" musly-macos.dmg --clobber
+          echo "✅ musly-macos.dmg successfully replaced in release $TAG!"
