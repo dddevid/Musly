@@ -333,44 +333,81 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: ValueListenableBuilder<Set<String>>(
-                    valueListenable: OfflineService().downloadedPlaylistIds,
-                    builder: (context, downloaded, _) {
-                      final allDownloaded = _album != null && downloaded.contains(_album!.id);
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: MediaQuery.of(context).padding.top + 40,
-                              left: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                              right: ScreenHelper.isSmallScreen(context) ? 24 : 40,
-                              bottom: ScreenHelper.isSmallScreen(context) ? 60 : 80,
-                            ),
-                            child: AlbumArtwork(
-                              coverArt: _album!.coverArt,
-                              size: ScreenHelper.isSmallScreen(context) ? 200 : 280,
-                              borderRadius: 10,
-                              preserveAspectRatio: true,
-                            ),
-                          ),
-                          if (allDownloaded)
-                            Positioned(
-                              bottom: 86,
-                              right: 46,
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  CupertinoIcons.arrow_down_circle_fill,
-                                  color: Colors.grey,
-                                  size: 28,
+                  collapseMode: CollapseMode.pin,
+                  background: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final topPadding = MediaQuery.of(context).padding.top;
+                      final isSmall = ScreenHelper.isSmallScreen(context);
+                      final minHeight = kToolbarHeight + topPadding;
+                      final maxHeight = isSmall ? 280.0 : 360.0;
+                      final currentHeight = constraints.maxHeight;
+                      final delta = (maxHeight - minHeight).clamp(1.0, 999.0);
+                      final progress = ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
+
+                      final maxArtSize = isSmall ? 190.0 : 240.0;
+                      final availableHeight = (currentHeight - topPadding - (isSmall ? 16.0 : 24.0)).clamp(0.0, maxHeight);
+                      final artDimension = (maxArtSize * progress).clamp(0.0, availableHeight);
+                      final opacity = (progress * 1.3 - 0.1).clamp(0.0, 1.0);
+
+                      if (artDimension <= 10.0 || opacity <= 0.0) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return ValueListenableBuilder<Set<String>>(
+                        valueListenable: OfflineService().downloadedPlaylistIds,
+                        builder: (context, downloaded, _) {
+                          final allDownloaded = _album != null && downloaded.contains(_album!.id);
+
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: topPadding + (isSmall ? 8.0 : 12.0) * progress,
+                                bottom: (isSmall ? 10.0 : 16.0) * progress,
+                              ),
+                              child: Opacity(
+                                opacity: opacity,
+                                child: SizedBox.square(
+                                  dimension: artDimension,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      AlbumArtwork(
+                                        coverArt: _album!.coverArt,
+                                        size: artDimension,
+                                        borderRadius: (14.0 * progress).clamp(4.0, 14.0),
+                                        shadow: progress > 0.3
+                                            ? BoxShadow(
+                                                color: Colors.black.withValues(
+                                                  alpha: (isDark ? 0.35 : 0.2) * progress,
+                                                ),
+                                                blurRadius: 16.0 * progress,
+                                                offset: Offset(0, 8.0 * progress),
+                                              )
+                                            : null,
+                                      ),
+                                      if (allDownloaded)
+                                        Positioned(
+                                          bottom: 4,
+                                          right: 4,
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              CupertinoIcons.arrow_down_circle_fill,
+                                              color: Colors.grey,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                        ],
+                          );
+                        },
                       );
                     },
                   ),

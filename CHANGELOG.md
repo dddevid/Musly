@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented responsive 2-column landscape presentation with album artwork and live lyrics on the left, and metadata, seek slider, playback controls, volume slider, and bottom actions on the right.
   - Made Now Playing sheet constraints, drag handle, lyrics header, and queue list padding adapt smoothly to landscape orientation.
 
+- **Album Screen Cover Art Alignment (#233)**
+  - Fixed visual misalignment and app bar overlap where album artwork in the Album detail screen clashed with navigation and action icons.
+  - Replaced unpinned expanded stack with a pinned dynamic `LayoutBuilder` flexible space that centers the artwork cleanly below the toolbar and provides smooth scaling and fade transitions on scroll.
+
 ## [2.0.0] - 2026-08-23
 
 ### Added
