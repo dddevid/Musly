@@ -1090,7 +1090,7 @@
   "@startingScan": {
     "description": "Initial status message when a local file scan begins"
   },
-  "storagePermissionRequired": "È richiesta l'autorizzazione di archiviazione per eseguire la scansione dei file locali",
+  "storagePermissionRequired": "Permesso di archiviazione richiesto",
   "@storagePermissionRequired": {
     "description": "Snackbar when storage permission is denied"
   },
@@ -1775,23 +1775,6 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
-
-  "lyricsSection": "LYRICS",
-  "wordByWordSync": "Word-by-Word Sync",
-  "wordByWordSyncSubtitle": "Analyzes audio locally with Whisper AI for precise word highlighting",
-  "whisperModel": "Whisper Model",
-  "whisperModelSubtitle": "Download a model for on-device speech recognition",
-  "whisperModelTiny": "Tiny (~40 MB) — Fast",
-  "whisperModelBase": "Base (~140 MB) — Balanced",
-  "whisperModelSmall": "Small (~470 MB) — Accurate",
-  "downloadModel": "Download",
-  "downloadingModel": "Downloading…",
-  "modelReady": "Ready",
-  "wordSyncProcessing": "Syncing words…",
-  "wordSyncClearCache": "Clear Word Sync Cache",
-  "wordSyncClearCacheSubtitle": "Removes locally stored word timestamps",
-  "wordSyncNotSupported": "Not supported on this platform",
-
   "@_SUPPORT": {},
   "supportGreeting": "Ciao!",
   "supportParagraph1": "Sono Devid, lo sviluppatore di Musly. Ho creato questa app perché amo la musica e credo che tutti meritino un lettore musicale bellissimo e gratuito.",
@@ -1809,7 +1792,6 @@
   "supportWayEnjoy": "Semplicemente goditi la musica!",
   "selectPlaylist": "Seleziona Playlist",
   "endOfSong": "Fine Brano",
-
   "muslyConnect": "Musly Connect",
   "connectToDevice": "Connetti a un Dispositivo",
   "currentlyPlayingOn": "In Riproduzione Su",
@@ -1873,12 +1855,9 @@
   "folderAdded": "Cartella aggiunta: {path}",
   "removeFolderTitle": "Rimuovi cartella",
   "removeFolderConfirm": "Rimuovere \"{path}\" dai percorsi di scansione?",
-  "remove": "Rimuovi",
   "folderRemoved": "Cartella rimossa",
-  "storagePermissionRequired": "Permesso di archiviazione richiesto",
   "loadingLibrary": "Caricamento libreria in corso...",
   "libraryEmptyError": "La libreria sembra vuota o non è stato possibile caricarla. Assicurati che il tuo server supporti la scansione completa della libreria.",
-  "retry": "Riprova",
   "serverStatusConnected": "CONNESSO",
   "serverStatusConnecting": "CONNESSIONE",
   "serverStatusOffline": "OFFLINE",
