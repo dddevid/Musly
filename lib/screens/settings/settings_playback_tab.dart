@@ -285,8 +285,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
   Widget _buildLrcLibSection() {
     final accent = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
     return SettingsSectionCard(
-      title: 'Lyrics',
+      title: l10n.sectionLyrics,
       children: [
         ListTile(
           contentPadding: const EdgeInsets.symmetric(
@@ -397,10 +398,11 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   Widget _buildCrossfadeSection() {
     final accent = Theme.of(context).colorScheme.primary;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final crossfadeSec = _crossfadeService.getCrossfadeSeconds();
 
     return SettingsSectionCard(
-      title: 'Smart Crossfade',
+      title: l10n.sectionSmartCrossfade,
       children: [
         ListTile(
           contentPadding:
@@ -416,11 +418,11 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle,
                 color: Colors.white, size: 18),
           ),
-          title: const Text('Track Crossfade', style: TextStyle(fontSize: 16)),
+          title: Text(l10n.trackCrossfade, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             crossfadeSec == 0
-                ? 'Off (Instant transition)'
-                : '$crossfadeSec seconds crossfade between songs',
+                ? l10n.crossfadeOffSubtitle
+                : l10n.crossfadeDurationSubtitle(crossfadeSec),
             style: TextStyle(
               fontSize: 13,
               color: isDark
@@ -429,7 +431,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ),
           ),
           trailing: Text(
-            crossfadeSec == 0 ? 'Off' : '${crossfadeSec}s',
+            crossfadeSec == 0 ? l10n.replayGainModeOff : l10n.crossfadeDurationBadge(crossfadeSec),
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, color: accent),
           ),
@@ -454,15 +456,15 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Off',
+                  Text(l10n.replayGainModeOff,
                       style: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white38 : Colors.black38)),
-                  Text('6s',
+                  Text(l10n.crossfadeDurationBadge(6),
                       style: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white38 : Colors.black38)),
-                  Text('12s',
+                  Text(l10n.crossfadeDurationBadge(12),
                       style: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white38 : Colors.black38)),
@@ -479,8 +481,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return Consumer<PlayerProvider>(
       builder: (context, player, _) {
         final accent = Theme.of(context).colorScheme.primary;
+        final l10n = AppLocalizations.of(context)!;
         return SettingsSectionCard(
-          title: 'Gapless Playback',
+          title: l10n.sectionGaplessPlayback,
           children: [
             ListTile(
               contentPadding: const EdgeInsets.symmetric(
@@ -502,12 +505,12 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   size: 18,
                 ),
               ),
-              title: const Text(
-                'Gapless Playback',
-                style: TextStyle(fontSize: 16),
+              title: Text(
+                l10n.gaplessPlayback,
+                style: const TextStyle(fontSize: 16),
               ),
               subtitle: Text(
-                'Eliminate silence between songs',
+                l10n.gaplessPlaybackSubtitle,
                 style: TextStyle(
                   fontSize: 13,
                   color: Theme.of(context).brightness == Brightness.dark
@@ -616,6 +619,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
 
         Widget connectionBadge() {
           final isWifi = ts.currentConnectionType == ConnectionType.wifi;
+          final l10n = AppLocalizations.of(context)!;
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -633,7 +637,7 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  isWifi ? 'WiFi' : 'Mobile',
+                  isWifi ? l10n.networkWifi : l10n.networkMobile,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,

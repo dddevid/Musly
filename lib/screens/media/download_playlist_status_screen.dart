@@ -5,6 +5,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/offline_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/widgets.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class DownloadPlaylistStatusScreen extends StatelessWidget {
   const DownloadPlaylistStatusScreen({super.key});
@@ -13,10 +14,11 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final libraryProvider = Provider.of<LibraryProvider>(context);
     final playlists = libraryProvider.playlists;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Playlist Downloads'),
+        title: Text(l10n.playlistDownloads),
         leading: IconButton(
           icon: const Icon(CupertinoIcons.back),
           onPressed: () => Navigator.of(context).pop(),
@@ -26,7 +28,7 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
         valueListenable: OfflineService().downloadedSongIds,
         builder: (context, ids, _) {
           if (playlists.isEmpty) {
-            return const Center(child: Text('No playlists found'));
+            return Center(child: Text(l10n.noPlaylistsFound));
           }
           return ListView.builder(
             itemCount: playlists.length,

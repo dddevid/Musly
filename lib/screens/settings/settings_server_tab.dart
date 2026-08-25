@@ -86,8 +86,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
             ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)], 'Jellyfin')
             : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)], config?.serverType ?? 'Navidrome / Subsonic');
 
+    final l10n = AppLocalizations.of(context)!;
     final serverName = config?.displayServerName ?? serviceLabel;
-    final displayUrl = config?.displayUrl ?? (isYoutube ? 'Web Stream' : 'Not Connected');
+    final displayUrl = config?.displayUrl ?? (isYoutube ? 'Web Stream' : l10n.serverStatusNotConnected);
 
     final isConnected = authProvider.state == AuthState.authenticated;
     final isAuthenticating = authProvider.state == AuthState.authenticating;
@@ -165,10 +166,10 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                 const SizedBox(width: 4),
                                 Text(
                                   isConnected
-                                      ? 'CONNECTED'
+                                      ? l10n.serverStatusConnected
                                       : isAuthenticating
-                                          ? 'CONNECTING'
-                                          : 'OFFLINE',
+                                          ? l10n.serverStatusConnecting
+                                          : l10n.serverStatusOffline,
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
@@ -206,7 +207,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 FilledButton.tonalIcon(
                   onPressed: () => ServerSwitcherSheet.show(context),
                   icon: const Icon(CupertinoIcons.arrow_2_squarepath, size: 14),
-                  label: const Text('Switch'),
+                  label: Text(l10n.switchServerButton),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -271,6 +272,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     ServerConfig? currentConfig,
   ) {
     final isDark = context.isDark;
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<List<ServerConfig>>(
       future: authProvider.getSavedProfiles(),
@@ -292,7 +294,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'SAVED SERVERS & SERVICES',
+                    l10n.savedServersSection,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -308,7 +310,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       child: Text(
-                        'Manage',
+                        l10n.manage,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -379,9 +381,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                       color: const Color(0xFF34C759).withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Text(
-                                      'ACTIVE',
-                                      style: TextStyle(
+                                    child: Text(
+                                      l10n.serverActiveBadge,
+                                      style: const TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF34C759),
@@ -417,7 +419,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                         size: 24,
                       ),
                       title: Text(
-                        'Add Server / Service',
+                        l10n.addServerOrService,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,

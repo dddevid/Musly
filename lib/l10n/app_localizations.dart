@@ -688,7 +688,7 @@ abstract class AppLocalizations {
   /// **'Error'**
   String get error;
 
-  /// Button to retry a failed server connection
+  /// Retry button label
   ///
   /// In en, this message translates to:
   /// **'Retry'**
@@ -2224,10 +2224,10 @@ abstract class AppLocalizations {
   /// **'Starting scan...'**
   String get startingScan;
 
-  /// Snackbar when storage permission is denied
+  /// Snackbar message when storage permission is needed
   ///
   /// In en, this message translates to:
-  /// **'Storage permission required to scan local files'**
+  /// **'Storage permission required'**
   String get storagePermissionRequired;
 
   /// Snackbar when a local scan finds no audio files
@@ -2236,7 +2236,7 @@ abstract class AppLocalizations {
   /// **'No music files found on your device'**
   String get noMusicFilesFound;
 
-  /// Generic remove / delete confirm button
+  /// Button to remove an item
   ///
   /// In en, this message translates to:
   /// **'Remove'**
@@ -3651,6 +3651,576 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue Listening'**
   String get continueListening;
+
+  /// Toggle to show live lyrics under album artwork in player
+  ///
+  /// In en, this message translates to:
+  /// **'Live Lyrics Under Artwork'**
+  String get lyricsUnderArtwork;
+
+  /// Subtitle for live lyrics under artwork toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Show currently synced lyric line under the album cover in the full-screen player'**
+  String get lyricsUnderArtworkSubtitle;
+
+  /// Section header for lyrics display appearance settings
+  ///
+  /// In en, this message translates to:
+  /// **'LYRICS DISPLAY'**
+  String get lyricsDisplaySection;
+
+  /// Toggle to blur past and upcoming lyric lines
+  ///
+  /// In en, this message translates to:
+  /// **'Blur Unfocused Lyrics'**
+  String get lyricsBlurUnfocused;
+
+  /// Subtitle for blur unfocused lyrics toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Add blur effect to past and upcoming lyric lines'**
+  String get lyricsBlurUnfocusedSubtitle;
+
+  /// Label for lyrics alignment setting
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Alignment'**
+  String get lyricsAlignment;
+
+  /// Centered lyrics alignment label
+  ///
+  /// In en, this message translates to:
+  /// **'Centered'**
+  String get lyricsAlignmentCentered;
+
+  /// Left aligned lyrics alignment label
+  ///
+  /// In en, this message translates to:
+  /// **'Left aligned'**
+  String get lyricsAlignmentLeft;
+
+  /// Left alignment button
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get alignLeft;
+
+  /// Center alignment button
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get alignCenter;
+
+  /// Toggle for active lyric line glow effect
+  ///
+  /// In en, this message translates to:
+  /// **'Active Line Glow'**
+  String get lyricsGlowEffect;
+
+  /// Subtitle for active lyric line glow effect toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Subtle glow effect on currently playing lyric line'**
+  String get lyricsGlowEffectSubtitle;
+
+  /// Toggle to hide native desktop window titlebar
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Window Titlebar / Decorations'**
+  String get hideWindowTitlebar;
+
+  /// Subtitle for hide window titlebar toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Hides native titlebar (useful for Linux Wayland & tiling window managers)'**
+  String get hideWindowTitlebarSubtitle;
+
+  /// Playback settings section header for smart crossfade
+  ///
+  /// In en, this message translates to:
+  /// **'SMART CROSSFADE'**
+  String get sectionSmartCrossfade;
+
+  /// Title for track crossfade duration setting
+  ///
+  /// In en, this message translates to:
+  /// **'Track Crossfade'**
+  String get trackCrossfade;
+
+  /// Subtitle when crossfade is disabled
+  ///
+  /// In en, this message translates to:
+  /// **'Off (Instant transition)'**
+  String get crossfadeOffSubtitle;
+
+  /// Subtitle showing crossfade duration
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds crossfade between songs'**
+  String crossfadeDurationSubtitle(int seconds);
+
+  /// Badge showing crossfade duration in seconds
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s'**
+  String crossfadeDurationBadge(int seconds);
+
+  /// Playback settings section header for gapless playback
+  ///
+  /// In en, this message translates to:
+  /// **'GAPLESS PLAYBACK'**
+  String get sectionGaplessPlayback;
+
+  /// Title for gapless playback toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Gapless Playback'**
+  String get gaplessPlayback;
+
+  /// Subtitle for gapless playback toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Eliminate silence between songs'**
+  String get gaplessPlaybackSubtitle;
+
+  /// Playback settings section header for lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'LYRICS'**
+  String get sectionLyrics;
+
+  /// Network badge for WiFi connection
+  ///
+  /// In en, this message translates to:
+  /// **'WiFi'**
+  String get networkWifi;
+
+  /// Network badge for mobile data connection
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get networkMobile;
+
+  /// Title for custom download folder setting
+  ///
+  /// In en, this message translates to:
+  /// **'Download Folder'**
+  String get downloadFolder;
+
+  /// Subtitle when default download folder is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Default (Internal storage)'**
+  String get downloadFolderDefault;
+
+  /// Title for active downloads row
+  ///
+  /// In en, this message translates to:
+  /// **'Active Downloads'**
+  String get activeDownloads;
+
+  /// Subtitle when no downloads are currently active
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads in progress'**
+  String get noDownloadsInProgress;
+
+  /// Title for playlist downloads row
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist Downloads'**
+  String get playlistDownloads;
+
+  /// Subtitle showing number of songs downloaded in playlist downloads
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song downloaded} other{{count} songs downloaded}}'**
+  String playlistSongsDownloadedCount(int count);
+
+  /// No description provided for @songsStreamCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs & Streaming Cache'**
+  String get songsStreamCache;
+
+  /// Title for image/artwork cache row
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork & Images Cache'**
+  String get imageArtworkCache;
+
+  /// Subtitle showing cache disk usage
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used on disk'**
+  String cacheDiskUsage(String size);
+
+  /// Subtitle showing total cache disk usage
+  ///
+  /// In en, this message translates to:
+  /// **'Total cache: {size}'**
+  String totalCacheDiskUsage(String size);
+
+  /// Tooltip for clear audio cache button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear song cache'**
+  String get clearAudioCacheTooltip;
+
+  /// Tooltip for clear image cache button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear image cache'**
+  String get clearImageCacheTooltip;
+
+  /// Snackbar message when song cache is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Song cache cleared'**
+  String get audioCacheCleared;
+
+  /// Snackbar message when artwork cache is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork cache cleared'**
+  String get imageCacheCleared;
+
+  /// Snackbar message when a local folder is added
+  ///
+  /// In en, this message translates to:
+  /// **'Added folder: {path}'**
+  String folderAdded(String path);
+
+  /// Title of dialog to remove local music folder
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Folder'**
+  String get removeFolderTitle;
+
+  /// Confirmation message to remove folder from scan paths
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{path}\" from scan paths?'**
+  String removeFolderConfirm(String path);
+
+  /// Snackbar message when a local folder is removed
+  ///
+  /// In en, this message translates to:
+  /// **'Folder removed'**
+  String get folderRemoved;
+
+  /// Snackbar message when library is being loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Loading library...'**
+  String get loadingLibrary;
+
+  /// Dialog message when library is empty for download
+  ///
+  /// In en, this message translates to:
+  /// **'Library appears to be empty or failed to load. Make sure your server supports full library scanning.'**
+  String get libraryEmptyError;
+
+  /// Server connection status badge: connected
+  ///
+  /// In en, this message translates to:
+  /// **'CONNECTED'**
+  String get serverStatusConnected;
+
+  /// Server connection status badge: connecting
+  ///
+  /// In en, this message translates to:
+  /// **'CONNECTING'**
+  String get serverStatusConnecting;
+
+  /// Server connection status badge: offline
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE'**
+  String get serverStatusOffline;
+
+  /// Label when no server is connected
+  ///
+  /// In en, this message translates to:
+  /// **'Not Connected'**
+  String get serverStatusNotConnected;
+
+  /// Button to switch server profile
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switchServerButton;
+
+  /// Section header for saved server profiles
+  ///
+  /// In en, this message translates to:
+  /// **'SAVED SERVERS & SERVICES'**
+  String get savedServersSection;
+
+  /// Button to manage items
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manage;
+
+  /// Badge showing active server profile
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get serverActiveBadge;
+
+  /// Button to add a new server or streaming service
+  ///
+  /// In en, this message translates to:
+  /// **'Add Server / Service'**
+  String get addServerOrService;
+
+  /// Title for welcome tour tile in about tab
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Tour'**
+  String get welcomeTourTitle;
+
+  /// Subtitle for welcome tour tile
+  ///
+  /// In en, this message translates to:
+  /// **'Replay the introductory onboarding experience'**
+  String get welcomeTourSubtitle;
+
+  /// Title for developer preview of annual wrapped
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Playback (Dev Preview)'**
+  String get muslyPlaybackDev;
+
+  /// Subtitle for developer preview of annual wrapped
+  ///
+  /// In en, this message translates to:
+  /// **'Developer test preview of Year-in-Review'**
+  String get muslyPlaybackDevSubtitle;
+
+  /// Title for annual playback review
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Playback'**
+  String get muslyPlaybackAnnual;
+
+  /// Subtitle for annual playback review
+  ///
+  /// In en, this message translates to:
+  /// **'Your annual Year in Review and listening insights'**
+  String get muslyPlaybackAnnualSubtitle;
+
+  /// Section header for support in about tab
+  ///
+  /// In en, this message translates to:
+  /// **'SUPPORT'**
+  String get sectionAboutSupport;
+
+  /// Title shown when user has already rated the app
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for Rating!'**
+  String get thanksForRating;
+
+  /// Title to rate the app
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Musly'**
+  String get rateMusly;
+
+  /// Subtitle when user has rated the app
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve already rated the app'**
+  String get alreadyRatedSubtitle;
+
+  /// Subtitle to share rating feedback
+  ///
+  /// In en, this message translates to:
+  /// **'Share your feedback'**
+  String get shareFeedbackSubtitle;
+
+  /// Title for Musly support tile
+  ///
+  /// In en, this message translates to:
+  /// **'Support Musly'**
+  String get supportMuslyTitle;
+
+  /// Subtitle for Musly support tile
+  ///
+  /// In en, this message translates to:
+  /// **'Join Discord or donate'**
+  String get supportMuslySubtitle;
+
+  /// Title of rating dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Musly'**
+  String get rateMuslyDialogTitle;
+
+  /// Question in rating dialog
+  ///
+  /// In en, this message translates to:
+  /// **'How would you rate your experience?'**
+  String get rateMuslyDialogQuestion;
+
+  /// Hint text for rating feedback text field
+  ///
+  /// In en, this message translates to:
+  /// **'Optional feedback...'**
+  String get optionalFeedbackHint;
+
+  /// Submit button label
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// Snackbar message after submitting rating feedback
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your feedback!'**
+  String get thankYouFeedback;
+
+  /// Snackbar message counting down taps to unlock developer wrapped preview
+  ///
+  /// In en, this message translates to:
+  /// **'{count} taps away from Developer Playback Preview'**
+  String devPlaybackTapsAway(int count);
+
+  /// Snackbar message when developer wrapped preview is unlocked
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Playback Preview unlocked!'**
+  String get devPlaybackUnlocked;
+
+  /// Footer text prefix: Crafted with
+  ///
+  /// In en, this message translates to:
+  /// **'Crafted with '**
+  String get craftedWith;
+
+  /// Footer text suffix: in Italy
+  ///
+  /// In en, this message translates to:
+  /// **' in Italy'**
+  String get inItaly;
+
+  /// Title of server switcher bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Server'**
+  String get switchServerTitle;
+
+  /// Subtitle of server switcher bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Select an active server or streaming source'**
+  String get switchServerSubtitle;
+
+  /// Button to add a server in server switcher
+  ///
+  /// In en, this message translates to:
+  /// **'Add Server'**
+  String get addServerButton;
+
+  /// Empty state message when no server profiles exist
+  ///
+  /// In en, this message translates to:
+  /// **'No servers saved yet'**
+  String get noServersSavedYet;
+
+  /// Snackbar message when successfully switched to server
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {name}'**
+  String connectedTo(String name);
+
+  /// Snackbar error message when server switch fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error connecting to server: {error}'**
+  String errorConnectingServer(String error);
+
+  /// Title of rename server profile dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Server Profile'**
+  String get renameServerProfile;
+
+  /// Label for profile name text field
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Name'**
+  String get profileNameLabel;
+
+  /// Hint text for entering new profile name
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new name'**
+  String get enterNewNameHint;
+
+  /// Title of remove server confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Server'**
+  String get removeServerTitle;
+
+  /// Confirmation message to remove a server profile
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{name}\" from your saved servers?'**
+  String removeServerConfirm(String name);
+
+  /// Empty state message in playlist downloads screen
+  ///
+  /// In en, this message translates to:
+  /// **'No playlists found'**
+  String get noPlaylistsFound;
+
+  /// Description in support startup dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Musly is a free, open-source project. Your support helps keep it alive!'**
+  String get supportDialogDescription;
+
+  /// Title of Discord button in support dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Join our Discord'**
+  String get supportDialogJoinDiscord;
+
+  /// Subtitle of Discord button in support dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Get help, suggest features, chat with us'**
+  String get supportDialogDiscordSubtitle;
+
+  /// Title of donation button in support dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Support with a Donation'**
+  String get supportDialogDonateTitle;
+
+  /// Subtitle of donation button in support dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Help cover server costs and development'**
+  String get supportDialogDonateSubtitle;
+
+  /// Checkbox label to not show support dialog again
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show this again'**
+  String get dontShowAgain;
+
+  /// Button label to dismiss support dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get maybeLater;
 }
 
 class _AppLocalizationsDelegate

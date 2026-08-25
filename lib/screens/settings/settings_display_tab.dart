@@ -140,7 +140,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         const SizedBox(height: 24),
         SettingsSectionCard(
-          title: 'LYRICS DISPLAY',
+          title: AppLocalizations.of(context)!.lyricsDisplaySection.toUpperCase(),
           children: [
             _buildLyricsBlurToggle(),
             const SettingsDivider(),
@@ -405,18 +405,19 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
 
 
   Widget _buildLiveLyricUnderArtworkToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: SettingsIconBadge(
         gradientColors: const [Color(0xFF5856D6), Color(0xFFAF52DE)],
         icon: CupertinoIcons.quote_bubble_fill,
       ),
-      title: const Text(
-        'Testo sotto la copertina',
-        style: TextStyle(fontSize: 16),
+      title: Text(
+        l10n.lyricsUnderArtwork,
+        style: const TextStyle(fontSize: 16),
       ),
       subtitle: Text(
-        'Mostra la riga sincronizzata corrente del testo sotto la copertina nel player a schermo intero',
+        l10n.lyricsUnderArtworkSubtitle,
         style: TextStyle(
           fontSize: 13,
           color: context.isDark
@@ -925,9 +926,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   Widget _buildLyricsBlurToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return SwitchListTile.adaptive(
-      title: const Text('Blur Unfocused Lyrics'),
-      subtitle: const Text('Add blur effect to past and upcoming lyric lines'),
+      title: Text(l10n.lyricsBlurUnfocused),
+      subtitle: Text(l10n.lyricsBlurUnfocusedSubtitle),
       value: _lyricsBlurUnfocused,
       onChanged: (val) async {
         await _playerUiSettings.setLyricsBlurUnfocused(val);
@@ -937,13 +939,14 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   Widget _buildLyricsAlignmentSelector() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text('Lyrics Alignment'),
-      subtitle: Text(_lyricsAlignment == 'center' ? 'Centered' : 'Left aligned'),
+      title: Text(l10n.lyricsAlignment),
+      subtitle: Text(_lyricsAlignment == 'center' ? l10n.lyricsAlignmentCentered : l10n.lyricsAlignmentLeft),
       trailing: SegmentedButton<String>(
-        segments: const [
-          ButtonSegment(value: 'left', label: Text('Left'), icon: Icon(Icons.format_align_left, size: 16)),
-          ButtonSegment(value: 'center', label: Text('Center'), icon: Icon(Icons.format_align_center, size: 16)),
+        segments: [
+          ButtonSegment(value: 'left', label: Text(l10n.alignLeft), icon: const Icon(Icons.format_align_left, size: 16)),
+          ButtonSegment(value: 'center', label: Text(l10n.alignCenter), icon: const Icon(Icons.format_align_center, size: 16)),
         ],
         selected: {_lyricsAlignment},
         onSelectionChanged: (val) async {
@@ -956,9 +959,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   Widget _buildLyricsGlowToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return SwitchListTile.adaptive(
-      title: const Text('Active Line Glow'),
-      subtitle: const Text('Subtle glow effect on currently playing lyric line'),
+      title: Text(l10n.lyricsGlowEffect),
+      subtitle: Text(l10n.lyricsGlowEffectSubtitle),
       value: _lyricsGlowEffect,
       onChanged: (val) async {
         await _playerUiSettings.setLyricsGlowEffect(val);
@@ -968,9 +972,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   Widget _buildWindowTitlebarToggle() {
+    final l10n = AppLocalizations.of(context)!;
     return SwitchListTile.adaptive(
-      title: const Text('Hide Window Titlebar / Decorations'),
-      subtitle: const Text('Hides native titlebar (useful for Linux Wayland & tiling window managers)'),
+      title: Text(l10n.hideWindowTitlebar),
+      subtitle: Text(l10n.hideWindowTitlebarSubtitle),
       value: _hideWindowTitlebar,
       onChanged: (val) async {
         await StorageService().saveHideWindowTitlebar(val);

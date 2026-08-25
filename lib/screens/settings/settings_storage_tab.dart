@@ -403,8 +403,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     final path = await service.pickMusicDirectory();
     if (path == null) return;
     if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added folder: $path')),
+      SnackBar(content: Text(l10n.folderAdded(path))),
     );
     // Trigger a rescan if merge mode is enabled
     final libraryProvider = context.read<LibraryProvider>();
@@ -414,19 +415,20 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   }
 
   Future<void> _removeMusicFolder(BuildContext context, LocalMusicService service, String path) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Folder'),
-        content: Text('Remove "$path" from scan paths?'),
+        title: Text(l10n.removeFolderTitle),
+        content: Text(l10n.removeFolderConfirm(path)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -436,7 +438,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await service.removeCustomScanPath(path);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Folder removed')),
+      SnackBar(content: Text(l10n.folderRemoved)),
     );
   }
 
@@ -522,15 +524,16 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
   Widget _buildDownloadLocationTile() {
     final customPath = _offlineService.getCustomDownloadPath();
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: const SettingsIconBadge(
         icon: CupertinoIcons.folder_badge_plus,
         gradientColors: [Color(0xFF007AFF), Color(0xFF00C6FF)],
       ),
-      title: const Text('Cartella di Download', style: TextStyle(fontSize: 16)),
+      title: Text(l10n.downloadFolder, style: const TextStyle(fontSize: 16)),
       subtitle: Text(
-        customPath != null && customPath.isNotEmpty ? customPath : 'Predefinita (Memoria interna)',
+        customPath != null && customPath.isNotEmpty ? customPath : l10n.downloadFolderDefault,
         style: TextStyle(
           fontSize: 12,
           color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -621,8 +624,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     final hasPermission = await service.requestPermission();
     if (!hasPermission) {
       if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Storage permission required')),
+          SnackBar(content: Text(l10n.storagePermissionRequired)),
         );
       }
       return;
@@ -632,6 +636,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   }
 
   Widget _buildAudioCacheRow() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
@@ -649,9 +654,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 16,
         ),
       ),
-      title: const Text('Cache Brani e Stream', style: TextStyle(fontSize: 16)),
+      title: Text(l10n.songsStreamCache, style: const TextStyle(fontSize: 16)),
       subtitle: Text(
-        '$_audioCacheSize occupati su disco',
+        l10n.cacheDiskUsage(_audioCacheSize),
         style: TextStyle(
           fontSize: 13,
           color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -659,13 +664,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
       trailing: IconButton(
         icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
-        tooltip: 'Svuota cache brani',
+        tooltip: l10n.clearAudioCacheTooltip,
         onPressed: _clearAudioCache,
       ),
     );
   }
 
   Widget _buildImageCacheRow() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
@@ -683,9 +689,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           size: 16,
         ),
       ),
-      title: const Text('Cache Copertine e Immagini', style: TextStyle(fontSize: 16)),
+      title: Text(l10n.imageArtworkCache, style: const TextStyle(fontSize: 16)),
       subtitle: Text(
-        '$_imageCacheSize occupati su disco',
+        l10n.cacheDiskUsage(_imageCacheSize),
         style: TextStyle(
           fontSize: 13,
           color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -693,13 +699,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
       trailing: IconButton(
         icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
-        tooltip: 'Svuota cache immagini',
+        tooltip: l10n.clearImageCacheTooltip,
         onPressed: _clearImageCache,
       ),
     );
   }
 
   Widget _buildClearAllCacheButton() {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
@@ -718,11 +725,11 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         ),
       ),
       title: Text(
-        AppLocalizations.of(context)!.clearAllCache,
+        l10n.clearAllCache,
         style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       subtitle: Text(
-        'Totale cache: $_totalCacheSize',
+        l10n.totalCacheDiskUsage(_totalCacheSize),
         style: TextStyle(
           fontSize: 13,
           color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -736,8 +743,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await _cacheSettings.clearAudioCache();
     await _loadCacheInfo();
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cache brani svuotata')),
+        SnackBar(content: Text(l10n.audioCacheCleared)),
       );
     }
   }
@@ -746,8 +754,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     await _cacheSettings.clearImageCache();
     await _loadCacheInfo();
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cache copertine svuotata')),
+        SnackBar(content: Text(l10n.imageCacheCleared)),
       );
     }
   }
@@ -788,6 +797,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   }
 
   Widget _buildActiveDownloadsRow() {
+    final l10n = AppLocalizations.of(context)!;
     return ValueListenableBuilder<DownloadState>(
       valueListenable: _offlineService.downloadState,
       builder: (context, state, _) {
@@ -795,7 +805,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             ? '${state.currentSong!.artist ?? ''} – ${state.currentSong!.title}  (${state.currentProgress}/${state.totalCount})'
             : state.isDownloading
                 ? '${state.currentProgress}/${state.totalCount}'
-                : 'No downloads in progress';
+                : l10n.noDownloadsInProgress;
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
@@ -817,7 +827,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               size: 18,
             ),
           ),
-          title: const Text('Active Downloads', style: TextStyle(fontSize: 16)),
+          title: Text(l10n.activeDownloads, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             subtitle,
             style: TextStyle(
@@ -836,6 +846,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   }
 
   Widget _buildPlaylistStatusRow() {
+    final l10n = AppLocalizations.of(context)!;
     return ValueListenableBuilder<Set<String>>(
       valueListenable: _offlineService.downloadedSongIds,
       builder: (context, ids, _) {
@@ -845,9 +856,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
         icon: CupertinoIcons.music_note_list,
       ),
-          title: const Text('Playlist Downloads', style: TextStyle(fontSize: 16)),
+          title: Text(l10n.playlistDownloads, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
-            '${ids.length} songs downloaded',
+            l10n.playlistSongsDownloadedCount(ids.length),
             style: TextStyle(
               fontSize: 12,
               color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -938,13 +949,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     try {
       final libraryProvider = context.read<LibraryProvider>();
       final subsonicService = context.read<SubsonicService>();
+      final l10n = AppLocalizations.of(context)!;
 
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Loading library...'),
-            duration: Duration(seconds: 1),
+          SnackBar(
+            content: Text(l10n.loadingLibrary),
+            duration: const Duration(seconds: 1),
           ),
         );
       }
@@ -965,18 +977,16 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         final retry = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.noSongsAvailable),
-            content: const Text(
-              'Library appears to be empty or failed to load. Make sure your server supports full library scanning.',
-            ),
+            title: Text(l10n.noSongsAvailable),
+            content: Text(l10n.libraryEmptyError),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text(AppLocalizations.of(context)!.cancel),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Retry'),
+                child: Text(l10n.retry),
               ),
             ],
           ),

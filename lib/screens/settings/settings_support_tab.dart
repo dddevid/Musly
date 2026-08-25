@@ -200,7 +200,7 @@ class SettingsSupportTab extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Crafted with ',
+                l10n.craftedWith,
                 style: TextStyle(
                   fontSize: 13.5,
                   color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -208,7 +208,7 @@ class SettingsSupportTab extends StatelessWidget {
               ),
               const Icon(CupertinoIcons.heart_fill, size: 14, color: Color(0xFFFA2D48)),
               Text(
-                ' in Italy',
+                l10n.inItaly,
                 style: TextStyle(
                   fontSize: 13.5,
                   color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,

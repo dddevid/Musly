@@ -110,8 +110,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               context,
               icon: CupertinoIcons.sparkles,
               iconColor: const Color(0xFF6366F1),
-              title: 'Welcome Tour',
-              subtitle: 'Replay the introductory onboarding experience',
+              title: AppLocalizations.of(context)!.welcomeTourTitle,
+              subtitle: AppLocalizations.of(context)!.welcomeTourSubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   CupertinoPageRoute(
@@ -127,11 +127,11 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 icon: CupertinoIcons.gift_fill,
                 iconColor: const Color(0xFFFA243C),
                 title: kDebugMode && !WrappedService.isWrappedSeason()
-                    ? 'Musly Playback (Dev Preview)'
-                    : 'Musly Playback',
+                    ? AppLocalizations.of(context)!.muslyPlaybackDev
+                    : AppLocalizations.of(context)!.muslyPlaybackAnnual,
                 subtitle: kDebugMode && !WrappedService.isWrappedSeason()
-                    ? 'Developer test preview of Year-in-Review'
-                    : 'Your annual Year in Review and listening insights',
+                    ? AppLocalizations.of(context)!.muslyPlaybackDevSubtitle
+                    : AppLocalizations.of(context)!.muslyPlaybackAnnualSubtitle,
                 onTap: () {
                   Navigator.of(context).push(
                     CupertinoPageRoute(
@@ -147,16 +147,18 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ),
         const SizedBox(height: 24),
         SettingsSectionCard(
-          title: 'Support',
+          title: AppLocalizations.of(context)!.sectionAboutSupport,
           children: [
             _buildActionTile(
               context,
               icon: CupertinoIcons.star_fill,
               iconColor: const Color(0xFFFFCC00),
-              title: _hasRated ? 'Thanks for Rating!' : 'Rate Musly',
+              title: _hasRated
+                  ? AppLocalizations.of(context)!.thanksForRating
+                  : AppLocalizations.of(context)!.rateMusly,
               subtitle: _hasRated
-                  ? 'You\'ve already rated the app'
-                  : 'Share your feedback',
+                  ? AppLocalizations.of(context)!.alreadyRatedSubtitle
+                  : AppLocalizations.of(context)!.shareFeedbackSubtitle,
               onTap: _hasRated ? null : () => _showRatingDialog(context),
             ),
             _buildDivider(context),
@@ -164,8 +166,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               context,
               icon: CupertinoIcons.heart_fill,
               iconColor: const Color(0xFFFF2D55),
-              title: 'Support Musly',
-              subtitle: 'Join Discord or donate',
+              title: AppLocalizations.of(context)!.supportMuslyTitle,
+              subtitle: AppLocalizations.of(context)!.supportMuslySubtitle,
               onTap: () => _showSupportDialog(context),
             ),
           ],
@@ -232,24 +234,26 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     HapticFeedback.lightImpact();
 
     if (_versionTapCount < 8 && _versionTapCount >= 4) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${8 - _versionTapCount} taps away from Developer Playback Preview'),
+          content: Text(l10n.devPlaybackTapsAway(8 - _versionTapCount)),
           duration: const Duration(milliseconds: 700),
           behavior: SnackBarBehavior.floating,
         ),
       );
     } else if (_versionTapCount == 8) {
+      final l10n = AppLocalizations.of(context)!;
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
-              SizedBox(width: 8),
-              Text('Developer Playback Preview unlocked!'),
+              const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(l10n.devPlaybackUnlocked),
             ],
           ),
           backgroundColor: const Color(0xFFFA243C),
@@ -338,17 +342,18 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   void _showRatingDialog(BuildContext context) async {
     final ratingController = TextEditingController();
     int selectedRating = 5;
+    final l10n = AppLocalizations.of(context)!;
 
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Rate Musly'),
+          title: Text(l10n.rateMuslyDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('How would you rate your experience?'),
+                Text(l10n.rateMuslyDialogQuestion),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -372,9 +377,9 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                   constraints: const BoxConstraints(maxHeight: 100),
                   child: TextField(
                     controller: ratingController,
-                    decoration: const InputDecoration(
-                      hintText: 'Optional feedback...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: l10n.optionalFeedbackHint,
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: null,
                     expands: true,
@@ -387,11 +392,11 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Submit'),
+              child: Text(l10n.submit),
             ),
           ],
         ),
@@ -407,7 +412,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
       if (context.mounted) {
         setState(() => _hasRated = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thank you for your feedback!')),
+          SnackBar(content: Text(l10n.thankYouFeedback)),
         );
       }
     }

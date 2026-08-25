@@ -2034,5 +2034,436 @@
   "milestone50SongsMessage": "You just reached the milestone of 50 songs listened to on Musly! Thank you for choosing this app for your daily music journey.",
   "@milestone50SongsMessage": { "description": "Message for 50-song milestone" },
   "continueListening": "Continue Listening",
-  "@continueListening": { "description": "Button to continue listening after milestone celebration" }
+  "@continueListening": { "description": "Button to continue listening after milestone celebration" },
+
+  "lyricsUnderArtwork": "Live Lyrics Under Artwork",
+  "@lyricsUnderArtwork": {
+    "description": "Toggle to show live lyrics under album artwork in player"
+  },
+  "lyricsUnderArtworkSubtitle": "Show currently synced lyric line under the album cover in the full-screen player",
+  "@lyricsUnderArtworkSubtitle": {
+    "description": "Subtitle for live lyrics under artwork toggle"
+  },
+  "lyricsDisplaySection": "LYRICS DISPLAY",
+  "@lyricsDisplaySection": {
+    "description": "Section header for lyrics display appearance settings"
+  },
+  "lyricsBlurUnfocused": "Blur Unfocused Lyrics",
+  "@lyricsBlurUnfocused": {
+    "description": "Toggle to blur past and upcoming lyric lines"
+  },
+  "lyricsBlurUnfocusedSubtitle": "Add blur effect to past and upcoming lyric lines",
+  "@lyricsBlurUnfocusedSubtitle": {
+    "description": "Subtitle for blur unfocused lyrics toggle"
+  },
+  "lyricsAlignment": "Lyrics Alignment",
+  "@lyricsAlignment": {
+    "description": "Label for lyrics alignment setting"
+  },
+  "lyricsAlignmentCentered": "Centered",
+  "@lyricsAlignmentCentered": {
+    "description": "Centered lyrics alignment label"
+  },
+  "lyricsAlignmentLeft": "Left aligned",
+  "@lyricsAlignmentLeft": {
+    "description": "Left aligned lyrics alignment label"
+  },
+  "alignLeft": "Left",
+  "@alignLeft": {
+    "description": "Left alignment button"
+  },
+  "alignCenter": "Center",
+  "@alignCenter": {
+    "description": "Center alignment button"
+  },
+  "lyricsGlowEffect": "Active Line Glow",
+  "@lyricsGlowEffect": {
+    "description": "Toggle for active lyric line glow effect"
+  },
+  "lyricsGlowEffectSubtitle": "Subtle glow effect on currently playing lyric line",
+  "@lyricsGlowEffectSubtitle": {
+    "description": "Subtitle for active lyric line glow effect toggle"
+  },
+  "hideWindowTitlebar": "Hide Window Titlebar / Decorations",
+  "@hideWindowTitlebar": {
+    "description": "Toggle to hide native desktop window titlebar"
+  },
+  "hideWindowTitlebarSubtitle": "Hides native titlebar (useful for Linux Wayland & tiling window managers)",
+  "@hideWindowTitlebarSubtitle": {
+    "description": "Subtitle for hide window titlebar toggle"
+  },
+
+  "sectionSmartCrossfade": "SMART CROSSFADE",
+  "@sectionSmartCrossfade": {
+    "description": "Playback settings section header for smart crossfade"
+  },
+  "trackCrossfade": "Track Crossfade",
+  "@trackCrossfade": {
+    "description": "Title for track crossfade duration setting"
+  },
+  "crossfadeOffSubtitle": "Off (Instant transition)",
+  "@crossfadeOffSubtitle": {
+    "description": "Subtitle when crossfade is disabled"
+  },
+  "crossfadeDurationSubtitle": "{seconds} seconds crossfade between songs",
+  "@crossfadeDurationSubtitle": {
+    "description": "Subtitle showing crossfade duration",
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "crossfadeDurationBadge": "{seconds}s",
+  "@crossfadeDurationBadge": {
+    "description": "Badge showing crossfade duration in seconds",
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "sectionGaplessPlayback": "GAPLESS PLAYBACK",
+  "@sectionGaplessPlayback": {
+    "description": "Playback settings section header for gapless playback"
+  },
+  "gaplessPlayback": "Gapless Playback",
+  "@gaplessPlayback": {
+    "description": "Title for gapless playback toggle"
+  },
+  "gaplessPlaybackSubtitle": "Eliminate silence between songs",
+  "@gaplessPlaybackSubtitle": {
+    "description": "Subtitle for gapless playback toggle"
+  },
+  "sectionLyrics": "LYRICS",
+  "@sectionLyrics": {
+    "description": "Playback settings section header for lyrics"
+  },
+  "networkWifi": "WiFi",
+  "@networkWifi": {
+    "description": "Network badge for WiFi connection"
+  },
+  "networkMobile": "Mobile",
+  "@networkMobile": {
+    "description": "Network badge for mobile data connection"
+  },
+
+  "downloadFolder": "Download Folder",
+  "@downloadFolder": {
+    "description": "Title for custom download folder setting"
+  },
+  "downloadFolderDefault": "Default (Internal storage)",
+  "@downloadFolderDefault": {
+    "description": "Subtitle when default download folder is selected"
+  },
+  "activeDownloads": "Active Downloads",
+  "@activeDownloads": {
+    "description": "Title for active downloads row"
+  },
+  "noDownloadsInProgress": "No downloads in progress",
+  "@noDownloadsInProgress": {
+    "description": "Subtitle when no downloads are currently active"
+  },
+  "playlistDownloads": "Playlist Downloads",
+  "@playlistDownloads": {
+    "description": "Title for playlist downloads row"
+  },
+  "playlistSongsDownloadedCount": "{count, plural, =1{1 song downloaded} other{{count} songs downloaded}}",
+  "@playlistSongsDownloadedCount": {
+    "description": "Subtitle showing number of songs downloaded in playlist downloads",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "songsStreamCache": "Songs & Streaming Cache",
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  },
+  "imageArtworkCache": "Artwork & Images Cache",
+  "@imageArtworkCache": {
+    "description": "Title for image/artwork cache row"
+  },
+  "cacheDiskUsage": "{size} used on disk",
+  "@cacheDiskUsage": {
+    "description": "Subtitle showing cache disk usage",
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "totalCacheDiskUsage": "Total cache: {size}",
+  "@totalCacheDiskUsage": {
+    "description": "Subtitle showing total cache disk usage",
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "clearAudioCacheTooltip": "Clear song cache",
+  "@clearAudioCacheTooltip": {
+    "description": "Tooltip for clear audio cache button"
+  },
+  "clearImageCacheTooltip": "Clear image cache",
+  "@clearImageCacheTooltip": {
+    "description": "Tooltip for clear image cache button"
+  },
+  "audioCacheCleared": "Song cache cleared",
+  "@audioCacheCleared": {
+    "description": "Snackbar message when song cache is cleared"
+  },
+  "imageCacheCleared": "Artwork cache cleared",
+  "@imageCacheCleared": {
+    "description": "Snackbar message when artwork cache is cleared"
+  },
+  "folderAdded": "Added folder: {path}",
+  "@folderAdded": {
+    "description": "Snackbar message when a local folder is added",
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "removeFolderTitle": "Remove Folder",
+  "@removeFolderTitle": {
+    "description": "Title of dialog to remove local music folder"
+  },
+  "removeFolderConfirm": "Remove \"{path}\" from scan paths?",
+  "@removeFolderConfirm": {
+    "description": "Confirmation message to remove folder from scan paths",
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Button to remove an item"
+  },
+  "folderRemoved": "Folder removed",
+  "@folderRemoved": {
+    "description": "Snackbar message when a local folder is removed"
+  },
+  "storagePermissionRequired": "Storage permission required",
+  "@storagePermissionRequired": {
+    "description": "Snackbar message when storage permission is needed"
+  },
+  "loadingLibrary": "Loading library...",
+  "@loadingLibrary": {
+    "description": "Snackbar message when library is being loaded"
+  },
+  "libraryEmptyError": "Library appears to be empty or failed to load. Make sure your server supports full library scanning.",
+  "@libraryEmptyError": {
+    "description": "Dialog message when library is empty for download"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button label"
+  },
+
+  "serverStatusConnected": "CONNECTED",
+  "@serverStatusConnected": {
+    "description": "Server connection status badge: connected"
+  },
+  "serverStatusConnecting": "CONNECTING",
+  "@serverStatusConnecting": {
+    "description": "Server connection status badge: connecting"
+  },
+  "serverStatusOffline": "OFFLINE",
+  "@serverStatusOffline": {
+    "description": "Server connection status badge: offline"
+  },
+  "serverStatusNotConnected": "Not Connected",
+  "@serverStatusNotConnected": {
+    "description": "Label when no server is connected"
+  },
+  "switchServerButton": "Switch",
+  "@switchServerButton": {
+    "description": "Button to switch server profile"
+  },
+  "savedServersSection": "SAVED SERVERS & SERVICES",
+  "@savedServersSection": {
+    "description": "Section header for saved server profiles"
+  },
+  "manage": "Manage",
+  "@manage": {
+    "description": "Button to manage items"
+  },
+  "serverActiveBadge": "ACTIVE",
+  "@serverActiveBadge": {
+    "description": "Badge showing active server profile"
+  },
+  "addServerOrService": "Add Server / Service",
+  "@addServerOrService": {
+    "description": "Button to add a new server or streaming service"
+  },
+
+  "welcomeTourTitle": "Welcome Tour",
+  "@welcomeTourTitle": {
+    "description": "Title for welcome tour tile in about tab"
+  },
+  "welcomeTourSubtitle": "Replay the introductory onboarding experience",
+  "@welcomeTourSubtitle": {
+    "description": "Subtitle for welcome tour tile"
+  },
+  "muslyPlaybackDev": "Musly Playback (Dev Preview)",
+  "@muslyPlaybackDev": {
+    "description": "Title for developer preview of annual wrapped"
+  },
+  "muslyPlaybackDevSubtitle": "Developer test preview of Year-in-Review",
+  "@muslyPlaybackDevSubtitle": {
+    "description": "Subtitle for developer preview of annual wrapped"
+  },
+  "muslyPlaybackAnnual": "Musly Playback",
+  "@muslyPlaybackAnnual": {
+    "description": "Title for annual playback review"
+  },
+  "muslyPlaybackAnnualSubtitle": "Your annual Year in Review and listening insights",
+  "@muslyPlaybackAnnualSubtitle": {
+    "description": "Subtitle for annual playback review"
+  },
+  "sectionAboutSupport": "SUPPORT",
+  "@sectionAboutSupport": {
+    "description": "Section header for support in about tab"
+  },
+  "thanksForRating": "Thanks for Rating!",
+  "@thanksForRating": {
+    "description": "Title shown when user has already rated the app"
+  },
+  "rateMusly": "Rate Musly",
+  "@rateMusly": {
+    "description": "Title to rate the app"
+  },
+  "alreadyRatedSubtitle": "You've already rated the app",
+  "@alreadyRatedSubtitle": {
+    "description": "Subtitle when user has rated the app"
+  },
+  "shareFeedbackSubtitle": "Share your feedback",
+  "@shareFeedbackSubtitle": {
+    "description": "Subtitle to share rating feedback"
+  },
+  "supportMuslyTitle": "Support Musly",
+  "@supportMuslyTitle": {
+    "description": "Title for Musly support tile"
+  },
+  "supportMuslySubtitle": "Join Discord or donate",
+  "@supportMuslySubtitle": {
+    "description": "Subtitle for Musly support tile"
+  },
+  "rateMuslyDialogTitle": "Rate Musly",
+  "@rateMuslyDialogTitle": {
+    "description": "Title of rating dialog"
+  },
+  "rateMuslyDialogQuestion": "How would you rate your experience?",
+  "@rateMuslyDialogQuestion": {
+    "description": "Question in rating dialog"
+  },
+  "optionalFeedbackHint": "Optional feedback...",
+  "@optionalFeedbackHint": {
+    "description": "Hint text for rating feedback text field"
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Submit button label"
+  },
+  "thankYouFeedback": "Thank you for your feedback!",
+  "@thankYouFeedback": {
+    "description": "Snackbar message after submitting rating feedback"
+  },
+  "devPlaybackTapsAway": "{count} taps away from Developer Playback Preview",
+  "@devPlaybackTapsAway": {
+    "description": "Snackbar message counting down taps to unlock developer wrapped preview",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "devPlaybackUnlocked": "Developer Playback Preview unlocked!",
+  "@devPlaybackUnlocked": {
+    "description": "Snackbar message when developer wrapped preview is unlocked"
+  },
+  "craftedWith": "Crafted with ",
+  "@craftedWith": {
+    "description": "Footer text prefix: Crafted with"
+  },
+  "inItaly": " in Italy",
+  "@inItaly": {
+    "description": "Footer text suffix: in Italy"
+  },
+
+  "switchServerTitle": "Switch Server",
+  "@switchServerTitle": {
+    "description": "Title of server switcher bottom sheet"
+  },
+  "switchServerSubtitle": "Select an active server or streaming source",
+  "@switchServerSubtitle": {
+    "description": "Subtitle of server switcher bottom sheet"
+  },
+  "addServerButton": "Add Server",
+  "@addServerButton": {
+    "description": "Button to add a server in server switcher"
+  },
+  "noServersSavedYet": "No servers saved yet",
+  "@noServersSavedYet": {
+    "description": "Empty state message when no server profiles exist"
+  },
+  "connectedTo": "Connected to {name}",
+  "@connectedTo": {
+    "description": "Snackbar message when successfully switched to server",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "errorConnectingServer": "Error connecting to server: {error}",
+  "@errorConnectingServer": {
+    "description": "Snackbar error message when server switch fails",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "renameServerProfile": "Rename Server Profile",
+  "@renameServerProfile": {
+    "description": "Title of rename server profile dialog"
+  },
+  "profileNameLabel": "Profile Name",
+  "@profileNameLabel": {
+    "description": "Label for profile name text field"
+  },
+  "enterNewNameHint": "Enter new name",
+  "@enterNewNameHint": {
+    "description": "Hint text for entering new profile name"
+  },
+  "removeServerTitle": "Remove Server",
+  "@removeServerTitle": {
+    "description": "Title of remove server confirmation dialog"
+  },
+  "removeServerConfirm": "Are you sure you want to remove \"{name}\" from your saved servers?",
+  "@removeServerConfirm": {
+    "description": "Confirmation message to remove a server profile",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "noPlaylistsFound": "No playlists found",
+  "@noPlaylistsFound": {
+    "description": "Empty state message in playlist downloads screen"
+  },
+  "supportDialogDescription": "Musly is a free, open-source project. Your support helps keep it alive!",
+  "@supportDialogDescription": {
+    "description": "Description in support startup dialog"
+  },
+  "supportDialogJoinDiscord": "Join our Discord",
+  "@supportDialogJoinDiscord": {
+    "description": "Title of Discord button in support dialog"
+  },
+  "supportDialogDiscordSubtitle": "Get help, suggest features, chat with us",
+  "@supportDialogDiscordSubtitle": {
+    "description": "Subtitle of Discord button in support dialog"
+  },
+  "supportDialogDonateTitle": "Support with a Donation",
+  "@supportDialogDonateTitle": {
+    "description": "Title of donation button in support dialog"
+  },
+  "supportDialogDonateSubtitle": "Help cover server costs and development",
+  "@supportDialogDonateSubtitle": {
+    "description": "Subtitle of donation button in support dialog"
+  },
+  "dontShowAgain": "Don't show this again",
+  "@dontShowAgain": {
+    "description": "Checkbox label to not show support dialog again"
+  },
+  "maybeLater": "Maybe Later",
+  "@maybeLater": {
+    "description": "Button label to dismiss support dialog"
+  }
 }

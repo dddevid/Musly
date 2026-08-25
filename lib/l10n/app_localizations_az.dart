@@ -1140,8 +1140,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get startingScan => 'Starting scan...';
 
   @override
-  String get storagePermissionRequired =>
-      'Storage permission required to scan local files';
+  String get storagePermissionRequired => 'Storage permission required';
 
   @override
   String get noMusicFilesFound => 'No music files found on your device';
@@ -1930,4 +1929,329 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get continueListening => 'Continue Listening';
+
+  @override
+  String get lyricsUnderArtwork => 'Live Lyrics Under Artwork';
+
+  @override
+  String get lyricsUnderArtworkSubtitle =>
+      'Show currently synced lyric line under the album cover in the full-screen player';
+
+  @override
+  String get lyricsDisplaySection => 'LYRICS DISPLAY';
+
+  @override
+  String get lyricsBlurUnfocused => 'Blur Unfocused Lyrics';
+
+  @override
+  String get lyricsBlurUnfocusedSubtitle =>
+      'Add blur effect to past and upcoming lyric lines';
+
+  @override
+  String get lyricsAlignment => 'Lyrics Alignment';
+
+  @override
+  String get lyricsAlignmentCentered => 'Centered';
+
+  @override
+  String get lyricsAlignmentLeft => 'Left aligned';
+
+  @override
+  String get alignLeft => 'Left';
+
+  @override
+  String get alignCenter => 'Center';
+
+  @override
+  String get lyricsGlowEffect => 'Active Line Glow';
+
+  @override
+  String get lyricsGlowEffectSubtitle =>
+      'Subtle glow effect on currently playing lyric line';
+
+  @override
+  String get hideWindowTitlebar => 'Hide Window Titlebar / Decorations';
+
+  @override
+  String get hideWindowTitlebarSubtitle =>
+      'Hides native titlebar (useful for Linux Wayland & tiling window managers)';
+
+  @override
+  String get sectionSmartCrossfade => 'SMART CROSSFADE';
+
+  @override
+  String get trackCrossfade => 'Track Crossfade';
+
+  @override
+  String get crossfadeOffSubtitle => 'Off (Instant transition)';
+
+  @override
+  String crossfadeDurationSubtitle(int seconds) {
+    return '$seconds seconds crossfade between songs';
+  }
+
+  @override
+  String crossfadeDurationBadge(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String get sectionGaplessPlayback => 'GAPLESS PLAYBACK';
+
+  @override
+  String get gaplessPlayback => 'Gapless Playback';
+
+  @override
+  String get gaplessPlaybackSubtitle => 'Eliminate silence between songs';
+
+  @override
+  String get sectionLyrics => 'LYRICS';
+
+  @override
+  String get networkWifi => 'WiFi';
+
+  @override
+  String get networkMobile => 'Mobile';
+
+  @override
+  String get downloadFolder => 'Download Folder';
+
+  @override
+  String get downloadFolderDefault => 'Default (Internal storage)';
+
+  @override
+  String get activeDownloads => 'Active Downloads';
+
+  @override
+  String get noDownloadsInProgress => 'No downloads in progress';
+
+  @override
+  String get playlistDownloads => 'Playlist Downloads';
+
+  @override
+  String playlistSongsDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs downloaded',
+      one: '1 song downloaded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songsStreamCache => 'Songs & Streaming Cache';
+
+  @override
+  String get imageArtworkCache => 'Artwork & Images Cache';
+
+  @override
+  String cacheDiskUsage(String size) {
+    return '$size used on disk';
+  }
+
+  @override
+  String totalCacheDiskUsage(String size) {
+    return 'Total cache: $size';
+  }
+
+  @override
+  String get clearAudioCacheTooltip => 'Clear song cache';
+
+  @override
+  String get clearImageCacheTooltip => 'Clear image cache';
+
+  @override
+  String get audioCacheCleared => 'Song cache cleared';
+
+  @override
+  String get imageCacheCleared => 'Artwork cache cleared';
+
+  @override
+  String folderAdded(String path) {
+    return 'Added folder: $path';
+  }
+
+  @override
+  String get removeFolderTitle => 'Remove Folder';
+
+  @override
+  String removeFolderConfirm(String path) {
+    return 'Remove \"$path\" from scan paths?';
+  }
+
+  @override
+  String get folderRemoved => 'Folder removed';
+
+  @override
+  String get loadingLibrary => 'Loading library...';
+
+  @override
+  String get libraryEmptyError =>
+      'Library appears to be empty or failed to load. Make sure your server supports full library scanning.';
+
+  @override
+  String get serverStatusConnected => 'CONNECTED';
+
+  @override
+  String get serverStatusConnecting => 'CONNECTING';
+
+  @override
+  String get serverStatusOffline => 'OFFLINE';
+
+  @override
+  String get serverStatusNotConnected => 'Not Connected';
+
+  @override
+  String get switchServerButton => 'Switch';
+
+  @override
+  String get savedServersSection => 'SAVED SERVERS & SERVICES';
+
+  @override
+  String get manage => 'Manage';
+
+  @override
+  String get serverActiveBadge => 'ACTIVE';
+
+  @override
+  String get addServerOrService => 'Add Server / Service';
+
+  @override
+  String get welcomeTourTitle => 'Welcome Tour';
+
+  @override
+  String get welcomeTourSubtitle =>
+      'Replay the introductory onboarding experience';
+
+  @override
+  String get muslyPlaybackDev => 'Musly Playback (Dev Preview)';
+
+  @override
+  String get muslyPlaybackDevSubtitle =>
+      'Developer test preview of Year-in-Review';
+
+  @override
+  String get muslyPlaybackAnnual => 'Musly Playback';
+
+  @override
+  String get muslyPlaybackAnnualSubtitle =>
+      'Your annual Year in Review and listening insights';
+
+  @override
+  String get sectionAboutSupport => 'SUPPORT';
+
+  @override
+  String get thanksForRating => 'Thanks for Rating!';
+
+  @override
+  String get rateMusly => 'Rate Musly';
+
+  @override
+  String get alreadyRatedSubtitle => 'You\'ve already rated the app';
+
+  @override
+  String get shareFeedbackSubtitle => 'Share your feedback';
+
+  @override
+  String get supportMuslyTitle => 'Support Musly';
+
+  @override
+  String get supportMuslySubtitle => 'Join Discord or donate';
+
+  @override
+  String get rateMuslyDialogTitle => 'Rate Musly';
+
+  @override
+  String get rateMuslyDialogQuestion => 'How would you rate your experience?';
+
+  @override
+  String get optionalFeedbackHint => 'Optional feedback...';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get thankYouFeedback => 'Thank you for your feedback!';
+
+  @override
+  String devPlaybackTapsAway(int count) {
+    return '$count taps away from Developer Playback Preview';
+  }
+
+  @override
+  String get devPlaybackUnlocked => 'Developer Playback Preview unlocked!';
+
+  @override
+  String get craftedWith => 'Crafted with ';
+
+  @override
+  String get inItaly => ' in Italy';
+
+  @override
+  String get switchServerTitle => 'Switch Server';
+
+  @override
+  String get switchServerSubtitle =>
+      'Select an active server or streaming source';
+
+  @override
+  String get addServerButton => 'Add Server';
+
+  @override
+  String get noServersSavedYet => 'No servers saved yet';
+
+  @override
+  String connectedTo(String name) {
+    return 'Connected to $name';
+  }
+
+  @override
+  String errorConnectingServer(String error) {
+    return 'Error connecting to server: $error';
+  }
+
+  @override
+  String get renameServerProfile => 'Rename Server Profile';
+
+  @override
+  String get profileNameLabel => 'Profile Name';
+
+  @override
+  String get enterNewNameHint => 'Enter new name';
+
+  @override
+  String get removeServerTitle => 'Remove Server';
+
+  @override
+  String removeServerConfirm(String name) {
+    return 'Are you sure you want to remove \"$name\" from your saved servers?';
+  }
+
+  @override
+  String get noPlaylistsFound => 'No playlists found';
+
+  @override
+  String get supportDialogDescription =>
+      'Musly is a free, open-source project. Your support helps keep it alive!';
+
+  @override
+  String get supportDialogJoinDiscord => 'Join our Discord';
+
+  @override
+  String get supportDialogDiscordSubtitle =>
+      'Get help, suggest features, chat with us';
+
+  @override
+  String get supportDialogDonateTitle => 'Support with a Donation';
+
+  @override
+  String get supportDialogDonateSubtitle =>
+      'Help cover server costs and development';
+
+  @override
+  String get dontShowAgain => 'Don\'t show this again';
+
+  @override
+  String get maybeLater => 'Maybe Later';
 }

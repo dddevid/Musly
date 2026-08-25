@@ -1146,8 +1146,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get startingScan => 'Avvio scansione...';
 
   @override
-  String get storagePermissionRequired =>
-      'È richiesta l\'autorizzazione di archiviazione per eseguire la scansione dei file locali';
+  String get storagePermissionRequired => 'Permesso di archiviazione richiesto';
 
   @override
   String get noMusicFilesFound =>
@@ -1941,4 +1940,331 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get continueListening => 'Continua ad ascoltare';
+
+  @override
+  String get lyricsUnderArtwork => 'Testo sotto la copertina';
+
+  @override
+  String get lyricsUnderArtworkSubtitle =>
+      'Mostra la riga sincronizzata corrente del testo sotto la copertina nel player a schermo intero';
+
+  @override
+  String get lyricsDisplaySection => 'VISUALIZZAZIONE TESTO';
+
+  @override
+  String get lyricsBlurUnfocused => 'Sfoca testo non attivo';
+
+  @override
+  String get lyricsBlurUnfocusedSubtitle =>
+      'Aggiunge un effetto di sfocatura alle righe del testo precedenti e successive';
+
+  @override
+  String get lyricsAlignment => 'Allineamento testo';
+
+  @override
+  String get lyricsAlignmentCentered => 'Centrato';
+
+  @override
+  String get lyricsAlignmentLeft => 'Allineato a sinistra';
+
+  @override
+  String get alignLeft => 'Sinistra';
+
+  @override
+  String get alignCenter => 'Centro';
+
+  @override
+  String get lyricsGlowEffect => 'Bagliore riga attiva';
+
+  @override
+  String get lyricsGlowEffectSubtitle =>
+      'Effetto di bagliore sottile sulla riga del testo attualmente in riproduzione';
+
+  @override
+  String get hideWindowTitlebar =>
+      'Nascondi barra del titolo / decorazioni della finestra';
+
+  @override
+  String get hideWindowTitlebarSubtitle =>
+      'Nasconde la barra del titolo nativa (utile per Linux Wayland e tiling window manager)';
+
+  @override
+  String get sectionSmartCrossfade => 'SMART CROSSFADE';
+
+  @override
+  String get trackCrossfade => 'Dissolvenza incrociata tra i brani';
+
+  @override
+  String get crossfadeOffSubtitle => 'Disattivata (Transizione istantanea)';
+
+  @override
+  String crossfadeDurationSubtitle(int seconds) {
+    return '$seconds secondi di dissolvenza incrociata tra i brani';
+  }
+
+  @override
+  String crossfadeDurationBadge(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String get sectionGaplessPlayback => 'RIPRODUZIONE SENZA PAUSE';
+
+  @override
+  String get gaplessPlayback => 'Riproduzione senza pause';
+
+  @override
+  String get gaplessPlaybackSubtitle => 'Elimina il silenzio tra i brani';
+
+  @override
+  String get sectionLyrics => 'TESTI';
+
+  @override
+  String get networkWifi => 'WiFi';
+
+  @override
+  String get networkMobile => 'Dati mobili';
+
+  @override
+  String get downloadFolder => 'Cartella di download';
+
+  @override
+  String get downloadFolderDefault => 'Predefinita (Memoria interna)';
+
+  @override
+  String get activeDownloads => 'Download attivi';
+
+  @override
+  String get noDownloadsInProgress => 'Nessun download in corso';
+
+  @override
+  String get playlistDownloads => 'Download playlist';
+
+  @override
+  String playlistSongsDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count brani scaricati',
+      one: '1 brano scaricato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songsStreamCache => 'Cache brani e streaming';
+
+  @override
+  String get imageArtworkCache => 'Cache copertine e immagini';
+
+  @override
+  String cacheDiskUsage(String size) {
+    return '$size occupati su disco';
+  }
+
+  @override
+  String totalCacheDiskUsage(String size) {
+    return 'Totale cache: $size';
+  }
+
+  @override
+  String get clearAudioCacheTooltip => 'Svuota cache brani';
+
+  @override
+  String get clearImageCacheTooltip => 'Svuota cache immagini';
+
+  @override
+  String get audioCacheCleared => 'Cache brani svuotata';
+
+  @override
+  String get imageCacheCleared => 'Cache copertine svuotata';
+
+  @override
+  String folderAdded(String path) {
+    return 'Cartella aggiunta: $path';
+  }
+
+  @override
+  String get removeFolderTitle => 'Rimuovi cartella';
+
+  @override
+  String removeFolderConfirm(String path) {
+    return 'Rimuovere \"$path\" dai percorsi di scansione?';
+  }
+
+  @override
+  String get folderRemoved => 'Cartella rimossa';
+
+  @override
+  String get loadingLibrary => 'Caricamento libreria in corso...';
+
+  @override
+  String get libraryEmptyError =>
+      'La libreria sembra vuota o non è stato possibile caricarla. Assicurati che il tuo server supporti la scansione completa della libreria.';
+
+  @override
+  String get serverStatusConnected => 'CONNESSO';
+
+  @override
+  String get serverStatusConnecting => 'CONNESSIONE';
+
+  @override
+  String get serverStatusOffline => 'OFFLINE';
+
+  @override
+  String get serverStatusNotConnected => 'Non connesso';
+
+  @override
+  String get switchServerButton => 'Cambia';
+
+  @override
+  String get savedServersSection => 'SERVER E SERVIZI SALVATI';
+
+  @override
+  String get manage => 'Gestisci';
+
+  @override
+  String get serverActiveBadge => 'ATTIVO';
+
+  @override
+  String get addServerOrService => 'Aggiungi server o servizio';
+
+  @override
+  String get welcomeTourTitle => 'Tour di benvenuto';
+
+  @override
+  String get welcomeTourSubtitle =>
+      'Rivedi l\'esperienza introduttiva iniziale';
+
+  @override
+  String get muslyPlaybackDev => 'Musly Playback (Anteprima sviluppatore)';
+
+  @override
+  String get muslyPlaybackDevSubtitle =>
+      'Anteprima di test per sviluppatori del riepilogo dell\'anno';
+
+  @override
+  String get muslyPlaybackAnnual => 'Musly Playback';
+
+  @override
+  String get muslyPlaybackAnnualSubtitle =>
+      'Il tuo riepilogo annuale e le tue statistiche di ascolto';
+
+  @override
+  String get sectionAboutSupport => 'SUPPORTO';
+
+  @override
+  String get thanksForRating => 'Grazie per la valutazione!';
+
+  @override
+  String get rateMusly => 'Valuta Musly';
+
+  @override
+  String get alreadyRatedSubtitle => 'Hai già valutato l\'app';
+
+  @override
+  String get shareFeedbackSubtitle => 'Condividi la tua opinione';
+
+  @override
+  String get supportMuslyTitle => 'Supporta Musly';
+
+  @override
+  String get supportMuslySubtitle => 'Unisciti a Discord o fai una donazione';
+
+  @override
+  String get rateMuslyDialogTitle => 'Valuta Musly';
+
+  @override
+  String get rateMuslyDialogQuestion => 'Come valuteresti la tua esperienza?';
+
+  @override
+  String get optionalFeedbackHint => 'Feedback opzionale...';
+
+  @override
+  String get submit => 'Invia';
+
+  @override
+  String get thankYouFeedback => 'Grazie per il tuo feedback!';
+
+  @override
+  String devPlaybackTapsAway(int count) {
+    return 'A $count tocchi dall\'anteprima sviluppatore di Playback';
+  }
+
+  @override
+  String get devPlaybackUnlocked =>
+      'Anteprima sviluppatore di Playback sbloccata!';
+
+  @override
+  String get craftedWith => 'Creato con ';
+
+  @override
+  String get inItaly => ' in Italia';
+
+  @override
+  String get switchServerTitle => 'Cambia server';
+
+  @override
+  String get switchServerSubtitle =>
+      'Seleziona un server attivo o una sorgente di streaming';
+
+  @override
+  String get addServerButton => 'Aggiungi server';
+
+  @override
+  String get noServersSavedYet => 'Nessun server salvato';
+
+  @override
+  String connectedTo(String name) {
+    return 'Connesso a $name';
+  }
+
+  @override
+  String errorConnectingServer(String error) {
+    return 'Errore durante la connessione al server: $error';
+  }
+
+  @override
+  String get renameServerProfile => 'Rinomina profilo server';
+
+  @override
+  String get profileNameLabel => 'Nome profilo';
+
+  @override
+  String get enterNewNameHint => 'Inserisci nuovo nome';
+
+  @override
+  String get removeServerTitle => 'Rimuovi server';
+
+  @override
+  String removeServerConfirm(String name) {
+    return 'Sei sicuro di voler rimuovere \"$name\" dai server salvati?';
+  }
+
+  @override
+  String get noPlaylistsFound => 'Nessuna playlist trovata';
+
+  @override
+  String get supportDialogDescription =>
+      'Musly è un progetto gratuito e open-source. Il tuo supporto aiuta a mantenerlo vivo!';
+
+  @override
+  String get supportDialogJoinDiscord => 'Unisciti al nostro Discord';
+
+  @override
+  String get supportDialogDiscordSubtitle =>
+      'Ottieni aiuto, suggerisci funzionalità, chatta con noi';
+
+  @override
+  String get supportDialogDonateTitle => 'Supporta con una donazione';
+
+  @override
+  String get supportDialogDonateSubtitle =>
+      'Aiuta a coprire i costi dei server e dello sviluppo';
+
+  @override
+  String get dontShowAgain => 'Non mostrare più';
+
+  @override
+  String get maybeLater => 'Più tardi';
 }

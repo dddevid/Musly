@@ -66,6 +66,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
       await libraryProvider.refresh();
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -75,7 +76,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Connected to ${profile.displayServerName}',
+                    l10n.connectedTo(profile.displayServerName),
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -89,12 +90,13 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
           _switchingServerKey = null;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error connecting to server: $e'),
+            content: Text(l10n.errorConnectingServer(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -109,22 +111,23 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
 
   void _showRenameDialog(ServerConfig profile) {
     final controller = TextEditingController(text: profile.name ?? profile.displayServerName);
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rename Server Profile'),
+        title: Text(l10n.renameServerProfile),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Profile Name',
-            hintText: 'Enter new name',
+          decoration: InputDecoration(
+            labelText: l10n.profileNameLabel,
+            hintText: l10n.enterNewNameHint,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -140,7 +143,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                 }
               }
             },
-            child: const Text('Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -148,15 +151,16 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   }
 
   void _confirmDeleteProfile(ServerConfig profile) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove Server'),
-        content: Text('Are you sure you want to remove "${profile.displayServerName}" from your saved servers?'),
+        title: Text(l10n.removeServerTitle),
+        content: Text(l10n.removeServerConfirm(profile.displayServerName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -169,7 +173,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                 setState(() {});
               }
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -183,6 +187,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentConfig = authProvider.config;
 
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<ServerConfig>>(
       future: authProvider.getSavedProfiles(),
       builder: (context, snapshot) {
@@ -233,16 +238,16 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Switch Server',
-                            style: TextStyle(
+                          Text(
+                            l10n.switchServerTitle,
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Select an active server or streaming source',
+                            l10n.switchServerSubtitle,
                             style: TextStyle(
                               fontSize: 13,
                               color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
@@ -254,7 +259,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                     FilledButton.tonalIcon(
                       onPressed: () => _openAddServerScreen(),
                       icon: const Icon(CupertinoIcons.plus, size: 16),
-                      label: const Text('Add Server'),
+                      label: Text(l10n.addServerButton),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -277,7 +282,7 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Center(
                           child: Text(
-                            'No servers saved yet',
+                            l10n.noServersSavedYet,
                             style: TextStyle(
                               color: isDark ? Colors.white54 : Colors.black54,
                             ),
