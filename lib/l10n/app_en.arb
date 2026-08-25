@@ -696,6 +696,31 @@
     "description": "Community translations credit subtitle"
   },
 
+  "checkTranslationUpdates": "Check for Translation Updates",
+  "@checkTranslationUpdates": {
+    "description": "Title for checking live OTA translation updates"
+  },
+
+  "checkTranslationUpdatesSubtitle": "Sync latest community translations live (OTA)",
+  "@checkTranslationUpdatesSubtitle": {
+    "description": "Subtitle for checking live OTA translation updates"
+  },
+
+  "checkingTranslationUpdates": "Checking for translation updates…",
+  "@checkingTranslationUpdates": {
+    "description": "Snackbar message when checking for translation updates"
+  },
+
+  "translationsUpdated": "Translations updated successfully!",
+  "@translationsUpdated": {
+    "description": "Snackbar message when translations were updated"
+  },
+
+  "translationsUpToDate": "Translations are already up to date",
+  "@translationsUpToDate": {
+    "description": "Snackbar message when translations are already up to date"
+  },
+
   "@_LIBRARY": {},
   "yourLibrary": "Your Library",
   "filterAll": "All",

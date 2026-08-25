@@ -437,6 +437,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTranslationsSubtitle => '在 Crowdin 上帮助翻译 Musly';
 
   @override
+  String get checkTranslationUpdates => 'Check for Translation Updates';
+
+  @override
+  String get checkTranslationUpdatesSubtitle =>
+      'Sync latest community translations live (OTA)';
+
+  @override
+  String get checkingTranslationUpdates => 'Checking for translation updates…';
+
+  @override
+  String get translationsUpdated => 'Translations updated successfully!';
+
+  @override
+  String get translationsUpToDate => 'Translations are already up to date';
+
+  @override
   String get yourLibrary => '你的音乐库';
 
   @override

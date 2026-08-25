@@ -1,27 +1,29 @@
 name: Crowdin Translations Sync
 
 on:
-  # Run on push to master to upload new source strings
+  # 1. Immediate trigger via Crowdin Webhook (GitHub repository_dispatch event)
+  repository_dispatch:
+    types: [crowdin-sync, crowdin_update, crowdin]
+
+  # 2. Push new source strings to Crowdin whenever app_en.arb is modified on master
   push:
     branches:
       - master
     paths:
-      - 'lib/l10n/app_*.arb'
+      - 'lib/l10n/app_en.arb'
 
-  # Run daily to download latest translations
+  # 3. Periodic fallback sync every 4 hours
   schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
+    - cron: '0 */4 * * *'
 
-  # Allow manual trigger
+  # 4. Manual trigger from GitHub Actions UI
   workflow_dispatch:
 
 jobs:
   sync-crowdin:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
-
-    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -29,18 +31,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Push local translations to Crowdin first so GitHub edits are not lost
-      - name: Crowdin push (upload source + local translations)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # Push source strings to Crowdin if English source was modified
+      - name: Crowdin push (upload source strings)
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: crowdin/github-action@v2
         with:
           upload_sources: true
-          upload_translations: true
+          upload_translations: false
           download_translations: false
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_API_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Download all latest translations from Crowdin
       - name: Crowdin pull (download translations)
         id: crowdin_pull
         uses: crowdin/github-action@v2
@@ -56,6 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Normalize @@locale in all ARB files
       - name: Normalize ARB locales
         run: |
           for file in lib/l10n/app_*.arb; do
@@ -98,25 +109,29 @@ jobs:
       - name: Fix file permissions
         run: sudo chown -R $USER:$USER .
 
+      # Regenerate Flutter localizations so new languages and strings are immediately compiled
+      - name: Regenerate Flutter localization files
+        run: flutter gen-l10n
+
+      # Check for translation changes (both ARB files and generated Dart localizations)
       - name: Check for translation changes
         id: changes
         run: |
-          git diff --quiet && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+          git add lib/l10n/
+          if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No translation changes detected."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Translation changes detected!"
+          fi
 
-      - name: Create Pull Request
+      # Commit and push directly to master without creating a pull request
+      - name: Commit and push changes directly to master
         if: steps.changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
-        id: cpr
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update and normalize translations from Crowdin'
-          title: 'New Crowdin translations'
-          body: 'New translations from Crowdin with normalized @@locale entries to prevent build failures.'
-          branch: 'l10n_crowdin_action'
-          base: 'master'
-
-      # - name: Enable Pull Request Automerge
-      #   if: steps.cpr.outputs.pull_request-number != ''
-      #   run: gh pr merge "${{ steps.cpr.outputs.pull_request-number }}" --auto --merge
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add lib/l10n/
+          git commit -m "chore(i18n): auto-update translations from Crowdin [skip ci]"
+          git push origin master

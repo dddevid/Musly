@@ -510,6 +510,26 @@
   "@communityTranslationsSubtitle": {
     "description": "Community translations credit subtitle"
   },
+  "checkTranslationUpdates": "Controlla aggiornamenti traduzioni",
+  "@checkTranslationUpdates": {
+    "description": "Title for checking live OTA translation updates"
+  },
+  "checkTranslationUpdatesSubtitle": "Sincronizza le ultime traduzioni della community in tempo reale (OTA)",
+  "@checkTranslationUpdatesSubtitle": {
+    "description": "Subtitle for checking live OTA translation updates"
+  },
+  "checkingTranslationUpdates": "Controllo aggiornamenti traduzioni in corso…",
+  "@checkingTranslationUpdates": {
+    "description": "Snackbar message when checking for translation updates"
+  },
+  "translationsUpdated": "Traduzioni aggiornate con successo!",
+  "@translationsUpdated": {
+    "description": "Snackbar message when translations were updated"
+  },
+  "translationsUpToDate": "Le traduzioni sono già aggiornate",
+  "@translationsUpToDate": {
+    "description": "Snackbar message when translations are already up to date"
+  },
   "@_LIBRARY": {},
   "yourLibrary": "La Tua Libreria",
   "filterAll": "Tutto",

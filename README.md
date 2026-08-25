@@ -12,6 +12,7 @@
 [![Download Musly](https://img.shields.io/badge/Download-Musly%20v2.0.0-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v2.0.0)
 [![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.lol)
 [![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.lol)
+[![Crowdin](https://badges.crowdin.net/musly/localized.svg)](https://crowdin.com/project/musly)
 
 ## Why Choose Musly as Your Navidrome Client?
 
@@ -115,7 +116,9 @@ If you find Musly useful and want to support its development
 
 ## Translations
 
-Musly is translated into 24+ languages! Help translate Musly into your language:
+[![Crowdin](https://badges.crowdin.net/musly/localized.svg)](https://crowdin.com/project/musly)
+
+Musly is translated into 27 languages! Help translate Musly into your language:
 
 📝 **[Contribute on Crowdin](https://crowdin.com/project/musly)**
 

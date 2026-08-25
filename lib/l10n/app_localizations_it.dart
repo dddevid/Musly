@@ -444,6 +444,23 @@ class AppLocalizationsIt extends AppLocalizations {
       'Aiuta a tradurre Musly su Crowdin';
 
   @override
+  String get checkTranslationUpdates => 'Controlla aggiornamenti traduzioni';
+
+  @override
+  String get checkTranslationUpdatesSubtitle =>
+      'Sincronizza le ultime traduzioni della community in tempo reale (OTA)';
+
+  @override
+  String get checkingTranslationUpdates =>
+      'Controllo aggiornamenti traduzioni in corso…';
+
+  @override
+  String get translationsUpdated => 'Traduzioni aggiornate con successo!';
+
+  @override
+  String get translationsUpToDate => 'Le traduzioni sono già aggiornate';
+
+  @override
   String get yourLibrary => 'La Tua Libreria';
 
   @override

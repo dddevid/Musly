@@ -5,29 +5,37 @@ preserve_hierarchy: true
 
 languages_mapping:
   two_letters_code:
-    it: it
-    fr: fr
-    es: es
-    de: de
+    ar: ar
+    az: az
+    bn: bn
     da: da
-    fi: fi
+    de: de
     el: el
+    es: es
+    es-ES: es
+    fi: fi
+    fr: fr
+    ga: ga
+    ga-IE: ga
     hi: hi
     id: id
-    ga-IE: ga
+    it: it
+    nl: nl
     no: no
     pl: pl
+    pt: pt
     pt-PT: pt
     ro: ro
     ru: ru
     sq: sq
+    sv: sv
     sv-SE: sv
     te: te
     tr: tr
     uk: uk
     vi: vi
+    zh: zh
     zh-CN: zh
-    bn: bn
 
 files:
   - source: /lib/l10n/app_en.arb

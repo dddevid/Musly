@@ -441,6 +441,22 @@ class AppLocalizationsPl extends AppLocalizations {
   String get communityTranslationsSubtitle => 'Help translate Musly on Crowdin';
 
   @override
+  String get checkTranslationUpdates => 'Check for Translation Updates';
+
+  @override
+  String get checkTranslationUpdatesSubtitle =>
+      'Sync latest community translations live (OTA)';
+
+  @override
+  String get checkingTranslationUpdates => 'Checking for translation updates…';
+
+  @override
+  String get translationsUpdated => 'Translations updated successfully!';
+
+  @override
+  String get translationsUpToDate => 'Translations are already up to date';
+
+  @override
   String get yourLibrary => 'Your Library';
 
   @override

@@ -952,6 +952,36 @@ abstract class AppLocalizations {
   /// **'Help translate Musly on Crowdin'**
   String get communityTranslationsSubtitle;
 
+  /// Title for checking live OTA translation updates
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Translation Updates'**
+  String get checkTranslationUpdates;
+
+  /// Subtitle for checking live OTA translation updates
+  ///
+  /// In en, this message translates to:
+  /// **'Sync latest community translations live (OTA)'**
+  String get checkTranslationUpdatesSubtitle;
+
+  /// Snackbar message when checking for translation updates
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for translation updates…'**
+  String get checkingTranslationUpdates;
+
+  /// Snackbar message when translations were updated
+  ///
+  /// In en, this message translates to:
+  /// **'Translations updated successfully!'**
+  String get translationsUpdated;
+
+  /// Snackbar message when translations are already up to date
+  ///
+  /// In en, this message translates to:
+  /// **'Translations are already up to date'**
+  String get translationsUpToDate;
+
   /// No description provided for @yourLibrary.
   ///
   /// In en, this message translates to:
