@@ -172,6 +172,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   Future<void> _onSongReorderedItem(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
     if (oldIndex == newIndex) return;
 
     final subsonicService = Provider.of<SubsonicService>(
@@ -519,7 +522,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 padding: const EdgeInsets.only(bottom: 150),
                 itemCount: _playlist!.songs!.length,
                 buildDefaultDragHandles: false,
-                onReorderItem: _onSongReorderedItem,
+                // ignore: deprecated_member_use
+                onReorder: _onSongReorderedItem,
                 itemBuilder: (context, index) {
                   final song = _playlist!.songs![index];
                   return ListTile(
