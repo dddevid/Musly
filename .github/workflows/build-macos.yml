@@ -79,7 +79,6 @@ jobs:
             --icon "musly.app" 180 190 \
             --hide-extension "musly.app" \
             --app-drop-link 480 190 \
-            --no-strip \
             "$DMG_NAME" \
             "$APP_PATH" || true
 
