@@ -108,6 +108,7 @@ jobs:
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
 
   # iOS Build (macOS required)
   build-ios:
@@ -159,6 +160,7 @@ jobs:
         with:
           name: ios-build
           path: musly-ios.ipa
+          if-no-files-found: error
 
   # Windows Build
   build-windows:
@@ -191,22 +193,41 @@ jobs:
         env:
           COUNTLY_SERVER_URL: ${{ secrets.COUNTLY_SERVER_URL }}
           COUNTLY_APP_KEY: ${{ secrets.COUNTLY_APP_KEY }}
+          CL: "/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS"
+          _CL_: "/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS"
+        shell: pwsh
         run: |
           $key = $env:COUNTLY_APP_KEY
           Write-Host "::add-mask::$key"
           flutter build windows --release `
             --dart-define=COUNTLY_SERVER_URL="$env:COUNTLY_SERVER_URL" `
-            --dart-define=COUNTLY_APP_KEY="$key" 2>&1 | Select-String -Pattern $key -NotMatch
+            --dart-define=COUNTLY_APP_KEY="$key"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Flutter build windows failed with exit code $LASTEXITCODE"
+          }
       
       - name: Install NSIS
+        shell: pwsh
         run: choco install nsis -y
 
       - name: Build NSIS Installer
+        shell: pwsh
         run: |
-          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" /DMUSLY_VERSION="${{ github.event.inputs.version }}" installer.nsi
+          if ($LASTEXITCODE -ne 0) {
+            throw "NSIS compilation failed with exit code $LASTEXITCODE"
+          }
+          if (-not (Test-Path "musly-setup.exe")) {
+            throw "NSIS build failed: musly-setup.exe was not created!"
+          }
+          Write-Host "✅ NSIS installer successfully built: musly-setup.exe"
 
       - name: Prepare Windows Package
+        shell: pwsh
         run: |
+          if (-not (Test-Path "musly-setup.exe")) {
+            throw "Fatal: musly-setup.exe is missing before packaging!"
+          }
           New-Item -ItemType Directory -Force -Path windows_package
           Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "windows_package\" -Recurse -Force
           Copy-Item -Path "musly-setup.exe" -Destination "windows_package\" -Force
@@ -216,6 +237,7 @@ jobs:
         with:
           name: windows-build
           path: windows_package/
+          if-no-files-found: error
 
   # Linux Build
   build-linux:
@@ -263,6 +285,7 @@ jobs:
         with:
           name: linux-build
           path: build/linux/x64/release/bundle/
+          if-no-files-found: error
 
   # macOS Build
   build-macos:
@@ -341,12 +364,14 @@ jobs:
         with:
           name: macos-dmg
           path: musly-macos.dmg
+          if-no-files-found: error
 
       - name: Upload macOS Build
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: build/macos/Build/Products/Release/
+          if-no-files-found: error
 
   # Create Release with all artifacts
   release:
@@ -401,8 +426,12 @@ jobs:
 
       - name: Package Windows
         run: |
+          if [ ! -f "artifacts/windows/musly-setup.exe" ]; then
+            echo "::error::Fatal: musly-setup.exe is missing from artifacts/windows! Halting release."
+            exit 1
+          fi
           cd artifacts/windows
-          zip -r ../../musly-windows.zip .
+          zip -r ../../musly-windows.zip . -x "musly-setup.exe"
           cd ../..
 
       - name: Package Linux
