@@ -275,11 +275,14 @@ jobs:
         run: |
           flutter build macos --release
       
+      - name: Install create-dmg
+        run: brew install create-dmg
+
       - name: Create DMG
         run: |
           set -e
           APP_PATH="build/macos/Build/Products/Release/musly.app"
-          DMG_NAME="musly-macos"
+          DMG_NAME="musly-macos.dmg"
 
           echo "Verifying app exists at $APP_PATH..."
           if [ ! -d "$APP_PATH" ]; then
@@ -288,28 +291,38 @@ jobs:
             exit 1
           fi
 
-          echo "Creating temporary directory for DMG contents..."
-          TEMP_DIR=$(mktemp -d)
-          cp -r "$APP_PATH" "$TEMP_DIR/"
-          ln -s /Applications "$TEMP_DIR/Applications"
+          rm -f "$DMG_NAME"
 
-          echo "Creating DMG with hdiutil..."
-          hdiutil create -srcfolder "$TEMP_DIR" -volname "Musly" -fs HFS+ -format UDRW -size 200M "${DMG_NAME}_temp.dmg"
+          echo "Generating DMG installer with drag-and-drop background..."
+          create-dmg \
+            --volname "Musly" \
+            --background "packaging/macos/dmg_background.png" \
+            --window-pos 200 120 \
+            --window-size 660 400 \
+            --icon-size 120 \
+            --icon "musly.app" 180 190 \
+            --hide-extension "musly.app" \
+            --app-drop-link 480 190 \
+            --no-strip \
+            "$DMG_NAME" \
+            "$APP_PATH" || true
 
-          echo "Converting to compressed DMG..."
-          hdiutil convert "${DMG_NAME}_temp.dmg" -format UDZO -o "${DMG_NAME}.dmg"
+          if [ ! -f "$DMG_NAME" ]; then
+            echo "Error: DMG was not created by create-dmg! Falling back to hdiutil..."
+            TEMP_DIR=$(mktemp -d)
+            cp -r "$APP_PATH" "$TEMP_DIR/"
+            ln -s /Applications "$TEMP_DIR/Applications"
+            hdiutil create -srcfolder "$TEMP_DIR" -volname "Musly" -fs HFS+ -format UDZO "$DMG_NAME"
+            rm -rf "$TEMP_DIR"
+          fi
 
-          echo "Cleaning up..."
-          rm -rf "$TEMP_DIR" "${DMG_NAME}_temp.dmg"
-
-          echo "Verifying DMG was created..."
-          if [ ! -f "${DMG_NAME}.dmg" ]; then
-            echo "Error: DMG was not created!"
+          if [ ! -f "$DMG_NAME" ]; then
+            echo "::error::Fatal: DMG file was not created!"
             exit 1
           fi
 
-          ls -lh "${DMG_NAME}.dmg"
-          echo "DMG created successfully!"
+          ls -lh "$DMG_NAME"
+          echo "✅ DMG created successfully!"
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
