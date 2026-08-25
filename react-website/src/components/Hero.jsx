@@ -72,7 +72,7 @@ export default function Hero() {
                         <div className="hero-stats">
                             <div className="hero-stat">
                                 <span className="hero-stat-val">
-                                    {vLoading ? '…' : (version ?? 'v2.0.0')}
+                                    {vLoading ? '…' : (version ?? 'v2.0.1')}
                                 </span>
                                 <span className="hero-stat-label">Latest Release</span>
                             </div>

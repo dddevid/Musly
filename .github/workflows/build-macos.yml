@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to update (e.g. v2.0.0)'
+        description: 'Release tag to update (e.g. v2.0.1)'
         required: true
-        default: 'v2.0.0'
+        default: 'v2.0.1'
         type: string
 
 env:

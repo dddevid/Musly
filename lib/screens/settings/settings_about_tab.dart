@@ -56,7 +56,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               icon: CupertinoIcons.info,
               iconColor: Theme.of(context).colorScheme.primary,
               title: AppLocalizations.of(context)!.aboutVersion,
-              subtitle: '2.0.0',
+              subtitle: '2.0.1',
               onTap: _onVersionTapped,
             ),
             _buildDivider(context),
@@ -89,7 +89,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               context,
               icon: CupertinoIcons.doc_text,
               title: AppLocalizations.of(context)!.aboutLinkChangelog,
-              url: 'https://github.com/dddevid/Musly/releases/tag/v2.0.0',
+              url: 'https://github.com/dddevid/Musly/releases/tag/v2.0.1',
             ),
             _buildDivider(context),
             _buildLinkTile(
