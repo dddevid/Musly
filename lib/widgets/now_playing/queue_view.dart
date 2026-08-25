@@ -26,8 +26,15 @@ class QueueView extends StatelessWidget {
           );
         }
 
+        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
         return ListView.builder(
-          padding: const EdgeInsets.only(top: 100, bottom: 40, left: 24, right: 24),
+          padding: EdgeInsets.only(
+            top: isLandscape ? 56 : 100,
+            bottom: 40,
+            left: isLandscape ? 36 : 24,
+            right: isLandscape ? 36 : 24,
+          ),
           itemCount: queue.length + 1, // +1 for the "Up Next" header
           itemBuilder: (context, index) {
             if (index == 0) {

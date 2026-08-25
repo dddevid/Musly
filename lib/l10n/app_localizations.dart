@@ -5145,6 +5145,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'What do you want to play?'**
   String get whatDoYouWantToPlay;
+
+  /// Empty state message when no lyrics are available
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics available'**
+  String get noLyricsFound;
 }
 
 class _AppLocalizationsDelegate

@@ -3379,5 +3379,9 @@
   "whatDoYouWantToPlay": "What do you want to play?",
   "@whatDoYouWantToPlay": {
     "description": "Search input hint text"
+  },
+  "noLyricsFound": "No lyrics available",
+  "@noLyricsFound": {
+    "description": "Empty state message when no lyrics are available"
   }
 }

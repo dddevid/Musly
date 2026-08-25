@@ -2789,4 +2789,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get whatDoYouWantToPlay => 'What do you want to play?';
+
+  @override
+  String get noLyricsFound => 'No lyrics available';
 }

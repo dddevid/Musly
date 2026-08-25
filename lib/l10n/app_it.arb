@@ -2071,5 +2071,6 @@
   "playingInSync": "In riproduzione sincronizzata",
   "switchedBackToThisDevice": "Tornato su questo dispositivo",
   "connectedToDeviceName": "Connesso a {device}",
-  "whatDoYouWantToPlay": "Cosa vuoi ascoltare?"
+  "whatDoYouWantToPlay": "Cosa vuoi ascoltare?",
+  "noLyricsFound": "Nessun testo disponibile"
 }

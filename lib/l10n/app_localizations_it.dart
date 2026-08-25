@@ -2810,4 +2810,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get whatDoYouWantToPlay => 'Cosa vuoi ascoltare?';
+
+  @override
+  String get noLyricsFound => 'Nessun testo disponibile';
 }

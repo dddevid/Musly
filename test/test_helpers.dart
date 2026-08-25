@@ -48,17 +48,22 @@ Widget createTestApp({
   final service = subsonicService ?? SubsonicService();
   final storage = storageService ?? StorageService();
 
+  final cast = FakeCastService();
+
   return MultiProvider(
     providers: [
       Provider<SubsonicService>.value(value: service),
       Provider<StorageService>.value(value: storage),
+      ChangeNotifierProvider<CastService>.value(value: cast),
+      ChangeNotifierProvider<UpnpService>.value(value: UpnpService()),
+      ChangeNotifierProvider<JukeboxService>.value(value: JukeboxService()),
       ChangeNotifierProvider<AuthProvider>(
         create: (_) => authProvider ?? AuthProvider(service, storage),
       ),
       ChangeNotifierProvider<PlayerProvider>(
         create: (_) =>
             playerProvider ??
-            PlayerProvider(service, storage, FakeCastService(), UpnpService(),
+            PlayerProvider(service, storage, cast, UpnpService(),
                 MuslyAudioHandler(), JukeboxService(), TranscodingService()),
       ),
       ChangeNotifierProvider<LibraryProvider>(

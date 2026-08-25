@@ -16,6 +16,8 @@ class LyricsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     // The background is provided by the parent (NowPlayingScreen)
     // Here we just need to provide the transparent scaffold and the list view
     return Scaffold(
@@ -24,9 +26,7 @@ class LyricsScreen extends StatelessWidget {
         child: Column(
           children: [
             // Header is handled by NowPlayingScreen in a Stack so it persists across page views,
-            // or we could put a specific header here if needed.
-            // Modern music player design
-            const SizedBox(height: 56), // Space for header
+            SizedBox(height: isLandscape ? 40 : 56), // Space for header
             
             Expanded(
               child: LyricsListView(

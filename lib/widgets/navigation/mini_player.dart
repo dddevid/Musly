@@ -52,6 +52,7 @@ class MiniPlayer extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               backgroundColor: Colors.transparent,
+              constraints: const BoxConstraints(maxWidth: double.infinity),
               builder: (ctx) => NowPlayingScreen(
                 topPadding: topPadding,
                 image: imageProvider,

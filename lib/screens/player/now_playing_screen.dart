@@ -20,6 +20,7 @@ import 'package:musly/widgets/now_playing/now_playing_more_menu.dart';
 import 'package:musly/widgets/now_playing/add_to_menu.dart';
 import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
+import 'package:musly/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class NowPlayingScreen extends StatefulWidget {
@@ -180,11 +181,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
-    // Implement drag down to dismiss (shrink and slide down)
-    // This requires a more complex CustomRoute or wrapping the whole scaffold 
-    // in a Transform. For simplicity in this demo, a basic pop can be triggered
-    // if the drag goes far enough, but a true interactive dismissal requires
-    // Navigator route transition manipulation.
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
@@ -195,17 +191,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // The accent color can be derived from the extracted colors, or white
     final accentColor = _bgColors.isNotEmpty ? _bgColors.first : Colors.white;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Theme(
-      // Modern music player design
       data: ThemeData.dark(),
       child: Scaffold(
-        backgroundColor: Colors.black, // Fallback background
+        backgroundColor: Colors.black,
         body: GestureDetector(
-          onVerticalDragUpdate: _onVerticalDragUpdate,
-          onVerticalDragEnd: _onVerticalDragEnd,
+          onVerticalDragUpdate: isLandscape ? null : _onVerticalDragUpdate,
+          onVerticalDragEnd: isLandscape ? null : _onVerticalDragEnd,
           child: Stack(
             children: [
               // 1. Shared Animated Background
@@ -222,7 +217,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       },
                       children: [
                         // Page 0: Main Cover Art View
-                        _buildMainView(accentColor),
+                        _buildMainView(accentColor, isLandscape: isLandscape),
                         
                         // Page 1: Lyrics View
                         _fetchedLyrics.isNotEmpty
@@ -242,9 +237,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             : Center(
                                 child: _isLoadingLyrics 
                                     ? const CircularProgressIndicator(color: Colors.white)
-                                    : const Text(
-                                        "Testo non disponibile",
-                                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                                    : Text(
+                                        AppLocalizations.of(context)?.noLyricsFound ?? "No lyrics available",
+                                        style: const TextStyle(color: Colors.white70, fontSize: 18),
                                       ),
                               ),
                         
@@ -256,28 +251,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
               ),
 
-              // 2. Drag Handle (Top)
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: 36,
-                  height: 5,
-                  margin: EdgeInsets.only(top: widget.topPadding > 0 ? widget.topPadding + 8 : 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(3),
+              // 2. Drag Handle (Top) - Portrait only
+              if (!isLandscape)
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    width: 36,
+                    height: 5,
+                    margin: EdgeInsets.only(top: widget.topPadding > 0 ? widget.topPadding + 8 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
                 ),
-              ),
 
               // 3. Header (Persistent across pages)
               Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    top: widget.topPadding > 0 ? widget.topPadding + 16 : 24, 
-                    left: 8.0, 
-                    right: 8.0
+                    top: isLandscape ? 8.0 : (widget.topPadding > 0 ? widget.topPadding + 16 : 24), 
+                    left: isLandscape ? 16.0 : 8.0, 
+                    right: isLandscape ? 16.0 : 8.0,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -286,7 +282,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         icon: Icon(
                           _currentPage == 0 ? Icons.keyboard_arrow_down_rounded : Icons.close_rounded, 
                           color: Colors.white, 
-                          size: 32
+                          size: 32,
                         ),
                         onPressed: () {
                           if (_currentPage != 0) {
@@ -319,185 +315,383 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  Widget _buildMainView(Color accentColor) {
+  Widget _buildLiveLyricPill(PlayerProvider provider, Color accentColor, {required bool isSmall, bool isLandscape = false}) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: PlayerUiSettingsService().showLiveLyricUnderArtworkNotifier,
+      builder: (context, showLyric, _) {
+        if (!showLyric || _fetchedLyrics.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return StreamBuilder<Duration>(
+          stream: provider.positionStream,
+          initialData: provider.position,
+          builder: (context, snapshot) {
+            final currentTime = snapshot.data ?? Duration.zero;
+            LyricLine? activeLine;
+            for (int i = 0; i < _fetchedLyrics.length; i++) {
+              final line = _fetchedLyrics[i];
+              final next = (i + 1 < _fetchedLyrics.length) ? _fetchedLyrics[i + 1] : null;
+              if (currentTime >= line.startTime && (next == null || currentTime < next.startTime)) {
+                activeLine = line;
+                break;
+              }
+            }
+            if (activeLine == null || activeLine.text.trim().isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return GestureDetector(
+              onTap: () {
+                _pageController.animateToPage(
+                  1,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: Container(
+                margin: EdgeInsets.fromLTRB(
+                  isLandscape ? 8.0 : 32.0,
+                  0,
+                  isLandscape ? 8.0 : 32.0,
+                  isLandscape ? 2.0 : (isSmall ? 2.0 : 4.0),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmall || isLandscape ? 12.0 : 16.0,
+                  vertical: isSmall || isLandscape ? 4.0 : 8.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.music_note_rounded,
+                      size: isSmall || isLandscape ? 13 : 16,
+                      color: accentColor.withValues(alpha: 0.9),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        activeLine.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isSmall || isLandscape ? 12 : 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.95),
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTitleArtistRow(
+    BuildContext context,
+    Song? currentSong,
+    String title,
+    String artist,
+    bool isStarred, {
+    required bool isSmall,
+    bool isLandscape = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isLandscape ? 16.0 : 32.0,
+        vertical: isLandscape ? 2.0 : (isSmall ? 8.0 : 24.0),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MarqueeText(
+                  text: title,
+                  style: TextStyle(
+                    fontSize: isLandscape ? 19 : (isSmall ? 20 : 24),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: isLandscape ? 2 : (isSmall ? 2 : 4)),
+                MultiArtistWidget(
+                  artists: currentSong?.artistParticipants,
+                  artistFallback: artist,
+                  artistIdFallback: currentSong?.artistId,
+                  onBeforeNavigate: () => Navigator.pop(context),
+                  style: TextStyle(
+                    fontSize: isLandscape ? 14 : (isSmall ? 15 : 18),
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              isStarred ? Icons.favorite_rounded : Icons.add_circle_outline_rounded,
+              color: isStarred ? Theme.of(context).colorScheme.primary : Colors.white,
+              size: isLandscape ? 22 : 24,
+            ),
+            onPressed: () {
+              if (currentSong == null) return;
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                builder: (context) => AddToMenu(
+                  song: currentSong,
+                  coverProvider: _currentImageProvider ?? widget.image,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainView(Color accentColor, {bool isLandscape = false}) {
     return Consumer<PlayerProvider>(
       builder: (context, provider, child) {
         final currentSong = provider.currentSong ?? widget.song;
         final title = currentSong?.title ?? widget.title;
         final artist = currentSong?.artist ?? widget.artist;
         final isStarred = currentSong?.starred ?? false;
-        final screenHeight = MediaQuery.of(context).size.height;
-        final isSmall = screenHeight < 720;
-        final isVerySmall = screenHeight < 620;
 
-        return SafeArea(
-          child: Column(
-            children: [
-              SizedBox(height: isSmall ? 40 : 56), // Space for header
-              
-              // Album Art with horizontal swipe navigation (Issue #201)
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isSmall ? 40.0 : 36.0,
-                      vertical: isVerySmall ? 2.0 : (isSmall ? 6.0 : 12.0),
-                    ),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onHorizontalDragEnd: (details) {
-                        final vel = details.primaryVelocity;
-                        if (vel != null) {
-                          if (vel < -250) {
-                            provider.skipNext();
-                          } else if (vel > 250) {
-                            provider.skipPrevious();
-                          }
-                        }
-                      },
-                      child: AlbumArtView(
-                        image: _currentImageProvider ?? widget.image,
-                        tag: currentSong?.id ?? widget.heroTag,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+        if (isLandscape) {
+          return _buildLandscapeLayout(
+            context,
+            provider,
+            currentSong,
+            title,
+            artist,
+            isStarred,
+            accentColor,
+          );
+        }
 
-              // Live lyric under artwork (if enabled in settings and lyrics are available)
-              ValueListenableBuilder<bool>(
-                valueListenable: PlayerUiSettingsService().showLiveLyricUnderArtworkNotifier,
-                builder: (context, showLyric, _) {
-                  if (!showLyric || _fetchedLyrics.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return StreamBuilder<Duration>(
-                    stream: provider.positionStream,
-                    initialData: provider.position,
-                    builder: (context, snapshot) {
-                      final currentTime = snapshot.data ?? Duration.zero;
-                      LyricLine? activeLine;
-                      for (int i = 0; i < _fetchedLyrics.length; i++) {
-                        final line = _fetchedLyrics[i];
-                        final next = (i + 1 < _fetchedLyrics.length) ? _fetchedLyrics[i + 1] : null;
-                        if (currentTime >= line.startTime && (next == null || currentTime < next.startTime)) {
-                          activeLine = line;
-                          break;
-                        }
-                      }
-                      if (activeLine == null || activeLine.text.trim().isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return GestureDetector(
-                        onTap: () {
-                          _pageController.animateToPage(
-                            1,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(32.0, 0, 32.0, isSmall ? 2.0 : 4.0),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isSmall ? 12.0 : 16.0,
-                            vertical: isSmall ? 5.0 : 8.0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              width: 1,
+        return _buildPortraitLayout(
+          context,
+          provider,
+          currentSong,
+          title,
+          artist,
+          isStarred,
+          accentColor,
+        );
+      },
+    );
+  }
+
+  Widget _buildLandscapeLayout(
+    BuildContext context,
+    PlayerProvider provider,
+    Song? currentSong,
+    String title,
+    String artist,
+    bool isStarred,
+    Color accentColor,
+  ) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20.0, 44.0, 20.0, 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Left Column: Album Artwork & Live Lyric
+            Expanded(
+              flex: 5,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onHorizontalDragEnd: (details) {
+                              final vel = details.primaryVelocity;
+                              if (vel != null) {
+                                if (vel < -250) {
+                                  provider.skipNext();
+                                } else if (vel > 250) {
+                                  provider.skipPrevious();
+                                }
+                              }
+                            },
+                            child: AlbumArtView(
+                              image: _currentImageProvider ?? widget.image,
+                              tag: currentSong?.id ?? widget.heroTag,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.music_note_rounded,
-                                size: isSmall ? 14 : 16,
-                                color: accentColor.withValues(alpha: 0.9),
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  activeLine.text,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 13 : 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(alpha: 0.95),
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
+                      ),
+                    ),
+                  ),
+                  _buildLiveLyricPill(provider, accentColor, isSmall: true, isLandscape: true),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Right Column: Details & Controls
+            Expanded(
+              flex: 6,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildTitleArtistRow(
+                    context,
+                    currentSong,
+                    title,
+                    artist,
+                    isStarred,
+                    isSmall: true,
+                    isLandscape: true,
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: StreamBuilder<Duration>(
+                      stream: provider.positionStream,
+                      initialData: provider.position,
+                      builder: (context, snapshot) {
+                        return PlaybackProgressSlider(
+                          position: snapshot.data ?? Duration.zero,
+                          duration: provider.duration,
+                          accentColor: Colors.white,
+                          onChanged: (val) {
+                            provider.seek(val);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: PlaybackControls(
+                      isPlaying: provider.isPlaying,
+                      isShuffleEnabled: provider.shuffleEnabled,
+                      isRepeatEnabled: provider.repeatMode != RepeatMode.off,
+                      accentColor: accentColor,
+                      onPlayPause: () => provider.togglePlayPause(),
+                      onNext: () => provider.skipNext(),
+                      onPrevious: () => provider.skipPrevious(),
+                      onShuffleToggle: () => provider.toggleShuffle(),
+                      onRepeatToggle: () => provider.toggleRepeat(),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+                    builder: (context, showVolume, _) {
+                      if (!showVolume) return const SizedBox.shrink();
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: VolumeSlider(),
                       );
                     },
-                  );
-                },
+                  ),
+                  const SizedBox(height: 2),
+                  NowPlayingBottomActions(
+                    isLyricsActive: _currentPage == 1,
+                    isQueueActive: _currentPage == 2,
+                    accentColor: accentColor,
+                    onLyricsTap: () {
+                      if (_currentPage == 1) {
+                        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      } else {
+                        _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      }
+                    },
+                    onQueueTap: () {
+                      if (_currentPage == 2) {
+                        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      } else {
+                        _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      }
+                    },
+                  ),
+                ],
               ),
-          
-          // Title & Artist
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 32.0,
-              vertical: isVerySmall ? 4.0 : (isSmall ? 8.0 : 24.0),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MarqueeText(
-                        text: title,
-                        style: TextStyle(
-                          fontSize: isSmall ? 20 : 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: isSmall ? 2 : 4),
-                      MultiArtistWidget(
-                        artists: currentSong?.artistParticipants,
-                        artistFallback: artist,
-                        artistIdFallback: currentSong?.artistId,
-                        onBeforeNavigate: () => Navigator.pop(context),
-                        style: TextStyle(
-                          fontSize: isSmall ? 15 : 18,
-                          color: Colors.white.withValues(alpha: 0.75),
-                        ),
-                      ),
-                    ],
-                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortraitLayout(
+    BuildContext context,
+    PlayerProvider provider,
+    Song? currentSong,
+    String title,
+    String artist,
+    bool isStarred,
+    Color accentColor,
+  ) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmall = screenHeight < 720;
+    final isVerySmall = screenHeight < 620;
+
+    return SafeArea(
+      child: Column(
+        children: [
+          SizedBox(height: isSmall ? 40 : 56), // Space for header
+          
+          // Album Art with horizontal swipe navigation (Issue #201)
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmall ? 40.0 : 36.0,
+                  vertical: isVerySmall ? 2.0 : (isSmall ? 6.0 : 12.0),
                 ),
-                IconButton(
-                  icon: Icon(
-                    isStarred ? Icons.favorite_rounded : Icons.add_circle_outline_rounded,
-                    color: isStarred ? Theme.of(context).colorScheme.primary : Colors.white,
-                  ),
-                  onPressed: () {
-                    if (currentSong == null) return;
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      isScrollControlled: true,
-                      useRootNavigator: true,
-                      builder: (context) => AddToMenu(
-                        song: currentSong,
-                        coverProvider: _currentImageProvider ?? widget.image,
-                      ),
-                    );
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragEnd: (details) {
+                    final vel = details.primaryVelocity;
+                    if (vel != null) {
+                      if (vel < -250) {
+                        provider.skipNext();
+                      } else if (vel > 250) {
+                        provider.skipPrevious();
+                      }
+                    }
                   },
+                  child: AlbumArtView(
+                    image: _currentImageProvider ?? widget.image,
+                    tag: currentSong?.id ?? widget.heroTag,
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
+
+          _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
+      
+          _buildTitleArtistRow(context, currentSong, title, artist, isStarred, isSmall: isSmall),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -573,8 +767,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           SizedBox(height: isSmall ? 6 : 16),
         ],
       ),
-    );
-      },
     );
   }
 }

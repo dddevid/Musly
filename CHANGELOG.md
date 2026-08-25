@@ -5,6 +5,32 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-08-25
+
+### Added
+
+- **Multi-Language Support & Internationalization (i18n / l10n)**
+  - Integrated official Flutter internationalization framework (`flutter_localizations` with ARB resource bundles).
+  - Multi-language catalog supporting 27 languages with automatic system locale matching and fallback mechanisms.
+  - In-app Language Selector in Display Settings for seamless runtime language switching without restarting the app.
+  - Added automated Crowdin synchronization workflows (`crowdin-sync.yml` and `crowdin.yml`) to keep community translations continuously updated.
+
+- **Complete UI String Localization & Hardcoded Text Elimination**
+  - Systematic audit and extraction of all hardcoded strings across the entire codebase into `.arb` catalogs.
+  - Fully localized onboarding walkthrough, feature cards, navigation controls, and slide transitions.
+  - Fully localized modals and dialogs: Milestone Celebration dialog, Privacy Policy dialog, Server Switcher menu actions, and Sleep Timer selector.
+  - Fully localized media collection screens (All Songs, Albums, Playlists, Favorites, Radio Stations, Downloads) including sorting menus, empty states, and batch download confirmations.
+  - Fully localized Desktop UI components: Player bar controls, playback device picker, and right queue sidebar.
+  - Fully localized search view (input placeholders, query suggestions, recent searches) and server authentication / connection forms.
+  - Complete Italian (`it`) translation coverage for all existing and newly added localization keys.
+
+### Fixed
+
+- **Now Playing Screen Landscape Layout (#234)**
+  - Resolved layout distortion and RenderFlex overflow on Android and mobile devices when rotating the Now Playing view into landscape mode.
+  - Implemented responsive 2-column landscape presentation with album artwork and live lyrics on the left, and metadata, seek slider, playback controls, volume slider, and bottom actions on the right.
+  - Made Now Playing sheet constraints, drag handle, lyrics header, and queue list padding adapt smoothly to landscape orientation.
+
 ## [2.0.0] - 2026-08-23
 
 ### Added
