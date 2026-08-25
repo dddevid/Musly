@@ -284,6 +284,11 @@ jobs:
           APP_PATH="build/macos/Build/Products/Release/musly.app"
           DMG_NAME="musly-macos.dmg"
 
+          if [ ! -f "packaging/macos/dmg_background.png" ]; then
+            echo "::error::packaging/macos/dmg_background.png is missing!"
+            exit 1
+          fi
+
           echo "Verifying app exists at $APP_PATH..."
           if [ ! -d "$APP_PATH" ]; then
             echo "Error: App not found at $APP_PATH"
@@ -339,12 +344,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create Tag
+      - name: Create or Update Tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
-          git push origin "v${{ github.event.inputs.version }}"
+          git tag -f -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
+          git push --force origin "v${{ github.event.inputs.version }}"
 
       - name: Download Android Artifacts
         uses: actions/download-artifact@v4
