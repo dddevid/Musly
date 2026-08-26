@@ -33,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **UPnP / DLNA & Google Cast Playback Controls & Track Skipping**
+  - Fixed pausing and seeking from the phone when connected to a UPnP / DLNA or Google Cast device by immediately updating local playback and position state and eliminating race-condition jitter. Added automatic fallback to `Stop` when a UPnP renderer does not support the `Pause` SOAP action.
+  - Fixed skipping to next/previous songs from both the phone and the UPnP device:
+    - Bypassed the local `ConcatenatingAudioSource` check when rendering remotely so queue skips stream the new track to the remote renderer.
+    - Implemented `SetNextAVTransportURI` support in `UpnpService` to pre-queue upcoming tracks on UPnP renderers.
+    - Handled track progression when skipped directly from the UPnP renderer (supporting `STOPPED`, `NO_MEDIA_PRESENT`, and renderer automatic `TrackURI` transitions).
+
 - **Live Lyrics Under Artwork Multiline Wrapping**
   - Removed single-line truncation (`maxLines: 1`, `TextOverflow.ellipsis`) in the live lyric pill under the Now Playing album artwork, allowing long lyric lines to wrap naturally across multiple lines without being cut off by ellipses.
 
