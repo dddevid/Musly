@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Live Lyrics Under Artwork Multiline Wrapping**
+  - Removed single-line truncation (`maxLines: 1`, `TextOverflow.ellipsis`) in the live lyric pill under the Now Playing album artwork, allowing long lyric lines to wrap naturally across multiple lines without being cut off by ellipses.
+
 - **Settings ListTile Ink Splash & Material Hierarchy**
   - Replaced intermediate `Container(decoration: BoxDecoration(...))` with `Material(color: ..., borderRadius: ..., clipBehavior: Clip.antiAlias)` in `SettingsSectionCard` and `ServerSwitcherSheet`, resolving the Flutter framework assertion regarding hidden ink splashes and tile background effects.
 
