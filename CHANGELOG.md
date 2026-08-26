@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Settings ListTile Ink Splash & Material Hierarchy**
+  - Replaced intermediate `Container(decoration: BoxDecoration(...))` with `Material(color: ..., borderRadius: ..., clipBehavior: Clip.antiAlias)` in `SettingsSectionCard` and `ServerSwitcherSheet`, resolving the Flutter framework assertion regarding hidden ink splashes and tile background effects.
+
 - **Now Playing Queue Reordering & Song Options Menu (#236)**
   - Replaced static `ListView` in `QueueView` with interactive `ReorderableListView.builder` allowing users to drag and drop songs to reorder the upcoming queue.
   - Connected queue drag-and-drop to `PlayerProvider.reorderQueue()`, properly updating playback order, active playback index, and persistent queue state.
