@@ -360,7 +360,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.12),
                     width: 1,
@@ -368,6 +368,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.music_note_rounded,
@@ -378,14 +379,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     Flexible(
                       child: Text(
                         activeLine.text,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: isSmall || isLandscape ? 12 : 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white.withValues(alpha: 0.95),
                           letterSpacing: -0.2,
+                          height: 1.25,
                         ),
                       ),
                     ),
