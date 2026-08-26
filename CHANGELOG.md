@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Library Scrolling Performance & Viewport Virtualization**
+  - Replaced unvirtualized `SliverToBoxAdapter` containing full `Column` / `Wrap` with lazy `SliverList.builder` and `SliverGrid.builder`, eliminating scroll stutter and jank by rendering only visible items.
+  - Added `RepaintBoundary` wrappers to individual library list and grid item tiles to prevent unneeded full-screen repainting while scrolling.
+  - Tuned `CustomScrollView.cacheExtent` to `600.0` with `AlwaysScrollableScrollPhysics` for silky-smooth 60/120 FPS scrolling across both list and grid view modes.
+
 - **UPnP / DLNA & Google Cast Playback Controls & Track Skipping**
   - Fixed pausing and seeking from the phone when connected to a UPnP / DLNA or Google Cast device by immediately updating local playback and position state and eliminating race-condition jitter. Added automatic fallback to `Stop` when a UPnP renderer does not support the `Pause` SOAP action.
   - Fixed skipping to next/previous songs from both the phone and the UPnP device:
