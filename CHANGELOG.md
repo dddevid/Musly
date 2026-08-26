@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added interactive 5-star rating bar (`NowPlayingStarRating`) in the fullscreen Now Playing screen (in both portrait and landscape layouts) that dynamically respects the "Show Star Ratings" toggle and syncs directly to Subsonic/Navidrome servers.
   - Added dedicated Heart/Favorite toggle button in the Now Playing metadata row for instant 1-tap favoriting alongside the Add to Playlist button.
 
+- **Search Radio Queue Generation**
+  - When playing a song directly from search results, Musly now dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
+
 ### Fixed
 
 - **Now Playing Queue Reordering & Song Options Menu (#236)**
