@@ -30,14 +30,15 @@ class QueueView extends StatelessWidget {
         final isLandscape =
             MediaQuery.of(context).orientation == Orientation.landscape;
 
-        return ReorderableListView.builder(
-          buildDefaultDragHandles: false,
-          padding: EdgeInsets.only(
-            top: isLandscape ? 56 : 100,
-            bottom: 40,
-            left: isLandscape ? 36 : 24,
-            right: isLandscape ? 36 : 24,
-          ),
+        return SafeArea(
+          child: ReorderableListView.builder(
+            buildDefaultDragHandles: false,
+            padding: EdgeInsets.only(
+              top: isLandscape ? 48 : 56,
+              bottom: 40,
+              left: 24,
+              right: 24,
+            ),
           header: Padding(
             padding: const EdgeInsets.only(bottom: 24.0, left: 8.0),
             child: Text(
@@ -158,8 +159,9 @@ class QueueView extends StatelessWidget {
               },
             );
           },
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }

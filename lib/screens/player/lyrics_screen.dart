@@ -26,7 +26,7 @@ class LyricsScreen extends StatelessWidget {
         child: Column(
           children: [
             // Header is handled by NowPlayingScreen in a Stack so it persists across page views,
-            SizedBox(height: isLandscape ? 40 : 56), // Space for header
+            SizedBox(height: isLandscape ? 48 : 56), // Space for header
             
             Expanded(
               child: LyricsListView(

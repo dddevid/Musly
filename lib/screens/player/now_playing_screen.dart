@@ -253,27 +253,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
               // 2. Drag Handle (Top) - Portrait only
               if (!isLandscape)
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    width: 36,
-                    height: 5,
-                    margin: EdgeInsets.only(top: widget.topPadding > 0 ? widget.topPadding + 8 : 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(3),
+                SafeArea(
+                  bottom: false,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      width: 36,
+                      height: 5,
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
                 ),
 
               // 3. Header (Persistent across pages)
-              Align(
-                alignment: Alignment.topCenter,
+              SafeArea(
+                bottom: false,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    top: isLandscape ? 8.0 : (widget.topPadding > 0 ? widget.topPadding + 16 : 24), 
-                    left: isLandscape ? 16.0 : 8.0, 
-                    right: isLandscape ? 16.0 : 8.0,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: isLandscape ? 4.0 : 8.0,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -585,7 +587,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   ) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 44.0, 20.0, 4.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 48.0, 20.0, 4.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -630,91 +632,100 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             // Right Column: Details & Controls
             Expanded(
               flex: 6,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildTitleArtistRow(
-                    context,
-                    provider,
-                    currentSong,
-                    title,
-                    artist,
-                    isStarred,
-                    isSmall: true,
-                    isLandscape: true,
-                  ),
-                  _buildStarRatingRow(
-                    provider,
-                    currentSong,
-                    isSmall: true,
-                    isLandscape: true,
-                  ),
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: StreamBuilder<Duration>(
-                      stream: provider.positionStream,
-                      initialData: provider.position,
-                      builder: (context, snapshot) {
-                        return PlaybackProgressSlider(
-                          position: snapshot.data ?? Duration.zero,
-                          duration: provider.duration,
-                          accentColor: Colors.white,
-                          onChanged: (val) {
-                            provider.seek(val);
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 320, maxWidth: 500),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildTitleArtistRow(
+                          context,
+                          provider,
+                          currentSong,
+                          title,
+                          artist,
+                          isStarred,
+                          isSmall: true,
+                          isLandscape: true,
+                        ),
+                        _buildStarRatingRow(
+                          provider,
+                          currentSong,
+                          isSmall: true,
+                          isLandscape: true,
+                        ),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: StreamBuilder<Duration>(
+                            stream: provider.positionStream,
+                            initialData: provider.position,
+                            builder: (context, snapshot) {
+                              return PlaybackProgressSlider(
+                                position: snapshot.data ?? Duration.zero,
+                                duration: provider.duration,
+                                accentColor: Colors.white,
+                                onChanged: (val) {
+                                  provider.seek(val);
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: PlaybackControls(
+                            isPlaying: provider.isPlaying,
+                            isShuffleEnabled: provider.shuffleEnabled,
+                            isRepeatEnabled: provider.repeatMode != RepeatMode.off,
+                            accentColor: accentColor,
+                            onPlayPause: () => provider.togglePlayPause(),
+                            onNext: () => provider.skipNext(),
+                            onPrevious: () => provider.skipPrevious(),
+                            onShuffleToggle: () => provider.toggleShuffle(),
+                            onRepeatToggle: () => provider.toggleRepeat(),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+                          builder: (context, showVolume, _) {
+                            if (!showVolume) return const SizedBox.shrink();
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              child: VolumeSlider(),
+                            );
                           },
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 2),
+                        NowPlayingBottomActions(
+                          isLyricsActive: _currentPage == 1,
+                          isQueueActive: _currentPage == 2,
+                          accentColor: accentColor,
+                          onLyricsTap: () {
+                            if (_currentPage == 1) {
+                              _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            } else {
+                              _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            }
+                          },
+                          onQueueTap: () {
+                            if (_currentPage == 2) {
+                              _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            } else {
+                              _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: PlaybackControls(
-                      isPlaying: provider.isPlaying,
-                      isShuffleEnabled: provider.shuffleEnabled,
-                      isRepeatEnabled: provider.repeatMode != RepeatMode.off,
-                      accentColor: accentColor,
-                      onPlayPause: () => provider.togglePlayPause(),
-                      onNext: () => provider.skipNext(),
-                      onPrevious: () => provider.skipPrevious(),
-                      onShuffleToggle: () => provider.toggleShuffle(),
-                      onRepeatToggle: () => provider.toggleRepeat(),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
-                    builder: (context, showVolume, _) {
-                      if (!showVolume) return const SizedBox.shrink();
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0),
-                        child: VolumeSlider(),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 2),
-                  NowPlayingBottomActions(
-                    isLyricsActive: _currentPage == 1,
-                    isQueueActive: _currentPage == 2,
-                    accentColor: accentColor,
-                    onLyricsTap: () {
-                      if (_currentPage == 1) {
-                        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      } else {
-                        _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      }
-                    },
-                    onQueueTap: () {
-                      if (_currentPage == 2) {
-                        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      } else {
-                        _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      }
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ],

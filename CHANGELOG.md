@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Now Playing Landscape System Status Bar & Cutout Overlap (Issue #238)**
+  - Wrapped Now Playing persistent header (dismiss arrow and three-dot options menu) and top drag handle in `SafeArea(bottom: false)`, completely preventing the Android system status bar (battery icon, clock, notification icons, control panel drag area) and camera cutouts from overlapping the three-dot menu in landscape mode.
+  - Wrapped Queue and Lyrics view bodies in `SafeArea` to ensure consistent landscape safe insets across all pages.
+  - Added responsive `FittedBox` down-scaling for details and playback controls in landscape orientation, preventing vertical overflow across all screen aspect ratios.
+
 - **Library Scrolling Performance & Viewport Virtualization**
   - Replaced unvirtualized `SliverToBoxAdapter` containing full `Column` / `Wrap` with lazy `SliverList.builder` and `SliverGrid.builder`, eliminating scroll stutter and jank by rendering only visible items.
   - Added `RepaintBoundary` wrappers to individual library list and grid item tiles to prevent unneeded full-screen repainting while scrolling.
