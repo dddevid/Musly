@@ -391,6 +391,24 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   ValueListenableBuilder<bool>(
+                    valueListenable: NavigationHelper.isDesktopLyricsOpen,
+                    builder: (context, isLyricsOpen, _) {
+                      if (!isLyricsOpen) return const SizedBox.shrink();
+                      return Selector<PlayerProvider, bool>(
+                        selector: (_, p) =>
+                            p.currentSong != null || p.isPlayingRadio,
+                        builder: (context, hasCurrentSong, _) {
+                          return hasCurrentSong
+                              ? DesktopLyricsPanel(
+                                  onClose: () =>
+                                      NavigationHelper.isDesktopLyricsOpen.value = false,
+                                )
+                              : const SizedBox.shrink();
+                        },
+                      );
+                    },
+                  ),
+                  ValueListenableBuilder<bool>(
                     valueListenable: NavigationHelper.isDesktopQueueOpen,
                     builder: (context, isQueueOpen, _) {
                       if (!isQueueOpen) return const SizedBox.shrink();

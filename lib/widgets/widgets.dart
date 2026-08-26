@@ -33,6 +33,7 @@ export 'modals/server_switcher_sheet.dart';
 // Navigation & Global Players
 export 'navigation/desktop_navigation_sidebar.dart';
 export 'navigation/desktop_player_bar.dart';
+export 'navigation/desktop_lyrics_panel.dart';
 export 'navigation/mini_player.dart';
 export 'navigation/right_sidebar.dart';
 export 'navigation/cast_button.dart';

@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
-import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
-
 import 'package:musly/utils/navigation_helper.dart';
-import 'package:musly/l10n/app_localizations.dart';
 
 class RightSidebar extends StatelessWidget {
   final VoidCallback? onClose;
@@ -15,73 +12,78 @@ class RightSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       width: 320,
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkBackground : Colors.white,
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212),
         border: Border(
-          left: BorderSide(
-            color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
-          ),
+          left: BorderSide(color: Color(0xFF282828), width: 1),
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          // Header
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFF282828), width: 1),
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  AppLocalizations.of(context)!.queue,
-                  style: const TextStyle(
+                const Text(
+                  'Queue',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: isDark
-                        ? AppTheme.darkSecondaryText
-                        : AppTheme.lightSecondaryText,
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 20,
+                    color: Color(0xFF9CA3AF),
                   ),
                   onPressed: () {
                     onClose?.call();
                     NavigationHelper.isDesktopQueueOpen.value = false;
                   },
-                  tooltip: AppLocalizations.of(context)!.closeQueue,
+                  tooltip: 'Close Queue',
+                  splashRadius: 18,
+                  hoverColor: Colors.white.withValues(alpha: 0.1),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+
+          // Content
           Expanded(
             child: Consumer<PlayerProvider>(
               builder: (context, player, _) {
+                final currentSong = player.currentSong;
                 final queue = player.queue;
+                final currentIndex = player.currentIndex;
 
-                if (queue.isEmpty) {
-                  return Center(
+                if (queue.isEmpty && currentSong == null) {
+                  return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.queue_music_rounded,
-                          size: 64,
-                          color: isDark
-                              ? AppTheme.darkTertiaryText
-                              : AppTheme.lightSecondaryText,
+                          Icons.music_note_rounded,
+                          size: 32,
+                          color: Color(0xFF4B5563),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 12),
                         Text(
-                          'No songs in queue',
+                          'Queue is empty',
                           style: TextStyle(
-                            color: isDark
-                                ? AppTheme.darkSecondaryText
-                                : AppTheme.lightSecondaryText,
+                            color: Color(0xFF6B7280),
                             fontSize: 14,
                           ),
                         ),
@@ -90,19 +92,99 @@ class RightSidebar extends StatelessWidget {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: queue.length,
-                  itemBuilder: (context, index) {
-                    final song = queue[index];
-                    final isPlaying = player.currentIndex == index;
+                final upcomingCount = (queue.length - currentIndex - 1).clamp(0, queue.length);
 
-                    return _QueueItem(
-                      song: song,
-                      isPlaying: isPlaying,
-                      onTap: () => player.skipToIndex(index),
-                    );
-                  },
+                return ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  children: [
+                    // Now Playing Section
+                    if (currentSong != null) ...[
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(8, 4, 8, 8),
+                        child: Text(
+                          'NOW PLAYING',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF6B7280),
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFA243C).withValues(alpha: 0.1),
+                          border: Border.all(
+                            color: const Color(0xFFFA243C).withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            AlbumArtwork(
+                              coverArt: currentSong.coverArt,
+                              size: 40,
+                              borderRadius: 6,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    currentSong.title,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFFC5C65),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    currentSong.artist ?? 'Unknown Artist',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFFB3B3B3),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // Next Up Section
+                    if (upcomingCount > 0) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                        child: Text(
+                          'NEXT UP · $upcomingCount songs',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF6B7280),
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                      for (int i = currentIndex + 1; i < queue.length; i++)
+                        _UpcomingSongTile(
+                          song: queue[i],
+                          index: i,
+                          onPlay: () => player.skipToIndex(i),
+                          onRemove: () => player.removeFromQueue(i),
+                        ),
+                    ],
+                  ],
                 );
               },
             ),
@@ -113,93 +195,103 @@ class RightSidebar extends StatelessWidget {
   }
 }
 
-class _QueueItem extends StatefulWidget {
+class _UpcomingSongTile extends StatefulWidget {
   final Song song;
-  final bool isPlaying;
-  final VoidCallback onTap;
+  final int index;
+  final VoidCallback onPlay;
+  final VoidCallback onRemove;
 
-  const _QueueItem({
+  const _UpcomingSongTile({
     required this.song,
-    required this.isPlaying,
-    required this.onTap,
+    required this.index,
+    required this.onPlay,
+    required this.onRemove,
   });
 
   @override
-  State<_QueueItem> createState() => _QueueItemState();
+  State<_UpcomingSongTile> createState() => _UpcomingSongTileState();
 }
 
-class _QueueItemState extends State<_QueueItem> {
+class _UpcomingSongTileState extends State<_UpcomingSongTile> {
   bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: InkWell(
-        onTap: widget.onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
           color: _isHovered
-              ? (isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05))
+              ? Colors.white.withValues(alpha: 0.05)
               : Colors.transparent,
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: AlbumArtwork(
-                  coverArt: widget.song.coverArt,
-                  size: 48,
-                  borderRadius: 4,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.song.title,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: widget.isPlaying
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                        color: widget.isPlaying
-                            ? theme.colorScheme.primary
-                            : (isDark ? Colors.white : Colors.black),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            AlbumArtwork(
+              coverArt: widget.song.coverArt,
+              size: 36,
+              borderRadius: 6,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.song.title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
                     ),
-                    if (widget.song.artist != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.song.artist!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark
-                              ? AppTheme.darkSecondaryText
-                              : AppTheme.lightSecondaryText,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.song.artist ?? 'Unknown Artist',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFB3B3B3),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              if (widget.isPlaying)
-                Icon(
-                  Icons.volume_up_rounded,
+            ),
+            if (_isHovered) ...[
+              IconButton(
+                icon: const Icon(
+                  Icons.play_arrow_rounded,
                   size: 16,
-                  color: theme.colorScheme.primary,
+                  color: Color(0xFF9CA3AF),
                 ),
+                onPressed: widget.onPlay,
+                tooltip: 'Play',
+                constraints: const BoxConstraints(),
+                padding: const EdgeInsets.all(4),
+                hoverColor: Colors.white.withValues(alpha: 0.1),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 16,
+                  color: Color(0xFF9CA3AF),
+                ),
+                onPressed: widget.onRemove,
+                tooltip: 'Remove',
+                constraints: const BoxConstraints(),
+                padding: const EdgeInsets.all(4),
+                hoverColor: Colors.red.withValues(alpha: 0.2),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

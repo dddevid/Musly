@@ -4,12 +4,10 @@ import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/models/radio_station.dart';
 import 'package:musly/providers/player_provider.dart';
-import 'package:musly/theme/app_theme.dart';
-import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
+import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/connect/connect_devices_modal.dart';
-// import 'package:musly/services/musly_connect_service.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -21,14 +19,8 @@ class DesktopPlayerBar extends StatefulWidget {
 }
 
 class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
-
-
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Selector<PlayerProvider, (Song?, RadioStation?, bool)>(
       selector: (_, p) =>
           (p.currentSong, p.currentRadioStation, p.isPlayingRadio),
@@ -36,33 +28,27 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
         final (currentSong, radioStation, isPlayingRadio) = data;
 
         if (isPlayingRadio && radioStation != null) {
-          return _buildRadioBar(context, theme, isDark, radioStation);
+          return _buildRadioBar(context, radioStation);
         }
 
         if (currentSong == null) return const SizedBox.shrink();
 
-        return _buildSongBar(context, theme, isDark, currentSong);
+        return _buildSongBar(context, currentSong);
       },
     );
   }
 
-  Widget _buildRadioBar(BuildContext context, ThemeData theme, bool isDark,
-      RadioStation station) {
-    final barColor = isDark ? AppTheme.playerBarDark : AppTheme.playerBarLight;
-    final borderColor =
-        isDark ? AppTheme.playerBarBorder : const Color(0xFFDDDDDD);
-    final iconColor =
-        isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
-
+  Widget _buildRadioBar(BuildContext context, RadioStation station) {
     return Container(
       height: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: barColor,
-        border: Border(top: BorderSide(color: borderColor, width: 1)),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: const BoxDecoration(
+        color: Color(0xFF181818),
+        border: Border(top: BorderSide(color: Color(0xFF282828), width: 1)),
       ),
       child: Row(
         children: [
+          // Left: Radio Info
           Expanded(
             flex: 3,
             child: Row(
@@ -71,7 +57,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(8),
                     gradient: const LinearGradient(
                       colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
                       begin: Alignment.topLeft,
@@ -89,9 +75,10 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     children: [
                       Text(
                         station.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        style: const TextStyle(
                           fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -100,27 +87,27 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                       Row(
                         children: [
                           Container(
-                            width: 8,
-                            height: 8,
+                            width: 7,
+                            height: 7,
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: const Color(0xFFFA243C),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                    color: Colors.red.withValues(alpha: 0.5),
-                                    blurRadius: 4)
+                                  color: const Color(0xFFFA243C).withValues(alpha: 0.5),
+                                  blurRadius: 4,
+                                )
                               ],
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Text(
+                          const Text(
                             'LIVE',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color:
-                                  isDark ? Colors.grey[400] : Colors.grey[600],
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.2,
+                            style: TextStyle(
+                              color: Color(0xFFB3B3B3),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
                             ),
                           ),
                         ],
@@ -131,6 +118,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
+
+          // Center: Radio Play/Pause
           Expanded(
             flex: 4,
             child: Selector<PlayerProvider, bool>(
@@ -140,42 +129,27 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          size: 32,
-                          color: Colors.black,
-                        ),
-                        onPressed: provider.togglePlayPause,
-                        padding: const EdgeInsets.all(8),
-                      ),
+                    _PlayPauseCircle(
+                      isPlaying: isPlaying,
+                      onTap: provider.togglePlayPause,
                     ),
                     const SizedBox(width: 16),
                     IconButton(
-                      icon:
-                          Icon(Icons.stop_rounded, size: 26, color: iconColor),
+                      icon: const Icon(
+                        Icons.stop_rounded,
+                        size: 22,
+                        color: Color(0xFFB3B3B3),
+                      ),
                       onPressed: provider.stop,
-                      tooltip: AppLocalizations.of(context)!.stop,
+                      tooltip: 'Stop',
                     ),
                   ],
                 );
               },
             ),
           ),
+
+          // Right: Volume
           Expanded(
             flex: 3,
             child: Row(
@@ -188,22 +162,22 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     );
   }
 
-  Widget _buildSongBar(
-      BuildContext context, ThemeData theme, bool isDark, Song currentSong) {
+  Widget _buildSongBar(BuildContext context, Song currentSong) {
     return Container(
       height: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.playerBarDark : AppTheme.playerBarLight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: const BoxDecoration(
+        color: Color(0xFF181818),
         border: Border(
           top: BorderSide(
-            color: isDark ? AppTheme.playerBarBorder : const Color(0xFFDDDDDD),
+            color: Color(0xFF282828),
             width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
+          // Left: Track Info + Cover + Like
           Expanded(
             flex: 3,
             child: Row(
@@ -211,9 +185,9 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                 AlbumArtwork(
                   coverArt: currentSong.coverArt,
                   size: 56,
-                  borderRadius: 4,
+                  borderRadius: 8,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -221,49 +195,23 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     children: [
                       Text(
                         currentSong.title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        style: const TextStyle(
                           fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      /*
-                      Consumer<MuslyConnectService>(
-                        builder: (context, connect, _) {
-                          if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.devices_rounded, size: 11, color: Theme.of(context).colorScheme.primary),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Playing on ${connect.activeRemoteDevice?.name ?? "Device"}',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      */
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       if (currentSong.artist != null || currentSong.artistParticipants != null)
                         MultiArtistWidget(
                           artists: currentSong.artistParticipants,
                           artistFallback: currentSong.artist,
                           artistIdFallback: currentSong.artistId,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
+                          style: const TextStyle(
                             fontSize: 12,
+                            color: Color(0xFFB3B3B3),
                           ),
                         ),
                     ],
@@ -277,12 +225,10 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         isStarred
                             ? Icons.favorite_rounded
                             : Icons.favorite_border_rounded,
-                        size: 20,
+                        size: 18,
                         color: isStarred
-                            ? Theme.of(context).colorScheme.primary
-                            : (isDark
-                                ? const Color(0xFFB3B3B3)
-                                : const Color(0xFF6B6B6B)),
+                            ? const Color(0xFFFA243C)
+                            : const Color(0xFF6B7280),
                       ),
                       onPressed: () {
                         Provider.of<PlayerProvider>(context, listen: false)
@@ -291,73 +237,134 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                       tooltip: isStarred
                           ? AppLocalizations.of(context)!.removeFromFavorites
                           : AppLocalizations.of(context)!.addToFavorites,
+                      hoverColor: Colors.white.withValues(alpha: 0.1),
                     );
                   },
                 ),
               ],
             ),
           ),
+
+          // Center: Controls + Progress Bar
           Expanded(
-            flex: 4,
+            flex: 5,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const _PlayerControls(),
-                const SizedBox(height: 4),
-                const _ProgressBar(),
+              children: const [
+                _PlayerControls(),
+                SizedBox(height: 6),
+                _ProgressBar(),
               ],
             ),
           ),
+
+          // Right: Lyrics, Queue, Cast, Volume
           Expanded(
             flex: 3,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.devices_other_rounded,
-                      size: 20,
-                      color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF6B6B6B),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                    tooltip: AppLocalizations.of(context)!.connectToDevice,
-                    onPressed: () => ConnectDevicesModal.show(context),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Lyrics Button
+                ValueListenableBuilder<bool>(
+                  valueListenable: NavigationHelper.isDesktopLyricsOpen,
+                  builder: (context, isLyricsOpen, _) {
+                    return IconButton(
+                      icon: Icon(
+                        Icons.mic_rounded,
+                        size: 18,
+                        color: isLyricsOpen
+                            ? const Color(0xFFFA243C)
+                            : const Color(0xFF6B7280),
+                      ),
+                      tooltip: 'Lyrics',
+                      hoverColor: Colors.white.withValues(alpha: 0.1),
+                      onPressed: NavigationHelper.toggleDesktopLyrics,
+                    );
+                  },
+                ),
+                const SizedBox(width: 4),
+
+                // Queue Button
+                ValueListenableBuilder<bool>(
+                  valueListenable: NavigationHelper.isDesktopQueueOpen,
+                  builder: (context, isQueueOpen, _) {
+                    return IconButton(
+                      icon: Icon(
+                        Icons.queue_music_rounded,
+                        size: 18,
+                        color: isQueueOpen
+                            ? const Color(0xFFFA243C)
+                            : const Color(0xFF6B7280),
+                      ),
+                      tooltip: isQueueOpen ? 'Hide Queue' : 'Queue',
+                      hoverColor: Colors.white.withValues(alpha: 0.1),
+                      onPressed: NavigationHelper.toggleDesktopQueue,
+                    );
+                  },
+                ),
+                const SizedBox(width: 4),
+
+                // Connect to device
+                IconButton(
+                  icon: const Icon(
+                    Icons.devices_other_rounded,
+                    size: 18,
+                    color: Color(0xFF6B7280),
                   ),
-                  const SizedBox(width: 6),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: NavigationHelper.isDesktopQueueOpen,
-                    builder: (context, isOpen, _) {
-                      return IconButton(
-                        icon: Icon(
-                          Icons.queue_music_rounded,
-                          size: 20,
-                          color: isOpen
-                              ? Theme.of(context).colorScheme.primary
-                              : (isDark
-                                  ? const Color(0xFFB3B3B3)
-                                  : const Color(0xFF6B6B6B)),
-                        ),
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.all(6),
-                        constraints: const BoxConstraints(),
-                        onPressed: NavigationHelper.toggleDesktopQueue,
-                        tooltip: isOpen ? 'Hide Queue' : 'Show Queue',
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  const _VolumeControl(),
-                ],
-              ),
+                  tooltip: AppLocalizations.of(context)!.connectToDevice,
+                  hoverColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: () => ConnectDevicesModal.show(context),
+                ),
+                const SizedBox(width: 8),
+
+                // Volume slider
+                const _VolumeControl(),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PlayPauseCircle extends StatefulWidget {
+  final bool isPlaying;
+  final VoidCallback onTap;
+
+  const _PlayPauseCircle({required this.isPlaying, required this.onTap});
+
+  @override
+  State<_PlayPauseCircle> createState() => _PlayPauseCircleState();
+}
+
+class _PlayPauseCircleState extends State<_PlayPauseCircle> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              widget.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              size: 20,
+              color: Colors.black,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -368,10 +375,6 @@ class _PlayerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = isDark ? Colors.white : Colors.black;
-    final disabledColor = isDark ? Colors.grey[800] : Colors.grey[300];
-
     return Selector<PlayerProvider, (bool, bool, bool, bool, RepeatMode)>(
       selector: (_, p) => (
         p.isPlaying,
@@ -381,78 +384,76 @@ class _PlayerControls extends StatelessWidget {
         p.repeatMode,
       ),
       builder: (context, data, _) {
-        final (isPlaying, shuffleEnabled, hasPrevious, hasNext, repeatMode) =
-            data;
+        final (isPlaying, shuffleEnabled, hasPrevious, hasNext, repeatMode) = data;
         final provider = context.read<PlayerProvider>();
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Shuffle
             IconButton(
               icon: Icon(
                 Icons.shuffle_rounded,
-                size: 20,
+                size: 18,
                 color: shuffleEnabled
-                    ? Theme.of(context).colorScheme.primary
-                    : (isDark
-                        ? const Color(0xFFB3B3B3)
-                        : const Color(0xFF6B6B6B)),
+                    ? const Color(0xFFFA243C)
+                    : const Color(0xFFB3B3B3),
               ),
               onPressed: provider.toggleShuffle,
               tooltip: AppLocalizations.of(context)!.enableShuffle,
+              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
+
+            // Previous
             IconButton(
-              icon: const Icon(Icons.skip_previous_rounded, size: 28),
+              icon: Icon(
+                Icons.skip_previous_rounded,
+                size: 22,
+                color: hasPrevious
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.white.withValues(alpha: 0.2),
+              ),
               onPressed: hasPrevious ? provider.skipPrevious : null,
-              color: color,
-              disabledColor: disabledColor,
+              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 32,
-                  color: Colors.black,
-                ),
-                onPressed: provider.togglePlayPause,
-                padding: const EdgeInsets.all(8),
-              ),
+            const SizedBox(width: 12),
+
+            // Play / Pause Circle
+            _PlayPauseCircle(
+              isPlaying: isPlaying,
+              onTap: provider.togglePlayPause,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
+
+            // Next
             IconButton(
-              icon: const Icon(Icons.skip_next_rounded, size: 28),
+              icon: Icon(
+                Icons.skip_next_rounded,
+                size: 22,
+                color: hasNext
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.white.withValues(alpha: 0.2),
+              ),
               onPressed: hasNext ? provider.skipNext : null,
-              color: color,
-              disabledColor: disabledColor,
+              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
+
+            // Repeat
             IconButton(
               icon: Icon(
                 repeatMode == RepeatMode.one
                     ? Icons.repeat_one_rounded
                     : Icons.repeat_rounded,
-                size: 20,
+                size: 18,
                 color: repeatMode != RepeatMode.off
-                    ? Theme.of(context).colorScheme.primary
-                    : (isDark
-                        ? const Color(0xFFB3B3B3)
-                        : const Color(0xFF6B6B6B)),
+                    ? const Color(0xFFFA243C)
+                    : const Color(0xFFB3B3B3),
               ),
               onPressed: provider.toggleRepeat,
               tooltip: AppLocalizations.of(context)!.enableRepeat,
+              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
           ],
         );
@@ -472,11 +473,10 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final timeStyle = theme.textTheme.bodySmall?.copyWith(
+    const timeStyle = TextStyle(
       fontSize: 11,
-      color: isDark ? Colors.grey[400] : Colors.grey[600],
+      color: Color(0xFFB3B3B3),
+      fontFamily: 'Inter',
     );
 
     return Selector<PlayerProvider, (Duration, Duration)>(
@@ -486,30 +486,34 @@ class _ProgressBar extends StatelessWidget {
         final provider = context.read<PlayerProvider>();
 
         return SizedBox(
-          width: 400,
+          width: 480,
           child: Row(
             children: [
-              Text(_formatDuration(position), style: timeStyle),
+              SizedBox(
+                width: 36,
+                child: Text(
+                  _formatDuration(position),
+                  style: timeStyle,
+                  textAlign: TextAlign.right,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
-                  height: 20,
+                  height: 16,
                   child: SliderTheme(
                     data: SliderThemeData(
-                      trackHeight: 3,
+                      trackHeight: 3.5,
                       thumbShape: const RoundSliderThumbShape(
                         enabledThumbRadius: 5,
                       ),
                       overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 14,
+                        overlayRadius: 12,
                       ),
-                      activeTrackColor: Theme.of(context).colorScheme.primary,
-                      inactiveTrackColor:
-                          isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
+                      activeTrackColor: Colors.white,
+                      inactiveTrackColor: const Color(0xFF4A4A4A),
                       thumbColor: Colors.white,
-                      overlayColor: Theme.of(context).colorScheme.primary.withValues(
-                        alpha: 0.2,
-                      ),
+                      overlayColor: Colors.white.withValues(alpha: 0.15),
                     ),
                     child: Slider(
                       value: position.inMilliseconds.toDouble().clamp(
@@ -526,7 +530,14 @@ class _ProgressBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(_formatDuration(duration), style: timeStyle),
+              SizedBox(
+                width: 36,
+                child: Text(
+                  _formatDuration(duration),
+                  style: timeStyle,
+                  textAlign: TextAlign.left,
+                ),
+              ),
             ],
           ),
         );
@@ -544,7 +555,6 @@ class _VolumeControl extends StatelessWidget {
       selector: (_, p) => p.volume,
       builder: (context, volume, _) {
         final isMuted = volume == 0;
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         final provider = context.read<PlayerProvider>();
 
         return Row(
@@ -557,30 +567,28 @@ class _VolumeControl extends StatelessWidget {
                     : volume < 0.5
                         ? Icons.volume_down_rounded
                         : Icons.volume_up_rounded,
-                size: 20,
+                size: 18,
+                color: const Color(0xFF6B7280),
               ),
-              onPressed: () {
-                provider.toggleMute();
-              },
+              onPressed: provider.toggleMute,
               tooltip: isMuted ? 'Unmute' : 'Mute',
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             SizedBox(
-              width: 100,
+              width: 110,
               child: SliderTheme(
                 data: SliderThemeData(
-                  trackHeight: 3,
+                  trackHeight: 3.5,
                   thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 5,
+                    enabledThumbRadius: 4.5,
                   ),
                   overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 14,
+                    overlayRadius: 10,
                   ),
-                  activeTrackColor: Theme.of(context).colorScheme.primary,
-                  inactiveTrackColor:
-                      isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
+                  activeTrackColor: Colors.white,
+                  inactiveTrackColor: const Color(0xFF4A4A4A),
                   thumbColor: Colors.white,
-                  overlayColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                  overlayColor: Colors.white.withValues(alpha: 0.15),
                 ),
                 child: Slider(
                   value: volume,

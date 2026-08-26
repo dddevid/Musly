@@ -17,8 +17,21 @@ class NavigationHelper {
   /// Global toggle state for the Desktop Queue RightSidebar
   static final ValueNotifier<bool> isDesktopQueueOpen = ValueNotifier<bool>(false);
 
+  /// Global toggle state for the Desktop Lyrics RightSidebar
+  static final ValueNotifier<bool> isDesktopLyricsOpen = ValueNotifier<bool>(false);
+
   static void toggleDesktopQueue() {
     isDesktopQueueOpen.value = !isDesktopQueueOpen.value;
+    if (isDesktopQueueOpen.value) {
+      isDesktopLyricsOpen.value = false;
+    }
+  }
+
+  static void toggleDesktopLyrics() {
+    isDesktopLyricsOpen.value = !isDesktopLyricsOpen.value;
+    if (isDesktopLyricsOpen.value) {
+      isDesktopQueueOpen.value = false;
+    }
   }
 
   static bool get isDesktop {
