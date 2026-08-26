@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added interactive dynamic color option with dedicated Material 3 palette indicator in Display Settings (`_AccentColorPicker`).
   - Extended `AccentColor` enum with `dynamicColor` (`'dynamic'`) and fallback mechanism for platforms without system dynamic schemes.
 
+- **Language Selector & Community Translation Progress**
+  - Resolved an issue where selecting "System Default" would erroneously display "English" regardless of the device's actual system language; it now resolves and displays the active system language name (e.g. `System Default (Italiano)`).
+  - Added Crowdin community translation attribution in the language picker header and dynamic completion percentage tags (`%`) for each supported language.
+
 ### Fixed
 
 - **Now Playing Queue Reordering & Song Options Menu (#236)**
