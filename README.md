@@ -1,7 +1,7 @@
 
-# Musly - Best Free Navidrome Client & Subsonic Music Player
+# Musly - Universal Music Streaming Player & Client
 
-**Musly** is a free **Navidrome client** and **Subsonic music player** with a beautiful modern and elegant interface. Stream your self-hosted music library from Navidrome, Subsonic, or Airsonic servers on Android, iOS, Windows, Linux, and macOS.
+**Musly** is a free, modern, and elegant music player and streaming client. Stream your self-hosted music library from **Navidrome**, **Subsonic**, **Jellyfin**, **Emby**, or **Airsonic**, listen to live **Web Streams & Internet Radio**, or play **Local Music Files** directly from your device on Android, iOS, Windows, Linux, and macOS.
 
 ## GitAds Sponsored
 [![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
@@ -10,32 +10,33 @@
 🌐 **Website:** [musly.devid.lol](https://musly.devid.lol/)
 
 [![Download Musly](https://img.shields.io/badge/Download-Musly%20v2.0.2-fa243c?style=for-the-badge&logo=github)](https://github.com/dddevid/Musly/releases/tag/v2.0.2)
-[![Navidrome Client](https://img.shields.io/badge/Navidrome-Client-blue?style=for-the-badge)](https://musly.devid.lol)
-[![Subsonic Client](https://img.shields.io/badge/Subsonic-Client-green?style=for-the-badge)](https://musly.devid.lol)
+[![Navidrome](https://img.shields.io/badge/Navidrome-Supported-blue?style=for-the-badge)](https://musly.devid.lol)
+[![Jellyfin](https://img.shields.io/badge/Jellyfin-Supported-purple?style=for-the-badge)](https://musly.devid.lol)
+[![Emby](https://img.shields.io/badge/Emby-Supported-52B54B?style=for-the-badge)](https://musly.devid.lol)
+[![Subsonic](https://img.shields.io/badge/Subsonic-Supported-green?style=for-the-badge)](https://musly.devid.lol)
 [![Crowdin](https://badges.crowdin.net/musly/localized.svg)](https://crowdin.com/project/musly)
 
-## Why Choose Musly as Your Navidrome Client?
+## Why Choose Musly?
 
-Musly is the best Navidrome client for 2026, offering:
+Musly is a versatile, high-performance music client offering:
 
-- 🎵 **Music Streaming** - Stream music from your Subsonic server
-- 🎨 **Modern Music Player UI** - Beautiful, modern interface inspired by Musly
+- 🎵 **Multi-Source Streaming** - Stream seamlessly from Navidrome, Subsonic, Jellyfin, Emby, or Airsonic servers
+- 📁 **Local Audio Files** - Play local music stored directly on your device storage
+- 📻 **Live Web Streams & Internet Radio** - Search, browse, and listen to thousands of web radio stations worldwide
+- 🎨 **Modern & Adaptive UI** - Sleek interface with Material 3 Dynamic Colors (Material You), smooth glassmorphism, and responsive layouts
 - 🌙 **Dark/Light Mode** - Automatic theme switching based on system settings
-- 📱 **Responsive Design** - Works on phones and tablets
-- 🔍 **Search** - Search artists, albums, and songs
-- 📚 **Library** - Browse your music collection
-- 📋 **Playlists** - View and manage playlists
-- ▶️ **Now Playing** - Full-featured music player with controls
-- 🔀 **Shuffle & Repeat** - Control playback modes
-- 📊 **Queue Management** - View and modify the play queue
-- 🚗 **Android Auto** - Full support for Android Auto integration
-- 🎧 **Synced Lyrics** - Time-synced lyrics with Musly–style desktop fullscreen mode
-- 🧠 **Smart Recommendations** - Personalized mixes, "For You" feed, and listening history
+- 📱 **Cross-Platform & Responsive** - Fully optimized for phones, tablets, foldables, and desktop computers
+- 🎧 **Time-Synced Lyrics** - Synchronized lyrics with interactive tap-to-seek and desktop fullscreen mode
+- 📡 **Casting & Remote Playback** - Stream audio directly to Google Cast, UPnP, and DLNA devices
+- 🔀 **Smart Radio Queues & Auto-Refill** - Continuous automated queue replenishment based on your favorite tracks and artists
+- 💾 **Offline Downloads** - Download tracks, albums, and playlists for offline high-fidelity listening
+- 🚗 **Android Auto** - Full native Android Auto integration
+- 📊 **Musly Wrapped & Statistics** - Personalized listening statistics, top genres, and yearly rewinds
 
 ### Prerequisites
 
 - Flutter SDK 3.10.0 or higher
-- A Subsonic-compatible music server (Subsonic, Navidrome, Airsonic, etc.)
+- A supported music source (Navidrome, Subsonic, Jellyfin, Emby, Web Stream, or Local Files)
 
 ## Supported Platforms
 
@@ -46,10 +47,10 @@ Musly is a cross-platform application that supports:
 - 🐧 **Linux**
 - 🍎 **macOS**
 
-## Download Musly - Best Navidrome Client
+## Download Musly
 
-You can download the latest release of Musly (the best Navidrome client):
-👉 **[Download Musly v2.0.2 - Navidrome Client](https://github.com/dddevid/Musly/releases/tag/v2.0.2)**
+You can download the latest release of Musly:
+👉 **[Download Musly v2.0.2](https://github.com/dddevid/Musly/releases/tag/v2.0.2)**
 
 ## Community
 
@@ -78,13 +79,15 @@ If you find Musly useful and want to support its development
 ## Roadmap
 
 - [x] **Custom PC UX**: Basic desktop layout with persistent sidebar and dedicated player bar.
-- [x] **Desktop Lyrics & Fullscreen Mode**: Musly–style synced lyrics view with smooth scrolling and true fullscreen on desktop.
+- [x] **Desktop Lyrics & Fullscreen Mode**: Synced lyrics view with smooth scrolling and true fullscreen on desktop.
 - [-] **CarPlay Support**: Add a dedicated browsing interface for CarPlay. (Carplay needs a signed certificate, until the app is available on the appstore carplay wont work, only if selfsigned and with carplay enabled in the code)
-- [X] **Local Playlists**: Manage playlists locally, independent of the Subsonic server.
+- [x] **Local Playlists**: Manage playlists locally, independent of the server.
+- [x] **Jellyfin & Emby Support**: Native connection and streaming from Jellyfin and Emby media servers.
+- [x] **Internet Radio & Web Streams**: Live radio stream exploration and playback.
+- [x] **Local Files Support**: Direct playback and library indexing of device audio files.
 - [ ] **Custom API Server**: Support for custom backend implementations and extended APIs.
-- [X] Improved synchronization for offline music.
-- [ ] Tizen OS (Samsung TV) and WebOS (LG TV) port
-- [X] Jellyfin / Emby support
+- [x] **Improved Offline Sync**: Reliable background downloading and offline caching.
+- [ ] **Tizen OS (Samsung TV) and WebOS (LG TV) Port**
 
 ## Screenshots
 
@@ -106,13 +109,15 @@ If you find Musly useful and want to support its development
    flutter run
    ```
 
-### Connecting to Your Server
+### Connecting to Your Music Source
 
 1. Launch the app
-2. Enter your Subsonic server URL (e.g., `https://your-server.com`)
-3. Enter your username and password
-4. Toggle "Legacy Authentication" if using an older server
-5. Tap "Connect"
+2. Select your music source type:
+   - **Subsonic / Navidrome**: Enter server URL, username, and password (toggle "Legacy Authentication" if needed)
+   - **Jellyfin / Emby**: Enter server URL and credentials / API token
+   - **Internet Radio**: Browse live stations and web streams directly
+   - **Local Storage**: Grant storage permission to index and play local audio files
+3. Tap "Connect" and enjoy your music!
 
 ## Translations
 
@@ -124,14 +129,18 @@ Musly is translated into 27 languages! Help translate Musly into your language:
 
 See [TRANSLATIONS.md](TRANSLATIONS.md) for a complete guide on how to contribute translations.
 
-## Supported Servers
+## Supported Music Sources & Servers
 
-Musly works with any Subsonic API-compatible server:
+Musly works seamlessly across a wide variety of music sources:
 
-- [Navidrome](https://www.navidrome.org/) - **Best with Musly!**
-- [Subsonic](http://www.subsonic.org/)
-- [Airsonic](https://airsonic.github.io/)
-- [Gonic](https://github.com/sentriz/gonic)
+- **Navidrome** - [navidrome.org](https://www.navidrome.org/)
+- **Jellyfin** - [jellyfin.org](https://jellyfin.org/)
+- **Emby** - [emby.media](https://emby.media/)
+- **Subsonic** - [subsonic.org](http://www.subsonic.org/)
+- **Airsonic / Airsonic-Advanced** - [airsonic.github.io](https://airsonic.github.io/)
+- **Gonic** - [github.com/sentriz/gonic](https://github.com/sentriz/gonic)
+- **Web Streams & Live Radio** (Radio Browser API & custom stream URLs)
+- **Local Audio Files** (MP3, FLAC, AAC, WAV, OGG, OPUS, M4A)
 
 ## License
 
