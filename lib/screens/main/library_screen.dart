@@ -20,6 +20,10 @@ import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/services/offline_service.dart';
 import 'package:musly/widgets/common/playlist_artwork.dart';
 import 'package:musly/screens/settings/settings_screen.dart';
+import 'package:musly/models/playlist.dart';
+import 'package:musly/models/album.dart';
+import 'package:musly/models/artist.dart';
+import 'package:musly/models/song.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -33,6 +37,33 @@ enum _SortOption {
   recentlyAdded,
   alphabetical,
   creator,
+}
+
+enum _LibraryItemType {
+  likedSongs,
+  downloadedSongs,
+  radioStations,
+  likedAlbums,
+  playlist,
+  album,
+  artist,
+  song,
+}
+
+class _LibraryItem {
+  final _LibraryItemType type;
+  final String title;
+  final String subtitle;
+  final dynamic data;
+  final VoidCallback onTap;
+
+  const _LibraryItem({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    this.data,
+    required this.onTap,
+  });
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
@@ -221,6 +252,160 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  List<_LibraryItem> _getFilteredAndSortedItems({
+    required BuildContext context,
+    required LibraryProvider libraryProvider,
+    required bool isDark,
+    required bool isYoutube,
+    required int downloadedCount,
+    required AppLocalizations? l10n,
+  }) {
+    final items = <_LibraryItem>[];
+    final offlineService = OfflineService();
+
+    // Pinned Liked Songs
+    if (_selectedFilter == null || _selectedFilter == 'Playlists') {
+      items.add(
+        _LibraryItem(
+          type: _LibraryItemType.likedSongs,
+          title: l10n?.likedSongs ?? 'Liked Songs',
+          subtitle: 'Playlist • Favorites',
+          onTap: () => _navigate(context, const FavoritesScreen()),
+        ),
+      );
+    }
+
+    // Pinned Downloaded Songs
+    if (_selectedFilter == null || _selectedFilter == 'Downloaded') {
+      items.add(
+        _LibraryItem(
+          type: _LibraryItemType.downloadedSongs,
+          title: l10n?.downloadedSongs ?? 'Downloaded Songs',
+          subtitle: '$downloadedCount songs saved offline',
+          onTap: () => _navigate(context, const DownloadsScreen()),
+        ),
+      );
+    }
+
+    // Playlists
+    if (_selectedFilter == null || _selectedFilter == 'Playlists') {
+      var playlists = libraryProvider.playlists;
+      playlists = _sortList(playlists, (p) => p.name);
+      for (final p in playlists) {
+        items.add(
+          _LibraryItem(
+            type: _LibraryItemType.playlist,
+            title: p.name,
+            subtitle: 'Playlist • ${p.songCount ?? 0} songs',
+            data: p,
+            onTap: () => _navigate(
+              context,
+              PlaylistScreen(playlistId: p.id, playlistName: p.name),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Albums (only on server mode or when filtered)
+    if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums') {
+      var albums = libraryProvider.recentAlbums;
+      albums = _sortList(albums, (a) => a.name);
+      for (final a in albums) {
+        items.add(
+          _LibraryItem(
+            type: _LibraryItemType.album,
+            title: a.name,
+            subtitle: 'Album • ${a.artist}',
+            data: a,
+            onTap: () => _navigate(context, AlbumScreen(albumId: a.id)),
+          ),
+        );
+      }
+    }
+
+    // Artists (only on server mode or when filtered)
+    if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists') {
+      var artists = libraryProvider.artists;
+      artists = _sortList(artists, (a) => a.name);
+      for (final art in artists) {
+        items.add(
+          _LibraryItem(
+            type: _LibraryItemType.artist,
+            title: art.name,
+            subtitle: 'Artist',
+            data: art,
+            onTap: () => _navigate(context, ArtistScreen(artistId: art.id)),
+          ),
+        );
+      }
+    }
+
+    // Radio stations & Liked Albums shortcuts
+    if (_selectedFilter == null && !isYoutube) {
+      items.add(
+        _LibraryItem(
+          type: _LibraryItemType.radioStations,
+          title: l10n?.radioStations ?? 'Radio Stations',
+          subtitle: l10n?.radios ?? 'Radio',
+          onTap: () => _navigate(context, const RadioScreen()),
+        ),
+      );
+      items.add(
+        _LibraryItem(
+          type: _LibraryItemType.likedAlbums,
+          title: l10n?.likedAlbums ?? 'Liked Albums',
+          subtitle: l10n?.albums ?? 'Albums',
+          onTap: () => _navigate(context, const LikedAlbumsScreen()),
+        ),
+      );
+    }
+
+    // Downloaded Filter items
+    if (_selectedFilter == 'Downloaded') {
+      final downloadedIds = offlineService.getDownloadedSongIds();
+      final downloadedSongs = (libraryProvider.cachedAllSongs ?? [])
+          .where((s) => downloadedIds.contains(s.id))
+          .toList();
+      for (final song in downloadedSongs) {
+        items.add(
+          _LibraryItem(
+            type: _LibraryItemType.song,
+            title: song.title,
+            subtitle: song.artist ?? 'Unknown Artist',
+            data: song,
+            onTap: () {
+              final player = Provider.of<PlayerProvider>(context, listen: false);
+              player.playSong(song, playlist: downloadedSongs);
+            },
+          ),
+        );
+      }
+    }
+
+    // Songs Filter items
+    if (_selectedFilter == 'Songs' && !isYoutube) {
+      var allSongs = libraryProvider.cachedAllSongs ?? [];
+      allSongs = _sortList(allSongs, (s) => s.title);
+      for (final song in allSongs) {
+        items.add(
+          _LibraryItem(
+            type: _LibraryItemType.song,
+            title: song.title,
+            subtitle: song.artist ?? 'Unknown Artist',
+            data: song,
+            onTap: () {
+              final player = Provider.of<PlayerProvider>(context, listen: false);
+              player.playSong(song, playlist: allSongs);
+            },
+          ),
+        );
+      }
+    }
+
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -235,7 +420,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       body: Consumer<LibraryProvider>(
         builder: (context, libraryProvider, _) {
           return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+            cacheExtent: 600.0,
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             slivers: [
               // 1. Header
               SliverAppBar(
@@ -300,16 +486,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               ),
                             ),
                           ],
-                          _buildFilterChip('Playlists', 'Playlists', isDark),
+                          _buildFilterChip('Playlists', AppLocalizations.of(context)?.playlists ?? 'Playlists', isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Albums', 'Albums', isDark),
+                          _buildFilterChip('Albums', AppLocalizations.of(context)?.albums ?? 'Albums', isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Artists', 'Artists', isDark),
+                          _buildFilterChip('Artists', AppLocalizations.of(context)?.artists ?? 'Artists', isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Downloaded', 'Downloaded', isDark),
+                          _buildFilterChip('Downloaded', AppLocalizations.of(context)?.downloadedSongs ?? 'Downloaded', isDark),
                           if (!isYoutube) ...[
                             const SizedBox(width: 8),
-                            _buildFilterChip('Songs', 'Songs', isDark),
+                            _buildFilterChip('Songs', AppLocalizations.of(context)?.songs ?? 'Songs', isDark),
                           ],
                         ],
                       ),
@@ -318,7 +504,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               ),
 
-              // Modern music player design
+              // 2. Sort Option & Grid/List Toggle
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 8),
@@ -363,17 +549,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               ),
 
-              // 3. Dynamic Items (List View or Grid View)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
-                  child: _isGridView
-                      ? _buildGridView(context, libraryProvider, isDark, isYoutube)
-                      : _buildListView(context, libraryProvider, isDark, isYoutube),
-                ),
-              ),
+              // 3. Dynamic Items (Virtual List or Virtual Grid for 60/120 FPS performance)
+              if (_isGridView)
+                _buildSliverGrid(context, libraryProvider, isDark, isYoutube, hPad)
+              else
+                _buildSliverList(context, libraryProvider, isDark, isYoutube, hPad),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 48)),
+              const SliverToBoxAdapter(child: SizedBox(height: 80)),
             ],
           );
         },
@@ -414,167 +596,449 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildListView(BuildContext context, LibraryProvider libraryProvider, bool isDark, bool isYoutube) {
+  Widget _buildSliverList(
+    BuildContext context,
+    LibraryProvider libraryProvider,
+    bool isDark,
+    bool isYoutube,
+    double hPad,
+  ) {
     final offlineService = OfflineService();
     final downloadedCount = offlineService.getDownloadedSongIds().length;
+    final l10n = AppLocalizations.of(context);
 
-    var playlists = libraryProvider.playlists;
-    var albums = libraryProvider.recentAlbums;
-    var artists = libraryProvider.artists;
-
-    // Apply Sorting
-    playlists = _sortList(playlists, (p) => p.name);
-    albums = _sortList(albums, (a) => a.name);
-    artists = _sortList(artists, (a) => a.name);
-
-    return Column(
-      children: [
-        // Pinned Liked Songs tile (if no filter or Playlists filter)
-        if (_selectedFilter == null || _selectedFilter == 'Playlists') ...[
-          _buildPinnedItemTile(
-            title: 'Liked Songs',
-            subtitle: 'Playlist • Favorites',
-            gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
-            icon: CupertinoIcons.heart_fill,
-            onTap: () => _navigate(context, const FavoritesScreen()),
-          ),
-        ],
-
-        // Pinned Downloaded tile (if no filter or Downloaded filter)
-        if (_selectedFilter == null || _selectedFilter == 'Downloaded') ...[
-          _buildPinnedItemTile(
-            title: 'Downloaded Songs',
-            subtitle: '$downloadedCount songs saved offline',
-            gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
-            icon: CupertinoIcons.arrow_down_circle_fill,
-            onTap: () => _navigate(context, const DownloadsScreen()),
-          ),
-        ],
-
-        // Playlists
-        if (_selectedFilter == null || _selectedFilter == 'Playlists') ...[
-          ...playlists.map((playlist) {
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 4),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: SizedBox(
-                  width: 54,
-                  height: 54,
-                  child: PlaylistArtwork(playlist: playlist, size: 54),
-                ),
-              ),
-              title: Text(
-                playlist.name,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                'Playlist • ${playlist.songCount ?? 0} songs',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
-                ),
-              ),
-              onTap: () => _navigate(context, PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name)),
-            );
-          }),
-        ],
-
-        // Albums (only on server mode or when filtered)
-        if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums') ...[
-          ...albums.map((album) {
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 4),
-              leading: AlbumArtwork(
-                coverArt: album.coverArt,
-                size: 54,
-                borderRadius: 6,
-              ),
-              title: Text(
-                album.name,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                'Album • ${album.artist}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
-                ),
-              ),
-              onTap: () => _navigate(context, AlbumScreen(albumId: album.id)),
-            );
-          }),
-        ],
-
-        // Artists (only on server mode or when filtered)
-        if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists') ...[
-          ...artists.map((artist) {
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 4),
-              leading: AlbumArtwork(
-                coverArt: artist.coverArt ??
-                    artist.artistImageUrl ??
-                    (artist.id.isNotEmpty ? 'ar-${artist.id}' : null),
-                size: 54,
-                borderRadius: 999,
-              ),
-              title: Text(
-                artist.name,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                'Artist',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
-                ),
-              ),
-              onTap: () => _navigate(context, ArtistScreen(artistId: artist.id)),
-            );
-          }),
-        ],
-
-        // Folders when no filter selected
-        if (_selectedFilter == null && !isYoutube) ...[
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 4),
-            leading: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xFF34C759).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(CupertinoIcons.antenna_radiowaves_left_right, color: Color(0xFF34C759), size: 24),
-            ),
-            title: Text(AppLocalizations.of(context)!.radioStations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-            subtitle: Text(AppLocalizations.of(context)!.radios, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-            onTap: () => _navigate(context, const RadioScreen()),
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 4),
-            leading: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF9500).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(CupertinoIcons.star_fill, color: Color(0xFFFF9500), size: 24),
-            ),
-            title: Text(AppLocalizations.of(context)!.likedAlbums, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-            subtitle: Text(AppLocalizations.of(context)!.albums, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-            onTap: () => _navigate(context, const LikedAlbumsScreen()),
-          ),
-        ],
-      ],
+    final items = _getFilteredAndSortedItems(
+      context: context,
+      libraryProvider: libraryProvider,
+      isDark: isDark,
+      isYoutube: isYoutube,
+      downloadedCount: downloadedCount,
+      l10n: l10n,
     );
+
+    if (items.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  CupertinoIcons.music_albums,
+                  size: 56,
+                  color: isDark ? Colors.white30 : Colors.black26,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n?.noSongsFound ?? 'No items found in your library',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
+      sliver: SliverList.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return RepaintBoundary(
+            child: _buildListItemTile(context, item, isDark),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSliverGrid(
+    BuildContext context,
+    LibraryProvider libraryProvider,
+    bool isDark,
+    bool isYoutube,
+    double hPad,
+  ) {
+    final offlineService = OfflineService();
+    final downloadedCount = offlineService.getDownloadedSongIds().length;
+    final l10n = AppLocalizations.of(context);
+
+    final items = _getFilteredAndSortedItems(
+      context: context,
+      libraryProvider: libraryProvider,
+      isDark: isDark,
+      isYoutube: isYoutube,
+      downloadedCount: downloadedCount,
+      l10n: l10n,
+    );
+
+    if (items.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  CupertinoIcons.music_albums,
+                  size: 56,
+                  color: isDark ? Colors.white30 : Colors.black26,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n?.noSongsFound ?? 'No items found in your library',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
+      sliver: SliverGrid.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _isDesktop ? 4 : 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.78,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return RepaintBoundary(
+            child: _buildGridItemTile(context, item, isDark),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildListItemTile(
+    BuildContext context,
+    _LibraryItem item,
+    bool isDark,
+  ) {
+    switch (item.type) {
+      case _LibraryItemType.likedSongs:
+        return _buildPinnedItemTile(
+          title: item.title,
+          subtitle: item.subtitle,
+          gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+          icon: CupertinoIcons.heart_fill,
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.downloadedSongs:
+        return _buildPinnedItemTile(
+          title: item.title,
+          subtitle: item.subtitle,
+          gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
+          icon: CupertinoIcons.arrow_down_circle_fill,
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.radioStations:
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFF34C759).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              CupertinoIcons.antenna_radiowaves_left_right,
+              color: Color(0xFF34C759),
+              size: 24,
+            ),
+          ),
+          title: Text(
+            item.title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.likedAlbums:
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF9500).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              CupertinoIcons.star_fill,
+              color: Color(0xFFFF9500),
+              size: 24,
+            ),
+          ),
+          title: Text(
+            item.title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.playlist:
+        final playlist = item.data as Playlist;
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: 54,
+              height: 54,
+              child: PlaylistArtwork(playlist: playlist, size: 54),
+            ),
+          ),
+          title: Text(
+            playlist.name,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.album:
+        final album = item.data as Album;
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: AlbumArtwork(
+            coverArt: album.coverArt,
+            size: 54,
+            borderRadius: 6,
+          ),
+          title: Text(
+            album.name,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.artist:
+        final artist = item.data as Artist;
+        final coverArt = artist.coverArt ??
+            artist.artistImageUrl ??
+            (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: AlbumArtwork(
+            coverArt: coverArt,
+            size: 54,
+            borderRadius: 999,
+          ),
+          title: Text(
+            artist.name,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.song:
+        final song = item.data as Song;
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: AlbumArtwork(
+            coverArt: song.coverArt,
+            size: 54,
+            borderRadius: 6,
+          ),
+          title: Text(
+            song.title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            ),
+          ),
+          onTap: item.onTap,
+        );
+    }
+  }
+
+  Widget _buildGridItemTile(
+    BuildContext context,
+    _LibraryItem item,
+    bool isDark,
+  ) {
+    switch (item.type) {
+      case _LibraryItemType.likedSongs:
+        return _buildGridItemCard(
+          title: item.title,
+          subtitle: item.subtitle,
+          customArtwork: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: const Center(
+              child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 36),
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.downloadedSongs:
+        return _buildGridItemCard(
+          title: item.title,
+          subtitle: item.subtitle,
+          customArtwork: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF006450), Color(0xFF00897B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: const Center(
+              child: Icon(CupertinoIcons.arrow_down_circle_fill, color: Colors.white, size: 36),
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.radioStations:
+        return _buildGridItemCard(
+          title: item.title,
+          subtitle: item.subtitle,
+          customArtwork: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF34C759).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Icon(CupertinoIcons.antenna_radiowaves_left_right, color: Color(0xFF34C759), size: 36),
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.likedAlbums:
+        return _buildGridItemCard(
+          title: item.title,
+          subtitle: item.subtitle,
+          customArtwork: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF9500).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Icon(CupertinoIcons.star_fill, color: Color(0xFFFF9500), size: 36),
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.playlist:
+        final playlist = item.data as Playlist;
+        return _buildGridItemCard(
+          title: playlist.name,
+          subtitle: item.subtitle,
+          customArtwork: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: PlaylistArtwork(playlist: playlist, size: 240),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.album:
+        final album = item.data as Album;
+        return _buildGridItemCard(
+          title: album.name,
+          subtitle: item.subtitle,
+          imageUrl: album.coverArt,
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.artist:
+        final artist = item.data as Artist;
+        final coverArt = artist.coverArt ??
+            artist.artistImageUrl ??
+            (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
+        return _buildGridItemCard(
+          title: artist.name,
+          subtitle: item.subtitle,
+          imageUrl: coverArt,
+          isRound: true,
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.song:
+        final song = item.data as Song;
+        return _buildGridItemCard(
+          title: song.title,
+          subtitle: item.subtitle,
+          imageUrl: song.coverArt,
+          onTap: item.onTap,
+        );
+    }
   }
 
   Widget _buildPinnedItemTile({
@@ -611,100 +1075,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ],
       ),
       onTap: onTap,
-    );
-  }
-
-  Widget _buildGridView(BuildContext context, LibraryProvider libraryProvider, bool isDark, bool isYoutube) {
-    final cols = _isDesktop ? 4 : 2;
-
-    var playlists = libraryProvider.playlists;
-    var albums = libraryProvider.recentAlbums;
-    var artists = libraryProvider.artists;
-
-    playlists = _sortList(playlists, (p) => p.name);
-    albums = _sortList(albums, (a) => a.name);
-    artists = _sortList(artists, (a) => a.name);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final spacing = 12.0;
-        final cardWidth = (constraints.maxWidth - spacing * (cols - 1)) / cols;
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: 16,
-          children: [
-            // Pinned Liked Songs Card
-            if (_selectedFilter == null || _selectedFilter == 'Playlists')
-              SizedBox(
-                width: cardWidth,
-                child: _buildGridItemCard(
-                  title: 'Liked Songs',
-                  subtitle: 'Playlist • Favorites',
-                  customArtwork: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF450AF5), Color(0xFF8E8EE5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 36),
-                    ),
-                  ),
-                  onTap: () => _navigate(context, const FavoritesScreen()),
-                ),
-              ),
-
-            // Playlists
-            if (_selectedFilter == null || _selectedFilter == 'Playlists')
-              ...playlists.map((playlist) {
-                return SizedBox(
-                  width: cardWidth,
-                  child: _buildGridItemCard(
-                    title: playlist.name,
-                    subtitle: 'Playlist • Musly',
-                    customArtwork: PlaylistArtwork(playlist: playlist, size: cardWidth),
-                    onTap: () => _navigate(context, PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name)),
-                  ),
-                );
-              }),
-
-            // Albums (only on server mode or when filtered)
-            if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums')
-              ...albums.map((album) {
-                return SizedBox(
-                  width: cardWidth,
-                  child: _buildGridItemCard(
-                    title: album.name,
-                    subtitle: 'Album • ${album.artist}',
-                    imageUrl: album.coverArt,
-                    onTap: () => _navigate(context, AlbumScreen(albumId: album.id)),
-                  ),
-                );
-              }),
-
-            // Artists (only on server mode or when filtered)
-            if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists')
-              ...artists.map((artist) {
-                final coverArt = artist.coverArt ??
-                    artist.artistImageUrl ??
-                    (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
-                return SizedBox(
-                  width: cardWidth,
-                  child: _buildGridItemCard(
-                    title: artist.name,
-                    subtitle: 'Artist',
-                    imageUrl: coverArt,
-                    isRound: true,
-                    onTap: () => _navigate(context, ArtistScreen(artistId: artist.id)),
-                  ),
-                );
-              }),
-          ],
-        );
-      },
     );
   }
 
