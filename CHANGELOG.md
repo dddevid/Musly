@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When playing a song directly from search results, Musly dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
   - Added continuous automatic queue replenishment: when an automatic queue or AutoDJ queue is nearing the end (<= 3 songs remaining) or finishes, Musly automatically discovers and appends more similar tracks to the queue and audio source so continuous playback never stops.
 
+- **Desktop UI/UX Redesign (Musly Desktop Parity)**
+  - Redesigned the entire Desktop layout, navigation, and player components to match `Musly-Desktop` 1:1:
+    - **Left Navigation Sidebar (`DesktopNavigationSidebar`)**: 240px wide sleek black sidebar (`#000000`) with rounded app logo, Home, Search, Library, Settings, `YOUR LIBRARY` section with Playlists, Liked Songs, Radio, playlist creation modal, and bottom Disconnect action.
+    - **Bottom Player Bar (`DesktopPlayerBar`)**: 90px dark bar (`#181818`) with 56x56 rounded artwork, title/artist info, 1-tap heart favorite button, centered playback controls (shuffle, previous, white 40x40 circle play/pause with hover scale, next, repeat), clean custom progress slider, volume controls, connect button, and toggle buttons for Queue and Lyrics panels.
+    - **Desktop Queue Panel (`RightSidebar`)**: 320px slide-over queue panel with Now Playing highlight card (`#FA243C` tint) and Next Up track list with hover play and remove actions.
+    - **Desktop Lyrics Panel (`DesktopLyricsPanel`)**: 380px slide-over Spicy Lyrics panel with blurred artwork backdrop, smooth active line auto-scrolling and centering, dynamic font sizing and opacity transitions, seek-on-tap, and real-time `SYNC` badge.
+
 - **Musly Wrapped & Year in Review Redesign & Localization**
   - Completely revamped Musly Wrapped UI with high-end glassmorphic cards (`BackdropFilter`), glowing radial aura meshes, and interactive floating particles.
   - Added hero centerpiece cards for #1 Top Song with real-time animated equalizer bars (`_EqualizerBars`) and #1 Top Artist with glowing circular avatars.
