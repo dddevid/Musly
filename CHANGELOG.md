@@ -25,7 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Search Radio Queue Generation**
   - When playing a song directly from search results, Musly now dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
 
-- **Musly Wrapped & Year in Review Localization**
+- **Musly Wrapped & Year in Review Redesign & Localization**
+  - Completely revamped Musly Wrapped UI with high-end glassmorphic cards (`BackdropFilter`), glowing radial aura meshes, and interactive floating particles.
+  - Added hero centerpiece cards for #1 Top Song with real-time animated equalizer bars (`_EqualizerBars`) and #1 Top Artist with glowing circular avatars.
+  - Added formatted number statistics (e.g. `12,450` mins) and long-press story pause feedback indicator.
   - Fully localized all user interface texts, story slides (Intro, Minutes, Chronotypes, Genre Galaxy, Top Songs & Countdown, Top Artists, and Personality Archetypes), metrics, badges, and home banners into English, Italian, and all supported languages via `AppLocalizations`.
 
 ### Fixed
