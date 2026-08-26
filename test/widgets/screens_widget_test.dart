@@ -6,6 +6,8 @@ import 'package:musly/screens/media/playlists_screen.dart';
 import 'package:musly/screens/settings/settings_screen.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
 import 'package:musly/models/lyric_line.dart';
+import 'package:musly/models/song.dart';
+import 'package:musly/services/player_ui_settings_service.dart';
 
 import '../test_helpers.dart';
 import '../bootstrap.dart';
@@ -86,9 +88,39 @@ void main() {
         ),
       ));
       await tester.pump(const Duration(milliseconds: 200));
-      expect(find.byType(NowPlayingScreen), findsOneWidget);
       // Ensure no exceptions or overflows occurred
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('NowPlayingScreen displays star ratings when showStarRatings is enabled', (
+      WidgetTester tester,
+    ) async {
+      PlayerUiSettingsService().showStarRatingsNotifier.value = true;
+      addTearDown(() {
+        PlayerUiSettingsService().showStarRatingsNotifier.value = false;
+      });
+
+      await tester.pumpWidget(createTestApp(
+        child: NowPlayingScreen(
+          song: Song(
+            id: '1',
+            title: 'Test Title',
+            artist: 'Test Artist',
+            duration: 180,
+          ),
+          image: const AssetImage('assets/logo.png'),
+          title: 'Test Title',
+          artist: 'Test Artist',
+          heroTag: 'test_hero',
+          lyrics: [
+            LyricLine(startTime: Duration.zero, text: 'Test Line'),
+          ],
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(find.byIcon(Icons.star_outline_rounded), findsNWidgets(5));
+      expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
     });
   });
 }

@@ -401,6 +401,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Widget _buildTitleArtistRow(
     BuildContext context,
+    PlayerProvider provider,
     Song? currentSong,
     String title,
     String artist,
@@ -411,7 +412,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isLandscape ? 16.0 : 32.0,
-        vertical: isLandscape ? 2.0 : (isSmall ? 8.0 : 24.0),
+        vertical: isLandscape ? 2.0 : (isSmall ? 8.0 : 20.0),
       ),
       child: Row(
         children: [
@@ -443,9 +444,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ),
           ),
           IconButton(
+            tooltip: isStarred ? 'Remove from favorites' : 'Add to favorites',
             icon: Icon(
-              isStarred ? Icons.favorite_rounded : Icons.add_circle_outline_rounded,
+              isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
               color: isStarred ? Theme.of(context).colorScheme.primary : Colors.white,
+              size: isLandscape ? 22 : 24,
+            ),
+            onPressed: () {
+              if (currentSong == null) return;
+              provider.toggleFavorite();
+            },
+          ),
+          IconButton(
+            tooltip: 'Add to playlist',
+            icon: Icon(
+              Icons.add_circle_outline_rounded,
+              color: Colors.white70,
               size: isLandscape ? 22 : 24,
             ),
             onPressed: () {
@@ -464,6 +478,65 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStarRatingRow(
+    PlayerProvider provider,
+    Song? currentSong, {
+    required bool isSmall,
+    bool isLandscape = false,
+  }) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: PlayerUiSettingsService().showStarRatingsNotifier,
+      builder: (context, showStarRatings, _) {
+        if (!showStarRatings || currentSong == null) {
+          return const SizedBox.shrink();
+        }
+        final currentRating = currentSong.userRating ?? 0;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLandscape ? 16.0 : 32.0,
+            vertical: isLandscape ? 0.0 : (isSmall ? 0.0 : 2.0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(5, (index) {
+              final starValue = index + 1;
+              final isFilled = starValue <= currentRating;
+              return IconButton(
+                iconSize: isLandscape || isSmall ? 20 : 24,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                constraints: BoxConstraints(
+                  minWidth: isLandscape || isSmall ? 28 : 34,
+                  minHeight: isLandscape || isSmall ? 28 : 34,
+                ),
+                icon: Icon(
+                  isFilled ? Icons.star_rounded : Icons.star_outline_rounded,
+                  color: isFilled ? const Color(0xFFFFB800) : Colors.white38,
+                ),
+                onPressed: () async {
+                  final newRating = isFilled && starValue == currentRating ? 0 : starValue;
+                  try {
+                    await provider.setRating(currentSong.id, newRating);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to set rating: $e'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 
@@ -562,10 +635,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 children: [
                   _buildTitleArtistRow(
                     context,
+                    provider,
                     currentSong,
                     title,
                     artist,
                     isStarred,
+                    isSmall: true,
+                    isLandscape: true,
+                  ),
+                  _buildStarRatingRow(
+                    provider,
+                    currentSong,
                     isSmall: true,
                     isLandscape: true,
                   ),
@@ -691,7 +771,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
           _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
       
-          _buildTitleArtistRow(context, currentSong, title, artist, isStarred, isSmall: isSmall),
+          _buildTitleArtistRow(context, provider, currentSong, title, artist, isStarred, isSmall: isSmall),
+
+          _buildStarRatingRow(provider, currentSong, isSmall: isSmall),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
