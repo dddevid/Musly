@@ -354,61 +354,106 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 break;
               }
             }
-            if (activeLine == null || activeLine.text.trim().isEmpty) {
+            final hasLine = activeLine != null && activeLine.text.trim().isNotEmpty;
+            final text = hasLine ? activeLine.text.trim() : '';
+
+            if (!hasLine) {
               return const SizedBox.shrink();
             }
-            return GestureDetector(
-              onTap: () {
-                _pageController.animateToPage(
-                  1,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              child: Container(
-                margin: EdgeInsets.only(
-                  top: isLandscape ? 4.0 : (isSmall ? 4.0 : 8.0),
-                  left: isLandscape ? 8.0 : 32.0,
-                  right: isLandscape ? 8.0 : 32.0,
-                  bottom: isLandscape ? 2.0 : 2.0,
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSmall || isLandscape ? 12.0 : 16.0,
-                  vertical: isSmall || isLandscape ? 4.0 : 6.0,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.music_note_rounded,
-                      size: isSmall || isLandscape ? 13 : 16,
-                      color: accentColor.withValues(alpha: 0.9),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        activeLine.text,
-                        softWrap: true,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: isSmall || isLandscape ? 12 : 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withValues(alpha: 0.95),
-                          letterSpacing: -0.2,
-                          height: 1.25,
+
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isLandscape ? 12.0 : 28.0,
+                vertical: isLandscape ? 2.0 : (isSmall ? 2.0 : 4.0),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    _pageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmall || isLandscape ? 12.0 : 14.0,
+                        vertical: isSmall || isLandscape ? 5.0 : 7.0,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: accentColor.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.lyrics_rounded,
+                              size: isSmall || isLandscape ? 13 : 15,
+                              color: accentColor.withValues(alpha: 0.95),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, animation) => FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.2),
+                                    end: Offset.zero,
+                                  ).animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                              child: Text(
+                                text,
+                                key: ValueKey<String>(text),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: isSmall || isLandscape ? 12.5 : 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: -0.1,
+                                  height: 1.2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: isSmall || isLandscape ? 14 : 16,
+                            color: Colors.white.withValues(alpha: 0.4),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -818,7 +863,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             children: [
               SizedBox(height: headerClearance), // Space for header & status bar
               
-              // Album Art with horizontal swipe navigation (Issue #201) and Live Lyric
+              // Album Art with horizontal swipe navigation (Issue #201)
               Expanded(
                 child: Center(
                   child: Padding(
@@ -826,38 +871,32 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       horizontal: horizontalArtPadding,
                       vertical: isVerySmall ? 2.0 : (isSmall ? 4.0 : 8.0),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: AspectRatio(
-                            aspectRatio: 1.0,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onHorizontalDragEnd: (details) {
-                                final vel = details.primaryVelocity;
-                                if (vel != null) {
-                                  if (vel < -250) {
-                                    provider.skipNext();
-                                  } else if (vel > 250) {
-                                    provider.skipPrevious();
-                                  }
-                                }
-                              },
-                              child: AlbumArtView(
-                                image: _currentImageProvider ?? widget.image,
-                                tag: currentSong?.id ?? widget.heroTag,
-                              ),
-                            ),
-                          ),
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onHorizontalDragEnd: (details) {
+                          final vel = details.primaryVelocity;
+                          if (vel != null) {
+                            if (vel < -250) {
+                              provider.skipNext();
+                            } else if (vel > 250) {
+                              provider.skipPrevious();
+                            }
+                          }
+                        },
+                        child: AlbumArtView(
+                          image: _currentImageProvider ?? widget.image,
+                          tag: currentSong?.id ?? widget.heroTag,
                         ),
-                        _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
+
+              // Live Lyric Pill under artwork (fixed height, never shifts cover art)
+              _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
           
               _buildTitleArtistRow(
                 context,
