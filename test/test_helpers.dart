@@ -7,8 +7,24 @@ import 'package:musly/services/audio_handler.dart';
 import 'package:musly/services/transcoding_service.dart';
 
 class FakeCastService extends CastService {
+  bool _mockConnected = false;
+  CastMediaState _mockMediaState = CastMediaState();
+
   @override
-  bool get isConnected => false;
+  bool get isConnected => _mockConnected;
+
+  void setMockConnected(bool value) {
+    _mockConnected = value;
+    notifyListeners();
+  }
+
+  void setMockMediaState(CastMediaState state) {
+    _mockMediaState = state;
+    notifyListeners();
+  }
+
+  @override
+  CastMediaState get mediaState => _mockMediaState;
 
   @override
   Future<bool> loadMedia({
@@ -19,22 +35,45 @@ class FakeCastService extends CastService {
     String? albumName,
     int? trackNumber,
     Duration? duration,
+    Duration playPosition = Duration.zero,
+    String? contentType,
     bool autoPlay = true,
   }) async {
+    _mockMediaState = _mockMediaState.copyWith(
+      title: title,
+      artist: artist,
+      imageUrl: imageUrl,
+      duration: duration ?? Duration.zero,
+      isPlaying: autoPlay,
+      position: playPosition,
+    );
+    notifyListeners();
     return true;
   }
 
   @override
-  Future<void> play() async {}
+  Future<void> play() async {
+    _mockMediaState = _mockMediaState.copyWith(isPlaying: true);
+    notifyListeners();
+  }
 
   @override
-  Future<void> pause() async {}
+  Future<void> pause() async {
+    _mockMediaState = _mockMediaState.copyWith(isPlaying: false);
+    notifyListeners();
+  }
 
   @override
-  Future<void> stop() async {}
+  Future<void> stop() async {
+    _mockMediaState = CastMediaState();
+    notifyListeners();
+  }
 
   @override
-  Future<void> seek(Duration position) async {}
+  Future<void> seek(Duration position) async {
+    _mockMediaState = _mockMediaState.copyWith(position: position);
+    notifyListeners();
+  }
 }
 
 Widget createTestApp({

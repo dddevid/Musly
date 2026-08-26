@@ -3,6 +3,7 @@ import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/services/storage_service.dart';
+import 'package:musly/services/cast_service.dart';
 import 'package:musly/services/upnp_service.dart';
 import 'package:musly/services/audio_handler.dart';
 import 'package:musly/services/jukebox_service.dart';
@@ -103,6 +104,50 @@ void main() {
       for (var song in songs) {
         playerProvider.addToQueue(song);
       }
+    });
+
+    test('should handle Cast connection and disconnection transitions cleanly', () async {
+      final fakeCast = FakeCastService();
+      final player = PlayerProvider(
+        subsonicService,
+        StorageService(),
+        fakeCast,
+        UpnpService(),
+        MuslyAudioHandler(),
+        JukeboxService(),
+        TranscodingService(),
+      );
+
+      final song = Song(id: 'cast_1', title: 'Cast Track', artist: 'Artist');
+      player.addToQueue(song);
+
+      expect(player.isRemotePlayback, false);
+
+      // Connect to Cast
+      fakeCast.setMockConnected(true);
+      await Future.delayed(const Duration(milliseconds: 10));
+
+      expect(player.isRemotePlayback, true);
+
+      // Multiple ticks while connected must NOT reset remote playback or loop
+      fakeCast.setMockMediaState(CastMediaState(
+        isPlaying: true,
+        position: const Duration(seconds: 15),
+        duration: const Duration(seconds: 180),
+      ));
+      await Future.delayed(const Duration(milliseconds: 10));
+
+      expect(player.isRemotePlayback, true);
+      expect(player.isPlaying, true);
+
+      // Disconnect
+      fakeCast.setMockConnected(false);
+      await Future.delayed(const Duration(milliseconds: 10));
+
+      expect(player.isRemotePlayback, false);
+      expect(player.isPlaying, false);
+
+      player.dispose();
     });
   });
 }

@@ -13,6 +13,8 @@ class CastMediaState {
   final String? artist;
   final String? imageUrl;
   final double volume;
+  final CastMediaPlayerState? playerState;
+  final GoogleCastMediaIdleReason? idleReason;
 
   CastMediaState({
     this.isPlaying = false,
@@ -22,6 +24,8 @@ class CastMediaState {
     this.artist,
     this.imageUrl,
     this.volume = 1.0,
+    this.playerState,
+    this.idleReason,
   });
 
   CastMediaState copyWith({
@@ -32,6 +36,8 @@ class CastMediaState {
     String? artist,
     String? imageUrl,
     double? volume,
+    CastMediaPlayerState? playerState,
+    GoogleCastMediaIdleReason? idleReason,
   }) {
     return CastMediaState(
       isPlaying: isPlaying ?? this.isPlaying,
@@ -41,6 +47,8 @@ class CastMediaState {
       artist: artist ?? this.artist,
       imageUrl: imageUrl ?? this.imageUrl,
       volume: volume ?? this.volume,
+      playerState: playerState ?? this.playerState,
+      idleReason: idleReason ?? this.idleReason,
     );
   }
 }
@@ -57,6 +65,7 @@ class CastService extends ChangeNotifier {
   Timer? _positionTimer;
   StreamSubscription<GoggleCastMediaStatus?>? _mediaStatusSubscription;
   StreamSubscription<GoogleCastSession?>? _sessionSubscription;
+  StreamSubscription<Duration>? _playerPositionSubscription;
 
   CastState get state => _state;
   bool get isConnected => _state == CastState.connected;
@@ -69,8 +78,8 @@ class CastService extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    
     if (Platform.isIOS) return;
+
     _sessionSubscription = _sessionManager.currentSessionStream.listen((
       session,
     ) {
@@ -81,6 +90,16 @@ class CastService extends ChangeNotifier {
       status,
     ) {
       _handleMediaStatusChange(status);
+    });
+
+    _playerPositionSubscription = _remoteMediaClient.playerPositionStream.listen((
+      pos,
+    ) {
+      if (_state == CastState.connected &&
+          (_mediaState.position - pos).abs() > const Duration(milliseconds: 250)) {
+        _mediaState = _mediaState.copyWith(position: pos);
+        notifyListeners();
+      }
     });
 
     try {
@@ -145,16 +164,18 @@ class CastService extends ChangeNotifier {
 
     _mediaState = CastMediaState(
       isPlaying: status.playerState == CastMediaPlayerState.playing,
-      position: _mediaState.position, 
-      duration: mediaInfo?.duration ?? Duration.zero,
-      title: title,
-      artist: artist,
-      imageUrl: metadata?.images?.firstOrNull?.url.toString(),
+      position: _mediaState.position,
+      duration: mediaInfo?.duration ?? _mediaState.duration,
+      title: title ?? _mediaState.title,
+      artist: artist ?? _mediaState.artist,
+      imageUrl: metadata?.images?.firstOrNull?.url.toString() ?? _mediaState.imageUrl,
       volume: status.volume.toDouble(),
+      playerState: status.playerState,
+      idleReason: status.idleReason,
     );
 
     debugPrint(
-      'CastService: Media state updated - Playing: ${_mediaState.isPlaying}',
+      'CastService: Media state updated - Playing: ${_mediaState.isPlaying}, State: ${status.playerState}, IdleReason: ${status.idleReason}',
     );
 
     notifyListeners();
@@ -164,7 +185,6 @@ class CastService extends ChangeNotifier {
     _stopPositionTimer();
     _positionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_mediaState.isPlaying && _state == CastState.connected) {
-        
         _mediaState = _mediaState.copyWith(
           position: _mediaState.position + const Duration(seconds: 1),
         );
@@ -229,6 +249,8 @@ class CastService extends ChangeNotifier {
     String? albumName,
     int? trackNumber,
     Duration? duration,
+    Duration playPosition = Duration.zero,
+    String? contentType,
     bool autoPlay = true,
   }) async {
     if (!isConnected) {
@@ -237,7 +259,16 @@ class CastService extends ChangeNotifier {
     }
 
     try {
-      debugPrint('CastService: Loading media: $title by $artist');
+      debugPrint('CastService: Loading media: $title by $artist (playPos: ${playPosition.inSeconds}s)');
+
+      final List<GoogleCastImage> images = [];
+      if (imageUrl.isNotEmpty &&
+          (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+        final parsedUri = Uri.tryParse(imageUrl);
+        if (parsedUri != null) {
+          images.add(GoogleCastImage(url: parsedUri, width: 1280, height: 720));
+        }
+      }
 
       final metadata = GoogleCastMusicMediaMetadata(
         title: title,
@@ -245,19 +276,16 @@ class CastService extends ChangeNotifier {
         albumArtist: artist,
         albumName: albumName,
         trackNumber: trackNumber,
-        images: [
-          GoogleCastImage(url: Uri.parse(imageUrl), width: 1280, height: 720),
-        ],
+        images: images,
       );
 
-      final contentType = _mimeTypeFromUrl(url);
+      final resolvedContentType = contentType ?? mimeTypeFromUrl(url);
 
       final mediaInfo = GoogleCastMediaInformation(
-        
         contentId: url,
         contentUrl: Uri.tryParse(url),
         streamType: CastMediaStreamType.buffered,
-        contentType: contentType,
+        contentType: resolvedContentType,
         metadata: metadata,
         duration: duration,
       );
@@ -265,7 +293,7 @@ class CastService extends ChangeNotifier {
       await _remoteMediaClient.loadMedia(
         mediaInfo,
         autoPlay: autoPlay,
-        playPosition: Duration.zero,
+        playPosition: playPosition,
       );
 
       _mediaState = _mediaState.copyWith(
@@ -274,11 +302,13 @@ class CastService extends ChangeNotifier {
         imageUrl: imageUrl,
         duration: duration ?? Duration.zero,
         isPlaying: autoPlay,
-        position: Duration.zero,
+        position: playPosition,
+        playerState: autoPlay ? CastMediaPlayerState.playing : CastMediaPlayerState.paused,
+        idleReason: null,
       );
       notifyListeners();
 
-      debugPrint('CastService: Media loaded successfully ($contentType)');
+      debugPrint('CastService: Media loaded successfully ($resolvedContentType)');
       return true;
     } catch (e) {
       debugPrint('CastService: Error loading media: $e');
@@ -286,7 +316,21 @@ class CastService extends ChangeNotifier {
     }
   }
 
-  static String _mimeTypeFromUrl(String url) {
+  static String mimeTypeFromUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      final formatParam = uri.queryParameters['format']?.toLowerCase() ??
+          uri.queryParameters['suffix']?.toLowerCase();
+      if (formatParam != null) {
+        if (formatParam == 'flac') return 'audio/flac';
+        if (formatParam == 'ogg' || formatParam == 'oga') return 'audio/ogg';
+        if (formatParam == 'opus') return 'audio/ogg; codecs=opus';
+        if (formatParam == 'wav') return 'audio/wav';
+        if (formatParam == 'aac') return 'audio/aac';
+        if (formatParam == 'm4a' || formatParam == 'mp4') return 'audio/mp4';
+        if (formatParam == 'mp3') return 'audio/mpeg';
+      }
+    }
     final lower = url.toLowerCase().split('?').first;
     if (lower.endsWith('.flac')) return 'audio/flac';
     if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'audio/ogg';
@@ -295,7 +339,7 @@ class CastService extends ChangeNotifier {
     if (lower.endsWith('.aac')) return 'audio/aac';
     if (lower.endsWith('.m4a')) return 'audio/mp4';
     if (lower.endsWith('.mp3')) return 'audio/mpeg';
-    
+
     return 'audio/mpeg';
   }
 
@@ -357,6 +401,7 @@ class CastService extends ChangeNotifier {
   @override
   void dispose() {
     _stopPositionTimer();
+    _playerPositionSubscription?.cancel();
     _mediaStatusSubscription?.cancel();
     _sessionSubscription?.cancel();
     super.dispose();

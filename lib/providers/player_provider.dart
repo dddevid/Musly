@@ -23,6 +23,7 @@ import '../services/lrclib_service.dart';
 import '../services/discord_rpc_service.dart';
 import '../services/storage_service.dart';
 import '../services/cast_service.dart';
+import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import '../services/upnp_service.dart';
 import '../services/jukebox_service.dart';
 import '../services/audio_handler.dart';
@@ -1839,16 +1840,19 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       });
 
       if (_castService.isConnected) {
+        _castWasPlaying = false;
         if (_audioPlayer.playing) await _audioPlayer.stop();
 
-        final playUrl = song.isLocal == true
+        final playUrl = song.isLocal == true && song.path != null
             ? Uri.file(song.path!).toString()
             : await _subsonicService.resolveStreamUrlAsync(song);
         final coverUrl = song.isLocal == true && song.coverArt != null
             ? song.coverArt!
             : _subsonicService.getCoverArtUrl(song.coverArt ?? song.id, size: 800);
+        final mimeType =
+            song.contentType ?? UpnpService.mimeTypeFromSuffix(song.suffix);
 
-        await _castService.loadMedia(
+        final success = await _castService.loadMedia(
           url: playUrl,
           title: song.title,
           artist: song.artist ?? 'Unknown Artist',
@@ -1857,10 +1861,32 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           trackNumber: song.track,
           duration:
               song.duration != null ? Duration(seconds: song.duration!) : null,
+          playPosition: initialPosition ?? Duration.zero,
+          contentType: mimeType,
           autoPlay: true,
         );
+
+        if (song.isLocal != true) {
+          if (_offlineService.isOfflineMode) {
+            _offlineService.queueScrobble(song.id, submission: false);
+          } else {
+            _subsonicService.scrobble(song.id, submission: false).catchError((e) {
+              _offlineService.queueScrobble(song.id, submission: false);
+            });
+          }
+        }
+
         _isRenderingRemotely = true;
-        _isPlaying = true;
+        _isPlaying = success;
+        _isLoading = false;
+        if (initialPosition != null && initialPosition > Duration.zero) {
+          _position = initialPosition;
+          _positionController.add(initialPosition);
+        }
+        notifyListeners();
+        _updateAllServices();
+        _updateAndroidAuto();
+        return;
       } else if (_upnpService.isConnected) {
         // Reset before sending Stop so a poll that fires mid-load can't
         // mistake the STOPPED state for a natural track end and advance twice.
@@ -2136,7 +2162,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _isPlaying = true;
       notifyListeners();
       _updateAndroidAuto();
-      await _castService.play();
+      if (_currentSong != null && _castService.mediaState.title == null) {
+        await playSong(_currentSong!, initialPosition: _position);
+      } else {
+        await _castService.play();
+      }
+      return;
     } else if (_upnpService.isConnected) {
       _isPlaying = true;
       notifyListeners();
@@ -2196,6 +2227,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       _updateAndroidAuto();
       await _castService.pause();
+      return;
     } else if (_upnpService.isConnected) {
       _isPlaying = false;
       notifyListeners();
@@ -2435,7 +2467,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     if (_castService.isConnected) {
+      _position = position;
+      _positionController.add(position);
+      notifyListeners();
       await _castService.seek(position);
+      return;
     } else if (_upnpService.isConnected) {
       await _upnpService.seek(position);
     } else {
@@ -3425,23 +3461,90 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   String get discordRpcStateStyle => _discordRpcStateStyle;
 
+  bool _castWasConnected = false;
+  bool _castWasPlaying = false;
+
   void _onCastStateChanged() {
-    notifyListeners();
-    if (_castService.isConnected) {
-      _audioPlayer.pause();
+    final connected = _castService.isConnected;
+
+    if (connected && !_castWasConnected) {
+      _castWasConnected = true;
+      _castWasPlaying = false;
+      _isRenderingRemotely = true;
+      if (_audioPlayer.playing) _audioPlayer.pause();
+      final vol = _castService.mediaState.volume;
+      if (vol >= 0) {
+        _volume = vol.clamp(0.0, 1.0);
+      }
       _audioHandler.setRemotePlayback(
         isRemote: true,
-        volume: (_castService.mediaState.volume * 100).round().clamp(0, 100),
+        volume: (_volume * 100).round().clamp(0, 100),
       );
       if (_currentSong != null) {
         final song = _currentSong!;
+        final currentPos = _position;
         _currentSong = null;
-        playSong(song);
+        playSong(song, initialPosition: currentPos);
       }
-    } else {
+      return;
+    }
+
+    if (!connected && _castWasConnected) {
+      _castWasConnected = false;
+      _castWasPlaying = false;
       _isRenderingRemotely = false;
-      _audioHandler.setRemotePlayback(isRemote: false);
       _isPlaying = false;
+      _audioHandler.setRemotePlayback(isRemote: false);
+      notifyListeners();
+      _updateAndroidAuto();
+      return;
+    }
+
+    if (!connected) return;
+
+    final pos = _castService.mediaState.position;
+    final dur = _castService.mediaState.duration;
+    final playing = _castService.mediaState.isPlaying;
+    final isIdleFinished = _castService.mediaState.playerState ==
+            CastMediaPlayerState.idle &&
+        _castService.mediaState.idleReason == GoogleCastMediaIdleReason.finished;
+
+    if (_castWasPlaying && isIdleFinished) {
+      debugPrint(
+        'Cast: Track ended naturally (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing',
+      );
+      _castWasPlaying = false;
+      _onSongComplete()
+          .catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
+      return;
+    }
+
+    _castWasPlaying = playing;
+
+    bool changed = false;
+
+    if ((_position - pos).abs() > const Duration(milliseconds: 500)) {
+      _position = pos;
+      changed = true;
+    }
+    if (dur != Duration.zero && dur != _duration) {
+      _duration = dur;
+      changed = true;
+    }
+    if (playing != _isPlaying) {
+      _isPlaying = playing;
+      changed = true;
+    }
+
+    final vol = _castService.mediaState.volume;
+    if ((_volume - vol).abs() > 0.005) {
+      _volume = vol.clamp(0.0, 1.0);
+      changed = true;
+      _audioHandler.updateRemoteVolume((_volume * 100).round().clamp(0, 100));
+    }
+
+    if (changed) {
+      _positionController.add(_position);
       notifyListeners();
       _updateAndroidAuto();
     }
