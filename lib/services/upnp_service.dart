@@ -32,11 +32,13 @@ class UpnpPlaybackState {
   final String transportState; 
   final Duration position;
   final Duration duration;
+  final String? trackUri;
 
   const UpnpPlaybackState({
     required this.transportState,
     required this.position,
     required this.duration,
+    this.trackUri,
   });
 }
 
@@ -53,11 +55,13 @@ class UpnpService extends ChangeNotifier {
   Duration _rendererPosition = Duration.zero;
   Duration _rendererDuration = Duration.zero;
   String _rendererState = 'STOPPED';
+  String? _currentTrackUri;
   int _volume = -1; 
 
   Duration get rendererPosition => _rendererPosition;
   Duration get rendererDuration => _rendererDuration;
   String get rendererState => _rendererState;
+  String? get currentTrackUri => _currentTrackUri;
   bool get isRendererPlaying => _rendererState == 'PLAYING';
   int get volume => _volume;
   int get consecutivePollErrors => _consecutivePollErrors;
@@ -281,6 +285,7 @@ class UpnpService extends ChangeNotifier {
     _rendererState = 'STOPPED';
     _rendererPosition = Duration.zero;
     _rendererDuration = Duration.zero;
+    _currentTrackUri = null;
     _volume = -1;
     _consecutivePollErrors = 0;
     _safeNotifyListeners();
@@ -356,6 +361,10 @@ class UpnpService extends ChangeNotifier {
         _rendererDuration = state.duration;
         changed = true;
       }
+      if (state.trackUri != null && state.trackUri!.isNotEmpty && state.trackUri != _currentTrackUri) {
+        _currentTrackUri = state.trackUri;
+        changed = true;
+      }
 
       if (device.renderingControlUrl != null && _pollCount % 5 == 0) {
         final vol = await getVolume();
@@ -403,11 +412,13 @@ class UpnpService extends ChangeNotifier {
       );
       final relTime = _xmlText(posXml, 'RelTime') ?? '0:00:00';
       final trackDuration = _xmlText(posXml, 'TrackDuration') ?? '0:00:00';
+      final trackUri = _xmlText(posXml, 'TrackURI');
 
       return UpnpPlaybackState(
         transportState: state,
         position: _parseTime(relTime),
         duration: _parseTime(trackDuration),
+        trackUri: trackUri,
       );
     } catch (e) {
       debugPrint('UPnP: getPlaybackState error: $e');
@@ -459,6 +470,10 @@ class UpnpService extends ChangeNotifier {
     );
     debugPrint('UPnP: SetAVTransportURI OK');
 
+    _currentTrackUri = url;
+    _rendererState = 'PLAYING';
+    _safeNotifyListeners();
+
     try {
       await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
       debugPrint('UPnP: Playing "$title" on ${device.friendlyName} (instant)');
@@ -494,6 +509,8 @@ class UpnpService extends ChangeNotifier {
       try {
         await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
         debugPrint('UPnP: Playing "$title" on ${device.friendlyName} (attempt $attempt)');
+        _rendererState = 'PLAYING';
+        _safeNotifyListeners();
         return true;
       } catch (e) {
         debugPrint('UPnP: Play attempt $attempt/$maxAttempts failed: $e');
@@ -506,13 +523,60 @@ class UpnpService extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> setNextUri({
+    required String url,
+    required String title,
+    required String artist,
+    String? album,
+    String? albumArtUrl,
+    int? durationSecs,
+    String? contentType,
+  }) async {
+    final device = _connectedDevice;
+    if (device == null) return false;
+
+    final didl = _didl(
+      title: title,
+      artist: artist,
+      url: url,
+      album: album,
+      albumArtUrl: albumArtUrl,
+      durationSecs: durationSecs,
+      contentType: contentType,
+    );
+
+    try {
+      debugPrint('UPnP: SetNextAVTransportURI → "$title"');
+      await _soap(
+        device.avTransportUrl,
+        'SetNextAVTransportURI',
+        '<NextURI>${_xmlEscapeAttr(url)}</NextURI>\n'
+            '<NextURIMetaData>$didl</NextURIMetaData>',
+      );
+      debugPrint('UPnP: SetNextAVTransportURI OK');
+      return true;
+    } catch (e) {
+      debugPrint('UPnP: SetNextAVTransportURI not supported or failed (ignoring): $e');
+      return false;
+    }
+  }
+
   Future<void> pause() async {
     final device = _connectedDevice;
     if (device == null) return;
     try {
+      _rendererState = 'PAUSED_PLAYBACK';
+      _safeNotifyListeners();
       await _soap(device.avTransportUrl, 'Pause', '');
     } catch (e) {
-      debugPrint('UPnP: pause error: $e');
+      debugPrint('UPnP: pause error: $e — falling back to Stop');
+      try {
+        await _soap(device.avTransportUrl, 'Stop', '');
+        _rendererState = 'PAUSED_PLAYBACK';
+        _safeNotifyListeners();
+      } catch (e2) {
+        debugPrint('UPnP: fallback stop error: $e2');
+      }
     }
   }
 
@@ -520,6 +584,8 @@ class UpnpService extends ChangeNotifier {
     final device = _connectedDevice;
     if (device == null) return;
     try {
+      _rendererState = 'PLAYING';
+      _safeNotifyListeners();
       await _soap(device.avTransportUrl, 'Play', '<Speed>1</Speed>');
     } catch (e) {
       debugPrint('UPnP: play error: $e');
@@ -530,6 +596,8 @@ class UpnpService extends ChangeNotifier {
     final device = _connectedDevice;
     if (device == null) return;
     try {
+      _rendererState = 'STOPPED';
+      _safeNotifyListeners();
       await _soap(device.avTransportUrl, 'Stop', '');
     } catch (e) {
       debugPrint('UPnP: stop error: $e');
@@ -540,6 +608,8 @@ class UpnpService extends ChangeNotifier {
     final device = _connectedDevice;
     if (device == null) return;
     try {
+      _rendererPosition = position;
+      _safeNotifyListeners();
       final hms = _formatTime(position);
       await _soap(
         device.avTransportUrl,
@@ -548,6 +618,26 @@ class UpnpService extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('UPnP: seek error: $e');
+    }
+  }
+
+  Future<void> next() async {
+    final device = _connectedDevice;
+    if (device == null) return;
+    try {
+      await _soap(device.avTransportUrl, 'Next', '');
+    } catch (e) {
+      debugPrint('UPnP: next error: $e');
+    }
+  }
+
+  Future<void> previous() async {
+    final device = _connectedDevice;
+    if (device == null) return;
+    try {
+      await _soap(device.avTransportUrl, 'Previous', '');
+    } catch (e) {
+      debugPrint('UPnP: previous error: $e');
     }
   }
 

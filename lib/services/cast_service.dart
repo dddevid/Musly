@@ -347,6 +347,11 @@ class CastService extends ChangeNotifier {
     if (!isConnected) return;
 
     try {
+      _mediaState = _mediaState.copyWith(
+        isPlaying: true,
+        playerState: CastMediaPlayerState.playing,
+      );
+      notifyListeners();
       await _remoteMediaClient.play();
       debugPrint('CastService: Play command sent');
     } catch (e) {
@@ -358,6 +363,11 @@ class CastService extends ChangeNotifier {
     if (!isConnected) return;
 
     try {
+      _mediaState = _mediaState.copyWith(
+        isPlaying: false,
+        playerState: CastMediaPlayerState.paused,
+      );
+      notifyListeners();
       await _remoteMediaClient.pause();
       debugPrint('CastService: Pause command sent');
     } catch (e) {
@@ -382,6 +392,10 @@ class CastService extends ChangeNotifier {
     if (!isConnected) return;
 
     try {
+      _mediaState = _mediaState.copyWith(
+        position: position,
+      );
+      notifyListeners();
       await _remoteMediaClient.seek(
         GoogleCastMediaSeekOption(position: position),
       );

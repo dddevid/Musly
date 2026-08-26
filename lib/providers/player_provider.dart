@@ -1620,7 +1620,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    if (_concatenatingSource != null) {
+    if (_concatenatingSource != null && !_isRenderingRemotely) {
       // With ConcatenatingAudioSource this only fires at the very end
       // of the queue when LoopMode is off.
       await _handleEndOfQueue();
@@ -1955,8 +1955,23 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           debugPrint('UPnP playback failed, disconnected: $e');
           rethrow;
         }
+        _currentUpnpTrackUrl = playUrl;
         _isRenderingRemotely = true;
         _isPlaying = true;
+        _isLoading = false;
+        if (initialPosition != null && initialPosition > Duration.zero) {
+          _position = initialPosition;
+          _positionController.add(initialPosition);
+          await _upnpService.seek(initialPosition);
+        }
+        notifyListeners();
+        _updateAllServices();
+        _updateAndroidAuto();
+
+        if (_currentIndex + 1 < _queue.length) {
+          _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+        }
+        return;
       } else {
         _isRenderingRemotely = false;
 
@@ -2201,6 +2216,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       _updateAndroidAuto();
       await _upnpService.play();
+      return;
     } else {
       _isPlaying = true;
       notifyListeners();
@@ -2261,6 +2277,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       _updateAndroidAuto();
       await _upnpService.pause();
+      return;
     } else {
       _isPlaying = false;
       notifyListeners();
@@ -2501,7 +2518,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _castService.seek(position);
       return;
     } else if (_upnpService.isConnected) {
+      _position = position;
+      _positionController.add(position);
+      notifyListeners();
       await _upnpService.seek(position);
+      return;
     } else {
       await _audioPlayer.seek(position);
     }
@@ -2544,7 +2565,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _addAutoDjSongs();
     }
 
-    if (_concatenatingSource != null) {
+    if (_concatenatingSource != null && !_isRenderingRemotely) {
       if (_shuffleEnabled && _queue.length > 1) {
         _shuffleHistory.add(_currentSong!.id);
         if (_shuffleHistory.length > 50) _shuffleHistory.removeAt(0);
@@ -2642,7 +2663,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    if (_concatenatingSource != null) {
+    if (_concatenatingSource != null && !_isRenderingRemotely) {
       if (_shuffleEnabled && _shuffleHistory.isNotEmpty) {
         final prevId = _shuffleHistory.removeLast();
         final prev = _queue.indexWhere((s) => s.id == prevId);
@@ -3580,9 +3601,34 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _upnpWasConnected = false;
   bool _upnpWasPlaying = false;
+  String? _currentUpnpTrackUrl;
   // True when an A2DP audio-output device (car, speaker) is connected.
   // Control-only devices (Garmin watch, etc.) don't set this flag.
   final bool _isA2dpAudioActive = false;
+
+  Future<void> _queueNextSongForUpnp(Song nextSong) async {
+    if (!_upnpService.isConnected) return;
+    try {
+      final nextUrl = nextSong.isLocal == true && nextSong.path != null
+          ? Uri.file(nextSong.path!).toString()
+          : await _subsonicService.resolveStreamUrlAsync(nextSong);
+      final mimeType =
+          nextSong.contentType ?? UpnpService.mimeTypeFromSuffix(nextSong.suffix);
+      await _upnpService.setNextUri(
+        url: nextUrl,
+        title: nextSong.title,
+        artist: nextSong.artist ?? 'Unknown Artist',
+        album: nextSong.album,
+        albumArtUrl: nextSong.coverArt != null
+            ? _subsonicService.getCoverArtUrl(nextSong.coverArt, size: 800)
+            : null,
+        durationSecs: nextSong.duration,
+        contentType: mimeType,
+      );
+    } catch (e) {
+      debugPrint('UPnP: Failed to set next URI: $e');
+    }
+  }
 
   void _onUpnpStateChanged() {
     final connected = _upnpService.isConnected;
@@ -3609,6 +3655,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (!connected && _upnpWasConnected) {
       _upnpWasConnected = false;
       _upnpWasPlaying = false;
+      _currentUpnpTrackUrl = null;
       _isRenderingRemotely = false;
       _isPlaying = false;
       // Preserve _position and _duration so the UI shows where we were.
@@ -3625,17 +3672,36 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     final playing = _upnpService.isRendererPlaying;
     final rendererState = _upnpService.rendererState;
 
-    if (_upnpWasPlaying && rendererState == 'STOPPED') {
+    final isStoppedOrNoMedia = rendererState == 'STOPPED' || rendererState == 'NO_MEDIA_PRESENT';
+    if (_upnpWasPlaying && isStoppedOrNoMedia) {
       // _upnpWasPlaying is reset to false in playSong() and stop() before
-      // any Stop command is sent, so this only fires for a *natural* track
-      // end.  We don't check duration > 0 here because many renderers
-      // (including moode/upmpdcli) return 0:00:00 from GetPositionInfo once
-      // the transport is stopped, which would cause the check to silently fail.
+      // any Stop command is sent, so this only fires for a track end or skip on renderer.
       debugPrint(
-          'UPnP: Track ended (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing');
+          'UPnP: Track ended/stopped on renderer (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s, state=$rendererState) — advancing');
       _upnpWasPlaying = false;
       _onSongComplete()
           .catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
+      return;
+    }
+
+    // Check if the renderer transitioned to the next queued track automatically
+    final currentTrackUri = _upnpService.currentTrackUri;
+    if (_currentUpnpTrackUrl != null &&
+        currentTrackUri != null &&
+        currentTrackUri.isNotEmpty &&
+        currentTrackUri != _currentUpnpTrackUrl &&
+        _currentIndex + 1 < _queue.length) {
+      debugPrint('UPnP: Renderer switched track to $currentTrackUri — advancing index');
+      _upnpWasPlaying = playing;
+      _currentIndex++;
+      _currentSong = _queue[_currentIndex];
+      _currentUpnpTrackUrl = currentTrackUri;
+      notifyListeners();
+      _updateAllServices();
+      _saveQueueState();
+      if (_currentIndex + 1 < _queue.length) {
+        _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+      }
       return;
     }
 
