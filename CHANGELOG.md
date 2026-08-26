@@ -22,8 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added interactive 5-star rating bar (`NowPlayingStarRating`) in the fullscreen Now Playing screen (in both portrait and landscape layouts) that dynamically respects the "Show Star Ratings" toggle and syncs directly to Subsonic/Navidrome servers.
   - Added dedicated Heart/Favorite toggle button in the Now Playing metadata row for instant 1-tap favoriting alongside the Add to Playlist button.
 
-- **Search Radio Queue Generation**
-  - When playing a song directly from search results, Musly now dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
+- **Search Radio Queue Generation & Continuous Auto-Refill**
+  - When playing a song directly from search results, Musly dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
+  - Added continuous automatic queue replenishment: when an automatic queue or AutoDJ queue is nearing the end (<= 3 songs remaining) or finishes, Musly automatically discovers and appends more similar tracks to the queue and audio source so continuous playback never stops.
 
 - **Musly Wrapped & Year in Review Redesign & Localization**
   - Completely revamped Musly Wrapped UI with high-end glassmorphic cards (`BackdropFilter`), glowing radial aura meshes, and interactive floating particles.
