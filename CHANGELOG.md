@@ -5,6 +5,17 @@ All notable changes to Musly will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-08-26
+
+### Fixed
+
+- **Google Cast Playback & Session State Management (#235)**
+  - Fixed an issue on Android where connecting to a Google Cast device immediately stopped playback and prevented tracks from playing on the cast device.
+  - Resolved an infinite reload loop in `PlayerProvider` by properly tracking Cast connection transitions (`_castWasConnected`), preventing position and status ticks from resetting playback.
+  - Added synchronized position and duration streaming, volume control, and natural track completion detection (`GoogleCastMediaIdleReason.finished`) to automatically advance through the queue.
+  - Implemented seamless playback handover passing the current track position (`playPosition`) when connecting to a Cast device.
+  - Improved media loading resilience with enhanced MIME type resolution supporting query parameters (e.g. Subsonic/Navidrome stream URLs) and safe cover art URL validation.
+
 ## [2.0.1] - 2026-08-25
 
 ### Added
