@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Now Playing Cover Art Alignment & Spacing Balance (Issue #237)**
+  - Grouped the album artwork and the live lyric pill together inside the vertically centered `Expanded` container, ensuring the entire unit is centered symmetrically between the top header buttons and the song title metadata.
+  - Resolved the issue where the space below the cover art was significantly larger than the space above it, and prevented active live lyric pills from pushing the cover art upwards against the top header buttons.
+  - Refined title/artist vertical padding for clean and balanced spacing across all portrait phone screen dimensions.
+
 - **Now Playing Landscape System Status Bar & Cutout Overlap (Issue #238)**
   - Wrapped Now Playing persistent header (dismiss arrow and three-dot options menu) and top drag handle in `SafeArea(bottom: false)`, completely preventing the Android system status bar (battery icon, clock, notification icons, control panel drag area) and camera cutouts from overlapping the three-dot menu in landscape mode.
   - Wrapped Queue and Lyrics view bodies in `SafeArea` to ensure consistent landscape safe insets across all pages.

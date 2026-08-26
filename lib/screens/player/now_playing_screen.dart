@@ -350,15 +350,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 );
               },
               child: Container(
-                margin: EdgeInsets.fromLTRB(
-                  isLandscape ? 8.0 : 32.0,
-                  0,
-                  isLandscape ? 8.0 : 32.0,
-                  isLandscape ? 2.0 : (isSmall ? 2.0 : 4.0),
+                margin: EdgeInsets.only(
+                  top: isLandscape ? 4.0 : (isSmall ? 4.0 : 8.0),
+                  left: isLandscape ? 8.0 : 32.0,
+                  right: isLandscape ? 8.0 : 32.0,
+                  bottom: isLandscape ? 2.0 : 2.0,
                 ),
                 padding: EdgeInsets.symmetric(
                   horizontal: isSmall || isLandscape ? 12.0 : 16.0,
-                  vertical: isSmall || isLandscape ? 4.0 : 8.0,
+                  vertical: isSmall || isLandscape ? 4.0 : 6.0,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.35),
@@ -415,7 +415,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isLandscape ? 16.0 : 32.0,
-        vertical: isLandscape ? 2.0 : (isSmall ? 8.0 : 20.0),
+        vertical: isLandscape ? 2.0 : (isSmall ? 6.0 : 12.0),
       ),
       child: Row(
         children: [
@@ -752,36 +752,46 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         children: [
           SizedBox(height: isSmall ? 40 : 56), // Space for header
           
-          // Album Art with horizontal swipe navigation (Issue #201)
+          // Album Art with horizontal swipe navigation (Issue #201) and Live Lyric
           Expanded(
             child: Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: isSmall ? 40.0 : 36.0,
-                  vertical: isVerySmall ? 2.0 : (isSmall ? 6.0 : 12.0),
+                  vertical: isVerySmall ? 2.0 : (isSmall ? 4.0 : 8.0),
                 ),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragEnd: (details) {
-                    final vel = details.primaryVelocity;
-                    if (vel != null) {
-                      if (vel < -250) {
-                        provider.skipNext();
-                      } else if (vel > 250) {
-                        provider.skipPrevious();
-                      }
-                    }
-                  },
-                  child: AlbumArtView(
-                    image: _currentImageProvider ?? widget.image,
-                    tag: currentSong?.id ?? widget.heroTag,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onHorizontalDragEnd: (details) {
+                            final vel = details.primaryVelocity;
+                            if (vel != null) {
+                              if (vel < -250) {
+                                provider.skipNext();
+                              } else if (vel > 250) {
+                                provider.skipPrevious();
+                              }
+                            }
+                          },
+                          child: AlbumArtView(
+                            image: _currentImageProvider ?? widget.image,
+                            tag: currentSong?.id ?? widget.heroTag,
+                          ),
+                        ),
+                      ),
+                    ),
+                    _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
+                  ],
                 ),
               ),
             ),
           ),
-
-          _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
       
           _buildTitleArtistRow(context, provider, currentSong, title, artist, isStarred, isSmall: isSmall),
 
