@@ -152,9 +152,14 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
           // Right: Volume
           Expanded(
             flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: const [_VolumeControl()],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: const [_VolumeControl()],
+              ),
             ),
           ),
         ],
@@ -261,65 +266,79 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
           // Right: Lyrics, Queue, Cast, Volume
           Expanded(
             flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Lyrics Button
-                ValueListenableBuilder<bool>(
-                  valueListenable: NavigationHelper.isDesktopLyricsOpen,
-                  builder: (context, isLyricsOpen, _) {
-                    return IconButton(
-                      icon: Icon(
-                        Icons.mic_rounded,
-                        size: 18,
-                        color: isLyricsOpen
-                            ? const Color(0xFFFA243C)
-                            : const Color(0xFF6B7280),
-                      ),
-                      tooltip: 'Lyrics',
-                      hoverColor: Colors.white.withValues(alpha: 0.1),
-                      onPressed: NavigationHelper.toggleDesktopLyrics,
-                    );
-                  },
-                ),
-                const SizedBox(width: 4),
-
-                // Queue Button
-                ValueListenableBuilder<bool>(
-                  valueListenable: NavigationHelper.isDesktopQueueOpen,
-                  builder: (context, isQueueOpen, _) {
-                    return IconButton(
-                      icon: Icon(
-                        Icons.queue_music_rounded,
-                        size: 18,
-                        color: isQueueOpen
-                            ? const Color(0xFFFA243C)
-                            : const Color(0xFF6B7280),
-                      ),
-                      tooltip: isQueueOpen ? 'Hide Queue' : 'Queue',
-                      hoverColor: Colors.white.withValues(alpha: 0.1),
-                      onPressed: NavigationHelper.toggleDesktopQueue,
-                    );
-                  },
-                ),
-                const SizedBox(width: 4),
-
-                // Connect to device
-                IconButton(
-                  icon: const Icon(
-                    Icons.devices_other_rounded,
-                    size: 18,
-                    color: Color(0xFF6B7280),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Lyrics Button
+                  ValueListenableBuilder<bool>(
+                    valueListenable: NavigationHelper.isDesktopLyricsOpen,
+                    builder: (context, isLyricsOpen, _) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.mic_rounded,
+                          size: 18,
+                          color: isLyricsOpen
+                              ? const Color(0xFFFA243C)
+                              : const Color(0xFF6B7280),
+                        ),
+                        tooltip: 'Lyrics',
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(6),
+                        constraints: const BoxConstraints(),
+                        hoverColor: Colors.white.withValues(alpha: 0.1),
+                        onPressed: NavigationHelper.toggleDesktopLyrics,
+                      );
+                    },
                   ),
-                  tooltip: AppLocalizations.of(context)!.connectToDevice,
-                  hoverColor: Colors.white.withValues(alpha: 0.1),
-                  onPressed: () => ConnectDevicesModal.show(context),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 4),
 
-                // Volume slider
-                const _VolumeControl(),
-              ],
+                  // Queue Button
+                  ValueListenableBuilder<bool>(
+                    valueListenable: NavigationHelper.isDesktopQueueOpen,
+                    builder: (context, isQueueOpen, _) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.queue_music_rounded,
+                          size: 18,
+                          color: isQueueOpen
+                              ? const Color(0xFFFA243C)
+                              : const Color(0xFF6B7280),
+                        ),
+                        tooltip: isQueueOpen ? 'Hide Queue' : 'Queue',
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(6),
+                        constraints: const BoxConstraints(),
+                        hoverColor: Colors.white.withValues(alpha: 0.1),
+                        onPressed: NavigationHelper.toggleDesktopQueue,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 4),
+
+                  // Connect to device
+                  IconButton(
+                    icon: const Icon(
+                      Icons.devices_other_rounded,
+                      size: 18,
+                      color: Color(0xFF6B7280),
+                    ),
+                    tooltip: AppLocalizations.of(context)!.connectToDevice,
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(),
+                    hoverColor: Colors.white.withValues(alpha: 0.1),
+                    onPressed: () => ConnectDevicesModal.show(context),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Volume slider
+                  const _VolumeControl(),
+                ],
+              ),
             ),
           ),
         ],
@@ -485,8 +504,8 @@ class _ProgressBar extends StatelessWidget {
         final (position, duration) = data;
         final provider = context.read<PlayerProvider>();
 
-        return SizedBox(
-          width: 480,
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
           child: Row(
             children: [
               SizedBox(
@@ -572,10 +591,14 @@ class _VolumeControl extends StatelessWidget {
               ),
               onPressed: provider.toggleMute,
               tooltip: isMuted ? 'Unmute' : 'Mute',
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.all(6),
+              constraints: const BoxConstraints(),
               hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
+            const SizedBox(width: 4),
             SizedBox(
-              width: 110,
+              width: 100,
               child: SliderTheme(
                 data: SliderThemeData(
                   trackHeight: 3.5,
