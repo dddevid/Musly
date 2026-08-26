@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:musly/screens/onboarding/onboarding_screen.dart';
 import 'package:musly/screens/wrapped/wrapped_screen.dart';
 import 'package:musly/services/wrapped_service.dart';
+import 'package:musly/services/update_service.dart';
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -56,7 +57,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               icon: CupertinoIcons.info,
               iconColor: Theme.of(context).colorScheme.primary,
               title: AppLocalizations.of(context)!.aboutVersion,
-              subtitle: '2.0.2',
+              subtitle: UpdateService.currentVersion,
               onTap: _onVersionTapped,
             ),
             _buildDivider(context),
@@ -89,7 +90,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               context,
               icon: CupertinoIcons.doc_text,
               title: AppLocalizations.of(context)!.aboutLinkChangelog,
-              url: 'https://github.com/dddevid/Musly/releases/tag/v2.0.2',
+              url:
+                  'https://github.com/dddevid/Musly/releases/tag/v${UpdateService.currentVersion}',
             ),
             _buildDivider(context),
             _buildLinkTile(
