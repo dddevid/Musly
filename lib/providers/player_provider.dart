@@ -77,6 +77,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   RadioStation? _currentRadioStation;
   bool _isPlayingRadio = false;
+  bool _isRadioQueue = false;
+  bool _isRefillingQueue = false;
+
+  bool get isRadioQueue => _isRadioQueue;
 
   bool _hasPlayedOnce = false;
 
@@ -1178,15 +1182,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       }
     }
 
-    // Modern music player design
-    if (_subsonicService.isYoutube &&
-        _currentIndex >= _queue.length - 2 &&
-        _currentSong != null) {
-      _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
-    }
-    if (_autoDjService.shouldAddSongs(_currentIndex + 1, _queue.length)) {
-      _addAutoDjSongs().catchError((_) {});
-    }
+    // Automatically refill queue when nearing the end in AutoDJ or Radio / Similar songs mode
+    _checkAndRefillAutoQueue().catchError((_) {});
   }
 
   double get progress {
@@ -1635,18 +1632,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     } else if (_currentIndex < _queue.length - 1 ||
         _repeatMode == RepeatMode.all ||
         _shuffleEnabled) {
-      if (_subsonicService.isYoutube && _currentIndex >= _queue.length - 2 && _currentSong != null) {
-        _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
-      }
+      _checkAndRefillAutoQueue().catchError((_) {});
       await skipNext();
-    } else if (_subsonicService.isYoutube && _currentSong != null) {
-      final moreSimilar = await _subsonicService.getSimilarSongs(_currentSong!.id, count: 20);
-      final existingIds = _queue.map((s) => s.id).toSet();
-      final toAdd = moreSimilar.where((s) => !existingIds.contains(s.id)).toList();
-      if (toAdd.isNotEmpty) {
-        _queue.addAll(toAdd);
-        notifyListeners();
-        _saveQueueState();
+    } else if (_isRadioQueue || _autoDjService.isEnabled) {
+      await _checkAndRefillAutoQueue();
+      if (_currentIndex < _queue.length - 1) {
         await skipNext();
       } else {
         await _handleEndOfQueue();
@@ -1657,12 +1647,38 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> _handleEndOfQueue() async {
-    if (_autoDjService.isEnabled) {
-      await _addAutoDjSongs();
+    if (_autoDjService.isEnabled || _isRadioQueue) {
+      await _checkAndRefillAutoQueue();
 
       if (_currentIndex < _queue.length - 1) {
         await skipToIndex(_currentIndex + 1);
       }
+    }
+  }
+
+  Future<void> _checkAndRefillAutoQueue() async {
+    if (_isRefillingQueue) return;
+    final bool shouldRefillAutoDj = _autoDjService.isEnabled &&
+        _autoDjService.shouldAddSongs(_currentIndex, _queue.length);
+    final bool shouldRefillRadio = _isRadioQueue &&
+        (_queue.length - _currentIndex <= 3);
+
+    if (!shouldRefillAutoDj && !shouldRefillRadio) return;
+
+    _isRefillingQueue = true;
+    try {
+      if (shouldRefillAutoDj) {
+        await _addAutoDjSongs();
+      } else if (shouldRefillRadio) {
+        final seedSong = _queue.isNotEmpty ? _queue.last : _currentSong;
+        if (seedSong != null) {
+          await _fetchAndQueueRadioTracks(seedSong, isRefill: true);
+        }
+      }
+    } catch (e) {
+      debugPrint('[Player] _checkAndRefillAutoQueue error: $e');
+    } finally {
+      _isRefillingQueue = false;
     }
   }
 
@@ -1700,6 +1716,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Plays a single song immediately and automatically populates the queue with similar / radio songs in the background.
   Future<void> playSongWithRadio(Song song) async {
+    _isRadioQueue = true;
     await playSong(song);
 
     _fetchAndQueueRadioTracks(song).catchError((e) {
@@ -1707,8 +1724,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
-  Future<void> _fetchAndQueueRadioTracks(Song song) async {
-    if (_currentSong?.id != song.id) return;
+  Future<void> _fetchAndQueueRadioTracks(Song song, {bool isRefill = false}) async {
+    if (!isRefill && _currentSong?.id != song.id) return;
     try {
       List<Song> similar = await _subsonicService.getSimilarSongs(song.id, count: 25);
 
@@ -1739,7 +1756,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         } catch (_) {}
       }
 
-      if (similar.isNotEmpty && _currentSong?.id == song.id) {
+      if (similar.isNotEmpty) {
         final existingIds = _queue.map((s) => s.id).toSet();
         final toAdd = similar.where((s) => !existingIds.contains(s.id)).toList();
         if (toAdd.isNotEmpty) {
@@ -1754,9 +1771,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
               }
             }
           }
+          if (_upnpService.isConnected && _currentIndex + 1 < _queue.length) {
+            _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+          }
           notifyListeners();
           _saveQueueState();
-          debugPrint('[Player] Radio queue populated with ${toAdd.length} similar songs for "${song.title}"');
+          debugPrint('[Player] Auto queue refilled with ${toAdd.length} similar songs based on "${song.title}"');
         }
       }
     } catch (e) {
@@ -2536,12 +2556,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipNext() async {
-    /*
-    if (MuslyConnectService().isControllingRemoteDevice) {
-      MuslyConnectService().sendCommand(ConnectCommandType.next);
-      return;
-    }
-    */
     if (_currentSong != null && _recommendationService != null) {
       final played = _position.inSeconds;
       final total = _duration.inSeconds;
@@ -2561,8 +2575,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    if (_autoDjService.shouldAddSongs(_currentIndex, _queue.length)) {
-      await _addAutoDjSongs();
+    if (_autoDjService.shouldAddSongs(_currentIndex, _queue.length) ||
+        (_isRadioQueue && _queue.length - _currentIndex <= 3)) {
+      _checkAndRefillAutoQueue().catchError((_) {});
     }
 
     if (_concatenatingSource != null && !_isRenderingRemotely) {
@@ -2576,6 +2591,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         await _audioPlayer.seek(Duration.zero, index: next);
       } else if (_currentIndex < _queue.length - 1) {
         await _audioPlayer.seek(Duration.zero, index: _currentIndex + 1);
+      } else if (_isRadioQueue || _autoDjService.isEnabled) {
+        await _checkAndRefillAutoQueue();
+        if (_currentIndex < _queue.length - 1) {
+          await _audioPlayer.seek(Duration.zero, index: _currentIndex + 1);
+        }
       } else if (_repeatMode == RepeatMode.all) {
         await _audioPlayer.seek(Duration.zero, index: 0);
       }
@@ -2591,10 +2611,13 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       } while (next == _currentIndex);
       await skipToIndex(next);
     } else if (_currentIndex < _queue.length - 1) {
-      if (_subsonicService.isYoutube && _currentIndex >= _queue.length - 2 && _currentSong != null) {
-        _fetchAndQueueRadioTracks(_currentSong!).catchError((_) {});
-      }
+      _checkAndRefillAutoQueue().catchError((_) {});
       await skipToIndex(_currentIndex + 1);
+    } else if (_isRadioQueue || _autoDjService.isEnabled) {
+      await _checkAndRefillAutoQueue();
+      if (_currentIndex < _queue.length - 1) {
+        await skipToIndex(_currentIndex + 1);
+      }
     } else if (_subsonicService.isYoutube && _currentSong != null) {
       final moreSimilar = await _subsonicService.getSimilarSongs(_currentSong!.id, count: 20);
       final existingIds = _queue.map((s) => s.id).toSet();
@@ -2627,7 +2650,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       if (songsToAdd.isNotEmpty) {
         _queue.addAll(songsToAdd);
-        if (_concatenatingSource != null) {
+        if (_concatenatingSource != null && !_isRenderingRemotely) {
           for (final song in songsToAdd) {
             try {
               final source = await _buildAudioSourceForSong(song);
@@ -2637,6 +2660,9 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
                   'Error adding AutoDJ song to concatenating source: $e');
             }
           }
+        }
+        if (_upnpService.isConnected && _currentIndex + 1 < _queue.length) {
+          _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
         }
         notifyListeners();
         _saveQueueState();
@@ -2648,12 +2674,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipPrevious() async {
-    /*
-    if (MuslyConnectService().isControllingRemoteDevice) {
-      MuslyConnectService().sendCommand(ConnectCommandType.previous);
-      return;
-    }
-    */
     if (_jukeboxService.enabled) {
       await _jukeboxService.skipPrevious(_subsonicService);
       return;
@@ -2707,6 +2727,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         await playSong(_queue[index], playlist: _queue, startIndex: index);
       }
+      _checkAndRefillAutoQueue().catchError((_) {});
     }
   }
 
@@ -3702,6 +3723,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_currentIndex + 1 < _queue.length) {
         _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
       }
+      _checkAndRefillAutoQueue().catchError((_) {});
       return;
     }
 
