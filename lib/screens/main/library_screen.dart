@@ -85,10 +85,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1DB954).withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(CupertinoIcons.music_note_list, color: Color(0xFF1DB954), size: 22),
+                child: Icon(CupertinoIcons.music_note_list, color: Theme.of(context).colorScheme.primary, size: 22),
               ),
               title: Text(AppLocalizations.of(context)!.createPlaylist, style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(AppLocalizations.of(context)!.createPlaylistSubtitle, style: const TextStyle(fontSize: 12)),
@@ -208,11 +208,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? const Color(0xFF1DB954) : null,
+          color: isSelected ? Theme.of(context).colorScheme.primary : null,
         ),
       ),
       trailing: isSelected
-          ? const Icon(CupertinoIcons.checkmark, color: Color(0xFF1DB954), size: 18)
+          ? Icon(CupertinoIcons.checkmark, color: Theme.of(context).colorScheme.primary, size: 18)
           : null,
       onTap: () {
         setState(() => _currentSort = option);
@@ -394,7 +394,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF1DB954)
+              ? Theme.of(context).colorScheme.primary
               : (isDark ? const Color(0xFF282828) : const Color(0xFFE5E7EB)),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -403,7 +403,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
+            color: isSelected
+                ? (ThemeData.estimateBrightnessForColor(Theme.of(context).colorScheme.primary) == Brightness.dark
+                    ? Colors.white
+                    : Colors.black)
+                : (isDark ? Colors.white : Colors.black87),
           ),
         ),
       ),
@@ -595,12 +599,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
       subtitle: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(CupertinoIcons.pin_fill, size: 12, color: Color(0xFF1DB954)),
+          Icon(CupertinoIcons.pin_fill, size: 12, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               subtitle,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF1DB954), fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
               overflow: TextOverflow.ellipsis,
             ),
           ),

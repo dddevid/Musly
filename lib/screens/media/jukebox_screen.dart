@@ -218,7 +218,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         Expanded(
                           child: Slider(
                             value: status.gain.clamp(0.0, 1.0),
-                            activeColor: AppTheme.brandRed,
+                            activeColor: Theme.of(context).colorScheme.primary,
                             onChanged: (v) {
                               final subsonic = context.read<SubsonicService>();
                               jukebox.setGain(subsonic, v);
@@ -301,7 +301,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         leading: isCurrent
                             ? Icon(
                                 CupertinoIcons.speaker_2_fill,
-                                color: AppTheme.brandRed,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               )
                             : Text(
@@ -318,7 +318,7 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                             fontWeight: isCurrent
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            color: isCurrent ? AppTheme.brandRed : null,
+                            color: isCurrent ? Theme.of(context).colorScheme.primary : null,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -389,8 +389,12 @@ class _ControlButton extends StatelessWidget {
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
-            backgroundColor: AppTheme.brandRed,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: ThemeData.estimateBrightnessForColor(
+                        Theme.of(context).colorScheme.primary) ==
+                    Brightness.dark
+                ? Colors.white
+                : Colors.black,
             padding: EdgeInsets.zero,
           ),
           child: Icon(icon, size: size * 0.6),

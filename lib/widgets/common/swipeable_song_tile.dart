@@ -92,10 +92,11 @@ class _SwipeableSongTileState extends State<SwipeableSongTile>
 
     final progress = (_dragOffset / _threshold).clamp(0.0, 1.0);
     final iconScale = 0.6 + (0.5 * progress) + (_thresholdReached ? 0.15 : 0.0);
-    final iconColor = _thresholdReached ? Colors.white : const Color(0xFF1DB954);
+    final primary = Theme.of(context).colorScheme.primary;
+    final iconColor = _thresholdReached ? Colors.white : primary;
     final bgColor = _thresholdReached
-        ? const Color(0xFF1DB954)
-        : const Color(0xFF1DB954).withValues(alpha: 0.18);
+        ? primary
+        : primary.withValues(alpha: 0.18);
 
     return Stack(
       clipBehavior: Clip.none,

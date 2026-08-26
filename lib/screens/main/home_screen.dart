@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: RefreshIndicator(
-        color: const Color(0xFF1DB954),
+        color: Theme.of(context).colorScheme.primary,
         onRefresh: () async {
           final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.refresh();
@@ -400,6 +400,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCategoryChip(String key, String label, bool isDark) {
     final isSelected = _selectedCategory == key;
+    final primary = Theme.of(context).colorScheme.primary;
+    final onPrimary = ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = key),
       child: AnimatedContainer(
@@ -407,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF1DB954)
+              ? primary
               : (isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E7EB)),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -416,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
+            color: isSelected ? onPrimary : (isDark ? Colors.white : Colors.black87),
           ),
         ),
       ),

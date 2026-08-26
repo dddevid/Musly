@@ -94,10 +94,10 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1DB954),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
                       shape: BoxShape.circle,
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black38,
                           blurRadius: 4,
@@ -107,7 +107,15 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
                     ),
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 22),
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        color: ThemeData.estimateBrightnessForColor(
+                                    Theme.of(context).colorScheme.primary) ==
+                                Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
+                        size: 22,
+                      ),
                       onPressed: widget.onPlayPressed,
                     ),
                   ),

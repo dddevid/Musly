@@ -9,6 +9,7 @@ enum AccentColor {
   green,
   blue,
   purple,
+  dynamicColor,
 }
 
 extension AccentColorExt on AccentColor {
@@ -29,6 +30,8 @@ extension AccentColorExt on AccentColor {
         return const Color(0xFF007AFF);
       case AccentColor.purple:
         return const Color(0xFF8B5CF6);
+      case AccentColor.dynamicColor:
+        return const Color(0xFF6750A4);
     }
   }
 
@@ -48,8 +51,12 @@ extension AccentColorExt on AccentColor {
         return 'blue';
       case AccentColor.purple:
         return 'purple';
+      case AccentColor.dynamicColor:
+        return 'dynamic';
     }
   }
+
+  bool get isDynamic => this == AccentColor.dynamicColor;
 
   static AccentColor fromKey(String key) {
     switch (key) {
@@ -65,6 +72,8 @@ extension AccentColorExt on AccentColor {
         return AccentColor.blue;
       case 'purple':
         return AccentColor.purple;
+      case 'dynamic':
+        return AccentColor.dynamicColor;
       default:
         return AccentColor.red;
     }

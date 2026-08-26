@@ -293,11 +293,12 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
             : (Platform.isLinux
                 ? 'Linux PC'
                 : (Platform.isIOS ? 'iPhone' : 'This Device')));
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1DB954).withValues(alpha: isDark ? 0.12 : 0.08),
+        color: primaryColor.withValues(alpha: isDark ? 0.12 : 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -306,11 +307,11 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: const Color(0xFF1DB954).withValues(alpha: 0.2),
+              color: primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.volume_up_rounded,
-                color: Color(0xFF1DB954), size: 20),
+            child: Icon(Icons.volume_up_rounded,
+                color: primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -325,19 +326,19 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                const Text(
+                Text(
                   'Playing on this device',
                   style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF1DB954),
+                      color: primaryColor,
                       fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           // Subtle audio wave indicator
-          const Icon(CupertinoIcons.waveform,
-              color: Color(0xFF1DB954), size: 18),
+          Icon(CupertinoIcons.waveform,
+              color: primaryColor, size: 18),
         ],
       ),
     );

@@ -307,25 +307,26 @@ class _MiniPlayerRow extends StatelessWidget {
                       Consumer<MuslyConnectService>(
                         builder: (context, connect, _) {
                           if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
+                          final primaryColor = Theme.of(context).colorScheme.primary;
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                             margin: const EdgeInsets.only(right: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1DB954).withValues(alpha: 0.18),
+                              color: primaryColor.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.4), width: 0.8),
+                              border: Border.all(color: primaryColor.withValues(alpha: 0.4), width: 0.8),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.devices_rounded, size: 10, color: Color(0xFF1DB954)),
+                                Icon(Icons.devices_rounded, size: 10, color: primaryColor),
                                 const SizedBox(width: 3),
                                 ConstrainedBox(
                                   constraints: const BoxConstraints(maxWidth: 80),
                                   child: Text(
                                     connect.activeRemoteDevice?.name ?? 'Connected',
-                                    style: const TextStyle(
-                                      color: Color(0xFF1DB954),
+                                    style: TextStyle(
+                                      color: primaryColor,
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -421,7 +422,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                   isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                                   size: ScreenHelper.miniPlayerIconSize(context),
                                 ),
-                                color: isStarred ? AppTheme.brandRed : color,
+                                color: isStarred ? Theme.of(context).colorScheme.primary : color,
                               );
                             },
                           ),

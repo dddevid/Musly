@@ -54,8 +54,12 @@ class PlaylistsScreen extends StatelessWidget {
                     icon: const Icon(CupertinoIcons.add),
                     label: Text(l10n.newPlaylist),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.brandRed,
-                      foregroundColor: Colors.white,
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: ThemeData.estimateBrightnessForColor(
+                                  theme.colorScheme.primary) ==
+                              Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                     ),
                   ),
                 ],

@@ -477,7 +477,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             AppLocalizations.of(context)!.unknownArtist,
                         artistIdFallback: _album!.artistId,
                         style: theme.textTheme.titleLarge?.copyWith(
-                          color: AppTheme.brandRed,
+                          color: theme.colorScheme.primary,
                           fontSize:
                               ScreenHelper.isSmallScreen(context) ? 16 : null,
                         ),

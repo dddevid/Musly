@@ -323,8 +323,12 @@ class _MainScreenState extends State<MainScreen> {
                         label: Text(l10n.downloadUpdate),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: AppTheme.brandRed,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: ThemeData.estimateBrightnessForColor(
+                                      Theme.of(context).colorScheme.primary) ==
+                                  Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

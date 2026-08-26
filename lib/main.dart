@@ -404,26 +404,36 @@ class MuslyApp extends StatelessWidget {
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final accent = themeService.accentColor.color;
-
         final ThemeData light;
         final ThemeData dark;
 
-        if (lightDynamic != null && darkDynamic != null) {
-          // Override dynamic color scheme with user-selected accent color
-          final harmonisedLight = lightDynamic.harmonized().copyWith(
-                primary: accent,
-                secondary: accent.withAlpha(200),
-              );
-          final harmonisedDark = darkDynamic.harmonized().copyWith(
-                primary: accent,
-                secondary: accent.withAlpha(200),
-              );
-          light = AppTheme.lightThemeFromScheme(harmonisedLight);
-          dark = AppTheme.darkThemeFromScheme(harmonisedDark);
+        if (themeService.accentColor.isDynamic) {
+          if (lightDynamic != null && darkDynamic != null) {
+            light = AppTheme.lightThemeFromScheme(lightDynamic.harmonized());
+            dark = AppTheme.darkThemeFromScheme(darkDynamic.harmonized());
+          } else {
+            final fallbackAccent = themeService.accentColor.color;
+            light = AppTheme.lightThemeWith(fallbackAccent);
+            dark = AppTheme.darkThemeWith(fallbackAccent);
+          }
         } else {
-          light = AppTheme.lightThemeWith(accent);
-          dark = AppTheme.darkThemeWith(accent);
+          final accent = themeService.accentColor.color;
+          if (lightDynamic != null && darkDynamic != null) {
+            // Override dynamic color scheme with user-selected accent color
+            final harmonisedLight = lightDynamic.harmonized().copyWith(
+                  primary: accent,
+                  secondary: accent.withAlpha(200),
+                );
+            final harmonisedDark = darkDynamic.harmonized().copyWith(
+                  primary: accent,
+                  secondary: accent.withAlpha(200),
+                );
+            light = AppTheme.lightThemeFromScheme(harmonisedLight);
+            dark = AppTheme.darkThemeFromScheme(harmonisedDark);
+          } else {
+            light = AppTheme.lightThemeWith(accent);
+            dark = AppTheme.darkThemeWith(accent);
+          }
         }
 
         return MaterialApp(

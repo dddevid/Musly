@@ -61,7 +61,7 @@ class SongTile extends StatelessWidget {
             style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: isPlaying ? FontWeight.bold : FontWeight.w500,
               color: isPlaying
-                  ? const Color(0xFF1DB954)
+                  ? theme.colorScheme.primary
                   : (isDark ? Colors.white : Colors.black87),
             ),
           ),
@@ -106,12 +106,12 @@ class SongTile extends StatelessWidget {
 
   Widget? _buildLeading(BuildContext context, bool isPlaying) {
     if (isPlaying) {
-      return const SizedBox(
+      return SizedBox(
         width: 44,
         height: 44,
         child: Center(
           child: AnimatedEqualizer(
-            color: Color(0xFF1DB954),
+            color: Theme.of(context).colorScheme.primary,
             isPlaying: true,
           ),
         ),

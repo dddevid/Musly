@@ -37,11 +37,11 @@ class CastButton extends StatelessWidget {
 
     if (castState == CastState.connected) {
       icon = Icons.cast_connected;
-      color = const Color(0xFF1DB954);
+      color = Theme.of(context).colorScheme.primary;
       tooltip = 'Cast: Connected';
     } else if (upnpConnected) {
       icon = Icons.speaker_group;
-      color = const Color(0xFF1DB954);
+      color = Theme.of(context).colorScheme.primary;
       tooltip =
           'DLNA: ${context.read<UpnpService>().connectedDevice?.friendlyName ?? "device"}';
     } else {

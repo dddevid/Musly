@@ -518,7 +518,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.brandRed.withValues(
+                            color: theme.colorScheme.primary.withValues(
                               alpha: 0.4,
                             ),
                             blurRadius: 20,
@@ -824,7 +824,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         CupertinoSwitch(
                           value: _useLegacyAuth,
-                          activeTrackColor: AppTheme.brandRed,
+                          activeTrackColor: theme.colorScheme.primary,
                           onChanged: (value) {
                             setState(() {
                               _useLegacyAuth = value;
@@ -857,7 +857,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         CupertinoSwitch(
                           value: _allowSelfSignedCertificates,
-                          activeTrackColor: AppTheme.brandRed,
+                          activeTrackColor: theme.colorScheme.primary,
                           onChanged: (value) {
                             setState(() {
                               _allowSelfSignedCertificates = value;
@@ -959,10 +959,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       CupertinoIcons.doc_fill,
                                       size: 20,
-                                      color: AppTheme.brandRed,
+                                      color: theme.colorScheme.primary,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -999,9 +999,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )!.selectCertificate,
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppTheme.brandRed,
+                                    foregroundColor: theme.colorScheme.primary,
                                     side: BorderSide(
-                                      color: AppTheme.brandRed.withValues(
+                                      color: theme.colorScheme.primary.withValues(
                                         alpha: 0.5,
                                       ),
                                     ),
@@ -1049,10 +1049,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       CupertinoIcons.lock_shield_fill,
                                       size: 20,
-                                      color: AppTheme.brandRed,
+                                      color: theme.colorScheme.primary,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -1116,9 +1116,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )!.selectClientCertificate,
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppTheme.brandRed,
+                                    foregroundColor: theme.colorScheme.primary,
                                     side: BorderSide(
-                                      color: AppTheme.brandRed.withValues(
+                                      color: theme.colorScheme.primary.withValues(
                                         alpha: 0.5,
                                       ),
                                     ),
@@ -1143,8 +1143,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.brandRed,
-                          foregroundColor: Colors.white,
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: ThemeData.estimateBrightnessForColor(
+                                      theme.colorScheme.primary) ==
+                                  Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

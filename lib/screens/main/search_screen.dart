@@ -248,6 +248,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildFilterChip(String key, String label, bool isDark) {
     final isSelected = _selectedFilter == key;
+    final primary = Theme.of(context).colorScheme.primary;
+    final onPrimary = ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = key),
       child: AnimatedContainer(
@@ -255,7 +260,7 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF1DB954)
+              ? primary
               : (isDark ? const Color(0xFF282828) : const Color(0xFFE5E7EB)),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -265,7 +270,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
+              color: isSelected ? onPrimary : (isDark ? Colors.white : Colors.black87),
             ),
           ),
         ),
@@ -274,11 +279,11 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchingState() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 48),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
       child: Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF1DB954),
+          color: Theme.of(context).colorScheme.primary,
           strokeWidth: 3,
         ),
       ),

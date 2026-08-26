@@ -49,7 +49,7 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppTheme.brandRed.withValues(alpha: 0.15),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: playlist.coverArt != null
@@ -58,9 +58,9 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
                           size: 48,
                           borderRadius: 8,
                         )
-                      : const Icon(
+                      : Icon(
                           CupertinoIcons.music_note_list,
-                          color: AppTheme.brandRed,
+                          color: Theme.of(context).colorScheme.primary,
                           size: 24,
                         ),
                 ),

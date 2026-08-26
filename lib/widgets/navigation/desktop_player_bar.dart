@@ -237,12 +237,12 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.devices_rounded, size: 11, color: Color(0xFF1DB954)),
+                                Icon(Icons.devices_rounded, size: 11, color: Theme.of(context).colorScheme.primary),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Playing on ${connect.activeRemoteDevice?.name ?? "Device"}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF1DB954),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.primary,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -279,7 +279,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                             : Icons.favorite_border_rounded,
                         size: 20,
                         color: isStarred
-                            ? AppTheme.brandRed
+                            ? Theme.of(context).colorScheme.primary
                             : (isDark
                                 ? const Color(0xFFB3B3B3)
                                 : const Color(0xFF6B6B6B)),
@@ -338,7 +338,7 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                           Icons.queue_music_rounded,
                           size: 20,
                           color: isOpen
-                              ? AppTheme.brandRed
+                              ? Theme.of(context).colorScheme.primary
                               : (isDark
                                   ? const Color(0xFFB3B3B3)
                                   : const Color(0xFF6B6B6B)),
@@ -393,7 +393,7 @@ class _PlayerControls extends StatelessWidget {
                 Icons.shuffle_rounded,
                 size: 20,
                 color: shuffleEnabled
-                    ? AppTheme.brandRed
+                    ? Theme.of(context).colorScheme.primary
                     : (isDark
                         ? const Color(0xFFB3B3B3)
                         : const Color(0xFF6B6B6B)),
@@ -446,7 +446,7 @@ class _PlayerControls extends StatelessWidget {
                     : Icons.repeat_rounded,
                 size: 20,
                 color: repeatMode != RepeatMode.off
-                    ? AppTheme.brandRed
+                    ? Theme.of(context).colorScheme.primary
                     : (isDark
                         ? const Color(0xFFB3B3B3)
                         : const Color(0xFF6B6B6B)),
@@ -503,11 +503,11 @@ class _ProgressBar extends StatelessWidget {
                       overlayShape: const RoundSliderOverlayShape(
                         overlayRadius: 14,
                       ),
-                      activeTrackColor: AppTheme.brandRed,
+                      activeTrackColor: Theme.of(context).colorScheme.primary,
                       inactiveTrackColor:
                           isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                       thumbColor: Colors.white,
-                      overlayColor: AppTheme.brandRed.withValues(
+                      overlayColor: Theme.of(context).colorScheme.primary.withValues(
                         alpha: 0.2,
                       ),
                     ),
@@ -576,11 +576,11 @@ class _VolumeControl extends StatelessWidget {
                   overlayShape: const RoundSliderOverlayShape(
                     overlayRadius: 14,
                   ),
-                  activeTrackColor: AppTheme.brandRed,
+                  activeTrackColor: Theme.of(context).colorScheme.primary,
                   inactiveTrackColor:
                       isDark ? const Color(0xFF3A3A3A) : Colors.grey[300],
                   thumbColor: Colors.white,
-                  overlayColor: AppTheme.brandRed.withValues(alpha: 0.2),
+                  overlayColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                 ),
                 child: Slider(
                   value: volume,

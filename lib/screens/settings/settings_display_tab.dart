@@ -1103,37 +1103,73 @@ class _AccentColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: AccentColor.values.map((color) {
         final isSelected = selected == color;
-        return GestureDetector(
-          onTap: () => onChanged(color),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color.color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? Colors.white : Colors.transparent,
-                width: 2.5,
-              ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: color.color.withValues(alpha: 0.6),
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                      ),
-                    ]
-                  : null,
+        final isDynamic = color.isDynamic;
+
+        final decoration = isDynamic
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const SweepGradient(
+                  colors: [
+                    Color(0xFF6750A4),
+                    Color(0xFF006C50),
+                    Color(0xFF7D5260),
+                    Color(0xFF00639B),
+                    Color(0xFF6750A4),
+                  ],
+                ),
+                border: Border.all(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              )
+            : BoxDecoration(
+                color: color.color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.color.withValues(alpha: 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              );
+
+        return Tooltip(
+          message: isDynamic ? 'Material You (MD3 / Dynamic)' : '',
+          child: GestureDetector(
+            onTap: () => onChanged(color),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              width: 32,
+              height: 32,
+              decoration: decoration,
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : (isDynamic
+                      ? const Icon(Icons.auto_awesome, color: Colors.white, size: 14)
+                      : null),
             ),
-            child: isSelected
-                ? const Icon(Icons.check, color: Colors.white, size: 16)
-                : null,
           ),
         );
       }).toList(),

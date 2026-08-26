@@ -124,10 +124,10 @@ class _TopResultCardState extends State<TopResultCard> {
                   child: Container(
                     width: 48,
                     height: 48,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1DB954),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
                       shape: BoxShape.circle,
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black38,
                           blurRadius: 8,
@@ -136,7 +136,15 @@ class _TopResultCardState extends State<TopResultCard> {
                       ],
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 30),
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        color: ThemeData.estimateBrightnessForColor(
+                                    Theme.of(context).colorScheme.primary) ==
+                                Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
+                        size: 30,
+                      ),
                       onPressed: widget.onPlayPressed,
                     ),
                   ),

@@ -354,10 +354,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1DB954).withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.devices_rounded, color: Color(0xFF1DB954), size: 18),
+                child: Icon(Icons.devices_rounded, color: Theme.of(context).colorScheme.primary, size: 18),
               ),
               title: const Text('Enable Musly Connect', style: TextStyle(fontSize: 16)),
               subtitle: Text(
