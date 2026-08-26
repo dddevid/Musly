@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Resolved an issue where selecting "System Default" would erroneously display "English" regardless of the device's actual system language; it now resolves and displays the active system language name (e.g. `System Default (Italiano)`).
   - Added Crowdin community translation attribution in the language picker header and dynamic completion percentage tags (`%`) for each supported language.
 
+- **Now Playing Star Ratings & Direct Favorite Button**
+  - Added interactive 5-star rating bar (`NowPlayingStarRating`) in the fullscreen Now Playing screen (in both portrait and landscape layouts) that dynamically respects the "Show Star Ratings" toggle and syncs directly to Subsonic/Navidrome servers.
+  - Added dedicated Heart/Favorite toggle button in the Now Playing metadata row for instant 1-tap favoriting alongside the Add to Playlist button.
+
 ### Fixed
 
 - **Now Playing Queue Reordering & Song Options Menu (#236)**
