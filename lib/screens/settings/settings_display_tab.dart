@@ -730,14 +730,26 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       },
     );
   }
-
   Widget _buildLanguageSelector() {
     return Consumer<LocaleService>(
       builder: (context, localeService, _) {
         final currentLocale = localeService.currentLocale;
-        final currentLanguageCode = currentLocale?.languageCode ?? 'en';
-        final currentLanguageName =
-            LocaleService.supportedLanguages[currentLanguageCode] ?? 'English';
+        final String currentLanguageName;
+
+        if (currentLocale == null) {
+          final resolvedLocale = Localizations.localeOf(context);
+          final systemName =
+              LocaleService.supportedLanguages[resolvedLocale.languageCode] ??
+                  resolvedLocale.languageCode.toUpperCase();
+          final defaultLabel =
+              AppLocalizations.of(context)?.systemDefault ?? 'System Default';
+          currentLanguageName = '$defaultLabel ($systemName)';
+        } else {
+          final currentLanguageCode = currentLocale.languageCode;
+          currentLanguageName =
+              LocaleService.supportedLanguages[currentLanguageCode] ??
+                  currentLanguageCode.toUpperCase();
+        }
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(
@@ -745,9 +757,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             vertical: 4,
           ),
           leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
-        icon: CupertinoIcons.globe,
-      ),
+            gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+            icon: CupertinoIcons.globe,
+          ),
           title: Text(
             AppLocalizations.of(context)!.language,
             style: const TextStyle(fontSize: 16),
@@ -866,19 +878,25 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   void _showLanguagePicker(BuildContext context, LocaleService localeService) {
+    final resolvedLocale = Localizations.localeOf(context);
+    final systemLangName =
+        LocaleService.supportedLanguages[resolvedLocale.languageCode] ??
+            resolvedLocale.languageCode.toUpperCase();
+    final systemPercentage =
+        LocaleService.getCompletionPercentage(resolvedLocale.languageCode);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
+        height: MediaQuery.of(context).size.height * 0.75,
         decoration: BoxDecoration(
           color: context.isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
-            
             Container(
               margin: const EdgeInsets.only(top: 8, bottom: 4),
               width: 40,
@@ -888,21 +906,39 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
               child: Row(
                 children: [
                   const Icon(CupertinoIcons.globe, size: 24),
                   const SizedBox(width: 12),
-                  Text(
-                    AppLocalizations.of(context)!.selectLanguage,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.selectLanguage,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppLocalizations.of(context)?.communityTranslationsSubtitle ??
+                              'Translations are provided by the community on Crowdin',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.isDark
+                                ? AppTheme.darkSecondaryText
+                                : AppTheme.lightSecondaryText,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -911,10 +947,18 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               ),
             ),
             const Divider(height: 1),
-            
             ListTile(
               leading: const Icon(CupertinoIcons.device_phone_portrait),
               title: Text(AppLocalizations.of(context)!.systemDefault),
+              subtitle: Text(
+                '$systemLangName • $systemPercentage%',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
+                ),
+              ),
               trailing: localeService.currentLocale == null
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -924,18 +968,33 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               },
             ),
             const Divider(height: 1),
-            
             Expanded(
               child: ListView(
                 children: LocaleService.supportedLanguages.entries.map((entry) {
                   final isSelected =
                       localeService.currentLocale?.languageCode == entry.key;
+                  final percentage =
+                      LocaleService.getCompletionPercentage(entry.key);
                   return ListTile(
                     leading: Text(
                       _getFlagEmoji(entry.key),
                       style: const TextStyle(fontSize: 24),
                     ),
                     title: Text(entry.value),
+                    subtitle: Text(
+                      '$percentage%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: percentage >= 80
+                            ? const Color(0xFF34C759)
+                            : (percentage >= 40
+                                ? const Color(0xFFFF9500)
+                                : (context.isDark
+                                    ? AppTheme.darkSecondaryText
+                                    : AppTheme.lightSecondaryText)),
+                      ),
+                    ),
                     trailing: isSelected
                         ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                         : null,

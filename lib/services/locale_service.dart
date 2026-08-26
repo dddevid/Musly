@@ -219,6 +219,41 @@ class LocaleService extends ChangeNotifier {
     return updated;
   }
 
+  /// Translation completion percentages for supported languages based on the Crowdin catalog.
+  static const Map<String, int> translationPercentages = {
+    'en': 100,
+    'it': 89,
+    'es': 54,
+    'fr': 54,
+    'pt': 54,
+    'ru': 54,
+    'sv': 54,
+    'zh': 47,
+    'de': 43,
+    'sq': 24,
+    'ro': 11,
+    'az': 1,
+    'ar': 0,
+    'bn': 0,
+    'da': 0,
+    'el': 0,
+    'fi': 0,
+    'ga': 0,
+    'hi': 0,
+    'id': 0,
+    'nl': 0,
+    'no': 0,
+    'pl': 0,
+    'te': 0,
+    'tr': 0,
+    'uk': 0,
+    'vi': 0,
+  };
+
+  static int getCompletionPercentage(String languageCode) {
+    return translationPercentages[languageCode] ?? 0;
+  }
+
   String getLanguageName(String languageCode) {
     return supportedLanguages[languageCode] ?? _languageNames[languageCode] ?? languageCode.toUpperCase();
   }
