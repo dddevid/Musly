@@ -598,14 +598,15 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[100],
+    return Material(
+      color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[100],
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
+        side: BorderSide(
           color: const Color(0xFFFF3B30).withValues(alpha: 0.3),
         ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         leading: Container(

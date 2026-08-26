@@ -32,14 +32,12 @@ class SettingsSectionCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Material(
             color: isDark ? AppTheme.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(AppDimensions.sectionCardRadius),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.sectionCardRadius),
+            clipBehavior: Clip.antiAlias,
             child: Column(children: children),
           ),
         ),
