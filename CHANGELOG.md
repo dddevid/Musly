@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.2] - 2026-08-26
 
+### Added
+
+- **Material 3 Dynamic Theme Color (Material You / Pixel OS / OneUI)**
+  - Added support for dynamic wallpaper-based accent colors on Android 12+ / Pixel / OneUI devices via Material 3 / `dynamic_color`.
+  - Added interactive dynamic color option with dedicated Material 3 palette indicator in Display Settings (`_AccentColorPicker`).
+  - Extended `AccentColor` enum with `dynamicColor` (`'dynamic'`) and fallback mechanism for platforms without system dynamic schemes.
+
 ### Fixed
+
+- **Now Playing Queue Reordering & Song Options Menu (#236)**
+  - Replaced static `ListView` in `QueueView` with interactive `ReorderableListView.builder` allowing users to drag and drop songs to reorder the upcoming queue.
+  - Connected queue drag-and-drop to `PlayerProvider.reorderQueue()`, properly updating playback order, active playback index, and persistent queue state.
+  - Added dedicated 3-dot options button (`Icons.more_vert_rounded`) and long-press gesture handling on each queue song to open `SongOptionsModal` (add to playlist, play next, view album/artist, download, etc.).
+
+- **UI Theme Color Consistency Across Components**
+  - Standardized UI elements (play buttons, chips, sliders, floating play controls, active indicators, badges, and checkboxes) across the entire app to dynamically follow the user-selected Accent Color / Theme Color instead of hardcoded colors.
+  - Updated `MediaPlayButton`, `MediaFloatingPlayButton`, `SongTile`, `SwipeableSongTile`, `MiniPlayer`, `DesktopPlayerBar`, `CastButton`, `RightSidebar`, `TopResultCard`, `QuickAccessTile`, `LibraryScreen`, `SearchScreen`, `HomeScreen`, `MainScreen`, `ConnectDevicesModal`, `JukeboxScreen`, `RadioScreen`, `PlaylistsScreen`, `DownloadPlaylistStatusScreen`, `PlaylistScreen`, `AlbumScreen`, and `LoginScreen`.
 
 - **Google Cast Playback & Session State Management (#235)**
   - Fixed an issue on Android where connecting to a Google Cast device immediately stopped playback and prevented tracks from playing on the cast device.
