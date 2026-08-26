@@ -1,0 +1,8 @@
+• Colori dinamici del tema Material 3 (Material You) con supporto al tema di sistema
+• Supporto multi-sorgente: Navidrome, Subsonic, Jellyfin, Emby, Web Radio e File Locali
+• Auto-Refill Continuo: Ricarica automatica della coda con brani simili
+• Schermata Now Playing potenziata: Valutazione a stelle, preferiti con 1 tocco e layout adattivo
+• Nuova grafica per la pillola dei testi in tempo reale con glassmorphism e animazioni fluide
+• Ottimizzazioni per i controlli di riproduzione remota via UPnP, DLNA e Google Cast
+• Scorrimento della libreria ultra-fluido con virtualizzazione completa
+• Correzioni di bug e miglioramenti di stabilità per tutti i display

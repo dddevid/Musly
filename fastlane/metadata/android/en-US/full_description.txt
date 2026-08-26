@@ -1,11 +1,13 @@
-Musly is a modern, privacy-focused client for Subsonic-compatible servers (Navidrome, Subsonic, Airsonic, Gonic), Jellyfin, and local audio files.
+Musly is a modern, privacy-focused music player and streaming client for Jellyfin, Emby, Subsonic-compatible servers (Navidrome, Subsonic, Airsonic, Gonic), live web radio, and local audio files.
 
 <b>Features:</b>
-• <b>Multi-Provider Support:</b> Connect to Navidrome, Subsonic, Jellyfin, or play local files directly on your device.
+• <b>Multi-Provider Support:</b> Connect to Jellyfin, Emby, Navidrome, Subsonic, live web streams, or play local files directly on your device.
 • <b>Smart Mixes & Recommendations:</b> 100% on-device taste-learning algorithm providing personalized mixes ("Made For You", "Listen Again", "Top Hits").
+• <b>Continuous Auto-Refill:</b> Automatic queue replenishment so playback never stops.
+• <b>Casting & Remote Playback:</b> Stream audio seamlessly with Google Cast, UPnP, and DLNA support.
 • <b>Offline Downloads:</b> Batch download your favorites, full albums, or artist discographies with auto-resume.
 • <b>Android Auto:</b> Full Android Auto support with responsive browsing tree and hardware controls.
 • <b>Multi-Server Profiles:</b> Switch between multiple server accounts seamlessly with automatic Dual LAN/WAN latency fallback.
-• <b>Synced Lyrics:</b> Time-synced lyrics with LRCLIB fallback and customizable display styles.
+• <b>Synced Lyrics:</b> Time-synced lyrics with LRCLIB fallback, under-artwork preview pill, and fullscreen display styles.
 • <b>Privacy-First:</b> 100% telemetry-free, zero analytics, and hardware-backed credential storage.
-• <b>Modern Design:</b> Fluid animations, dynamic album art color palettes, and adaptive light/dark themes.
+• <b>Modern Design:</b> Fluid animations, dynamic Material 3 / album art color palettes, and adaptive light/dark themes.

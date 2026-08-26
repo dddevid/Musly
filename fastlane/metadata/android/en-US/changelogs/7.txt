@@ -1,0 +1,8 @@
+• Material 3 Dynamic Theme Colors (Material You) with dynamic scheme support
+• Universal streaming support: Navidrome, Subsonic, Jellyfin, Emby, Live Web Radio & Local Files
+• Continuous Auto-Refill: Automated queue replenishment based on your favorite tracks
+• Enhanced Now Playing view: Interactive star ratings, direct 1-tap favoriting, and responsive layout
+• Redesigned live lyrics preview pill with modern glassmorphism and animated transitions
+• UPnP, DLNA, and Google Cast playback control optimizations
+• Silky-smooth library scrolling virtualization and performance improvements
+• Bug fixes and layout stability improvements across all screen aspect ratios

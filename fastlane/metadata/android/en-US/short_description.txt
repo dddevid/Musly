@@ -1,1 +1,1 @@
-Self-hosted Subsonic and Jellyfin music client with offline playback.
+Self-hosted Jellyfin, Emby, Subsonic, web radio, and local music player.
