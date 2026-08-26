@@ -2057,5 +2057,6 @@
   "switchedBackToThisDevice": "Tornato su questo dispositivo",
   "connectedToDeviceName": "Connesso a {device}",
   "whatDoYouWantToPlay": "Cosa vuoi ascoltare?",
-  "noLyricsFound": "Nessun testo disponibile"
+  "noLyricsFound": "Nessun testo disponibile",
+  "dynamicColor": "Material You (Colore dinamico)"
 }

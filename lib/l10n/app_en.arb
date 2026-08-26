@@ -3383,5 +3383,9 @@
   "noLyricsFound": "No lyrics available",
   "@noLyricsFound": {
     "description": "Empty state message when no lyrics are available"
+  },
+  "dynamicColor": "Material You (Dynamic Color)",
+  "@dynamicColor": {
+    "description": "Material You wallpaper dynamic color option"
   }
 }

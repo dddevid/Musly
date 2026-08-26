@@ -1155,8 +1155,9 @@ class _AccentColorPicker extends StatelessWidget {
                     : null,
               );
 
+        final l10n = AppLocalizations.of(context);
         return Tooltip(
-          message: isDynamic ? 'Material You (MD3 / Dynamic)' : '',
+          message: isDynamic ? (l10n?.dynamicColor ?? 'Material You (Dynamic Color)') : '',
           child: GestureDetector(
             onTap: () => onChanged(color),
             child: AnimatedContainer(

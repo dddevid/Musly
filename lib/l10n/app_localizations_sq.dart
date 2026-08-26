@@ -2798,4 +2798,7 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get noLyricsFound => 'No lyrics available';
+
+  @override
+  String get dynamicColor => 'Material You (Dynamic Color)';
 }

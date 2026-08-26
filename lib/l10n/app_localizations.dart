@@ -5151,6 +5151,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No lyrics available'**
   String get noLyricsFound;
+
+  /// Material You wallpaper dynamic color option
+  ///
+  /// In en, this message translates to:
+  /// **'Material You (Dynamic Color)'**
+  String get dynamicColor;
 }
 
 class _AppLocalizationsDelegate
