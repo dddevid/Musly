@@ -48,7 +48,6 @@ class NowPlayingScreen extends StatefulWidget {
 }
 
 class _NowPlayingScreenState extends State<NowPlayingScreen> {
-
   late PageController _pageController;
   int _currentPage = 0;
   List<Color> _bgColors = [];
@@ -72,7 +71,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final provider = Provider.of<PlayerProvider>(context);
-    if (provider.currentSong != null && _lastSong?.id != provider.currentSong?.id) {
+    if (provider.currentSong != null &&
+        _lastSong?.id != provider.currentSong?.id) {
       _lastSong = provider.currentSong;
       _updateImageProviderAndColors();
       _fetchLyrics();
@@ -82,7 +82,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Future<void> _updateImageProviderAndColors() async {
     if (_lastSong == null) return;
     final subsonic = Provider.of<SubsonicService>(context, listen: false);
-    final coverUrl = _lastSong!.coverArt != null ? subsonic.getCoverArtUrl(_lastSong!.coverArt, size: 600) : null;
+    final coverUrl = _lastSong!.coverArt != null
+        ? subsonic.getCoverArtUrl(_lastSong!.coverArt, size: 600)
+        : null;
     if (coverUrl != null && coverUrl.isNotEmpty) {
       _currentImageProvider = CachedNetworkImageProvider(coverUrl);
     } else {
@@ -93,27 +95,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Future<void> _fetchLyrics() async {
     if (_lastSong == null) return;
-    
+
     setState(() => _isLoadingLyrics = true);
     try {
       final subsonic = Provider.of<SubsonicService>(context, listen: false);
       final offlineService = OfflineService();
-      
+
       Map<String, dynamic>? rawLyrics;
-      
-      if (offlineService.isOfflineMode || _lastSong!.isLocal || offlineService.isSongDownloaded(_lastSong!.id)) {
+
+      if (offlineService.isOfflineMode ||
+          _lastSong!.isLocal ||
+          offlineService.isSongDownloaded(_lastSong!.id)) {
         rawLyrics = await offlineService.getLocalLyrics(_lastSong!.id);
       }
-      
+
       if (rawLyrics == null && !offlineService.isOfflineMode) {
-        rawLyrics = await subsonic.getLyricsBySongId(_lastSong!.id) ?? 
-                    await subsonic.getLyrics(
-                      artist: _lastSong!.artist, 
-                      title: _lastSong!.title,
-                      duration: _lastSong!.duration,
-                    );
+        rawLyrics = await subsonic.getLyricsBySongId(_lastSong!.id) ??
+            await subsonic.getLyrics(
+              artist: _lastSong!.artist,
+              title: _lastSong!.title,
+              duration: _lastSong!.duration,
+            );
       }
-      
+
       if (rawLyrics != null) {
         if (rawLyrics['value'] != null) {
           final lrcText = rawLyrics['value'] as String;
@@ -146,8 +150,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           }
         }
       }
-      
-      // Fallback se nessun testo è stato trovato o parsato
+
       if (mounted) {
         setState(() {
           _fetchedLyrics = [];
@@ -157,7 +160,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     } catch (e) {
       debugPrint('Error fetching lyrics: $e');
     }
-    
+
     if (mounted) {
       setState(() => _isLoadingLyrics = false);
     }
@@ -166,7 +169,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Future<void> _extractColors() async {
     if (_currentImageProvider == null || _lastSong == null) return;
     final imageId = _lastSong!.id;
-    final colors = await PaletteService.extractColors(_currentImageProvider!, imageId);
+    final colors =
+        await PaletteService.extractColors(_currentImageProvider!, imageId);
     if (mounted) {
       setState(() {
         _bgColors = colors;
@@ -180,8 +184,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     super.dispose();
   }
 
-  void _onVerticalDragUpdate(DragUpdateDetails details) {
-  }
+  void _onVerticalDragUpdate(DragUpdateDetails details) {}
 
   void _onVerticalDragEnd(DragEndDetails details) {
     if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
@@ -192,18 +195,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   Widget build(BuildContext context) {
     final accentColor = _bgColors.isNotEmpty ? _bgColors.first : Colors.white;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     final view = View.of(context);
     final viewPadding = MediaQueryData.fromView(view).padding;
     final mediaQueryPadding = MediaQuery.of(context).padding;
-    
+
     final effectiveTopPadding = widget.topPadding > 0
         ? widget.topPadding
         : (viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top);
-        
-    final effectiveBottomPadding = viewPadding.bottom > 0 ? viewPadding.bottom : mediaQueryPadding.bottom;
-    final effectiveLeftPadding = viewPadding.left > 0 ? viewPadding.left : mediaQueryPadding.left;
-    final effectiveRightPadding = viewPadding.right > 0 ? viewPadding.right : mediaQueryPadding.right;
+
+    final effectiveBottomPadding =
+        viewPadding.bottom > 0 ? viewPadding.bottom : mediaQueryPadding.bottom;
+    final effectiveLeftPadding =
+        viewPadding.left > 0 ? viewPadding.left : mediaQueryPadding.left;
+    final effectiveRightPadding =
+        viewPadding.right > 0 ? viewPadding.right : mediaQueryPadding.right;
 
     return Theme(
       data: ThemeData.dark(),
@@ -214,7 +221,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           onVerticalDragEnd: isLandscape ? null : _onVerticalDragEnd,
           child: Stack(
             children: [
-              // 1. Shared Animated Background
               Positioned.fill(
                 child: RepaintBoundary(
                   child: BlurredGradientBackground(
@@ -227,7 +233,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         });
                       },
                       children: [
-                        // Page 0: Main Cover Art View
                         _buildMainView(
                           accentColor,
                           isLandscape: isLandscape,
@@ -236,43 +241,51 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           effectiveLeftPadding: effectiveLeftPadding,
                           effectiveRightPadding: effectiveRightPadding,
                         ),
-                        
-                        // Page 1: Lyrics View
                         _fetchedLyrics.isNotEmpty
                             ? StreamBuilder<Duration>(
-                                stream: Provider.of<PlayerProvider>(context, listen: false).positionStream,
-                                initialData: Provider.of<PlayerProvider>(context, listen: false).position,
+                                stream: Provider.of<PlayerProvider>(context,
+                                        listen: false)
+                                    .positionStream,
+                                initialData: Provider.of<PlayerProvider>(
+                                        context,
+                                        listen: false)
+                                    .position,
                                 builder: (context, snapshot) {
                                   return LyricsScreen(
                                     lyrics: _fetchedLyrics,
                                     currentTime: snapshot.data ?? Duration.zero,
                                     onSeek: (duration) {
-                                      Provider.of<PlayerProvider>(context, listen: false).seek(duration);
+                                      Provider.of<PlayerProvider>(context,
+                                              listen: false)
+                                          .seek(duration);
                                     },
                                   );
                                 },
                               )
                             : Center(
-                                child: _isLoadingLyrics 
-                                    ? const CircularProgressIndicator(color: Colors.white)
+                                child: _isLoadingLyrics
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white)
                                     : Text(
-                                        AppLocalizations.of(context)?.noLyricsFound ?? "No lyrics available",
-                                        style: const TextStyle(color: Colors.white70, fontSize: 18),
+                                        AppLocalizations.of(context)
+                                                ?.noLyricsFound ??
+                                            "No lyrics available",
+                                        style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 18),
                                       ),
                               ),
-                        
-                        // Page 2: Queue View
                         const QueueView(),
                       ],
                     ),
                   ),
                 ),
               ),
-
-              // 2. Drag Handle (Top) - Portrait only
               if (!isLandscape)
                 Positioned(
-                  top: effectiveTopPadding > 0 ? effectiveTopPadding + 8.0 : 16.0,
+                  top: effectiveTopPadding > 0
+                      ? effectiveTopPadding + 8.0
+                      : 16.0,
                   left: 0,
                   right: 0,
                   child: Center(
@@ -286,12 +299,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ),
                 ),
-
-              // 3. Header (Persistent across pages)
               Positioned(
                 top: isLandscape
-                    ? (effectiveTopPadding > 0 ? effectiveTopPadding + 4.0 : 8.0)
-                    : (effectiveTopPadding > 0 ? effectiveTopPadding + 14.0 : 22.0),
+                    ? (effectiveTopPadding > 0
+                        ? effectiveTopPadding + 4.0
+                        : 8.0)
+                    : (effectiveTopPadding > 0
+                        ? effectiveTopPadding + 14.0
+                        : 22.0),
                 left: isLandscape ? effectiveLeftPadding + 12.0 : 8.0,
                 right: isLandscape ? effectiveRightPadding + 12.0 : 8.0,
                 child: Row(
@@ -299,20 +314,25 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   children: [
                     IconButton(
                       icon: Icon(
-                        _currentPage == 0 ? Icons.keyboard_arrow_down_rounded : Icons.close_rounded, 
-                        color: Colors.white, 
+                        _currentPage == 0
+                            ? Icons.keyboard_arrow_down_rounded
+                            : Icons.close_rounded,
+                        color: Colors.white,
                         size: 32,
                       ),
                       onPressed: () {
                         if (_currentPage != 0) {
-                          _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                          _pageController.animateToPage(0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut);
                         } else {
                           Navigator.of(context).pop();
                         }
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.more_horiz_rounded,
+                          color: Colors.white, size: 28),
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
@@ -333,9 +353,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  Widget _buildLiveLyricPill(PlayerProvider provider, Color accentColor, {required bool isSmall, bool isLandscape = false}) {
+  Widget _buildLiveLyricPill(PlayerProvider provider, Color accentColor,
+      {required bool isSmall, bool isLandscape = false}) {
     return ValueListenableBuilder<bool>(
-      valueListenable: PlayerUiSettingsService().showLiveLyricUnderArtworkNotifier,
+      valueListenable:
+          PlayerUiSettingsService().showLiveLyricUnderArtworkNotifier,
       builder: (context, showLyric, _) {
         if (!showLyric || _fetchedLyrics.isEmpty) {
           return const SizedBox.shrink();
@@ -348,13 +370,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             LyricLine? activeLine;
             for (int i = 0; i < _fetchedLyrics.length; i++) {
               final line = _fetchedLyrics[i];
-              final next = (i + 1 < _fetchedLyrics.length) ? _fetchedLyrics[i + 1] : null;
-              if (currentTime >= line.startTime && (next == null || currentTime < next.startTime)) {
+              final next = (i + 1 < _fetchedLyrics.length)
+                  ? _fetchedLyrics[i + 1]
+                  : null;
+              if (currentTime >= line.startTime &&
+                  (next == null || currentTime < next.startTime)) {
                 activeLine = line;
                 break;
               }
             }
-            final hasLine = activeLine != null && activeLine.text.trim().isNotEmpty;
+            final hasLine =
+                activeLine != null && activeLine.text.trim().isNotEmpty;
             final text = hasLine ? activeLine.text.trim() : '';
 
             if (!hasLine) {
@@ -418,7 +444,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           Flexible(
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 250),
-                              transitionBuilder: (child, animation) => FadeTransition(
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
                                 opacity: animation,
                                 child: SlideTransition(
                                   position: Tween<Offset>(
@@ -435,7 +462,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: isSmall || isLandscape ? 12.5 : 13.5,
+                                  fontSize:
+                                      isSmall || isLandscape ? 12.5 : 13.5,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                   letterSpacing: -0.1,
@@ -477,7 +505,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isLandscape ? 16.0 : 32.0,
-        vertical: isLandscape ? 2.0 : (verticalPadding ?? (isSmall ? 6.0 : 12.0)),
+        vertical:
+            isLandscape ? 2.0 : (verticalPadding ?? (isSmall ? 6.0 : 12.0)),
       ),
       child: Row(
         children: [
@@ -511,8 +540,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           IconButton(
             tooltip: isStarred ? 'Remove from favorites' : 'Add to favorites',
             icon: Icon(
-              isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: isStarred ? Theme.of(context).colorScheme.primary : Colors.white,
+              isStarred
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: isStarred
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.white,
               size: isLandscape ? 22 : 24,
             ),
             onPressed: () {
@@ -583,7 +616,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   color: isFilled ? const Color(0xFFFFB800) : Colors.white38,
                 ),
                 onPressed: () async {
-                  final newRating = isFilled && starValue == currentRating ? 0 : starValue;
+                  final newRating =
+                      isFilled && starValue == currentRating ? 0 : starValue;
                   try {
                     await provider.setRating(currentSong.id, newRating);
                   } catch (e) {
@@ -662,7 +696,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     double effectiveLeftPadding,
     double effectiveRightPadding,
   ) {
-    final topPadding = effectiveTopPadding > 0 ? effectiveTopPadding + 44.0 : 48.0;
+    final topPadding =
+        effectiveTopPadding > 0 ? effectiveTopPadding + 44.0 : 48.0;
     return SafeArea(
       top: false,
       child: Padding(
@@ -675,7 +710,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left Column: Album Artwork & Live Lyric
             Expanded(
               flex: 5,
               child: Column(
@@ -684,7 +718,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   Expanded(
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 4.0),
                         child: AspectRatio(
                           aspectRatio: 1.0,
                           child: GestureDetector(
@@ -708,19 +743,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       ),
                     ),
                   ),
-                  _buildLiveLyricPill(provider, accentColor, isSmall: true, isLandscape: true),
+                  _buildLiveLyricPill(provider, accentColor,
+                      isSmall: true, isLandscape: true),
                 ],
               ),
             ),
             const SizedBox(width: 16),
-            // Right Column: Details & Controls
             Expanded(
               flex: 6,
               child: Center(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 320, maxWidth: 500),
+                    constraints:
+                        const BoxConstraints(minWidth: 320, maxWidth: 500),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -766,7 +802,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           child: PlaybackControls(
                             isPlaying: provider.isPlaying,
                             isShuffleEnabled: provider.shuffleEnabled,
-                            isRepeatEnabled: provider.repeatMode != RepeatMode.off,
+                            isRepeatEnabled:
+                                provider.repeatMode != RepeatMode.off,
                             accentColor: accentColor,
                             onPlayPause: () => provider.togglePlayPause(),
                             onNext: () => provider.skipNext(),
@@ -777,7 +814,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         ),
                         const SizedBox(height: 2),
                         ValueListenableBuilder<bool>(
-                          valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+                          valueListenable: PlayerUiSettingsService()
+                              .showVolumeSliderNotifier,
                           builder: (context, showVolume, _) {
                             if (!showVolume) return const SizedBox.shrink();
                             return const Padding(
@@ -793,16 +831,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           accentColor: accentColor,
                           onLyricsTap: () {
                             if (_currentPage == 1) {
-                              _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                              _pageController.animateToPage(0,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
                             } else {
-                              _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                              _pageController.animateToPage(1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
                             }
                           },
                           onQueueTap: () {
                             if (_currentPage == 2) {
-                              _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                              _pageController.animateToPage(0,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
                             } else {
-                              _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                              _pageController.animateToPage(2,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
                             }
                           },
                         ),
@@ -836,22 +882,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         final isSmall = screenHeight < 720;
         final isVerySmall = screenHeight < 620;
 
-        // Dynamic spacing scale factor between 0.0 (compact) and 1.0 (spacious)
         final spacingScale = ((screenHeight - 620.0) / 280.0).clamp(0.0, 1.0);
 
-        // Header clearance calculated from real physical status bar + header icon height
         final headerClearance = effectiveTopPadding > 0
             ? effectiveTopPadding + (isSmall ? 46.0 : 52.0)
             : (isSmall ? 48.0 : 56.0);
 
-        // Responsive horizontal padding for artwork (prevents oversized artwork on tablets/foldables)
         final horizontalArtPadding = screenWidth > 480
             ? ((screenWidth - 380.0) / 2.0).clamp(32.0, 120.0)
             : (screenWidth < 360 ? 24.0 : 32.0);
 
         final titleVerticalPadding = 4.0 + (6.0 * spacingScale);
         final sliderBottomSpacing = isSmall ? 4.0 : (6.0 + 8.0 * spacingScale);
-        final controlsBottomSpacing = isVerySmall ? 4.0 : (isSmall ? 6.0 : (8.0 + 10.0 * spacingScale));
+        final controlsBottomSpacing =
+            isVerySmall ? 4.0 : (isSmall ? 6.0 : (8.0 + 10.0 * spacingScale));
         final bottomActionsSpacing = effectiveBottomPadding > 0
             ? effectiveBottomPadding + 4.0
             : (isSmall ? 6.0 : (10.0 + 6.0 * spacingScale));
@@ -861,9 +905,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           bottom: false,
           child: Column(
             children: [
-              SizedBox(height: headerClearance), // Space for header & status bar
-              
-              // Album Art with horizontal swipe navigation (Issue #201)
+              SizedBox(height: headerClearance),
               Expanded(
                 child: Center(
                   child: Padding(
@@ -894,10 +936,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   ),
                 ),
               ),
-
-              // Live Lyric Pill under artwork (fixed height, never shifts cover art)
               _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
-          
               _buildTitleArtistRow(
                 context,
                 provider,
@@ -908,9 +947,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 isSmall: isSmall,
                 verticalPadding: titleVerticalPadding,
               ),
-
               _buildStarRatingRow(provider, currentSong, isSmall: isSmall),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: StreamBuilder<Duration>(
@@ -928,10 +965,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   },
                 ),
               ),
-
               SizedBox(height: sliderBottomSpacing),
-
-              // Controls
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: PlaybackControls(
@@ -946,12 +980,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   onRepeatToggle: () => provider.toggleRepeat(),
                 ),
               ),
-
               SizedBox(height: controlsBottomSpacing),
-
-              // Volume Slider (Issue #200)
               ValueListenableBuilder<bool>(
-                valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+                valueListenable:
+                    PlayerUiSettingsService().showVolumeSliderNotifier,
                 builder: (context, showVolume, _) {
                   if (!showVolume) return const SizedBox.shrink();
                   return const Padding(
@@ -960,28 +992,33 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   );
                 },
               ),
-
-              // Bottom Actions
               NowPlayingBottomActions(
                 isLyricsActive: _currentPage == 1,
                 isQueueActive: _currentPage == 2,
                 accentColor: accentColor,
                 onLyricsTap: () {
                   if (_currentPage == 1) {
-                    _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.animateToPage(0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   } else {
-                    _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.animateToPage(1,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   }
                 },
                 onQueueTap: () {
-                   if (_currentPage == 2) {
-                    _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                  if (_currentPage == 2) {
+                    _pageController.animateToPage(0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   } else {
-                    _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.animateToPage(2,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   }
                 },
               ),
-              
               SizedBox(height: bottomActionsSpacing),
             ],
           ),

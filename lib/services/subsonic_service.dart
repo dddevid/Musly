@@ -47,7 +47,17 @@ class SubsonicService {
     try {
       final uri = Uri.parse(url);
       final q = Map<String, String>.from(uri.queryParameters);
-      for (final key in const ['p', 't', 's', 'password', 'api_key', 'token', 'apiToken', 'apiKey', 'auth']) {
+      for (final key in const [
+        'p',
+        't',
+        's',
+        'password',
+        'api_key',
+        'token',
+        'apiToken',
+        'apiKey',
+        'auth'
+      ]) {
         if (q.containsKey(key)) q[key] = '***';
       }
       return uri.replace(queryParameters: q).toString();
@@ -111,46 +121,45 @@ class SubsonicService {
         clientCertPassword: config.clientCertificatePassword,
       );
 
-      // fix #187: Auto-probe LAN URL if provided, fallback to WAN if unavailable
       if (config.lanUrl != null && config.lanUrl!.trim().isNotEmpty) {
         final lanNormalized = config.normalizedLanUrl;
         if (lanNormalized != null) {
           try {
             final authParams = _getAuthParams();
             final q = authParams.entries
-                .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+                .map((e) =>
+                    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
                 .join('&');
             final pingUrl = '$lanNormalized/rest/ping?$q';
-            final resp = await _dio.get(pingUrl).timeout(const Duration(seconds: 3));
+            final resp =
+                await _dio.get(pingUrl).timeout(const Duration(seconds: 3));
             if (resp.statusCode == 200) {
               _activeBaseUrl = lanNormalized;
-              debugPrint('[Subsonic] Successfully connected via LAN: $lanNormalized');
+              debugPrint(
+                  '[Subsonic] Successfully connected via LAN: $lanNormalized');
             }
           } catch (_) {
-            debugPrint('[Subsonic] LAN unavailable, using WAN: ${config.normalizedUrl}');
+            debugPrint(
+                '[Subsonic] LAN unavailable, using WAN: ${config.normalizedUrl}');
             _activeBaseUrl = config.normalizedUrl;
           }
         }
       }
     }
-    
+
     _clientSalt = await StorageService().getOrCreateSubsonicSalt();
-    _stableAuthParams = null; // Reset stable params on new config
+    _stableAuthParams = null;
   }
 
   bool get isYoutube => _youtube != null;
 
   bool get isJellyfin => _jellyfin != null;
 
-  // Modern music player design
-  /// Returns null for Subsonic / Jellyfin (use [resolveStreamUrlAsync]).
   Future<AudioSource?> getYoutubeAudioSource(Song song) async {
     if (_youtube != null) return _youtube!.buildAudioSource(song.id);
     return null;
   }
 
-  // Modern music player design
-  /// manifest extraction; for other families it returns the pre-built URL.
   Future<String> resolveStreamUrlAsync(Song song) async {
     if (_youtube != null) {
       return _youtube!.resolveStreamUrl(song.id);
@@ -174,7 +183,6 @@ class SubsonicService {
     final hasClientCert = clientCertPath != null && clientCertPath.isNotEmpty;
 
     if (hasCustomServerCert || allowSelfSigned || hasClientCert) {
-      // Pre-load certificate files asynchronously to avoid blocking UI
       Uint8List? customServerCertBytes;
       Uint8List? clientCertBytes;
 
@@ -210,9 +218,8 @@ class SubsonicService {
       HttpClient createClient() {
         HttpClient buildClient(SecurityContext? context) {
           return HttpOverrides.runWithHttpOverrides(() {
-            final client = (context != null)
-                ? HttpClient(context: context)
-                : HttpClient();
+            final client =
+                (context != null) ? HttpClient(context: context) : HttpClient();
             client.connectionTimeout = const Duration(seconds: 15);
             client.idleTimeout = const Duration(seconds: 15);
             if (allowSelfSigned) {
@@ -251,11 +258,13 @@ class SubsonicService {
             }
 
             if (hasClientCert && clientCertBytes != null) {
-              final password = (clientCertPassword != null && clientCertPassword.isNotEmpty)
-                  ? clientCertPassword
-                  : null;
+              final password =
+                  (clientCertPassword != null && clientCertPassword.isNotEmpty)
+                      ? clientCertPassword
+                      : null;
               try {
-                context.useCertificateChainBytes(clientCertBytes, password: password);
+                context.useCertificateChainBytes(clientCertBytes,
+                    password: password);
               } catch (e) {
                 debugPrint('Failed to use client certificate chain: $e');
               }
@@ -434,12 +443,14 @@ class SubsonicService {
       final response = await _request('ping');
       String? type = response['type'] as String?;
       final serverVersion = response['serverVersion'] as String?;
-      final isOpenSubsonic = response['openSubsonic'] == true || response['openSubsonic'] == 'true';
+      final isOpenSubsonic = response['openSubsonic'] == true ||
+          response['openSubsonic'] == 'true';
 
-      // fix #216: Automatically detect Octo-Fiesta proxy or server implementation
       if (type != null) {
         final lower = type.toLowerCase();
-        if (lower.contains('octofiesta') || lower.contains('octo-fiesta') || lower.contains('fiesta')) {
+        if (lower.contains('octofiesta') ||
+            lower.contains('octo-fiesta') ||
+            lower.contains('fiesta')) {
           type = 'Octo-Fiesta';
         }
       } else if (isOpenSubsonic) {
@@ -522,8 +533,6 @@ class SubsonicService {
     return '$activeBaseUrl/rest/getCoverArt?$queryString';
   }
 
-  /// Returns the /download URL for a song — always original file, no transcoding.
-  /// Use this for offline downloads so file size matches song.size exactly.
   String getDownloadUrl(String songId) {
     return _buildUrl('download', {'id': songId});
   }
@@ -558,7 +567,6 @@ class SubsonicService {
           for (final a in indexArtists) {
             if (a is! Map<String, dynamic>) continue;
 
-            // 1. Check if Navidrome provided multi-artist participants in 'artists' field
             final participants = ArtistRef.parseList(a['artists']);
             if (participants != null && participants.length > 1) {
               for (final p in participants) {
@@ -573,7 +581,6 @@ class SubsonicService {
               continue;
             }
 
-            // 2. Check if artist name has multi-artist delimiters (e.g. "Drake / 21 Savage", "Queen; David Bowie")
             final name = a['name']?.toString() ?? '';
             final splits = ArtistRef.splitArtistNames(name);
             if (splits.length > 1) {
@@ -594,7 +601,6 @@ class SubsonicService {
       }
     }
 
-    // Deduplicate artists by normalized lowercase name
     final uniqueMap = <String, Artist>{};
     for (final artist in rawArtists) {
       final key = artist.name.trim().toLowerCase();
@@ -623,7 +629,7 @@ class SubsonicService {
 
   Future<List<Song>> getAllSongs() async {
     if (_jellyfin != null) return _jellyfin!.getAllSongs();
-    // Subsonic has no direct "get all songs" endpoint.
+
     return [];
   }
 
@@ -636,14 +642,16 @@ class SubsonicService {
     try {
       final response = await _request('getArtistInfo2', {'id': id});
       if (response['artistInfo2'] != null) {
-        return ArtistInfo.fromJson(response['artistInfo2'] as Map<String, dynamic>);
+        return ArtistInfo.fromJson(
+            response['artistInfo2'] as Map<String, dynamic>);
       }
     } catch (_) {}
 
     try {
       final response = await _request('getArtistInfo', {'id': id});
       if (response['artistInfo'] != null) {
-        return ArtistInfo.fromJson(response['artistInfo'] as Map<String, dynamic>);
+        return ArtistInfo.fromJson(
+            response['artistInfo'] as Map<String, dynamic>);
       }
     } catch (_) {}
 
@@ -745,8 +753,7 @@ class SubsonicService {
           .createPlaylist(name: name, comment: comment, songIds: songIds);
       return;
     }
-    // songId must be appended directly, using it as a map key would produce
-    // songId[i]=x which Navidrome doesn't recognize
+
     String url = _buildUrl('createPlaylist', {'name': name});
     if (songIds != null && songIds.isNotEmpty) {
       for (final songId in songIds) {
@@ -876,12 +883,10 @@ class SubsonicService {
     final searchResult = response['searchResult3'];
     debugPrint('SubsonicService: search3 response: searchResult=$searchResult');
 
-    // Handle both single item and list responses
     var artistList = searchResult?['artist'];
     var albumList = searchResult?['album'];
     var songList = searchResult?['song'];
 
-    // Normalize to lists
     if (artistList != null && artistList is! List) {
       artistList = [artistList];
     }
@@ -1039,9 +1044,7 @@ class SubsonicService {
       final response = await _request('getLyrics', params);
       final lyrics = response['lyrics'] as Map<String, dynamic>?;
       if (lyrics != null && lyrics.isNotEmpty) return lyrics;
-    } catch (e) {
-      // Fallback to LRCLIB
-    }
+    } catch (_) {}
 
     if (title != null && title.isNotEmpty) {
       return await LrcLibService().searchLyrics(
@@ -1072,7 +1075,8 @@ class SubsonicService {
         if (lrc != null) return lrc;
       }
       final info = await YtDlpService().getVideoInfo(songId);
-      if (info != null && (info['title'] != null || info['fulltitle'] != null)) {
+      if (info != null &&
+          (info['title'] != null || info['fulltitle'] != null)) {
         final title = (info['title'] ?? info['fulltitle']) as String;
         final artist = info['artist'] ?? info['uploader'] ?? info['channel'];
         return await LrcLibService().searchLyrics(
@@ -1372,5 +1376,4 @@ class _TlsHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) => _factory();
 }
 
-/// Bypasses [HttpOverrides.global] to create a real [HttpClient].
 class _RealHttpOverrides extends HttpOverrides {}

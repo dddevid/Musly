@@ -49,7 +49,10 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: playlist.coverArt != null
@@ -81,7 +84,10 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
                                   ? Colors.green
                                   : downloaded > 0
                                       ? Colors.orange
-                                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.5),
                               fontWeight: allDownloaded
                                   ? FontWeight.w600
                                   : FontWeight.normal,

@@ -38,7 +38,8 @@ class Artist {
       'albumCount': albumCount,
       'artistImageUrl': artistImageUrl,
       if (artistParticipants != null)
-        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
+        'artists':
+            artistParticipants!.map((artist) => artist.toJson()).toList(),
     };
   }
 }

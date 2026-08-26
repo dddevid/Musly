@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:volume_controller/volume_controller.dart';
 import '../../providers/player_provider.dart';
-// import '../../services/musly_connect_service.dart';
 
 class VolumeSlider extends StatefulWidget {
   const VolumeSlider({super.key});
@@ -89,7 +88,7 @@ class _VolumeSliderState extends State<VolumeSlider> {
               _onVolumeChanged(val, player);
             },
             child: Container(
-              height: 24, // Tappable area
+              height: 24,
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: CustomPaint(
                 size: const Size(double.infinity, 24),
@@ -133,7 +132,6 @@ class _VolumeSliderPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..strokeCap = StrokeCap.round;
 
-    // Background track
     paint.color = inactiveColor;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -143,7 +141,6 @@ class _VolumeSliderPainter extends CustomPainter {
       paint,
     );
 
-    // Active track
     paint.color = activeColor;
     final activeWidth = size.width * volume.clamp(0.0, 1.0);
     if (activeWidth > 0) {
@@ -156,7 +153,6 @@ class _VolumeSliderPainter extends CustomPainter {
       );
     }
 
-    // Thumb (only visible when dragging)
     if (isDragging) {
       paint.color = Colors.white;
       canvas.drawCircle(Offset(activeWidth, size.height / 2), 8, paint);
@@ -166,8 +162,8 @@ class _VolumeSliderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _VolumeSliderPainter oldDelegate) {
     return oldDelegate.volume != volume ||
-           oldDelegate.isDragging != isDragging ||
-           oldDelegate.activeColor != activeColor ||
-           oldDelegate.inactiveColor != inactiveColor;
+        oldDelegate.isDragging != isDragging ||
+        oldDelegate.activeColor != activeColor ||
+        oldDelegate.inactiveColor != inactiveColor;
   }
 }

@@ -10,7 +10,6 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/widgets/common/playlist_artwork.dart';
 
-/// A horizontal scrolling section showing favorite playlists on the home screen
 class FavoritePlaylistsSection extends StatelessWidget {
   const FavoritePlaylistsSection({super.key});
 
@@ -18,43 +17,43 @@ class FavoritePlaylistsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    
+
     return AnimatedBuilder(
       animation: FavoritePlaylistsService(),
       builder: (context, child) {
         final favoriteIds = FavoritePlaylistsService().getFavoriteIds();
-        
+
         if (favoriteIds.isEmpty) {
           return const SizedBox.shrink();
         }
-        
+
         return Consumer<LibraryProvider>(
           builder: (context, libraryProvider, child) {
             final offlineService = OfflineService();
             final isOffline = offlineService.isOfflineMode;
-            final downloadedPlaylistIds = offlineService.downloadedPlaylistIds.value.toSet();
+            final downloadedPlaylistIds =
+                offlineService.downloadedPlaylistIds.value.toSet();
 
-            // Get favorite playlists that exist in the library
             var favoritePlaylists = libraryProvider.playlists
                 .where((p) => favoriteIds.contains(p.id))
                 .toList();
-            
+
             if (isOffline) {
               favoritePlaylists = favoritePlaylists
                   .where((p) => downloadedPlaylistIds.contains(p.id))
                   .toList();
             }
-            
-            // If no playlists are loaded yet or favorites don't match loaded playlists
+
             if (favoritePlaylists.isEmpty) {
               return const SizedBox.shrink();
             }
-            
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -66,10 +65,7 @@ class FavoritePlaylistsSection extends StatelessWidget {
                       ),
                       if (favoritePlaylists.length > 5)
                         TextButton(
-                          onPressed: () {
-                            // Navigate to library playlists tab
-                            // This would need to be implemented based on your navigation
-                          },
+                          onPressed: () {},
                           child: Text(l10n?.seeAll ?? 'See All'),
                         ),
                     ],
@@ -131,7 +127,6 @@ class _PlaylistCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Playlist artwork with heart icon overlay
             Stack(
               children: [
                 PlaylistArtwork(
@@ -139,7 +134,6 @@ class _PlaylistCard extends StatelessWidget {
                   size: 140,
                   borderRadius: 8,
                 ),
-                // Favorite indicator
                 Positioned(
                   top: 8,
                   right: 8,
@@ -159,7 +153,6 @@ class _PlaylistCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Playlist name
             Text(
               playlist.name,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -168,7 +161,6 @@ class _PlaylistCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            // Song count
             if (playlist.songCount != null)
               Text(
                 '${playlist.songCount} ${playlist.songCount == 1 ? 'song' : 'songs'}',

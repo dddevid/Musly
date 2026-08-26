@@ -71,7 +71,9 @@ class _ArtistCardState extends State<ArtistCard> {
                           child: AlbumArtwork(
                             coverArt: widget.artist.coverArt ??
                                 widget.artist.artistImageUrl ??
-                                (widget.artist.id.isNotEmpty ? 'ar-${widget.artist.id}' : null),
+                                (widget.artist.id.isNotEmpty
+                                    ? 'ar-${widget.artist.id}'
+                                    : null),
                             size: widget.size,
                             borderRadius: widget.size / 2,
                             shadow: const BoxShadow(color: Colors.transparent),
@@ -99,7 +101,8 @@ class _ArtistCardState extends State<ArtistCard> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.3),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),

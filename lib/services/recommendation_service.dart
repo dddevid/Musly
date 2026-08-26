@@ -80,19 +80,11 @@ class RecommendationService extends ChangeNotifier {
     super.dispose();
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Settings
-  // ──────────────────────────────────────────────────────────────────────────
-
   Future<void> setEnabled(bool value) async {
     _enabled = value;
     await _prefs?.setBool(_kEnabledKey, value);
     notifyListeners();
   }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Tracking
-  // ──────────────────────────────────────────────────────────────────────────
 
   Future<void> trackSongPlay(
     Song song, {
@@ -347,7 +339,6 @@ class RecommendationService extends ChangeNotifier {
     return _sortByScore(allSongs, jitter: _W.randomJitter, limit: limit);
   }
 
-  /// Returns songs the user recently listened to and enjoyed (Listen Again / Ascolta di nuovo).
   List<Song> getListenAgain(List<Song> allSongs, {int limit = 15}) {
     if (allSongs.isEmpty) return [];
     final songMap = {for (final s in allSongs) s.id: s};
@@ -365,12 +356,13 @@ class RecommendationService extends ChangeNotifier {
     return results;
   }
 
-  /// Returns user's top hits based on play count and high affinity.
   List<Song> getTopHits(List<Song> allSongs, {int limit = 15}) {
     if (allSongs.isEmpty) return [];
     final candidates = allSongs.where((s) {
       final p = _profiles[s.id];
-      return (p != null && p.playCount > 0) || (_starredSongs.contains(s.id)) || s.starred == true;
+      return (p != null && p.playCount > 0) ||
+          (_starredSongs.contains(s.id)) ||
+          s.starred == true;
     }).toList();
 
     if (candidates.isEmpty) {

@@ -18,7 +18,11 @@ class Genre {
   }
 
   Map<String, dynamic> toJson() {
-    return {'value': value, 'songCount': songCount, 'albumCount': albumCount};
+    return {
+      'value': value,
+      'songCount': songCount,
+      'albumCount': albumCount,
+    };
   }
 
   @override

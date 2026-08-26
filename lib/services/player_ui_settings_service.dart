@@ -15,7 +15,8 @@ class PlayerUiSettingsService {
   static const String _keyLyricsBlurUnfocused = 'lyrics_blur_unfocused';
   static const String _keyLyricsAlignment = 'lyrics_alignment';
   static const String _keyLyricsGlowEffect = 'lyrics_glow_effect';
-  static const String _keyShowLiveLyricUnderArtwork = 'player_show_live_lyric_under_artwork';
+  static const String _keyShowLiveLyricUnderArtwork =
+      'player_show_live_lyric_under_artwork';
 
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
@@ -28,7 +29,8 @@ class PlayerUiSettingsService {
   final ValueNotifier<bool> showStarRatingsNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerHeartNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerRepeatNotifier = ValueNotifier(false);
-  final ValueNotifier<bool> showMiniPlayerShuffleNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> showMiniPlayerShuffleNotifier =
+      ValueNotifier(false);
   final ValueNotifier<bool> liveSearchNotifier = ValueNotifier(true);
   final ValueNotifier<double> albumArtCornerRadiusNotifier = ValueNotifier(8.0);
 
@@ -42,7 +44,8 @@ class PlayerUiSettingsService {
   final ValueNotifier<bool> lyricsBlurUnfocusedNotifier = ValueNotifier(false);
   final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
   final ValueNotifier<bool> lyricsGlowEffectNotifier = ValueNotifier(true);
-  final ValueNotifier<bool> showLiveLyricUnderArtworkNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> showLiveLyricUnderArtworkNotifier =
+      ValueNotifier(false);
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();

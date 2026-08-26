@@ -108,7 +108,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
   @override
   Widget build(BuildContext context) {
-    final isYoutube = Provider.of<SubsonicService>(context, listen: false).isYoutube;
+    final isYoutube =
+        Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -258,9 +259,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         return SettingsSectionCard(
           title: l10n.localMusicLibrary,
           children: [
-            // Merge toggle
             SwitchListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               secondary: Container(
                 width: 32,
                 height: 32,
@@ -270,32 +271,35 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(CupertinoIcons.music_albums, color: Colors.white, size: 18),
+                child: const Icon(CupertinoIcons.music_albums,
+                    color: Colors.white, size: 18),
               ),
-              title: Text(l10n.mergeLocalLibrary, style: const TextStyle(fontSize: 16)),
+              title: Text(l10n.mergeLocalLibrary,
+                  style: const TextStyle(fontSize: 16)),
               subtitle: Text(
                 l10n.mergeLocalLibrarySubtitle,
                 style: TextStyle(
                   fontSize: 13,
-                  color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: context.isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
                 ),
               ),
               value: context.watch<LibraryProvider>().mergeLocalLibrary,
               onChanged: (value) {
                 final libraryProvider = context.read<LibraryProvider>();
                 if (value) {
-                  // Enable merge mode
-                  libraryProvider.setLocalMusicService(localMusic, mergeWithServer: true);
+                  libraryProvider.setLocalMusicService(localMusic,
+                      mergeWithServer: true);
                 } else {
-                  // Disable merge mode
                   libraryProvider.setMergeLocalLibrary(false);
                 }
               },
             ),
             const SettingsDivider(),
-            // Local music stats
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               leading: Container(
                 width: 32,
                 height: 32,
@@ -305,24 +309,29 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(CupertinoIcons.music_note, color: Colors.white, size: 18),
+                child: const Icon(CupertinoIcons.music_note,
+                    color: Colors.white, size: 18),
               ),
-              title: Text(l10n.localMusicStats, style: const TextStyle(fontSize: 16)),
+              title: Text(l10n.localMusicStats,
+                  style: const TextStyle(fontSize: 16)),
               trailing: Text(
                 '${localMusic.songCount} ${l10n.songs.toLowerCase()}',
                 style: TextStyle(
                   fontSize: 14,
-                  color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: context.isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
                 ),
               ),
               subtitle: localMusic.isScanning
-                ? Text(localMusic.scanStatus, style: const TextStyle(fontSize: 12))
-                : null,
+                  ? Text(localMusic.scanStatus,
+                      style: const TextStyle(fontSize: 12))
+                  : null,
             ),
             const SettingsDivider(),
-            // Add folder button
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               leading: Container(
                 width: 32,
                 height: 32,
@@ -332,52 +341,59 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(CupertinoIcons.plus, color: Colors.white, size: 18),
+                child: const Icon(CupertinoIcons.plus,
+                    color: Colors.white, size: 18),
               ),
-              title: Text(l10n.addMusicFolder, style: const TextStyle(fontSize: 16)),
+              title: Text(l10n.addMusicFolder,
+                  style: const TextStyle(fontSize: 16)),
               onTap: () => _addMusicFolder(context, localMusic),
             ),
-            // Show custom paths
             if (customPaths.isNotEmpty) ...[
               const SettingsDivider(),
               ...customPaths.map((path) => ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                leading: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF9500), Color(0xFFFFB340)],
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF9500), Color(0xFFFFB340)],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(CupertinoIcons.folder_fill,
+                          color: Colors.white, size: 18),
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(CupertinoIcons.folder_fill, color: Colors.white, size: 18),
-                ),
-                title: Text(
-                  path.split('/').last,
-                  style: const TextStyle(fontSize: 16),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  path,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: IconButton(
-                  icon: const Icon(CupertinoIcons.delete, color: Colors.red, size: 20),
-                  onPressed: () => _removeMusicFolder(context, localMusic, path),
-                ),
-              )),
+                    title: Text(
+                      path.split('/').last,
+                      style: const TextStyle(fontSize: 16),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      path,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(CupertinoIcons.delete,
+                          color: Colors.red, size: 20),
+                      onPressed: () =>
+                          _removeMusicFolder(context, localMusic, path),
+                    ),
+                  )),
             ],
             const SettingsDivider(),
-            // Rescan button
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               leading: Container(
                 width: 32,
                 height: 32,
@@ -387,9 +403,11 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(CupertinoIcons.refresh, color: Colors.white, size: 18),
+                child: const Icon(CupertinoIcons.refresh,
+                    color: Colors.white, size: 18),
               ),
-              title: Text(l10n.rescanLocalMusic, style: const TextStyle(fontSize: 16)),
+              title: Text(l10n.rescanLocalMusic,
+                  style: const TextStyle(fontSize: 16)),
               enabled: !localMusic.isScanning,
               onTap: () => _rescanLocalMusic(context, localMusic),
             ),
@@ -399,7 +417,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     );
   }
 
-  Future<void> _addMusicFolder(BuildContext context, LocalMusicService service) async {
+  Future<void> _addMusicFolder(
+      BuildContext context, LocalMusicService service) async {
     final path = await service.pickMusicDirectory();
     if (path == null) return;
     if (!context.mounted) return;
@@ -407,14 +426,15 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.folderAdded(path))),
     );
-    // Trigger a rescan if merge mode is enabled
+
     final libraryProvider = context.read<LibraryProvider>();
     if (libraryProvider.mergeLocalLibrary) {
       service.scanForMusic();
     }
   }
 
-  Future<void> _removeMusicFolder(BuildContext context, LocalMusicService service, String path) async {
+  Future<void> _removeMusicFolder(
+      BuildContext context, LocalMusicService service, String path) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -455,14 +475,18 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(CupertinoIcons.bolt_fill, color: Colors.white, size: 18),
+        child:
+            const Icon(CupertinoIcons.bolt_fill, color: Colors.white, size: 18),
       ),
-      title: Text(l10n.keepScreenOnDuringDownload, style: const TextStyle(fontSize: 16)),
+      title: Text(l10n.keepScreenOnDuringDownload,
+          style: const TextStyle(fontSize: 16)),
       subtitle: Text(
         l10n.keepScreenOnDuringDownloadSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: CupertinoSwitch(
@@ -489,14 +513,17 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(CupertinoIcons.arrow_down_to_line, color: Colors.white, size: 18),
+        child: const Icon(CupertinoIcons.arrow_down_to_line,
+            color: Colors.white, size: 18),
       ),
       title: Text(l10n.parallelDownloads, style: const TextStyle(fontSize: 16)),
       subtitle: Text(
         l10n.parallelDownloadsSubtitle,
         style: TextStyle(
           fontSize: 13,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: Row(
@@ -514,7 +541,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           Icon(
             CupertinoIcons.chevron_right,
             size: 16,
-            color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            color: context.isDark
+                ? AppTheme.darkSecondaryText
+                : AppTheme.lightSecondaryText,
           ),
         ],
       ),
@@ -533,10 +562,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       ),
       title: Text(l10n.downloadFolder, style: const TextStyle(fontSize: 16)),
       subtitle: Text(
-        customPath != null && customPath.isNotEmpty ? customPath : l10n.downloadFolderDefault,
+        customPath != null && customPath.isNotEmpty
+            ? customPath
+            : l10n.downloadFolderDefault,
         style: TextStyle(
           fontSize: 12,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -555,7 +588,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           Icon(
             CupertinoIcons.chevron_right,
             size: 16,
-            color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+            color: context.isDark
+                ? AppTheme.darkSecondaryText
+                : AppTheme.lightSecondaryText,
           ),
         ],
       ),
@@ -586,15 +621,19 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           children: [1, 2, 3, 4, 5].map((count) {
             final isSelected = count == _parallelDownloads;
             return ListTile(
-              title: Text('$count ${count == 1 ? l10n.downloadSingular : l10n.downloadPlural}'),
+              title: Text(
+                  '$count ${count == 1 ? l10n.downloadSingular : l10n.downloadPlural}'),
               subtitle: count == 1
-                ? Text(l10n.slowerButStable)
-                : count == 5
-                  ? Text(l10n.fasterButMoreData)
-                  : null,
+                  ? Text(l10n.slowerButStable)
+                  : count == 5
+                      ? Text(l10n.fasterButMoreData)
+                      : null,
               leading: Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color:
+                    isSelected ? Theme.of(context).colorScheme.primary : null,
               ),
               onTap: () => Navigator.pop(context, count),
             );
@@ -617,10 +656,10 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     }
   }
 
-  Future<void> _rescanLocalMusic(BuildContext context, LocalMusicService service) async {
+  Future<void> _rescanLocalMusic(
+      BuildContext context, LocalMusicService service) async {
     if (service.isScanning) return;
 
-    // Request permission first
     final hasPermission = await service.requestPermission();
     if (!hasPermission) {
       if (context.mounted) {
@@ -659,11 +698,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         l10n.cacheDiskUsage(_audioCacheSize),
         style: TextStyle(
           fontSize: 13,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: IconButton(
-        icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
+        icon: const Icon(CupertinoIcons.trash,
+            size: 20, color: Color(0xFFFF3B30)),
         tooltip: l10n.clearAudioCacheTooltip,
         onPressed: _clearAudioCache,
       ),
@@ -694,11 +736,14 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         l10n.cacheDiskUsage(_imageCacheSize),
         style: TextStyle(
           fontSize: 13,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
       ),
       trailing: IconButton(
-        icon: const Icon(CupertinoIcons.trash, size: 20, color: Color(0xFFFF3B30)),
+        icon: const Icon(CupertinoIcons.trash,
+            size: 20, color: Color(0xFFFF3B30)),
         tooltip: l10n.clearImageCacheTooltip,
         onPressed: _clearImageCache,
       ),
@@ -732,7 +777,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         l10n.totalCacheDiskUsage(_totalCacheSize),
         style: TextStyle(
           fontSize: 13,
-          color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
         ),
       ),
       onTap: _clearAllCache,
@@ -785,7 +832,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       trailing: Text(
         AppLocalizations.of(
           context,
-        )!.downloadedStats(_downloadedCount, _downloadedSize),
+        )!
+            .downloadedStats(_downloadedCount, _downloadedSize),
         style: TextStyle(
           fontSize: 14,
           color: context.isDark
@@ -807,7 +855,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                 ? '${state.currentProgress}/${state.totalCount}'
                 : l10n.noDownloadsInProgress;
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
             width: 32,
             height: 32,
@@ -827,18 +876,20 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
               size: 18,
             ),
           ),
-          title: Text(l10n.activeDownloads, style: const TextStyle(fontSize: 16)),
+          title:
+              Text(l10n.activeDownloads, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: context.isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
-          // Navigation wired up in feature/download-detail-screens
           onTap: null,
         );
       },
@@ -851,17 +902,21 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       valueListenable: _offlineService.downloadedSongIds,
       builder: (context, ids, _) {
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
-        icon: CupertinoIcons.music_note_list,
-      ),
-          title: Text(l10n.playlistDownloads, style: const TextStyle(fontSize: 16)),
+            gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+            icon: CupertinoIcons.music_note_list,
+          ),
+          title: Text(l10n.playlistDownloads,
+              style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             l10n.playlistSongsDownloadedCount(ids.length),
             style: TextStyle(
               fontSize: 12,
-              color: context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: context.isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
           ),
           trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
@@ -893,9 +948,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
                   vertical: 4,
                 ),
                 leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
-        icon: CupertinoIcons.arrow_down_circle_fill,
-      ),
+                  gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+                  icon: CupertinoIcons.arrow_down_circle_fill,
+                ),
                 title: Text(
                   AppLocalizations.of(context)!.downloadingLibrary(
                     downloadState.currentProgress,
@@ -932,9 +987,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             vertical: 4,
           ),
           leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
-        icon: CupertinoIcons.cloud_download,
-      ),
+            gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+            icon: CupertinoIcons.cloud_download,
+          ),
           title: Text(
             AppLocalizations.of(context)!.downloadAllLibrary,
             style: const TextStyle(fontSize: 16, color: Color(0xFF34C759)),
@@ -951,7 +1006,6 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       final subsonicService = context.read<SubsonicService>();
       final l10n = AppLocalizations.of(context)!;
 
-      // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -963,10 +1017,9 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
 
       await libraryProvider.ensureLibraryLoaded();
 
-      // If still empty, try to refresh from server with a small delay
       if (libraryProvider.cachedAllSongs.isEmpty) {
         await Future.delayed(const Duration(milliseconds: 500));
-        // Force refresh by calling refresh method
+
         await libraryProvider.refresh();
       }
 
@@ -1005,7 +1058,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           content: Text(
             AppLocalizations.of(
               context,
-            )!.downloadLibraryConfirm(allSongs.length),
+            )!
+                .downloadLibraryConfirm(allSongs.length),
           ),
           actions: [
             TextButton(
@@ -1113,7 +1167,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       padding: const EdgeInsets.all(16),
       child: LinearProgressIndicator(
         value: progress,
-        backgroundColor: context.isDark ? AppTheme.darkCard : AppTheme.lightDivider,
+        backgroundColor:
+            context.isDark ? AppTheme.darkCard : AppTheme.lightDivider,
         valueColor: AlwaysStoppedAnimation<Color>(
           Theme.of(context).colorScheme.primary,
         ),

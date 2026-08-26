@@ -86,7 +86,8 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFFB3B3B3))),
+            child: Text(l10n.cancel,
+                style: const TextStyle(color: Color(0xFFB3B3B3))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -126,8 +127,6 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
         children: [
           _LogoRow(isCollapsed: _isCollapsed),
           const SizedBox(height: 6),
-
-          // Main Navigation
           _NavItem(
             icon: Icons.home_outlined,
             activeIcon: Icons.home_rounded,
@@ -160,15 +159,11 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
             isCollapsed: _isCollapsed,
             onTap: _navigateToSettings,
           ),
-
-          // Divider
           Container(
             height: 1,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             color: const Color(0xFF1A1A1A),
           ),
-
-          // Your Library Section
           _LibrarySection(
             isCollapsed: _isCollapsed,
             selectedIndex: widget.selectedIndex,
@@ -178,7 +173,6 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
             onFavoritesTap: _navigateToFavorites,
             onPlaylistTap: _navigateToPlaylist,
           ),
-
           Consumer<SubsonicService>(
             builder: (context, subsonic, _) {
               if (subsonic.isYoutube) return const SizedBox.shrink();
@@ -192,8 +186,6 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
               );
             },
           ),
-
-          // Bottom Actions
           _DisconnectButton(
             isCollapsed: _isCollapsed,
             onTap: _handleDisconnect,
@@ -287,7 +279,9 @@ class _NavItemState extends State<_NavItem> {
         : (_isHovered ? Colors.white : const Color(0xFF9CA3AF));
     final bgColor = widget.isSelected
         ? Colors.white.withValues(alpha: 0.10)
-        : (_isHovered ? Colors.white.withValues(alpha: 0.05) : Colors.transparent);
+        : (_isHovered
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.transparent);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -304,12 +298,14 @@ class _NavItemState extends State<_NavItem> {
           child: Container(
             height: 40,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-            padding: EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
+            padding:
+                EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            alignment: widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
+            alignment:
+                widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
             child: widget.isCollapsed
                 ? Icon(
                     widget.isSelected ? widget.activeIcon : widget.icon,
@@ -407,8 +403,6 @@ class _LibrarySection extends StatelessWidget {
                 ],
               ),
             ),
-
-          // Playlists item
           _NavItem(
             icon: Icons.queue_music_rounded,
             activeIcon: Icons.queue_music_rounded,
@@ -417,8 +411,6 @@ class _LibrarySection extends StatelessWidget {
             isCollapsed: isCollapsed,
             onTap: onPlaylistsTap,
           ),
-
-          // Liked Songs item
           _NavItem(
             icon: Icons.favorite_rounded,
             activeIcon: Icons.favorite_rounded,
@@ -427,8 +419,6 @@ class _LibrarySection extends StatelessWidget {
             isCollapsed: isCollapsed,
             onTap: onFavoritesTap,
           ),
-
-          // Playlists Scroll List
           Expanded(
             child: Consumer<LibraryProvider>(
               builder: (context, libraryProvider, _) {
@@ -467,7 +457,8 @@ class _LibrarySection extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF282828),
-        title: Text(l10n.newPlaylist, style: const TextStyle(color: Colors.white)),
+        title:
+            Text(l10n.newPlaylist, style: const TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -488,7 +479,8 @@ class _LibrarySection extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFFB3B3B3))),
+            child: Text(l10n.cancel,
+                style: const TextStyle(color: Color(0xFFB3B3B3))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -607,7 +599,8 @@ class _PlaylistTileState extends State<_PlaylistTile> {
                     Text(
                       widget.playlist.name,
                       style: TextStyle(
-                        color: _isHovered ? Colors.white : const Color(0xFFE5E7EB),
+                        color:
+                            _isHovered ? Colors.white : const Color(0xFFE5E7EB),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -662,8 +655,10 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
           child: Container(
             height: 40,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            padding: EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
-            alignment: widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
+            padding:
+                EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
+            alignment:
+                widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
             child: widget.isCollapsed
                 ? Icon(
                     Icons.logout_rounded,
@@ -675,13 +670,16 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
                       Icon(
                         Icons.logout_rounded,
                         size: 20,
-                        color: _isHovered ? Colors.white : const Color(0xFF9CA3AF),
+                        color:
+                            _isHovered ? Colors.white : const Color(0xFF9CA3AF),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'Disconnect',
                         style: TextStyle(
-                          color: _isHovered ? Colors.white : const Color(0xFF9CA3AF),
+                          color: _isHovered
+                              ? Colors.white
+                              : const Color(0xFF9CA3AF),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),

@@ -5,7 +5,7 @@ import 'package:musly/widgets/common/album_artwork.dart';
 class TopResultCard extends StatefulWidget {
   final String title;
   final String subtitle;
-  final String typeLabel; // e.g. "Song", "Artist", "Album", "Playlist"
+  final String typeLabel;
   final String? imageUrl;
   final bool isArtist;
   final VoidCallback onTap;
@@ -44,11 +44,17 @@ class _TopResultCardState extends State<TopResultCard> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isDark
-                ? (_isHovered ? const Color(0xFF282828) : const Color(0xFF1E1E1E))
-                : (_isHovered ? const Color(0xFFF3F4F6) : const Color(0xFFF9FAFB)),
+                ? (_isHovered
+                    ? const Color(0xFF282828)
+                    : const Color(0xFF1E1E1E))
+                : (_isHovered
+                    ? const Color(0xFFF3F4F6)
+                    : const Color(0xFFF9FAFB)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.05),
             ),
           ),
           child: Stack(
@@ -56,15 +62,12 @@ class _TopResultCardState extends State<TopResultCard> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Artwork
                   AlbumArtwork(
                     coverArt: widget.imageUrl,
                     size: 72,
                     borderRadius: widget.isArtist ? 999 : 8,
                   ),
                   const SizedBox(height: 14),
-
-                  // Title
                   Text(
                     widget.title,
                     style: TextStyle(
@@ -77,12 +80,11 @@ class _TopResultCardState extends State<TopResultCard> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-
-                  // Subtitle & Type Pill
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: isDark ? Colors.black45 : Colors.black12,
                           borderRadius: BorderRadius.circular(10),
@@ -103,7 +105,9 @@ class _TopResultCardState extends State<TopResultCard> {
                           widget.subtitle,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                            color: isDark
+                                ? AppTheme.darkSecondaryText
+                                : AppTheme.lightSecondaryText,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -113,8 +117,6 @@ class _TopResultCardState extends State<TopResultCard> {
                   ),
                 ],
               ),
-
-              // Modern music player design
               Positioned(
                 bottom: 0,
                 right: 0,

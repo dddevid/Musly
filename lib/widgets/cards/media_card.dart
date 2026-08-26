@@ -58,7 +58,8 @@ class _MediaCardState extends State<MediaCard> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(widget.isRound ? 999 : 4),
+                      borderRadius:
+                          BorderRadius.circular(widget.isRound ? 999 : 4),
                       boxShadow: _isHovered
                           ? [
                               BoxShadow(
@@ -72,7 +73,8 @@ class _MediaCardState extends State<MediaCard> {
                     child: Stack(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(widget.isRound ? 999 : 4),
+                          borderRadius:
+                              BorderRadius.circular(widget.isRound ? 999 : 4),
                           child: AlbumArtwork(
                             coverArt: widget.coverArt,
                             size: widget.size - 24,

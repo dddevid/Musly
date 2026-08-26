@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Service managing track-to-track audio crossfade transitions (0s to 12s).
 class CrossfadeService {
   static const String _keyCrossfadeSeconds = 'crossfade_seconds';
 

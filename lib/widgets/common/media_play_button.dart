@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Standard primary action button (e.g. Play, Shuffle) for detail headers across Musly.
 class MediaPlayButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -52,7 +51,6 @@ class MediaPlayButton extends StatelessWidget {
   }
 }
 
-/// Circular floating play button with hover scaling and shadow, used on cards and artworks.
 class MediaFloatingPlayButton extends StatefulWidget {
   final VoidCallback onPressed;
   final double size;
@@ -72,7 +70,8 @@ class MediaFloatingPlayButton extends StatefulWidget {
   });
 
   @override
-  State<MediaFloatingPlayButton> createState() => _MediaFloatingPlayButtonState();
+  State<MediaFloatingPlayButton> createState() =>
+      _MediaFloatingPlayButtonState();
 }
 
 class _MediaFloatingPlayButtonState extends State<MediaFloatingPlayButton> {

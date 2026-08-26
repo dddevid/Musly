@@ -56,7 +56,6 @@ class _BrowseCategoryCardState extends State<BrowseCategoryCard> {
               borderRadius: BorderRadius.circular(10),
               child: Stack(
                 children: [
-                  // Title on Top Left
                   Positioned(
                     top: 14,
                     left: 14,
@@ -80,13 +79,11 @@ class _BrowseCategoryCardState extends State<BrowseCategoryCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-
-                  // 3D Angled Image or Icon on Bottom Right
                   Positioned(
                     right: -10,
                     bottom: -6,
                     child: Transform.rotate(
-                      angle: 0.42, // ~24 degrees angle
+                      angle: 0.42,
                       child: Container(
                         width: 68,
                         height: 68,
@@ -106,7 +103,8 @@ class _BrowseCategoryCardState extends State<BrowseCategoryCard> {
                               ? CachedNetworkImage(
                                   imageUrl: widget.imageUrl!,
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => _buildFallbackIcon(),
+                                  errorWidget: (_, __, ___) =>
+                                      _buildFallbackIcon(),
                                 )
                               : _buildFallbackIcon(),
                         ),

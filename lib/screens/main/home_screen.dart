@@ -35,18 +35,23 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Song> _cachedListenAgain = const [];
   List<Song> _cachedTopHits = const [];
   String _lastRandomKey = '';
-  String _selectedCategory = 'All'; // 'All' | 'Music' | 'MadeForYou' | 'Playlists'
+  String _selectedCategory = 'All';
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return AppLocalizations.of(context)?.goodMorning ?? 'Good morning';
-    if (hour < 17) return AppLocalizations.of(context)?.goodAfternoon ?? 'Good afternoon';
+    if (hour < 12) {
+      return AppLocalizations.of(context)?.goodMorning ?? 'Good morning';
+    }
+    if (hour < 17) {
+      return AppLocalizations.of(context)?.goodAfternoon ?? 'Good afternoon';
+    }
     return AppLocalizations.of(context)?.goodEvening ?? 'Good evening';
   }
 
   String _computeRandomKey(List<Song> songs, RecommendationService rec) {
     if (songs.isEmpty) return '';
-    final lastPlayed = rec.recentlyPlayed.isNotEmpty ? rec.recentlyPlayed.first : '';
+    final lastPlayed =
+        rec.recentlyPlayed.isNotEmpty ? rec.recentlyPlayed.first : '';
     return '${songs.length}_${songs.first.id}_${songs.last.id}_${rec.profiles.length}_${rec.recentlyPlayed.length}_$lastPlayed';
   }
 
@@ -83,22 +88,26 @@ class _HomeScreenState extends State<HomeScreen> {
     final subsonicService = Provider.of<SubsonicService>(context);
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.primary,
         onRefresh: () async {
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          final libraryProvider =
+              Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.refresh();
         },
         child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
           slivers: [
             SliverAppBar(
               automaticallyImplyLeading: false,
               pinned: true,
               floating: true,
               expandedHeight: 110,
-              backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+              backgroundColor:
+                  isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
               elevation: 0,
               flexibleSpace: FlexibleSpaceBar(
                 titlePadding: EdgeInsets.only(left: hPad, bottom: 48),
@@ -125,7 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     size: 22,
                   ),
                   tooltip: AppLocalizations.of(context)!.history,
-                  onPressed: () => NavigationHelper.push(context, const HistoryScreen()),
+                  onPressed: () =>
+                      NavigationHelper.push(context, const HistoryScreen()),
                 ),
                 IconButton(
                   icon: Icon(
@@ -134,7 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     size: 22,
                   ),
                   tooltip: AppLocalizations.of(context)!.settings,
-                  onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
+                  onPressed: () =>
+                      NavigationHelper.push(context, const SettingsScreen()),
                 ),
                 if (isDesktop) const SizedBox(width: 12),
               ],
@@ -153,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 8),
                         _buildCategoryChip('Music', 'Music', isDark),
                         const SizedBox(width: 8),
-                        _buildCategoryChip('MadeForYou', 'Made For You', isDark),
+                        _buildCategoryChip(
+                            'MadeForYou', 'Made For You', isDark),
                         const SizedBox(width: 8),
                         _buildCategoryChip('Playlists', 'Playlists', isDark),
                       ],
@@ -162,26 +174,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // Main Feed Content
             SliverToBoxAdapter(
               child: Consumer2<LibraryProvider, RecommendationService>(
                 builder: (context, libraryProvider, recommendationService, _) {
-                  if (libraryProvider.isLoading && !libraryProvider.isInitialized) {
+                  if (libraryProvider.isLoading &&
+                      !libraryProvider.isInitialized) {
                     return _buildLoadingState(isDesktop, hPad);
                   }
 
                   final allSongs = libraryProvider.cachedAllSongs.isNotEmpty
                       ? libraryProvider.cachedAllSongs
                       : libraryProvider.randomSongs;
-                  final key = _computeRandomKey(allSongs, recommendationService);
+                  final key =
+                      _computeRandomKey(allSongs, recommendationService);
 
                   if (recommendationService.enabled && key.isNotEmpty) {
                     if (key != _lastRandomKey) {
-                      _cachedMixes = recommendationService.generateMixes(allSongs);
-                      _cachedPersonalized = recommendationService.getPersonalizedFeed(allSongs, limit: 12);
-                      _cachedListenAgain = recommendationService.getListenAgain(allSongs, limit: 10);
-                      _cachedTopHits = recommendationService.getTopHits(allSongs, limit: 10);
+                      _cachedMixes =
+                          recommendationService.generateMixes(allSongs);
+                      _cachedPersonalized = recommendationService
+                          .getPersonalizedFeed(allSongs, limit: 12);
+                      _cachedListenAgain = recommendationService
+                          .getListenAgain(allSongs, limit: 10);
+                      _cachedTopHits =
+                          recommendationService.getTopHits(allSongs, limit: 10);
                       _lastRandomKey = key;
                     }
                   } else {
@@ -200,11 +216,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   var playlists = libraryProvider.playlists;
                   var artists = libraryProvider.artists;
 
-                  // In YT Stream mode, if artists are empty, use top recommended artists from taste profiles
                   if (artists.isEmpty && recommendationService.enabled) {
-                    final topNames = recommendationService.getRecommendedArtists(limit: 10);
+                    final topNames =
+                        recommendationService.getRecommendedArtists(limit: 10);
                     if (topNames.isNotEmpty) {
-                      artists = topNames.map((name) => Artist(id: 'yt-$name', name: name)).toList();
+                      artists = topNames
+                          .map((name) => Artist(id: 'yt-$name', name: name))
+                          .toList();
                     }
                   }
 
@@ -212,29 +230,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   final offlineService = OfflineService();
 
                   if (isOffline) {
-                    final downloadedIds = offlineService.getDownloadedSongIds().toSet();
-                    final downloadedPlaylistIds = offlineService.downloadedPlaylistIds.value.toSet();
+                    final downloadedIds =
+                        offlineService.getDownloadedSongIds().toSet();
+                    final downloadedPlaylistIds =
+                        offlineService.downloadedPlaylistIds.value.toSet();
                     final allSongs = libraryProvider.cachedAllSongs;
                     final Set<String> downloadedAlbumIds = {};
                     for (final song in allSongs) {
-                      if (downloadedIds.contains(song.id) && song.albumId != null) {
+                      if (downloadedIds.contains(song.id) &&
+                          song.albumId != null) {
                         downloadedAlbumIds.add(song.albumId!);
                       }
                     }
 
-                    recentAlbums = recentAlbums.where((a) => downloadedAlbumIds.contains(a.id)).toList();
-                    playlists = playlists.where((p) => downloadedPlaylistIds.contains(p.id)).toList();
+                    recentAlbums = recentAlbums
+                        .where((a) => downloadedAlbumIds.contains(a.id))
+                        .toList();
+                    playlists = playlists
+                        .where((p) => downloadedPlaylistIds.contains(p.id))
+                        .toList();
 
                     final Map<String, List<Song>> offlineMixes = {};
                     for (final entry in mixes.entries) {
-                      final filtered = entry.value.where((s) => downloadedIds.contains(s.id)).toList();
-                      if (filtered.isNotEmpty) offlineMixes[entry.key] = filtered;
+                      final filtered = entry.value
+                          .where((s) => downloadedIds.contains(s.id))
+                          .toList();
+                      if (filtered.isNotEmpty) {
+                        offlineMixes[entry.key] = filtered;
+                      }
                     }
                     mixes = offlineMixes;
 
-                    personalizedFeed = personalizedFeed.where((s) => downloadedIds.contains(s.id)).toList();
-                    listenAgain = listenAgain.where((s) => downloadedIds.contains(s.id)).toList();
-                    topHits = topHits.where((s) => downloadedIds.contains(s.id)).toList();
+                    personalizedFeed = personalizedFeed
+                        .where((s) => downloadedIds.contains(s.id))
+                        .toList();
+                    listenAgain = listenAgain
+                        .where((s) => downloadedIds.contains(s.id))
+                        .toList();
+                    topHits = topHits
+                        .where((s) => downloadedIds.contains(s.id))
+                        .toList();
                   }
 
                   return Padding(
@@ -242,14 +277,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Seasonal Wrapped Banner (Late Nov to Mid Jan, Mobile only)
                         if (!isDesktop && WrappedService.isWrappedSeason()) ...[
                           _buildWrappedBanner(context, hPad, isDesktop),
                           const SizedBox(height: 12),
                         ],
-
-                        // Quick Access Top Grid
-                        if (_selectedCategory == 'All' || _selectedCategory == 'Music') ...[
+                        if (_selectedCategory == 'All' ||
+                            _selectedCategory == 'Music') ...[
                           const SizedBox(height: 8),
                           _buildSpotifyTopGrid(
                             context,
@@ -262,9 +295,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 24),
                         ],
-
-                        // 2. "Jump Back In" / Recently Played Carousel
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'Music') &&
                             recentAlbums.isNotEmpty) ...[
                           HorizontalScrollSection(
                             title: 'Jump back in',
@@ -277,15 +309,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 coverArt: album.coverArt,
                                 size: isDesktop ? 180 : 155,
                                 onTap: () => _openAlbum(context, album.id),
-                                onPlayPressed: () => _playAlbum(context, album.id),
+                                onPlayPressed: () =>
+                                    _playAlbum(context, album.id),
                               );
                             }).toList(),
                           ),
                           const SizedBox(height: 28),
                         ],
-
-                        // 3. Made For You / Personalized Feed (Deeply learned tastes)
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'MadeForYou') &&
                             recommendationService.enabled &&
                             personalizedFeed.isNotEmpty) ...[
                           _buildMixSection(
@@ -298,9 +330,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 28),
                         ],
-
-                        // 4. "Ascolta di nuovo" / Listen Again
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'Music') &&
                             listenAgain.isNotEmpty) ...[
                           _buildMixSection(
                             context: context,
@@ -312,9 +343,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 28),
                         ],
-
-                        // 5. "I tuoi brani preferiti" / Top Hits
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'MadeForYou') &&
                             topHits.isNotEmpty) ...[
                           _buildMixSection(
                             context: context,
@@ -326,9 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 28),
                         ],
-
-                        // 6. Playlists Section
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'Playlists') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'Playlists') &&
                             playlists.isNotEmpty) ...[
                           HorizontalScrollSection(
                             title: 'Your Playlists',
@@ -346,9 +375,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 28),
                         ],
-
-                        // 7. Favorite Mixes
-                        if (_selectedCategory == 'All' || _selectedCategory == 'MadeForYou') ...[
+                        if (_selectedCategory == 'All' ||
+                            _selectedCategory == 'MadeForYou') ...[
                           for (final entry in mixes.entries.take(4))
                             Padding(
                               padding: const EdgeInsets.only(bottom: 28),
@@ -362,9 +390,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                         ],
-
-                        // 8. Artists You Love
-                        if ((_selectedCategory == 'All' || _selectedCategory == 'Music') &&
+                        if ((_selectedCategory == 'All' ||
+                                _selectedCategory == 'Music') &&
                             artists.isNotEmpty) ...[
                           HorizontalScrollSection(
                             title: 'Artists You Love',
@@ -373,7 +400,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: artists.take(10).map((artist) {
                               final coverArt = artist.coverArt ??
                                   artist.artistImageUrl ??
-                                  (artist.id.isNotEmpty ? 'ar-${artist.id}' : null);
+                                  (artist.id.isNotEmpty
+                                      ? 'ar-${artist.id}'
+                                      : null);
                               return MediaCard(
                                 title: artist.name,
                                 subtitle: 'Artist',
@@ -401,9 +430,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCategoryChip(String key, String label, bool isDark) {
     final isSelected = _selectedCategory == key;
     final primary = Theme.of(context).colorScheme.primary;
-    final onPrimary = ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
-        ? Colors.white
-        : Colors.black;
+    final onPrimary =
+        ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = key),
@@ -421,7 +451,9 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? onPrimary : (isDark ? Colors.white : Colors.black87),
+            color: isSelected
+                ? onPrimary
+                : (isDark ? Colors.white : Colors.black87),
           ),
         ),
       ),
@@ -451,7 +483,6 @@ class _HomeScreenState extends State<HomeScreen> {
             spacing: spacing,
             runSpacing: spacing,
             children: [
-              // Liked Songs
               SizedBox(
                 width: cardWidth,
                 child: QuickAccessTile(
@@ -465,14 +496,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     child: const Center(
-                      child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 22),
+                      child: Icon(CupertinoIcons.heart_fill,
+                          color: Colors.white, size: 22),
                     ),
                   ),
-                  onTap: () => NavigationHelper.push(context, const FavoritesScreen()),
+                  onTap: () =>
+                      NavigationHelper.push(context, const FavoritesScreen()),
                 ),
               ),
-
-              // Recent Playlists
               ...playlists.take(2).map((playlist) {
                 return SizedBox(
                   width: cardWidth,
@@ -483,8 +514,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               }),
-
-              // Recent Albums or Top Smart Mixes
               if (recentAlbums.isNotEmpty)
                 ...recentAlbums.take(cols == 4 ? 5 : 3).map((album) {
                   return SizedBox(
@@ -500,7 +529,8 @@ class _HomeScreenState extends State<HomeScreen> {
               else
                 ...mixes.entries.take(cols == 4 ? 5 : 3).map((entry) {
                   final songs = entry.value;
-                  final firstCover = songs.isNotEmpty ? songs.first.coverArt : null;
+                  final firstCover =
+                      songs.isNotEmpty ? songs.first.coverArt : null;
                   return SizedBox(
                     width: cardWidth,
                     child: QuickAccessTile(
@@ -553,19 +583,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _playSong(BuildContext context, Song song, List<Song> queue) async {
+  Future<void> _playSong(
+      BuildContext context, Song song, List<Song> queue) async {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     final idx = queue.indexOf(song);
-    await playerProvider.playSong(song, playlist: queue, startIndex: idx >= 0 ? idx : 0);
+    await playerProvider.playSong(song,
+        playlist: queue, startIndex: idx >= 0 ? idx : 0);
   }
 
   Future<void> _playAlbum(BuildContext context, String albumId) async {
     try {
-      final subsonicService = Provider.of<SubsonicService>(context, listen: false);
-      final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+      final subsonicService =
+          Provider.of<SubsonicService>(context, listen: false);
+      final playerProvider =
+          Provider.of<PlayerProvider>(context, listen: false);
       final songs = await subsonicService.getAlbumSongs(albumId);
       if (songs.isNotEmpty) {
-        await playerProvider.playSong(songs.first, playlist: songs, startIndex: 0);
+        await playerProvider.playSong(songs.first,
+            playlist: songs, startIndex: 0);
       }
     } catch (e) {
       debugPrint('Error playing album: $e');
@@ -631,7 +666,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWrappedBanner(BuildContext context, double hPad, bool isDesktop) {
+  Widget _buildWrappedBanner(
+      BuildContext context, double hPad, bool isDesktop) {
     final year = WrappedService.getWrappedYear();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 4),
@@ -668,7 +704,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 24),
+                  child: const Icon(CupertinoIcons.sparkles,
+                      color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -696,7 +733,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                const Icon(CupertinoIcons.chevron_forward, color: Colors.white, size: 20),
+                const Icon(CupertinoIcons.chevron_forward,
+                    color: Colors.white, size: 20),
               ],
             ),
           ),
@@ -705,4 +743,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

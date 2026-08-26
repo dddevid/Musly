@@ -1,22 +1,16 @@
-// ── BeatSync Feature & NTP Synchronization Architecture ───────────────────────
-// Idea, NTP clock sync model, and multi-device party audio protocol inspired by:
-// https://github.com/freeman-jiang/beatsync
-// ─────────────────────────────────────────────────────────────────────────────
-
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/song.dart';
 import '../models/connect_device.dart';
 
-/// Single NTP measurement result.
 class NTPMeasurement {
-  final int t0; // Client departure
-  final int t1; // Server arrival
-  final int t2; // Server departure
-  final int t3; // Client arrival
-  final double roundTripDelay; // RTT in ms
-  final double clockOffset; // Clock offset in ms
+  final int t0;
+  final int t1;
+  final int t2;
+  final int t3;
+  final double roundTripDelay;
+  final double clockOffset;
 
   NTPMeasurement({
     required this.t0,
@@ -46,12 +40,16 @@ class NTPMeasurement {
   }
 }
 
-/// Status of the BeatSync session.
 enum BeatSyncRole { none, host, guest }
 
-enum BeatSyncState { disconnected, connecting, calibratingClock, synchronized, inParty }
+enum BeatSyncState {
+  disconnected,
+  connecting,
+  calibratingClock,
+  synchronized,
+  inParty
+}
 
-/// Precision NTP Clock Synchronization & Multi-Device Party Audio Synchronizer [BETA].
 class BeatSyncService extends ChangeNotifier {
   static final BeatSyncService _instance = BeatSyncService._internal();
   factory BeatSyncService() => _instance;
@@ -60,18 +58,15 @@ class BeatSyncService extends ChangeNotifier {
   BeatSyncRole _role = BeatSyncRole.none;
   BeatSyncState _state = BeatSyncState.disconnected;
 
-  // NTP Measurements & Clock Offset
   final List<NTPMeasurement> _measurements = [];
   double _clockOffsetMs = 0.0;
   double _averageRttMs = 0.0;
-  double _manualCalibrationNudgeMs = 0.0; // User manual slider ±50ms
+  double _manualCalibrationNudgeMs = 0.0;
 
-  // Party Room info
   String _partyRoomName = 'Musly Party Room';
   final List<String> _connectedGuestNames = [];
   ConnectDevice? _hostDevice;
 
-  // Scheduled Action callbacks
   Function(Song song, int startPositionMs)? onScheduledPlay;
   Function()? onScheduledPause;
   Function(int seekPositionMs)? onScheduledSeek;
@@ -80,7 +75,6 @@ class BeatSyncService extends ChangeNotifier {
   Timer? _scheduledPlayTimer;
   Timer? _ntpHeartbeatTimer;
 
-  // Getters
   BeatSyncRole get role => _role;
   BeatSyncState get state => _state;
   bool get isHost => _role == BeatSyncRole.host;
@@ -90,12 +84,9 @@ class BeatSyncService extends ChangeNotifier {
   double get averageRttMs => _averageRttMs;
   double get manualCalibrationNudgeMs => _manualCalibrationNudgeMs;
   String get partyRoomName => _partyRoomName;
-  List<String> get connectedGuestNames => List.unmodifiable(_connectedGuestNames);
+  List<String> get connectedGuestNames =>
+      List.unmodifiable(_connectedGuestNames);
   ConnectDevice? get hostDevice => _hostDevice;
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Host Engine
-  // ──────────────────────────────────────────────────────────────────────────
 
   void startHostingParty({String? roomName}) {
     _role = BeatSyncRole.host;
@@ -120,14 +111,9 @@ class BeatSyncService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Calculates scheduled epoch time for playback sync (1500ms in future).
   int calculateScheduledPlayEpoch({int leadTimeMs = 1500}) {
     return DateTime.now().millisecondsSinceEpoch + leadTimeMs;
   }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Guest Engine & NTP Clock Synchronization
-  // ──────────────────────────────────────────────────────────────────────────
 
   void joinPartyAsGuest(ConnectDevice host) {
     _role = BeatSyncRole.guest;
@@ -137,7 +123,8 @@ class BeatSyncService extends ChangeNotifier {
     _clockOffsetMs = 0.0;
     _averageRttMs = 0.0;
     notifyListeners();
-    debugPrint('[BeatSync] Joining party hosted by ${host.name} at ${host.ip}:${host.port}');
+    debugPrint(
+        '[BeatSync] Joining party hosted by ${host.name} at ${host.ip}:${host.port}');
   }
 
   void recordNtpMeasurement(NTPMeasurement m) {
@@ -151,7 +138,6 @@ class BeatSyncService extends ChangeNotifier {
   void _recalculateBestClockOffset() {
     if (_measurements.isEmpty) return;
 
-    // Filter by lowest RTT (Min-RTT selection RFC 5905)
     double minRtt = double.infinity;
     double bestOffset = 0.0;
     double totalRtt = 0.0;
@@ -174,7 +160,6 @@ class BeatSyncService extends ChangeNotifier {
     );
   }
 
-  /// Schedules audio playback synchronized with the Host at targetEpochMs.
   void schedulePlay({
     required Song song,
     required int targetEpochMs,
@@ -184,14 +169,14 @@ class BeatSyncService extends ChangeNotifier {
 
     final localNow = DateTime.now().millisecondsSinceEpoch;
     final estimatedHostNow = localNow + _clockOffsetMs;
-    final waitMs = (targetEpochMs - estimatedHostNow + _manualCalibrationNudgeMs).round();
+    final waitMs =
+        (targetEpochMs - estimatedHostNow + _manualCalibrationNudgeMs).round();
 
     debugPrint(
       '[BeatSync] Received schedulePlay for "${song.title}" at $targetEpochMs (waiting ${waitMs}ms)',
     );
 
     if (waitMs <= 0) {
-      // If we received late, play immediately adjusted for elapsed time
       final elapsedSinceTarget = (-waitMs);
       final adjustedPosition = startPositionMs + elapsedSinceTarget;
       onScheduledPlay?.call(song, adjustedPosition);
@@ -202,26 +187,23 @@ class BeatSyncService extends ChangeNotifier {
     }
   }
 
-  /// Sets manual user audio sync calibration nudge (e.g. for Bluetooth latency, ±50ms).
   void setManualCalibrationNudge(double ms) {
     _manualCalibrationNudgeMs = ms.clamp(-50.0, 50.0);
     notifyListeners();
   }
 
-  /// Handles continuous drift check from Host heartbeat.
-  void handleHeartbeat({required int hostPositionMs, required int guestPositionMs}) {
+  void handleHeartbeat(
+      {required int hostPositionMs, required int guestPositionMs}) {
     if (!isGuest) return;
 
     final driftMs = (guestPositionMs - hostPositionMs).abs();
     if (driftMs > 35 && driftMs < 300) {
-      // Apply micro speed nudge
       final nudgeSpeed = guestPositionMs > hostPositionMs ? 0.98 : 1.02;
       onSpeedNudge?.call(nudgeSpeed);
       Timer(const Duration(milliseconds: 600), () {
-        onSpeedNudge?.call(1.0); // Reset to normal
+        onSpeedNudge?.call(1.0);
       });
     } else if (driftMs >= 300) {
-      // Hard seek to resynchronize
       onScheduledSeek?.call(hostPositionMs);
     }
   }

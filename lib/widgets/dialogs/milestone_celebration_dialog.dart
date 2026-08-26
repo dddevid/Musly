@@ -9,7 +9,8 @@ class MilestoneCelebrationDialog extends StatefulWidget {
 
   const MilestoneCelebrationDialog({super.key, this.onResume});
 
-  static Future<void> show(BuildContext context, {VoidCallback? onResume}) async {
+  static Future<void> show(BuildContext context,
+      {VoidCallback? onResume}) async {
     HapticFeedback.heavyImpact();
     await showDialog(
       context: context,
@@ -19,7 +20,8 @@ class MilestoneCelebrationDialog extends StatefulWidget {
   }
 
   @override
-  State<MilestoneCelebrationDialog> createState() => _MilestoneCelebrationDialogState();
+  State<MilestoneCelebrationDialog> createState() =>
+      _MilestoneCelebrationDialogState();
 }
 
 class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
@@ -37,16 +39,16 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
 
     final random = Random();
     const colors = [
-      Color(0xFFFFD700), // Gold
-      Color(0xFF8B5CF6), // Purple
-      Color(0xFF06B6D4), // Cyan
-      Color(0xFFFA243C), // Musly Red
-      Color(0xFF10B981), // Emerald
-      Color(0xFFFF6B81), // Coral
+      Color(0xFFFFD700),
+      Color(0xFF8B5CF6),
+      Color(0xFF06B6D4),
+      Color(0xFFFA243C),
+      Color(0xFF10B981),
+      Color(0xFFFF6B81),
     ];
 
     _particles = List.generate(80, (index) {
-      final angle = (random.nextDouble() * pi) - (pi / 2); // Upwards spread
+      final angle = (random.nextDouble() * pi) - (pi / 2);
       final speed = 250 + random.nextDouble() * 380;
       return _ConfettiParticle(
         color: colors[random.nextInt(colors.length)],
@@ -72,7 +74,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
 
     return Stack(
       children: [
-        // Confetti Canvas Overlay
         Positioned.fill(
           child: IgnorePointer(
             child: AnimatedBuilder(
@@ -88,8 +89,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
             ),
           ),
         ),
-
-        // Centered Dialog
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -115,7 +114,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Golden Trophy Hero
                     Container(
                       width: 80,
                       height: 80,
@@ -128,7 +126,8 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.4),
                             blurRadius: 20,
                             spreadRadius: 4,
                           ),
@@ -141,10 +140,9 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(12),
@@ -160,8 +158,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                       ),
                     ),
                     const SizedBox(height: 14),
-
-                    // Title
                     Text(
                       l10n.milestone50SongsTitle,
                       style: const TextStyle(
@@ -171,8 +167,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 10),
-
-                    // Message
                     Text(
                       l10n.milestone50SongsMessage,
                       style: TextStyle(
@@ -183,8 +177,6 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 26),
-
-                    // Resume Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -192,10 +184,12 @@ class _MilestoneCelebrationDialogState extends State<MilestoneCelebrationDialog>
                           Navigator.of(context).pop();
                           widget.onResume?.call();
                         },
-                        icon: const Icon(CupertinoIcons.play_arrow_solid, size: 18),
+                        icon: const Icon(CupertinoIcons.play_arrow_solid,
+                            size: 18),
                         label: Text(
                           l10n.continueListening,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),
@@ -262,7 +256,8 @@ class _ConfettiPainter extends CustomPainter {
       canvas.translate(x, y);
       canvas.rotate(p.rotationSpeed * t);
       canvas.drawRect(
-        Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.6),
+        Rect.fromCenter(
+            center: Offset.zero, width: p.size, height: p.size * 0.6),
         paint,
       );
       canvas.restore();

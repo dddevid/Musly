@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A drop-in replacement for [IndexedStack] that lazily builds children
-/// only when they are first displayed, and preserves their state afterwards.
 class LazyIndexedStack extends StatefulWidget {
   final int index;
   final List<Widget> children;

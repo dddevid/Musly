@@ -22,7 +22,7 @@ class AddServerScreen extends StatefulWidget {
 
 class _AddServerScreenState extends State<AddServerScreen> {
   final _formKey = GlobalKey<FormState>();
-  late String _selectedFamily; // 'subsonic' | 'jellyfin' | 'youtube'
+  late String _selectedFamily;
 
   final _nameController = TextEditingController();
   final _urlController = TextEditingController();
@@ -52,7 +52,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
     _selectedFamily = (isIos && widget.initialFamily == 'youtube')
         ? 'subsonic'
         : (widget.initialFamily ?? 'subsonic');
-    _hasYoutubeFuture = Provider.of<AuthProvider>(context, listen: false).hasYoutubeProfile();
+    _hasYoutubeFuture =
+        Provider.of<AuthProvider>(context, listen: false).hasYoutubeProfile();
   }
 
   @override
@@ -128,12 +129,14 @@ class _AddServerScreenState extends State<AddServerScreen> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
 
     final hasYt = await authProvider.hasYoutubeProfile();
     if (hasYt) {
       setState(() {
-        _errorMessage = 'Web Stream is already configured in your music sources.';
+        _errorMessage =
+            'Web Stream is already configured in your music sources.';
       });
       return;
     }
@@ -155,20 +158,24 @@ class _AddServerScreenState extends State<AddServerScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
+                const Icon(CupertinoIcons.checkmark_circle_fill,
+                    color: Color(0xFF34C759), size: 18),
                 const SizedBox(width: 10),
-                Text(l10n.connectedToWebStream, style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text(l10n.connectedToWebStream,
+                    style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       } else {
         setState(() {
           _isConnecting = false;
-          _errorMessage = authProvider.error ?? 'Failed to connect to Web Stream';
+          _errorMessage =
+              authProvider.error ?? 'Failed to connect to Web Stream';
         });
       }
     } catch (e) {
@@ -184,7 +191,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
 
     var rawUrl = _urlController.text.trim();
     if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
@@ -228,7 +236,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
+                const Icon(CupertinoIcons.checkmark_circle_fill,
+                    color: Color(0xFF34C759), size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -240,13 +249,15 @@ class _AddServerScreenState extends State<AddServerScreen> {
             ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       } else {
         setState(() {
           _isConnecting = false;
-          _errorMessage = authProvider.error ?? 'Connection failed. Check URL and credentials.';
+          _errorMessage = authProvider.error ??
+              'Connection failed. Check URL and credentials.';
         });
       }
     } catch (e) {
@@ -263,10 +274,12 @@ class _AddServerScreenState extends State<AddServerScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+        backgroundColor:
+            isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -302,13 +315,13 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                    color: isDark
+                        ? AppTheme.darkSecondaryText
+                        : AppTheme.lightSecondaryText,
                     letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Provider selection cards
                 _buildProviderCard(
                   family: 'subsonic',
                   title: 'Navidrome / Subsonic',
@@ -320,7 +333,6 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   isDisabled: false,
                 ),
                 const SizedBox(height: 10),
-
                 _buildProviderCard(
                   family: 'jellyfin',
                   title: 'Jellyfin / Emby',
@@ -357,16 +369,11 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   isSelected: _selectedFamily == 'local',
                   isDisabled: false,
                 ),
-
                 const SizedBox(height: 24),
-
-                // Error Message banner if any
                 if (_errorMessage != null) ...[
                   _buildErrorBanner(isDark),
                   const SizedBox(height: 16),
                 ],
-
-                // Dynamic Form Content
                 if (_selectedFamily == 'youtube') ...[
                   _buildYtStreamInfoCard(isDark, hasYtStream),
                 ] else if (_selectedFamily == 'local') ...[
@@ -374,7 +381,6 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 ] else ...[
                   _buildServerForm(isDark),
                 ],
-
                 const SizedBox(height: 32),
               ],
             ),
@@ -415,7 +421,9 @@ class _AddServerScreenState extends State<AddServerScreen> {
           border: Border.all(
             color: isSelected
                 ? primaryColor
-                : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+                : (isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.06)),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -450,16 +458,20 @@ class _AddServerScreenState extends State<AddServerScreen> {
                         title,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: isDisabled
                               ? const Color(0xFF34C759).withValues(alpha: 0.15)
-                              : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.06)),
+                              : (isDark
+                                  ? Colors.white12
+                                  : Colors.black.withValues(alpha: 0.06)),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -480,7 +492,9 @@ class _AddServerScreenState extends State<AddServerScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                      color: isDark
+                          ? AppTheme.darkSecondaryText
+                          : AppTheme.lightSecondaryText,
                     ),
                   ),
                 ],
@@ -492,13 +506,16 @@ class _AddServerScreenState extends State<AddServerScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? primaryColor : (isDark ? Colors.white24 : Colors.black26),
+                  color: isSelected
+                      ? primaryColor
+                      : (isDark ? Colors.white24 : Colors.black26),
                   width: 2,
                 ),
                 color: isSelected ? primaryColor : Colors.transparent,
               ),
               child: isSelected
-                  ? const Center(child: Icon(Icons.check, size: 14, color: Colors.white))
+                  ? const Center(
+                      child: Icon(Icons.check, size: 14, color: Colors.white))
                   : null,
             ),
           ],
@@ -526,7 +543,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
               children: [
                 const Text(
                   'Connection Error',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -566,7 +586,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   color: const Color(0xFFFF3B30).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(CupertinoIcons.sparkles, color: Color(0xFFFF3B30), size: 18),
+                child: const Icon(CupertinoIcons.sparkles,
+                    color: Color(0xFFFF3B30), size: 18),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -575,7 +596,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   children: [
                     Text(
                       'Zero-Config Streaming',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'No server setup or account credentials required',
@@ -589,30 +611,30 @@ class _AddServerScreenState extends State<AddServerScreen> {
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 16),
-
           _buildFeatureBullet(
             icon: CupertinoIcons.music_albums,
             title: 'Global Music Search',
-            subtitle: 'Search and stream millions of tracks, albums, and playlists seamlessly.',
+            subtitle:
+                'Search and stream millions of tracks, albums, and playlists seamlessly.',
             isDark: isDark,
           ),
           const SizedBox(height: 12),
           _buildFeatureBullet(
             icon: CupertinoIcons.antenna_radiowaves_left_right,
             title: 'Dynamic Radio',
-            subtitle: 'Auto-generates seamless radio stations tailored to any song or artist.',
+            subtitle:
+                'Auto-generates seamless radio stations tailored to any song or artist.',
             isDark: isDark,
           ),
           const SizedBox(height: 12),
           _buildFeatureBullet(
             icon: CupertinoIcons.lock_shield,
             title: 'Private & Direct',
-            subtitle: 'Audio streams directly to your device with local smart caching.',
+            subtitle:
+                'Audio streams directly to your device with local smart caching.',
             isDark: isDark,
           ),
-
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -623,17 +645,22 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 disabledBackgroundColor: hasYtStream
                     ? const Color(0xFF34C759).withValues(alpha: 0.3)
                     : Colors.grey.withValues(alpha: 0.3),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: _isConnecting
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2.5),
                     )
                   : Text(
-                      hasYtStream ? 'Web Stream is Already Added' : 'Connect Web Stream',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      hasYtStream
+                          ? 'Web Stream is Already Added'
+                          : 'Connect Web Stream',
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
@@ -657,13 +684,17 @@ class _AddServerScreenState extends State<AddServerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 2),
               Text(
                 subtitle,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
                 ),
               ),
             ],
@@ -697,7 +728,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(CupertinoIcons.folder_fill, color: Colors.white, size: 22),
+                child: const Icon(CupertinoIcons.folder_fill,
+                    color: Colors.white, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -706,14 +738,17 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   children: [
                     const Text(
                       'Local Music Library',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Play local audio files stored on device',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
                       ),
                     ),
                   ],
@@ -735,7 +770,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF34C759),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
             ),
@@ -793,27 +829,30 @@ class _AddServerScreenState extends State<AddServerScreen> {
           color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+            color:
+                isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isJellyfin ? 'Jellyfin Connection Details' : 'Subsonic / Navidrome Details',
+              isJellyfin
+                  ? 'Jellyfin Connection Details'
+                  : 'Subsonic / Navidrome Details',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-
-            // Profile Name
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.profileNameOptional,
-                hintText: isJellyfin ? 'e.g. Home Jellyfin' : 'e.g. Navidrome Cloud',
+                hintText:
+                    isJellyfin ? 'e.g. Home Jellyfin' : 'e.g. Navidrome Cloud',
                 prefixIcon: const Icon(CupertinoIcons.tag),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                fillColor:
+                    isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -821,21 +860,24 @@ class _AddServerScreenState extends State<AddServerScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // Server URL
             TextFormField(
               controller: _urlController,
               keyboardType: TextInputType.url,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.serverUrlRequired;
+                if (v == null || v.trim().isEmpty) {
+                  return AppLocalizations.of(context)!.serverUrlRequired;
+                }
                 return null;
               },
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.serverUrlRequired,
-                hintText: isJellyfin ? 'https://jellyfin.example.com' : 'https://music.example.com',
+                hintText: isJellyfin
+                    ? 'https://jellyfin.example.com'
+                    : 'https://music.example.com',
                 prefixIcon: const Icon(CupertinoIcons.link),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                fillColor:
+                    isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -845,15 +887,18 @@ class _AddServerScreenState extends State<AddServerScreen> {
             if (_isRemoteInsecureHttp(_urlController.text)) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.amber.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(CupertinoIcons.exclamationmark_shield_fill, size: 16, color: Colors.amber),
+                    const Icon(CupertinoIcons.exclamationmark_shield_fill,
+                        size: 16, color: Colors.amber),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -869,8 +914,6 @@ class _AddServerScreenState extends State<AddServerScreen> {
               ),
             ],
             const SizedBox(height: 14),
-
-            // LAN URL (Optional)
             TextFormField(
               controller: _lanUrlController,
               keyboardType: TextInputType.url,
@@ -879,7 +922,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 hintText: 'e.g. http://192.168.1.5:4533',
                 prefixIcon: const Icon(CupertinoIcons.wifi),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                fillColor:
+                    isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -887,19 +931,20 @@ class _AddServerScreenState extends State<AddServerScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // Username
             TextFormField(
               controller: _userController,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.usernameRequired;
+                if (v == null || v.trim().isEmpty) {
+                  return AppLocalizations.of(context)!.usernameRequired;
+                }
                 return null;
               },
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.usernameRequired,
                 prefixIcon: const Icon(CupertinoIcons.person),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                fillColor:
+                    isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -907,13 +952,13 @@ class _AddServerScreenState extends State<AddServerScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // Password
             TextFormField(
               controller: _passController,
               obscureText: _obscurePassword,
               validator: (v) {
-                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordRequired;
+                if (v == null || v.isEmpty) {
+                  return AppLocalizations.of(context)!.passwordRequired;
+                }
                 return null;
               },
               decoration: InputDecoration(
@@ -921,13 +966,17 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 prefixIcon: const Icon(CupertinoIcons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscurePassword ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                    _obscurePassword
+                        ? CupertinoIcons.eye_slash
+                        : CupertinoIcons.eye,
                     size: 20,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                fillColor:
+                    isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -935,8 +984,6 @@ class _AddServerScreenState extends State<AddServerScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Advanced Options Toggle
             InkWell(
               onTap: () => setState(() => _showAdvanced = !_showAdvanced),
               borderRadius: BorderRadius.circular(8),
@@ -945,7 +992,9 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      _showAdvanced ? CupertinoIcons.chevron_down : CupertinoIcons.chevron_right,
+                      _showAdvanced
+                          ? CupertinoIcons.chevron_down
+                          : CupertinoIcons.chevron_right,
                       size: 16,
                       color: primaryColor,
                     ),
@@ -962,13 +1011,14 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 ),
               ),
             ),
-
             if (_showAdvanced) ...[
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF222222) : const Color(0xFFF3F4F6),
+                  color: isDark
+                      ? const Color(0xFF222222)
+                      : const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -976,8 +1026,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
                     SwitchListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: Text(l10n.allowSelfSignedCerts, style: const TextStyle(fontSize: 13)),
-                      subtitle: Text(l10n.allowSelfSignedCertificatesSubtitle, style: const TextStyle(fontSize: 11)),
+                      title: Text(l10n.allowSelfSignedCerts,
+                          style: const TextStyle(fontSize: 13)),
+                      subtitle: Text(l10n.allowSelfSignedCertificatesSubtitle,
+                          style: const TextStyle(fontSize: 11)),
                       value: _allowSelfSigned,
                       onChanged: (v) => setState(() => _allowSelfSigned = v),
                     ),
@@ -986,8 +1038,10 @@ class _AddServerScreenState extends State<AddServerScreen> {
                       SwitchListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.legacyAuthentication, style: const TextStyle(fontSize: 13)),
-                        subtitle: Text(l10n.legacyAuthenticationSubtitle, style: const TextStyle(fontSize: 11)),
+                        title: Text(l10n.legacyAuthentication,
+                            style: const TextStyle(fontSize: 13)),
+                        subtitle: Text(l10n.legacyAuthenticationSubtitle,
+                            style: const TextStyle(fontSize: 11)),
                         value: _useLegacyAuth,
                         onChanged: (v) => setState(() => _useLegacyAuth = v),
                       ),
@@ -1000,7 +1054,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                         _customCertName ?? l10n.customTlsCertificate,
                         style: const TextStyle(fontSize: 13),
                       ),
-                      subtitle: Text(l10n.certificateFileSubtitle, style: const TextStyle(fontSize: 11)),
+                      subtitle: Text(l10n.certificateFileSubtitle,
+                          style: const TextStyle(fontSize: 11)),
                       trailing: IconButton(
                         icon: const Icon(CupertinoIcons.folder, size: 18),
                         onPressed: _pickCustomCertificate,
@@ -1014,7 +1069,8 @@ class _AddServerScreenState extends State<AddServerScreen> {
                         _clientCertName ?? l10n.clientCertificate,
                         style: const TextStyle(fontSize: 13),
                       ),
-                      subtitle: Text(l10n.clientIdentityFileSubtitle, style: const TextStyle(fontSize: 11)),
+                      subtitle: Text(l10n.clientIdentityFileSubtitle,
+                          style: const TextStyle(fontSize: 11)),
                       trailing: IconButton(
                         icon: const Icon(CupertinoIcons.folder, size: 18),
                         onPressed: _pickClientCertificate,
@@ -1030,10 +1086,14 @@ class _AddServerScreenState extends State<AddServerScreen> {
                           prefixIcon: const Icon(CupertinoIcons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureClientCertPass ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                              _obscureClientCertPass
+                                  ? CupertinoIcons.eye_slash
+                                  : CupertinoIcons.eye,
                               size: 18,
                             ),
-                            onPressed: () => setState(() => _obscureClientCertPass = !_obscureClientCertPass),
+                            onPressed: () => setState(() =>
+                                _obscureClientCertPass =
+                                    !_obscureClientCertPass),
                           ),
                         ),
                       ),
@@ -1042,27 +1102,27 @@ class _AddServerScreenState extends State<AddServerScreen> {
                 ),
               ),
             ],
-
             const SizedBox(height: 24),
-
-            // Submit Button
             SizedBox(
               width: double.infinity,
               height: 50,
               child: FilledButton(
                 onPressed: _isConnecting ? null : _connectServer,
                 style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _isConnecting
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2.5),
                       )
                     : const Text(
                         'Connect & Save Server',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
                       ),
               ),
             ),

@@ -11,12 +11,12 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
   final bool isDark;
 
   LibrarySearchDelegate({required this.libraryProvider, required this.isDark})
-    : super(
-        searchFieldLabel: 'Search in Library...',
-        searchFieldStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
-        ),
-      );
+      : super(
+          searchFieldLabel: 'Search in Library...',
+          searchFieldStyle: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        );
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -139,7 +139,8 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
               ),
             ),
             title: Text(playlist.name),
-            subtitle: Text(AppLocalizations.of(context)!.songsCount(playlist.songCount ?? 0)),
+            subtitle: Text(AppLocalizations.of(context)!
+                .songsCount(playlist.songCount ?? 0)),
             onTap: () {
               close(context, '');
               NavigationHelper.push(

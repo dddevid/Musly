@@ -7,44 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
-/// Background-service audio handler (iOS + Android).
-///
-/// Wraps [AudioPlayer] (just_audio) and bridges the [audio_service] protocol
-/// so that:
-///   • iOS lock-screen controls (play/pause/skip/seek) call back to
-///     [PlayerProvider] without going through the custom iOSSystemPlugin
-///     MPRemoteCommandCenter registration.
-///   • [MPNowPlayingInfoCenter] is updated automatically by the audio_service
-///     iOS plugin whenever [mediaItem] changes.
-///   • On Android, audio_service hosts the MediaBrowserService used by
-///     Android Auto: the browse tree, voice/keyboard search and playback
-///     commands are served by this handler, even when the app UI has never
-///     been opened (audio_service spawns a headless Flutter engine and runs
-///     `main()`).
-///
-/// [PlayerProvider] receives this handler and uses [player] directly for all
-/// just_audio operations.  It calls [updateNowPlaying] whenever the current
-/// song changes to push metadata up to the lock screen / Control Center /
-/// Android Auto.
 class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
-  // On Android, audio focus is owned entirely by AndroidSystemPlugin.kt (see
-  // PlayerProvider._ensureAudioFocus). just_audio's own automatic
-  // audio_session activation/interruption handling is disabled here so it
-  // can't silently gate play() on a failed focus request, or fire a second,
-  // conflicting pause() on interruption/headphone-unplug. iOS/desktop/web
-  // keep the defaults (audio_session drives Control Center/lock-screen
-  // interruptions there).
   final AudioPlayer _player = AudioPlayer(
     handleAudioSessionActivation: false,
     handleInterruptions: false,
   );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
 
-  // ---------------------------------------------------------------------------
-  // Android Auto browse tree media IDs.
-  // Kept identical to the legacy MusicService scheme so play-from-media-id
-  // handling in PlayerProvider keeps working unchanged.
-  // ---------------------------------------------------------------------------
   static const mediaIdRecent = 'RECENT';
   static const mediaIdAlbums = 'ALBUMS';
   static const mediaIdArtists = 'ARTISTS';
@@ -53,13 +22,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   static const _artistPrefix = 'artist_';
   static const _playlistPrefix = 'playlist_';
 
-  /// Exposed so [PlayerProvider] can still call setUrl, play, pause, seek, etc.
   AudioPlayer get player => _player;
 
-  // ---------------------------------------------------------------------------
-  // Callbacks wired by PlayerProvider AFTER construction.
-  // These ensure lock-screen / AirPods / Bluetooth commands reach the provider.
-  // ---------------------------------------------------------------------------
   Future<void> Function()? onPlay;
   Future<void> Function()? onPause;
   Future<void> Function()? onStop;
@@ -68,16 +32,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> Function(Duration)? onSeekTo;
   Future<void> Function()? onTogglePlayPause;
 
-  // ---------------------------------------------------------------------------
-  // Android Auto callbacks.
-  // Browse data getters are wired by LibraryProvider; song-level getters,
-  // search and playback are wired by PlayerProvider. All of them exchange the
-  // same map shapes used by the legacy AndroidAutoService bridge:
-  //   songs:     {id, title, artist, album, artworkUrl}
-  //   albums:    {id, name, artist, artworkUrl}
-  //   artists:   {id, name, albumCount}
-  //   playlists: {id, name, songCount, artworkUrl}
-  // ---------------------------------------------------------------------------
   Future<List<Map<String, dynamic>>> Function()? onGetRecentSongs;
   Future<List<Map<String, dynamic>>> Function()? onGetLibraryAlbums;
   Future<List<Map<String, dynamic>>> Function()? onGetLibraryArtists;
@@ -91,42 +45,25 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> Function(String mediaId)? onPlayFromMediaId;
   Future<void> Function(String query)? onPlayFromSearch;
 
-  /// Called when a remote-volume change is requested from the media session
-  /// (Android Auto / Bluetooth volume keys while casting or on UPnP).
-  /// The argument is a volume percentage (0–100).
   void Function(int volumePercent)? onSetRemoteVolume;
 
-  // Modern music player design
-  /// Used by the Android Auto browse tree to show only the sections that
-  /// make sense without a pre-loaded album/artist catalog.
   bool Function()? onIsYoutubeMode;
 
   final Map<String, BehaviorSubject<Map<String, dynamic>>> _childrenSubjects =
       {};
 
-  // Remote (UPnP/Cast) volume state mirrored into the media session.
   bool _remotePlayback = false;
   int _remoteVolume = 50;
   static const _remoteMaxVolume = 100;
   static const _remoteVolumeStep = 5;
 
   MuslyAudioHandler() {
-    // Forward just_audio playback events → audio_service playback state.
-    // This drives the iOS Control Center / lock screen widget and the
-    // Android media notification automatically.
     _player.playbackEventStream.map(_buildPlaybackState).pipe(playbackState);
 
-    // Ensure Android Auto always sees LocalAndroidPlaybackInfo at startup.
-    // Without this, Auto can inherit a stale RemoteAndroidPlaybackInfo from a
-    // previous session and the hardware volume keys stop working.
     if (!kIsWeb && Platform.isAndroid) {
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // audio_service protocol — called by the system (lock screen, headphones …)
-  // ---------------------------------------------------------------------------
 
   @override
   Future<void> play() => onPlay?.call() ?? _player.play();
@@ -168,10 +105,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
             (_player.playing ? _player.pause() : _player.play()));
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Android Auto: browse tree
-  // ---------------------------------------------------------------------------
 
   @override
   Future<List<MediaItem>> getChildren(
@@ -224,9 +157,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  /// Tell subscribed media browsers (Android Auto) that the children of the
-  /// given parents changed, so they re-query [getChildren]. With no argument,
-  /// all four top-level categories are refreshed.
   void notifyAutoChildrenChanged([List<String>? parents]) {
     final targets = parents ??
         const [mediaIdRecent, mediaIdAlbums, mediaIdArtists, mediaIdPlaylists];
@@ -254,14 +184,12 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String mediaId, [
     Map<String, dynamic>? extras,
   ]) async {
-    // Push a "loading" state immediately so Android Auto shows a spinner
-    // instead of a blank/black screen while the track is being resolved.
     _pushLoadingState();
     try {
       await onPlayFromMediaId?.call(mediaId);
     } catch (e, st) {
       debugPrint('AudioHandler: playFromMediaId($mediaId) failed: $e\n$st');
-      // Restore idle state so Auto doesn't stay stuck on the loading screen.
+
       _pushIdleState();
     }
   }
@@ -280,8 +208,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  /// Pushes a buffering/loading playback state so Android Auto shows a spinner
-  /// immediately when the user taps a track, preventing the black screen.
   void _pushLoadingState() {
     playbackState.add(
       playbackState.value.copyWith(
@@ -301,7 +227,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  /// Restores idle state after a failed playFromMediaId/playFromSearch.
   void _pushIdleState() {
     playbackState.add(
       playbackState.value.copyWith(
@@ -313,9 +238,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   List<MediaItem> _rootItems() {
     final isYoutube = onIsYoutubeMode?.call() ?? false;
-    // In Web Stream mode Albums/Artists are omitted because there is no
-    // pre-loaded catalog; the user can still browse Playlists and Recent
-    // tracks, and use voice/keyboard search.
+
     if (isYoutube) {
       return const [
         MediaItem(
@@ -430,11 +353,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     return Duration(seconds: seconds);
   }
 
-  // ---------------------------------------------------------------------------
-  // Remote playback volume (UPnP / Cast) mirrored into the media session so
-  // hardware volume keys and Android Auto control the remote renderer.
-  // ---------------------------------------------------------------------------
-
   void setRemotePlayback({required bool isRemote, int volume = 50}) {
     if (kIsWeb || !Platform.isAndroid) return;
     _remotePlayback = isRemote;
@@ -449,8 +367,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
       );
     } else {
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
-      // Replace the stale remote playback state immediately instead of
-      // waiting for the local player to emit its next playback event.
+
       playbackState.add(_buildPlaybackState(_player.playbackEvent));
     }
   }
@@ -485,10 +402,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     onSetRemoteVolume?.call(_remoteVolume);
   }
 
-  // ---------------------------------------------------------------------------
-  // Called by PlayerProvider to push metadata to the lock screen.
-  // ---------------------------------------------------------------------------
-
   void updateNowPlaying({
     required String id,
     required String title,
@@ -514,9 +427,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     mediaItem.add(const MediaItem(id: '', title: ''));
   }
 
-  /// Pushes an explicit playback state while rendering on a remote target
-  /// (UPnP / Cast / jukebox), where the local just_audio player is paused and
-  /// would otherwise report "paused" to the media session and Android Auto.
   void updateRemotePlaybackState({
     required bool playing,
     required Duration position,
@@ -543,10 +453,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Internal: map just_audio state → audio_service PlaybackState
-  // ---------------------------------------------------------------------------
-
   PlaybackState _buildPlaybackState(PlaybackEvent event) {
     final processingStateMap = {
       ProcessingState.idle: AudioProcessingState.idle,
@@ -570,8 +476,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
         MediaAction.playFromSearch,
       },
       androidCompactActionIndices: const [0, 1, 2],
-      processingState:
-          processingStateMap[_player.processingState] ??
+      processingState: processingStateMap[_player.processingState] ??
           AudioProcessingState.idle,
       playing: _player.playing,
       updatePosition: _player.position,
@@ -581,10 +486,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  // ---------------------------------------------------------------------------
-
-  /// Propagates speed+pitch to the native player via platform channel.
-  /// Returns true if the native plugin succeeded.
   Future<bool> setPlaybackParameters(double speed, double pitch) async {
     try {
       final result = await _pitchChannel.invokeMethod('setPlaybackParameters', {
@@ -611,16 +512,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 }
 
-/// Initialises [audio_service] and returns the singleton [MuslyAudioHandler].
-/// Call this once from [main()] before [runApp()].
-///
-/// On iOS and Android, AudioService.init() is called so the audio engine runs
-/// as a proper background service. On Android this also registers the
-/// MediaBrowserService that Android Auto connects to: when Auto starts with
-/// the app closed, audio_service spawns a headless Flutter engine, runs
-/// main(), and this handler serves the browse tree, search and playback.
-/// On desktop/web the handler is created directly (audio_service has no
-/// backend there).
 Future<MuslyAudioHandler> initAudioService() async {
   if (!kIsWeb && (Platform.isIOS || Platform.isAndroid || Platform.isMacOS)) {
     return AudioService.init(
@@ -628,9 +519,6 @@ Future<MuslyAudioHandler> initAudioService() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.devid.musly.channel.audio',
         androidNotificationChannelName: 'Musly',
-        // With androidStopForegroundOnPause=false the service never leaves
-        // the foreground, so androidNotificationOngoing would have no
-        // effect (audio_service asserts against combining the two).
         androidNotificationOngoing: false,
         androidStopForegroundOnPause: false,
         androidNotificationIcon: 'mipmap/ic_launcher',
@@ -642,6 +530,6 @@ Future<MuslyAudioHandler> initAudioService() async {
       ),
     );
   }
-  // Desktop / web: no AudioService wrapper needed.
+
   return MuslyAudioHandler();
 }

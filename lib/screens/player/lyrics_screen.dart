@@ -16,26 +16,24 @@ class LyricsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     final view = View.of(context);
     final viewPadding = MediaQueryData.fromView(view).padding;
     final mediaQueryPadding = MediaQuery.of(context).padding;
-    final topPadding = viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top;
+    final topPadding =
+        viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top;
     final headerClearance = topPadding > 0
         ? topPadding + (isLandscape ? 44.0 : 64.0)
         : (isLandscape ? 48.0 : 56.0);
 
-    // The background is provided by the parent (NowPlayingScreen)
-    // Here we just need to provide the transparent scaffold and the list view
     return Scaffold(
-      backgroundColor: Colors.transparent, // Let the animated background show through
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         top: false,
         child: Column(
           children: [
-            // Header is handled by NowPlayingScreen in a Stack so it persists across page views,
-            SizedBox(height: headerClearance), // Space for header
-            
+            SizedBox(height: headerClearance),
             Expanded(
               child: LyricsListView(
                 lyrics: lyrics,
@@ -43,10 +41,6 @@ class LyricsScreen extends StatelessWidget {
                 onSeek: onSeek,
               ),
             ),
-            
-            // Optional: Mini controls at the bottom could go here, 
-            // but for simplicity we rely on the main Now Playing controls when swiping back,
-            // or we can add a mini player row specifically for lyrics view.
           ],
         ),
       ),

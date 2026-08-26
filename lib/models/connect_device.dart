@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+
 import 'song.dart';
 
-/// Supported operation modes for Musly Connect peer compatibility matching.
 enum ConnectMode {
   subsonic,
   jellyfin,
@@ -11,15 +11,14 @@ enum ConnectMode {
   unknown,
 }
 
-/// Represents a peer Musly device discovered on the local area network.
 class ConnectDevice {
   final String id;
   final String name;
-  final String platform; // android, ios, windows, macos, linux
+  final String platform;
   final String ip;
   final int port;
   final ConnectMode mode;
-  final String serverHash; // Hash of current server URL (or 'web_stream' / 'local')
+  final String serverHash;
   final Song? currentSong;
   final String? currentSongTitle;
   final String? currentSongArtist;
@@ -61,7 +60,10 @@ class ConnectDevice {
     DateTime? lastSeen,
   }) : lastSeen = lastSeen ?? DateTime.now();
 
-  bool isCompatibleWith({required ConnectMode myMode, required String myServerHash}) {
+  bool isCompatibleWith({
+    required ConnectMode myMode,
+    required String myServerHash,
+  }) {
     if (mode != myMode) return false;
     return serverHash == myServerHash;
   }
@@ -90,7 +92,10 @@ class ConnectDevice {
         'partyGuestCount': partyGuestCount,
       };
 
-  factory ConnectDevice.fromJson(Map<String, dynamic> json, {String? overrideIp}) {
+  factory ConnectDevice.fromJson(
+    Map<String, dynamic> json, {
+    String? overrideIp,
+  }) {
     ConnectMode parsedMode;
     try {
       parsedMode = ConnectMode.values.firstWhere(
@@ -113,8 +118,10 @@ class ConnectDevice {
       mode: parsedMode,
       serverHash: json['serverHash'] as String? ?? '',
       currentSong: parsedSong,
-      currentSongTitle: (json['currentSongTitle'] as String?) ?? parsedSong?.title,
-      currentSongArtist: (json['currentSongArtist'] as String?) ?? parsedSong?.artist,
+      currentSongTitle:
+          (json['currentSongTitle'] as String?) ?? parsedSong?.title,
+      currentSongArtist:
+          (json['currentSongArtist'] as String?) ?? parsedSong?.artist,
       coverArt: (json['coverArt'] as String?) ?? parsedSong?.coverArt,
       isPlaying: json['isPlaying'] as bool? ?? false,
       volume: (json['volume'] as num?)?.toDouble() ?? 1.0,
@@ -180,7 +187,6 @@ class ConnectDevice {
   }
 }
 
-/// Commands sent between Musly Connect devices.
 enum ConnectCommandType {
   play,
   pause,
@@ -194,7 +200,6 @@ enum ConnectCommandType {
   transferQueue,
   requestState,
   stateUpdate,
-  // BeatSync [BETA] Commands
   ntpProbe,
   ntpResponse,
   beatSyncSchedulePlay,
@@ -235,7 +240,8 @@ class ConnectMessage {
       type: type,
       payload: (json['payload'] as Map<String, dynamic>?) ?? {},
       senderId: json['senderId'] as String? ?? '',
-      timestamp: json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      timestamp:
+          json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 

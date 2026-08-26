@@ -113,7 +113,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Future<void> _downloadAlbum() async {
     if (_songs.isEmpty || _album == null) return;
     final offlineService = OfflineService();
-    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
+    final subsonicService =
+        Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
     offlineService.queuePlaylistDownload(_album!.id, _songs, subsonicService);
     if (mounted) {
@@ -139,9 +140,12 @@ class _AlbumScreenState extends State<AlbumScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.removeDownloadsTitle),
-        content: Text(l10n.removeAlbumDownloadsConfirm(_songs.length, _album!.name)),
+        content:
+            Text(l10n.removeAlbumDownloadsConfirm(_songs.length, _album!.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
@@ -184,10 +188,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   Future<void> _toggleLike() async {
     if (_album == null) return;
-    
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
     final isStarred = _album!.starred == true;
-    
+
     setState(() {
       _album!.starred = !isStarred;
     });
@@ -199,7 +204,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
         await libraryProvider.star(albumId: _album!.id);
       }
     } catch (e) {
-      // Revert on failure
       setState(() {
         _album!.starred = isStarred;
       });
@@ -217,7 +221,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     final isStarred = _album!.starred == true;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final l10n = AppLocalizations.of(context)!;
-    
+
     return IconButton(
       tooltip: isStarred ? l10n.removeFromFavorites : l10n.addToFavorites,
       onPressed: _toggleLike,
@@ -342,11 +346,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       final maxHeight = isSmall ? 280.0 : 360.0;
                       final currentHeight = constraints.maxHeight;
                       final delta = (maxHeight - minHeight).clamp(1.0, 999.0);
-                      final progress = ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
+                      final progress =
+                          ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
 
                       final maxArtSize = isSmall ? 190.0 : 240.0;
-                      final availableHeight = (currentHeight - topPadding - (isSmall ? 16.0 : 24.0)).clamp(0.0, maxHeight);
-                      final artDimension = (maxArtSize * progress).clamp(0.0, availableHeight);
+                      final availableHeight =
+                          (currentHeight - topPadding - (isSmall ? 16.0 : 24.0))
+                              .clamp(0.0, maxHeight);
+                      final artDimension =
+                          (maxArtSize * progress).clamp(0.0, availableHeight);
                       final opacity = (progress * 1.3 - 0.1).clamp(0.0, 1.0);
 
                       if (artDimension <= 10.0 || opacity <= 0.0) {
@@ -356,12 +364,14 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       return ValueListenableBuilder<Set<String>>(
                         valueListenable: OfflineService().downloadedPlaylistIds,
                         builder: (context, downloaded, _) {
-                          final allDownloaded = _album != null && downloaded.contains(_album!.id);
+                          final allDownloaded =
+                              _album != null && downloaded.contains(_album!.id);
 
                           return Center(
                             child: Padding(
                               padding: EdgeInsets.only(
-                                top: topPadding + (isSmall ? 8.0 : 12.0) * progress,
+                                top: topPadding +
+                                    (isSmall ? 8.0 : 12.0) * progress,
                                 bottom: (isSmall ? 10.0 : 16.0) * progress,
                               ),
                               child: Opacity(
@@ -374,14 +384,17 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                       AlbumArtwork(
                                         coverArt: _album!.coverArt,
                                         size: artDimension,
-                                        borderRadius: (14.0 * progress).clamp(4.0, 14.0),
+                                        borderRadius:
+                                            (14.0 * progress).clamp(4.0, 14.0),
                                         shadow: progress > 0.3
                                             ? BoxShadow(
                                                 color: Colors.black.withValues(
-                                                  alpha: (isDark ? 0.35 : 0.2) * progress,
+                                                  alpha: (isDark ? 0.35 : 0.2) *
+                                                      progress,
                                                 ),
                                                 blurRadius: 16.0 * progress,
-                                                offset: Offset(0, 8.0 * progress),
+                                                offset:
+                                                    Offset(0, 8.0 * progress),
                                               )
                                             : null,
                                       ),
@@ -395,7 +408,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                               shape: BoxShape.circle,
                                             ),
                                             child: const Icon(
-                                              CupertinoIcons.arrow_down_circle_fill,
+                                              CupertinoIcons
+                                                  .arrow_down_circle_fill,
                                               color: Colors.grey,
                                               size: 24,
                                             ),
@@ -415,7 +429,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 actions: [
                   IconButton(
                     tooltip: AppLocalizations.of(context)!.searchInAlbum,
-                    icon: Icon(_showSearch ? CupertinoIcons.search_circle_fill : CupertinoIcons.search),
+                    icon: Icon(_showSearch
+                        ? CupertinoIcons.search_circle_fill
+                        : CupertinoIcons.search),
                     onPressed: () {
                       setState(() {
                         _showSearch = !_showSearch;
@@ -428,12 +444,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     tooltip: AppLocalizations.of(context)!.moreOptions,
                     onSelected: (value) {
                       if (value == 'queue_all') {
-                        final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                        final playerProvider =
+                            Provider.of<PlayerProvider>(context, listen: false);
                         for (final s in _songs) {
                           playerProvider.addToQueue(s);
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppLocalizations.of(context)!.songsAddedToQueue(_songs.length))),
+                          SnackBar(
+                              content: Text(AppLocalizations.of(context)!
+                                  .songsAddedToQueue(_songs.length))),
                         );
                       }
                     },
@@ -442,7 +461,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         value: 'queue_all',
                         child: Row(
                           children: [
-                            const Icon(CupertinoIcons.text_badge_plus, size: 18),
+                            const Icon(CupertinoIcons.text_badge_plus,
+                                size: 18),
                             const SizedBox(width: 12),
                             Text(AppLocalizations.of(context)!.addAllToQueue),
                           ],
@@ -485,7 +505,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       const SizedBox(height: 4),
                       Text(
                         [
-                          AppLocalizations.of(context)!.songsCount(_songs.length),
+                          AppLocalizations.of(context)!
+                              .songsCount(_songs.length),
                           if (_album!.genre != null)
                             _album!.genre!.toUpperCase(),
                           if (_album!.year != null) _album!.year.toString(),
@@ -522,8 +543,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       if (_showSearch) ...[
                         const SizedBox(height: 16),
                         CupertinoSearchTextField(
-                          placeholder: AppLocalizations.of(context)!.filterTracks,
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                          placeholder:
+                              AppLocalizations.of(context)!.filterTracks,
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black),
                           onChanged: (val) {
                             setState(() {
                               _searchQuery = val.trim().toLowerCase();
@@ -540,7 +563,12 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 builder: (context) {
                   final displaySongs = _searchQuery.isEmpty
                       ? _songs
-                      : _songs.where((s) => s.title.toLowerCase().contains(_searchQuery) || (s.artist?.toLowerCase().contains(_searchQuery) ?? false)).toList();
+                      : _songs
+                          .where((s) =>
+                              s.title.toLowerCase().contains(_searchQuery) ||
+                              (s.artist?.toLowerCase().contains(_searchQuery) ??
+                                  false))
+                          .toList();
                   return SliverFixedExtentList(
                     itemExtent: 58.0,
                     delegate: SliverChildBuilderDelegate((context, index) {

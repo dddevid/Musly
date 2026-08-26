@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A compact Dolby Atmos badge shown next to songs that support it.
 class DolbyAtmosBadge extends StatelessWidget {
   final double fontSize;
   final EdgeInsets padding;
@@ -28,7 +27,9 @@ class DolbyAtmosBadge extends StatelessWidget {
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.3,
-          color: isDark ? Colors.white.withValues(alpha: 0.85) : Colors.black.withValues(alpha: 0.7),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.85)
+              : Colors.black.withValues(alpha: 0.7),
         ),
       ),
     );

@@ -48,7 +48,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
       ),
       child: Row(
         children: [
-          // Left: Radio Info
           Expanded(
             flex: 3,
             child: Row(
@@ -94,7 +93,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFFA243C).withValues(alpha: 0.5),
+                                  color: const Color(0xFFFA243C)
+                                      .withValues(alpha: 0.5),
                                   blurRadius: 4,
                                 )
                               ],
@@ -118,8 +118,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
-          // Center: Radio Play/Pause
           Expanded(
             flex: 4,
             child: Selector<PlayerProvider, bool>(
@@ -148,8 +146,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               },
             ),
           ),
-
-          // Right: Volume
           Expanded(
             flex: 3,
             child: FittedBox(
@@ -182,7 +178,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
       ),
       child: Row(
         children: [
-          // Left: Track Info + Cover + Like
           Expanded(
             flex: 3,
             child: Row(
@@ -209,7 +204,8 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
-                      if (currentSong.artist != null || currentSong.artistParticipants != null)
+                      if (currentSong.artist != null ||
+                          currentSong.artistParticipants != null)
                         MultiArtistWidget(
                           artists: currentSong.artistParticipants,
                           artistFallback: currentSong.artist,
@@ -249,8 +245,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
-          // Center: Controls + Progress Bar
           Expanded(
             flex: 5,
             child: Column(
@@ -262,8 +256,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
               ],
             ),
           ),
-
-          // Right: Lyrics, Queue, Cast, Volume
           Expanded(
             flex: 3,
             child: FittedBox(
@@ -273,7 +265,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Lyrics Button
                   ValueListenableBuilder<bool>(
                     valueListenable: NavigationHelper.isDesktopLyricsOpen,
                     builder: (context, isLyricsOpen, _) {
@@ -295,8 +286,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     },
                   ),
                   const SizedBox(width: 4),
-
-                  // Queue Button
                   ValueListenableBuilder<bool>(
                     valueListenable: NavigationHelper.isDesktopQueueOpen,
                     builder: (context, isQueueOpen, _) {
@@ -318,8 +307,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     },
                   ),
                   const SizedBox(width: 4),
-
-                  // Connect to device
                   IconButton(
                     icon: const Icon(
                       Icons.devices_other_rounded,
@@ -334,8 +321,6 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     onPressed: () => ConnectDevicesModal.show(context),
                   ),
                   const SizedBox(width: 8),
-
-                  // Volume slider
                   const _VolumeControl(),
                 ],
               ),
@@ -403,13 +388,13 @@ class _PlayerControls extends StatelessWidget {
         p.repeatMode,
       ),
       builder: (context, data, _) {
-        final (isPlaying, shuffleEnabled, hasPrevious, hasNext, repeatMode) = data;
+        final (isPlaying, shuffleEnabled, hasPrevious, hasNext, repeatMode) =
+            data;
         final provider = context.read<PlayerProvider>();
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Shuffle
             IconButton(
               icon: Icon(
                 Icons.shuffle_rounded,
@@ -423,8 +408,6 @@ class _PlayerControls extends StatelessWidget {
               hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
-
-            // Previous
             IconButton(
               icon: Icon(
                 Icons.skip_previous_rounded,
@@ -437,15 +420,11 @@ class _PlayerControls extends StatelessWidget {
               hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 12),
-
-            // Play / Pause Circle
             _PlayPauseCircle(
               isPlaying: isPlaying,
               onTap: provider.togglePlayPause,
             ),
             const SizedBox(width: 12),
-
-            // Next
             IconButton(
               icon: Icon(
                 Icons.skip_next_rounded,
@@ -458,8 +437,6 @@ class _PlayerControls extends StatelessWidget {
               hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
-
-            // Repeat
             IconButton(
               icon: Icon(
                 repeatMode == RepeatMode.one

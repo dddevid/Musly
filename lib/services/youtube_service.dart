@@ -1,4 +1,3 @@
-// ignore_for_file: experimental_member_use
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -11,9 +10,6 @@ import 'library_database_service.dart';
 import 'subsonic_service.dart';
 import 'ytdlp_service.dart';
 
-// Modern music player design
-/// matching headers (User-Agent, Range), eliminate HTTP 403 on ExoPlayer / Media3,
-/// and provide resilient offline / weak-connection playback.
 class _YoutubeStreamAudioSource extends StreamAudioSource {
   final String _videoId;
   final YtDlpService _ytdlp;
@@ -63,8 +59,6 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
   Future<StreamAudioResponse> request([int? start, int? end]) async {
     final cleanId = _videoId.replaceFirst('ytmusic://', '');
 
-    // 1. If audio is already completely cached locally on disk, serve directly from disk!
-    // This allows 100% offline playback and zero startup latency on repeated plays.
     final cachedFile = await _getCachedFile(cleanId);
     if (cachedFile != null) {
       final fileLength = await cachedFile.length();
@@ -72,10 +66,12 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
       final e = (end != null && end < fileLength) ? end + 1 : fileLength;
       final contentLength = e - s;
 
-      final isWebm = cachedFile.path.endsWith('.webm') || cachedFile.path.endsWith('.opus');
+      final isWebm = cachedFile.path.endsWith('.webm') ||
+          cachedFile.path.endsWith('.opus');
       final type = isWebm ? 'audio/webm' : 'audio/mp4';
 
-      debugPrint('[Web Stream] Serving "$cleanId" from local disk cache ($s-$e of $fileLength bytes)');
+      debugPrint(
+          '[Web Stream] Serving "$cleanId" from local disk cache ($s-$e of $fileLength bytes)');
       return StreamAudioResponse(
         sourceLength: fileLength,
         contentLength: contentLength > 0 ? contentLength : null,
@@ -85,11 +81,11 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
       );
     }
 
-    // 2. Stream online with retry logic for weak / low-bandwidth connections
     int retries = 0;
     while (true) {
       try {
-        final streamInfo = await _ytdlp.resolveStreamInfo(cleanId, forceRefresh: retries > 0);
+        final streamInfo =
+            await _ytdlp.resolveStreamInfo(cleanId, forceRefresh: retries > 0);
         final s = start ?? 0;
 
         final req = await _client.getUrl(Uri.parse(streamInfo.url));
@@ -110,7 +106,8 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
         final resp = await req.close();
 
         if (resp.statusCode == 403 || resp.statusCode == 429) {
-          debugPrint('[Web Stream] Stream rejected (${resp.statusCode}) for $cleanId, refreshing...');
+          debugPrint(
+              '[Web Stream] Stream rejected (${resp.statusCode}) for $cleanId, refreshing...');
           _ytdlp.invalidateCache(cleanId);
           if (retries < 2) {
             retries++;
@@ -132,7 +129,6 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
         final isWebm = (streamInfo.ext == 'webm' || streamInfo.ext == 'opus');
         final type = isWebm ? 'audio/webm' : 'audio/mp4';
 
-        // When reading from offset 0, save to disk cache progressively in the background
         if (s == 0 && end == null) {
           final partFile = await _getPartFile(cleanId);
           final controller = StreamController<List<int>>();
@@ -157,12 +153,15 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
               try {
                 await sink?.flush();
                 await sink?.close();
-                if (await partFile.exists() && (await partFile.length()) > 50000) {
+                if (await partFile.exists() &&
+                    (await partFile.length()) > 50000) {
                   final safeId = _sanitizeId(cleanId);
                   final tempDir = await getTemporaryDirectory();
-                  final target = File('${tempDir.path}/musly_yt_cache/yt_$safeId.audio');
+                  final target =
+                      File('${tempDir.path}/musly_yt_cache/yt_$safeId.audio');
                   await partFile.rename(target.path);
-                  debugPrint('[Web Stream] Cached complete audio for "$cleanId" to disk');
+                  debugPrint(
+                      '[Web Stream] Cached complete audio for "$cleanId" to disk');
                 }
               } catch (_) {}
             },
@@ -188,11 +187,13 @@ class _YoutubeStreamAudioSource extends StreamAudioSource {
       } catch (e) {
         if (retries < 2) {
           retries++;
-          debugPrint('[Web Stream] Retrying request for $cleanId (attempt $retries): $e');
+          debugPrint(
+              '[Web Stream] Retrying request for $cleanId (attempt $retries): $e');
           await Future.delayed(Duration(milliseconds: 400 * retries));
           continue;
         }
-        debugPrint('[Web Stream] StreamAudioSource request failed for $cleanId: $e');
+        debugPrint(
+            '[Web Stream] StreamAudioSource request failed for $cleanId: $e');
         rethrow;
       }
     }
@@ -206,8 +207,6 @@ class YoutubeService {
   void dispose() {
     _ytdlp.dispose();
   }
-
-  // ── Connectivity ──────────────────────────────────────────────────────────
 
   Future<PingResult> pingWithError() async {
     try {
@@ -223,25 +222,21 @@ class YoutubeService {
         serverVersion: '1.0',
       );
     } catch (e) {
-      return PingResult(success: false, error: 'Cannot reach stream service: $e');
+      return PingResult(
+          success: false, error: 'Cannot reach stream service: $e');
     }
   }
 
-  // ── Cover art & stream ────────────────────────────────────────────────────
-
-  // Modern music player design
-  /// Automatically upgrades Google thumbnail parameters and video thumbnail URLs.
   String getCoverArtUrl(String? id, {int size = 800}) {
     if (id == null || id.isEmpty) return '';
     final effectiveSize = size > 0 ? size : 800;
 
     if (id.startsWith('http://') || id.startsWith('https://')) {
-      // Modern music player design
       if (id.contains('googleusercontent.com') || id.contains('ggpht.com')) {
         final base = id.split('=')[0];
         return '$base=w$effectiveSize-h$effectiveSize-l90-rj';
       }
-      // Modern music player design
+
       if (id.contains('i.ytimg.com') || id.contains('img.youtube.com')) {
         final match = RegExp(r'/vi/([a-zA-Z0-9_-]{11})').firstMatch(id);
         if (match != null) {
@@ -252,29 +247,22 @@ class YoutubeService {
       return id;
     }
 
-    // Modern music player design
     if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(id)) {
       return 'https://i.ytimg.com/vi/$id/hqdefault.jpg';
     }
     return '';
   }
 
-  /// Returns a lightweight stream URL.
   String getStreamUrl(String videoId) => 'ytmusic://$videoId';
 
-  /// Resolves the actual direct audio stream URL.
   Future<String> resolveStreamUrl(String videoId) async {
     final cleanId = videoId.replaceFirst('ytmusic://', '');
     return await _ytdlp.resolveStreamUrl(cleanId);
   }
 
-  /// Builds a [StreamAudioSource] that proxies and caches audio through Dart's HttpClient
-  /// with matching headers to prevent HTTP 403 and enable fast, smooth playback.
   Future<StreamAudioSource> buildAudioSource(String videoId) async {
     return _YoutubeStreamAudioSource(videoId, _ytdlp);
   }
-
-  // ── Model mappers ─────────────────────────────────────────────────────────
 
   Song _mapDictToSong(Map<String, dynamic> d) {
     final id = d['id'] as String;
@@ -294,8 +282,6 @@ class YoutubeService {
       coverArt: coverArt,
     );
   }
-
-  // ── Artists / Albums ──────────────────────────────────────────────────────
 
   Future<List<Artist>> getArtists() async {
     try {
@@ -369,7 +355,9 @@ class YoutubeService {
   Future<List<Song>> getAlbumSongs(String albumId) async {
     try {
       final starred = await _db.getStarredSongs();
-      final matching = starred.where((s) => s.albumId == albumId || s.album == albumId).toList();
+      final matching = starred
+          .where((s) => s.albumId == albumId || s.album == albumId)
+          .toList();
       if (matching.isNotEmpty) return matching;
 
       final videos = await _ytdlp.getPlaylistVideos(albumId);
@@ -383,10 +371,15 @@ class YoutubeService {
   Future<List<Album>> getArtistAlbums(String channelOrArtistId) async {
     try {
       final starred = await _db.getStarredSongs();
-      final artistSongs = starred.where((s) => s.artistId == channelOrArtistId || s.artist == channelOrArtistId).toList();
+      final artistSongs = starred
+          .where((s) =>
+              s.artistId == channelOrArtistId || s.artist == channelOrArtistId)
+          .toList();
       final albumMap = <String, Album>{};
       for (final s in artistSongs) {
-        if (s.album != null && s.album!.isNotEmpty && !albumMap.containsKey(s.album)) {
+        if (s.album != null &&
+            s.album!.isNotEmpty &&
+            !albumMap.containsKey(s.album)) {
           albumMap[s.album!] = Album(
             id: s.albumId ?? s.album!,
             name: s.album!,
@@ -401,8 +394,6 @@ class YoutubeService {
       return [];
     }
   }
-
-  // ── Playlists (Locally Saved in SQLite) ───────────────────────────────────
 
   Future<List<Playlist>> getPlaylists() async {
     try {
@@ -431,9 +422,10 @@ class YoutubeService {
           result.add(p.copyWith(
             songs: resolvedSongs,
             songCount: resolvedSongs.length,
-            coverArt: resolvedSongs.isNotEmpty && resolvedSongs.first.coverArt != null
-                ? resolvedSongs.first.coverArt
-                : p.coverArt,
+            coverArt:
+                resolvedSongs.isNotEmpty && resolvedSongs.first.coverArt != null
+                    ? resolvedSongs.first.coverArt
+                    : p.coverArt,
           ));
         } else {
           result.add(p);
@@ -478,11 +470,12 @@ class YoutubeService {
           final updated = local.copyWith(
             songs: resolvedSongs,
             songCount: resolvedSongs.length,
-            coverArt: resolvedSongs.isNotEmpty && resolvedSongs.first.coverArt != null
-                ? resolvedSongs.first.coverArt
-                : local.coverArt,
+            coverArt:
+                resolvedSongs.isNotEmpty && resolvedSongs.first.coverArt != null
+                    ? resolvedSongs.first.coverArt
+                    : local.coverArt,
           );
-          // Persist back so next load is instant
+
           await _db.insertOrUpdatePlaylist(updated);
           return updated;
         }
@@ -547,7 +540,8 @@ class YoutubeService {
       );
 
       await _db.insertOrUpdatePlaylist(playlist);
-      debugPrint('[YouTube] Created local playlist: $name (id: $newId, songs: ${songs.length})');
+      debugPrint(
+          '[YouTube] Created local playlist: $name (id: $newId, songs: ${songs.length})');
     } catch (e) {
       debugPrint('[YouTube] createPlaylist error: $e');
       rethrow;
@@ -570,7 +564,8 @@ class YoutubeService {
       final currentSongs = List<Song>.from(existing.songs ?? []);
 
       if (songIndexesToRemove != null && songIndexesToRemove.isNotEmpty) {
-        final sortedIndices = List<int>.from(songIndexesToRemove)..sort((a, b) => b.compareTo(a));
+        final sortedIndices = List<int>.from(songIndexesToRemove)
+          ..sort((a, b) => b.compareTo(a));
         for (final idx in sortedIndices) {
           if (idx >= 0 && idx < currentSongs.length) {
             currentSongs.removeAt(idx);
@@ -599,12 +594,15 @@ class YoutubeService {
         comment: comment ?? existing.comment,
         changed: DateTime.now(),
         songCount: currentSongs.length,
-        coverArt: currentSongs.isNotEmpty ? currentSongs.first.coverArt : existing.coverArt,
+        coverArt: currentSongs.isNotEmpty
+            ? currentSongs.first.coverArt
+            : existing.coverArt,
         songs: currentSongs,
       );
 
       await _db.insertOrUpdatePlaylist(updated);
-      debugPrint('[YouTube] Updated local playlist $playlistId (now ${currentSongs.length} songs)');
+      debugPrint(
+          '[YouTube] Updated local playlist $playlistId (now ${currentSongs.length} songs)');
     } catch (e) {
       debugPrint('[YouTube] updatePlaylist error: $e');
       rethrow;
@@ -621,8 +619,6 @@ class YoutubeService {
     }
   }
 
-  // ── Search ────────────────────────────────────────────────────────────────
-
   Future<SearchResult> search(
     String query, {
     int artistCount = 20,
@@ -631,8 +627,10 @@ class YoutubeService {
   }) async {
     try {
       final dualResults = await _ytdlp.searchDual(query, limit: songCount);
-      final musicSongs = (dualResults['music'] ?? []).map(_mapDictToSong).toList();
-      final youtubeVideos = (dualResults['youtube'] ?? []).map(_mapDictToSong).toList();
+      final musicSongs =
+          (dualResults['music'] ?? []).map(_mapDictToSong).toList();
+      final youtubeVideos =
+          (dualResults['youtube'] ?? []).map(_mapDictToSong).toList();
 
       final localSongs = await _db.searchSongs(query, limit: songCount);
 
@@ -651,13 +649,24 @@ class YoutubeService {
       final seenAlbums = <String>{};
 
       for (final s in [...mergedMusic, ...youtubeVideos]) {
-        if (s.artist != null && s.artist!.isNotEmpty && !seenArtists.contains(s.artist)) {
+        if (s.artist != null &&
+            s.artist!.isNotEmpty &&
+            !seenArtists.contains(s.artist)) {
           seenArtists.add(s.artist!);
-          artists.add(Artist(id: s.artistId ?? s.artist!, name: s.artist!, coverArt: s.coverArt));
+          artists.add(Artist(
+              id: s.artistId ?? s.artist!,
+              name: s.artist!,
+              coverArt: s.coverArt));
         }
-        if (s.album != null && s.album!.isNotEmpty && !seenAlbums.contains(s.album)) {
+        if (s.album != null &&
+            s.album!.isNotEmpty &&
+            !seenAlbums.contains(s.album)) {
           seenAlbums.add(s.album!);
-          albums.add(Album(id: s.albumId ?? s.album!, name: s.album!, artist: s.artist, coverArt: s.coverArt));
+          albums.add(Album(
+              id: s.albumId ?? s.album!,
+              name: s.album!,
+              artist: s.artist,
+              coverArt: s.coverArt));
         }
       }
 
@@ -673,27 +682,28 @@ class YoutubeService {
     }
   }
 
-  // ── Random / Trending songs (Algorithmic Taste-Aware) ──────────────────────
-
   Future<List<Song>> getRandomSongs({int size = 20, String? genre}) async {
     try {
       String query;
       if (genre != null && genre.isNotEmpty) {
         query = '$genre music hits';
       } else {
-        // Algorithmic discovery based on user's played and saved songs in SQLite
         final allDbSongs = await _db.getAllSongs();
         if (allDbSongs.isNotEmpty) {
           final artistCounts = <String, int>{};
           for (final s in allDbSongs) {
-            if (s.artist != null && s.artist!.isNotEmpty && s.artist != 'Unknown') {
-              artistCounts[s.artist!] = (artistCounts[s.artist!] ?? 0) + (s.userRating ?? 1);
+            if (s.artist != null &&
+                s.artist!.isNotEmpty &&
+                s.artist != 'Unknown') {
+              artistCounts[s.artist!] =
+                  (artistCounts[s.artist!] ?? 0) + (s.userRating ?? 1);
             }
           }
           if (artistCounts.isNotEmpty) {
             final sortedArtists = artistCounts.keys.toList()
-              ..sort((a, b) => (artistCounts[b] ?? 0).compareTo(artistCounts[a] ?? 0));
-            // Pick from top artists pool with slight random exploration for variety
+              ..sort((a, b) =>
+                  (artistCounts[b] ?? 0).compareTo(artistCounts[a] ?? 0));
+
             final topPool = sortedArtists.take(4).toList();
             final pickedArtist = topPool[Random().nextInt(topPool.length)];
             query = '$pickedArtist songs hits';
@@ -717,8 +727,6 @@ class YoutubeService {
     }
   }
 
-  // ── Favorites (Saved in SQLite) ───────────────────────────────────────────
-
   Future<void> star({String? id, String? albumId, String? artistId}) async {
     try {
       if (id != null) {
@@ -727,7 +735,8 @@ class YoutubeService {
         if (existing == null) {
           final info = await _ytdlp.getVideoInfo(id);
           if (info != null) {
-            await _db.insertOrUpdateSong(_mapDictToSong(info).copyWith(starred: true));
+            await _db.insertOrUpdateSong(
+                _mapDictToSong(info).copyWith(starred: true));
           }
         }
         debugPrint('[YouTube] Starred song $id locally');
@@ -769,8 +778,6 @@ class YoutubeService {
     }
   }
 
-  // ── Genres ────────────────────────────────────────────────────────────────
-
   Future<List<Genre>> getGenres() async {
     return [
       Genre(value: 'Pop', songCount: 50, albumCount: 10),
@@ -792,7 +799,8 @@ class YoutubeService {
     int offset = 0,
   }) async {
     try {
-      final rawResults = await _ytdlp.search('$genre music hits', limit: size + offset);
+      final rawResults =
+          await _ytdlp.search('$genre music hits', limit: size + offset);
       final songs = rawResults.map(_mapDictToSong).toList();
       return songs.skip(offset).take(size).toList();
     } catch (e) {
@@ -807,8 +815,6 @@ class YoutubeService {
     int offset = 0,
   }) async =>
       [];
-
-  // ── Related / Top songs ───────────────────────────────────────────────────
 
   Future<List<Song>> getSimilarSongs(String videoId, {int count = 50}) async {
     try {
@@ -834,7 +840,8 @@ class YoutubeService {
     int count = 50,
   }) async {
     try {
-      final rawResults = await _ytdlp.search('$channelId top songs', limit: count);
+      final rawResults =
+          await _ytdlp.search('$channelId top songs', limit: count);
       return rawResults.map(_mapDictToSong).toList();
     } catch (e) {
       debugPrint('[YouTube] getArtistTopSongs error: $e');

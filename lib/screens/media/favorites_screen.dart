@@ -124,7 +124,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.favorite_border_rounded, size: 64, color: Colors.grey),
+            const Icon(Icons.favorite_border_rounded,
+                size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(l10n.noFavoriteSongsYet),
           ],
@@ -147,7 +148,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     icon: const Icon(CupertinoIcons.play_fill, size: 16),
                     label: Text(l10n.playAll),
                     style: FilledButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -158,7 +160,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     icon: const Icon(CupertinoIcons.shuffle, size: 16),
                     label: Text(l10n.shuffle),
                     style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -168,7 +171,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   icon: const Icon(CupertinoIcons.arrow_down_circle, size: 18),
                   tooltip: l10n.downloadAll,
                   style: IconButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],

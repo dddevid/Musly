@@ -27,7 +27,9 @@ class SettingsSectionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
               letterSpacing: 0.2,
             ),
           ),
@@ -36,7 +38,8 @@ class SettingsSectionCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Material(
             color: isDark ? AppTheme.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.sectionCardRadius),
+            borderRadius:
+                BorderRadius.circular(AppDimensions.sectionCardRadius),
             clipBehavior: Clip.antiAlias,
             child: Column(children: children),
           ),

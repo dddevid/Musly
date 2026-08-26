@@ -28,7 +28,6 @@ enum SongSortOption {
   duration,
 }
 
-/// Unified, feature-rich screen for song collections (All Songs, Made For You, History, Custom playlists).
 class SongCollectionScreen extends StatefulWidget {
   final SongCollectionType type;
   final String? customTitle;
@@ -43,21 +42,18 @@ class SongCollectionScreen extends StatefulWidget {
     this.customFetcher,
   });
 
-  /// Factory constructor for Library All Songs
   const SongCollectionScreen.allSongs({super.key})
       : type = SongCollectionType.allSongs,
         customTitle = null,
         initialSongs = null,
         customFetcher = null;
 
-  /// Factory constructor for Made For You / Discover
   const SongCollectionScreen.madeForYou({super.key})
       : type = SongCollectionType.madeForYou,
         customTitle = null,
         initialSongs = null,
         customFetcher = null;
 
-  /// Factory constructor for Listening History
   const SongCollectionScreen.history({super.key})
       : type = SongCollectionType.history,
         customTitle = null,
@@ -111,25 +107,30 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
       } else {
         switch (widget.type) {
           case SongCollectionType.allSongs:
-            final library = Provider.of<LibraryProvider>(context, listen: false);
+            final library =
+                Provider.of<LibraryProvider>(context, listen: false);
             await library.ensureLibraryLoaded();
             songs = List.from(library.cachedAllSongs);
             break;
 
           case SongCollectionType.madeForYou:
-            final subsonic = Provider.of<SubsonicService>(context, listen: false);
+            final subsonic =
+                Provider.of<SubsonicService>(context, listen: false);
             songs = await subsonic.getRandomSongs(size: 50);
             break;
 
           case SongCollectionType.history:
-            final recService = Provider.of<RecommendationService>(context, listen: false);
-            final library = Provider.of<LibraryProvider>(context, listen: false);
+            final recService =
+                Provider.of<RecommendationService>(context, listen: false);
+            final library =
+                Provider.of<LibraryProvider>(context, listen: false);
             final profiles = recService.profiles;
             final allSongs = library.cachedAllSongs;
             final songMap = {for (var s in allSongs) s.id: s};
 
             final playedSongs = profiles.entries
-                .where((e) => e.value.playCount > 0 && songMap.containsKey(e.key))
+                .where(
+                    (e) => e.value.playCount > 0 && songMap.containsKey(e.key))
                 .map((e) => MapEntry(songMap[e.key]!, e.value.lastPlayed))
                 .toList();
 
@@ -163,7 +164,6 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
   void _applySortAndFilter() {
     List<Song> result = List.from(_songs);
 
-    // Apply Search
     if (_searchQuery.trim().isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       result = result.where((s) {
@@ -173,26 +173,36 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
       }).toList();
     }
 
-    // Apply Sorting (for allSongs or custom)
-    if (widget.type == SongCollectionType.allSongs || widget.type == SongCollectionType.custom) {
+    if (widget.type == SongCollectionType.allSongs ||
+        widget.type == SongCollectionType.custom) {
       switch (_currentSort) {
         case SongSortOption.titleAsc:
-          result.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+          result.sort(
+              (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
           break;
         case SongSortOption.titleDesc:
-          result.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+          result.sort(
+              (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
           break;
         case SongSortOption.artistAsc:
-          result.sort((a, b) => (a.artist ?? '').toLowerCase().compareTo((b.artist ?? '').toLowerCase()));
+          result.sort((a, b) => (a.artist ?? '')
+              .toLowerCase()
+              .compareTo((b.artist ?? '').toLowerCase()));
           break;
         case SongSortOption.artistDesc:
-          result.sort((a, b) => (b.artist ?? '').toLowerCase().compareTo((a.artist ?? '').toLowerCase()));
+          result.sort((a, b) => (b.artist ?? '')
+              .toLowerCase()
+              .compareTo((a.artist ?? '').toLowerCase()));
           break;
         case SongSortOption.albumAsc:
-          result.sort((a, b) => (a.album ?? '').toLowerCase().compareTo((b.album ?? '').toLowerCase()));
+          result.sort((a, b) => (a.album ?? '')
+              .toLowerCase()
+              .compareTo((b.album ?? '').toLowerCase()));
           break;
         case SongSortOption.albumDesc:
-          result.sort((a, b) => (b.album ?? '').toLowerCase().compareTo((a.album ?? '').toLowerCase()));
+          result.sort((a, b) => (b.album ?? '')
+              .toLowerCase()
+              .compareTo((a.album ?? '').toLowerCase()));
           break;
         case SongSortOption.duration:
           result.sort((a, b) => (b.duration ?? 0).compareTo(a.duration ?? 0));
@@ -260,7 +270,8 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                 title: Text(
                   title,
                   style: theme.appBarTheme.titleTextStyle ??
-                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 titlePadding: const EdgeInsets.only(left: 52, bottom: 16),
               ),
@@ -309,8 +320,6 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                   ),
               ],
             ),
-
-            // Controls & Meta Bar (Play All, Shuffle, Count, Runtime)
             if (!_isLoading && _error == null && _filteredSongs.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
@@ -328,8 +337,10 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                         icon: const Icon(Icons.shuffle_rounded, size: 20),
                         label: Text(AppLocalizations.of(context)!.shuffle),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24)),
                         ),
                       ),
                       const Spacer(),
@@ -337,15 +348,15 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                         '${AppLocalizations.of(context)!.songsCount(_filteredSongs.length)} • ${FormatUtils.formatDurationSummary(totalDuration)}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                          color: isDark
+                              ? AppTheme.darkSecondaryText
+                              : AppTheme.lightSecondaryText,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-
-            // Song list or Loading/Error/Empty States
             if (_isLoading)
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),
@@ -388,7 +399,8 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: AppTheme.lightSecondaryText),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: AppTheme.lightSecondaryText),
             const SizedBox(height: 16),
             Text(l10n.errorLoadingSongs, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 12),
@@ -411,7 +423,8 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.music_off_outlined, size: 64, color: AppTheme.lightSecondaryText),
+            Icon(Icons.music_off_outlined,
+                size: 64, color: AppTheme.lightSecondaryText),
             const SizedBox(height: 16),
             Text(l10n.noSongsAvailable, style: theme.textTheme.headlineSmall),
           ],
@@ -421,7 +434,6 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
   }
 }
 
-/// Backward compatibility wrapper for AllSongsScreen
 class AllSongsScreen extends StatelessWidget {
   const AllSongsScreen({super.key});
 
@@ -431,7 +443,6 @@ class AllSongsScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for SongsScreen
 class SongsScreen extends StatelessWidget {
   const SongsScreen({super.key});
 
@@ -441,7 +452,6 @@ class SongsScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for MadeForYouScreen
 class MadeForYouScreen extends StatelessWidget {
   const MadeForYouScreen({super.key});
 
@@ -451,7 +461,6 @@ class MadeForYouScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for HistoryScreen
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
 

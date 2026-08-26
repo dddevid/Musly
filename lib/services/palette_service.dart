@@ -4,8 +4,6 @@ import 'package:palette_generator/palette_generator.dart';
 class PaletteService {
   static final Map<String, List<Color>> _colorCache = {};
 
-  /// Extracts the 3 true primary colors from an ImageProvider using PaletteGenerator.
-  /// Caches the result based on [imageId] to avoid recomputing for the same song.
   static Future<List<Color>> extractColors(
       ImageProvider imageProvider, String imageId) async {
     if (_colorCache.containsKey(imageId)) {
@@ -28,25 +26,28 @@ class PaletteService {
 
       final extracted = <Color>[];
 
-      // 1. Primary dominant / vibrant colors
       if (dominant != null) extracted.add(dominant);
-      if (vibrant != null && !extracted.any((c) => _colorDistance(c, vibrant) < 900)) {
+      if (vibrant != null &&
+          !extracted.any((c) => _colorDistance(c, vibrant) < 900)) {
         extracted.add(vibrant);
       }
-      if (darkVibrant != null && !extracted.any((c) => _colorDistance(c, darkVibrant) < 900)) {
+      if (darkVibrant != null &&
+          !extracted.any((c) => _colorDistance(c, darkVibrant) < 900)) {
         extracted.add(darkVibrant);
       }
-      if (lightVibrant != null && !extracted.any((c) => _colorDistance(c, lightVibrant) < 900)) {
+      if (lightVibrant != null &&
+          !extracted.any((c) => _colorDistance(c, lightVibrant) < 900)) {
         extracted.add(lightVibrant);
       }
-      if (muted != null && !extracted.any((c) => _colorDistance(c, muted) < 900)) {
+      if (muted != null &&
+          !extracted.any((c) => _colorDistance(c, muted) < 900)) {
         extracted.add(muted);
       }
-      if (darkMuted != null && !extracted.any((c) => _colorDistance(c, darkMuted) < 900)) {
+      if (darkMuted != null &&
+          !extracted.any((c) => _colorDistance(c, darkMuted) < 900)) {
         extracted.add(darkMuted);
       }
 
-      // If still fewer than 3, add top populated swatches
       for (final p in palette.paletteColors) {
         if (extracted.length >= 3) break;
         if (!extracted.any((c) => _colorDistance(c, p.color) < 700)) {
@@ -61,7 +62,9 @@ class PaletteService {
         final last = extracted.last;
         final hsl = HSLColor.fromColor(last);
         final factor = extracted.length == 1 ? 0.75 : 0.5;
-        extracted.add(hsl.withLightness((hsl.lightness * factor).clamp(0.12, 0.85)).toColor());
+        extracted.add(hsl
+            .withLightness((hsl.lightness * factor).clamp(0.12, 0.85))
+            .toColor());
       }
 
       _colorCache[imageId] = extracted;

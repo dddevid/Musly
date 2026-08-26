@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum ReplayGainMode {
-  
   off,
 
   track,
@@ -85,7 +84,6 @@ class ReplayGainService {
       gainDb = albumGain;
       peak = albumPeak;
     } else if (trackGain != null) {
-      
       gainDb = trackGain;
       peak = trackPeak;
     }
@@ -101,7 +99,6 @@ class ReplayGainService {
     double multiplier = pow(10, totalGainDb / 20).toDouble();
 
     if (getPreventClipping() && peak != null && peak > 0) {
-      
       final maxMultiplier = 1.0 / peak;
       multiplier = min(multiplier, maxMultiplier);
     }

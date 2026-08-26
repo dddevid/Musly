@@ -122,7 +122,9 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
                 );
               },
             ),
-            if (!_isDesktop && (WrappedService.isWrappedSeason() || (kDebugMode && _devWrappedUnlocked))) ...[
+            if (!_isDesktop &&
+                (WrappedService.isWrappedSeason() ||
+                    (kDebugMode && _devWrappedUnlocked))) ...[
               _buildDivider(context),
               _buildActionTile(
                 context,
@@ -178,7 +180,6 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
       ],
     );
   }
-
 
   Widget _buildDivider(BuildContext context) {
     return Padding(
@@ -253,7 +254,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 18),
+              const Icon(CupertinoIcons.sparkles,
+                  color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Text(l10n.devPlaybackUnlocked),
             ],

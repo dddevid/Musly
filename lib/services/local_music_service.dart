@@ -66,19 +66,16 @@ class LocalMusicService extends ChangeNotifier {
     return _prefs?.getStringList(_excludedFoldersKey) ?? [];
   }
 
-  /// Get custom scan paths from SharedPreferences
   List<String> get customScanPaths {
     return _prefs?.getStringList(_customScanPathsKey) ?? [];
   }
 
-  /// Add a custom scan path
   Future<bool> addCustomScanPath(String path) async {
     if (_prefs == null) return false;
 
     final currentPaths = customScanPaths;
     if (currentPaths.contains(path)) return true;
 
-    // Verify the path exists
     final dir = Directory(path);
     if (!await dir.exists()) return false;
 
@@ -91,7 +88,6 @@ class LocalMusicService extends ChangeNotifier {
     return success;
   }
 
-  /// Remove a custom scan path
   Future<bool> removeCustomScanPath(String path) async {
     if (_prefs == null) return false;
 
@@ -107,7 +103,6 @@ class LocalMusicService extends ChangeNotifier {
     return success;
   }
 
-  /// Clear all custom scan paths
   Future<bool> clearCustomScanPaths() async {
     if (_prefs == null) return false;
 
@@ -116,7 +111,6 @@ class LocalMusicService extends ChangeNotifier {
     return success;
   }
 
-  /// Get all scan paths (default + custom)
   List<String> get allScanPaths {
     final custom = customScanPaths;
     if (custom.isEmpty) return _getDefaultScanPaths();
@@ -199,10 +193,8 @@ class LocalMusicService extends ChangeNotifier {
     return true;
   }
 
-  /// Pick a directory to add as a custom scan path
   Future<String?> pickMusicDirectory() async {
     if (Platform.isAndroid || Platform.isIOS) {
-      // For Android, try to use file_picker with directory selection
       try {
         final result = await FilePicker.platform.getDirectoryPath(
           dialogTitle: 'Select Music Folder',
@@ -447,7 +439,6 @@ class LocalMusicService extends ChangeNotifier {
       debugPrint('Metadata read failed for ${file.path}: $e');
     }
 
-    // Fallback: look for folder art in the parent directory.
     if (coverArtPath == null && _artCacheDir != null) {
       final albumId = 'local_album_${albumName.hashCode.abs()}';
       if (_albumArtCache.containsKey(albumId)) {
@@ -469,7 +460,6 @@ class LocalMusicService extends ChangeNotifier {
         for (final candidate in candidates) {
           final candidateFile = File('${parent.path}/$candidate');
           if (await candidateFile.exists()) {
-            // Copy to cache so we have a stable path across sessions.
             final ext = path.extension(candidateFile.path).toLowerCase();
             final dest =
                 File('$_artCacheDir/$albumId${ext.isEmpty ? '.jpg' : ext}');
@@ -478,7 +468,6 @@ class LocalMusicService extends ChangeNotifier {
               coverArtPath = dest.path;
               _albumArtCache[albumId] = coverArtPath;
             } catch (e) {
-              // If copy fails, just use the original path directly.
               coverArtPath = candidateFile.path;
               _albumArtCache[albumId] = coverArtPath;
             }
@@ -597,7 +586,6 @@ class LocalMusicService extends ChangeNotifier {
       );
     }
 
-    // Sort songs by album name, then by track number (natural album order).
     _songs.sort((a, b) {
       final albumCmp = (a.album ?? '').compareTo(b.album ?? '');
       if (albumCmp != 0) return albumCmp;
@@ -606,7 +594,6 @@ class LocalMusicService extends ChangeNotifier {
       return trackA.compareTo(trackB);
     });
 
-    // Sort albums: newest first (year desc), then name (A-Z).
     _albums.sort((a, b) {
       if (a.year != null && b.year != null) {
         final yearCmp = b.year!.compareTo(a.year!);
@@ -644,12 +631,10 @@ class LocalMusicService extends ChangeNotifier {
 
   Future<void> _cacheLibrary() async {
     try {
-      // Save songs/albums/artists to SQLite to avoid OOM with huge libraries
       await _db.insertSongsBatch(_songs);
       await _db.insertAlbumsBatch(_albums);
       await _db.insertArtistsBatch(_artists);
 
-      // Album art cache is small; keep in SharedPreferences
       await _prefs?.setString(
         'local_album_art_cache',
         json.encode(_albumArtCache),
@@ -664,7 +649,6 @@ class LocalMusicService extends ChangeNotifier {
     try {
       var cachedSongs = await _db.getLocalSongs();
 
-      // Restore album art cache from SharedPreferences
       final artCacheJson = _prefs?.getString('local_album_art_cache');
       if (artCacheJson != null) {
         final artMap = json.decode(artCacheJson) as Map<String, dynamic>;
@@ -727,7 +711,6 @@ class LocalMusicService extends ChangeNotifier {
     _albumArtCache.clear();
     await _prefs?.remove('local_song_count');
     try {
-      // Delete legacy JSON cache file if it exists
       final docsDir = await getApplicationDocumentsDirectory();
       final legacyFile = File('${docsDir.path}/local_music_cache.json');
       if (await legacyFile.exists()) await legacyFile.delete();

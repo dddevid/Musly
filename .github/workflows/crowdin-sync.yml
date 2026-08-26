@@ -109,15 +109,71 @@ jobs:
       - name: Fix file permissions
         run: sudo chown -R $USER:$USER .
 
+      # Recalculate translation percentages and update JSON manifest and LocaleService
+      - name: Update translation completion percentages
+        run: |
+          python3 << 'EOF'
+          import json
+          import glob
+          import os
+          import re
+
+          en_path = 'lib/l10n/app_en.arb'
+          with open(en_path, 'r', encoding='utf-8') as f:
+              en_arb = json.load(f)
+          en_keys = [k for k in en_arb.keys() if not k.startswith('@')]
+          total_en = len(en_keys) or 1
+
+          percentages = {'en': 100}
+          for filepath in glob.glob('lib/l10n/app_*.arb'):
+              if filepath.endswith('app_en.arb'):
+                  continue
+              code = os.path.basename(filepath).replace('app_', '').replace('.arb', '')
+              with open(filepath, 'r', encoding='utf-8') as f:
+                  arb = json.load(f)
+              keys = [k for k in arb.keys() if not k.startswith('@')]
+              pct = round(len(keys) / total_en * 100)
+              percentages[code] = pct
+
+          # Sort by percentage descending, then code
+          sorted_percentages = dict(sorted(percentages.items(), key=lambda x: (-x[1], x[0])))
+
+          # 1. Update translation_percentages.json
+          manifest_path = 'lib/l10n/translation_percentages.json'
+          with open(manifest_path, 'w', encoding='utf-8') as f:
+              json.dump(sorted_percentages, f, ensure_ascii=False, indent=2)
+              f.write('\n')
+          print(f"Updated {manifest_path} with {len(sorted_percentages)} language percentages.")
+
+          # 2. Update LocaleService translationPercentages map
+          locale_service_path = 'lib/services/locale_service.dart'
+          with open(locale_service_path, 'r', encoding='utf-8') as f:
+              dart_content = f.read()
+
+          map_entries = '\n'.join([f"    '{k}': {v}," for k, v in sorted_percentages.items()])
+          new_map = f"  static const Map<String, int> translationPercentages = {{\n{map_entries}\n  }};"
+          
+          updated_dart = re.sub(
+              r'  static const Map<String, int> translationPercentages = \{[^}]*\};',
+              new_map,
+              dart_content
+          )
+
+          if updated_dart != dart_content:
+              with open(locale_service_path, 'w', encoding='utf-8') as f:
+                  f.write(updated_dart)
+              print(f"Updated {locale_service_path} translationPercentages map.")
+          EOF
+
       # Regenerate Flutter localizations so new languages and strings are immediately compiled
       - name: Regenerate Flutter localization files
         run: flutter gen-l10n
 
-      # Check for translation changes (both ARB files and generated Dart localizations)
+      # Check for translation changes (both ARB files, manifest, and generated Dart localizations)
       - name: Check for translation changes
         id: changes
         run: |
-          git add lib/l10n/
+          git add lib/l10n/ lib/services/locale_service.dart
           if git diff --staged --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No translation changes detected."
@@ -132,6 +188,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add lib/l10n/
+          git add lib/l10n/ lib/services/locale_service.dart
           git commit -m "chore(i18n): auto-update translations from Crowdin [skip ci]"
           git push origin master

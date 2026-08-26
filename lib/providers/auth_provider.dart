@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
 import '../models/server_config.dart';
 import '../services/services.dart';
 
@@ -32,6 +33,7 @@ class AuthProvider extends ChangeNotifier {
   ServerConfig? get config => _config;
   bool get isAuthenticated => _state == AuthState.authenticated;
   bool get hasOfflineContent => _hasOfflineContent;
+  bool get isLocalOnlyMode => _config?.serverType == 'local';
 
   Future<void> _loadSavedConfig() async {
     final config = await _storageService.getServerConfig();
@@ -54,7 +56,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _verifyConnection() async {
-    debugPrint('[Auth] _verifyConnection: pinging ${_config?.serverUrl}');
     _state = AuthState.authenticating;
     notifyListeners();
 
@@ -67,15 +68,12 @@ class AuthProvider extends ChangeNotifier {
                 PingResult(success: false, error: 'Connection timed out'),
           );
       if (pingResult.success) break;
-      debugPrint(
-          '[Auth] Ping attempt $attempt/$maxAttempts failed: ${pingResult.error}');
       if (attempt < maxAttempts) {
         await Future.delayed(const Duration(seconds: 2));
       }
     }
-    if (pingResult!.success) {
-      debugPrint(
-          '[Auth] Ping OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
+
+    if (pingResult != null && pingResult.success) {
       if (_config != null) {
         final updatedConfig = _config!.copyWith(
           serverType: pingResult.serverType,
@@ -87,7 +85,6 @@ class AuthProvider extends ChangeNotifier {
           await _storageService.saveServerConfig(updatedConfig);
         }
       }
-      debugPrint('[Auth] State: authenticating → authenticated');
       _state = AuthState.authenticated;
 
       final offlineService = OfflineService();
@@ -96,13 +93,9 @@ class AuthProvider extends ChangeNotifier {
             (e) => debugPrint('Error flushing pending scrobbles: $e'),
           );
     } else {
-      debugPrint('[Auth] Ping failed: ${pingResult.error}');
-
       final offlineService = OfflineService();
       await offlineService.initialize();
       _hasOfflineContent = offlineService.getDownloadedCount() > 0;
-      debugPrint(
-          '[Auth] State: authenticating → serverUnreachable (offlineContent=$_hasOfflineContent)');
       _state = AuthState.serverUnreachable;
     }
     notifyListeners();
@@ -140,13 +133,10 @@ class AuthProvider extends ChangeNotifier {
     String? lanUrl,
     String serverFamily = 'subsonic',
   }) async {
-    debugPrint(
-        '[Auth] login: user=$username server=$serverUrl family=$serverFamily');
     _state = AuthState.authenticating;
     _error = null;
     notifyListeners();
 
-    // Modern music player design
     if (serverFamily == 'youtube') {
       serverUrl = 'https://music.youtube.com';
       if (username.isEmpty) username = 'Web Stream';
@@ -158,23 +148,24 @@ class AuthProvider extends ChangeNotifier {
     String? jellyfinUserId;
 
     if (isJellyfin) {
-      final tmpConfig = ServerConfig(
+      final tempConfig = ServerConfig(
         serverUrl: serverUrl,
         username: username,
         password: password,
         allowSelfSignedCertificates: allowSelfSignedCertificates,
         serverFamily: 'jellyfin',
       );
-      final jf = JellyfinService()..configure(tmpConfig);
-      final authResp = await jf.authenticate(username, password);
-      if (authResp == null) {
+      final jellyfinService = JellyfinService()..configure(tempConfig);
+      final authResponse =
+          await jellyfinService.authenticate(username, password);
+      if (authResponse == null) {
         _error = 'Jellyfin authentication failed. Check your credentials.';
         _state = AuthState.error;
         notifyListeners();
         return false;
       }
-      jellyfinToken = authResp['AccessToken'] as String?;
-      final user = authResp['User'] as Map<String, dynamic>?;
+      jellyfinToken = authResponse['AccessToken'] as String?;
+      final user = authResponse['User'] as Map<String, dynamic>?;
       jellyfinUserId = user?['Id'] as String?;
       if (jellyfinToken == null || jellyfinUserId == null) {
         _error = 'Jellyfin returned an unexpected response.';
@@ -205,9 +196,6 @@ class AuthProvider extends ChangeNotifier {
     try {
       final pingResult = await _subsonicService.pingWithError();
       if (pingResult.success) {
-        debugPrint(
-            '[Auth] Login OK — type=${pingResult.serverType} version=${pingResult.serverVersion}');
-        debugPrint('[Auth] State: authenticating → authenticated');
         final updatedConfig = config.copyWith(
           serverType: pingResult.serverType,
           serverVersion: pingResult.serverVersion,
@@ -233,16 +221,12 @@ class AuthProvider extends ChangeNotifier {
       } else {
         _error =
             _formatError(pingResult.error ?? 'Failed to connect to server');
-        debugPrint('[Auth] Login failed: $_error');
-        debugPrint('[Auth] State: authenticating → error');
         _state = AuthState.error;
         notifyListeners();
         return false;
       }
     } catch (e) {
       _error = _formatError(e);
-      debugPrint('[Auth] Login exception: $e');
-      debugPrint('[Auth] State: authenticating → error (formatted: $_error)');
       _state = AuthState.error;
       notifyListeners();
       return false;
@@ -250,44 +234,51 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _formatError(dynamic error) {
-    final errorStr = error.toString();
-    if (errorStr.contains('SocketException') ||
-        errorStr.contains('Connection refused') ||
-        errorStr.contains('Connection failed') ||
-        errorStr.contains('connection errored') ||
-        errorStr.contains('Cannot connect')) {
+    final errorString = error.toString();
+    if (errorString.contains('SocketException') ||
+        errorString.contains('Connection refused') ||
+        errorString.contains('Connection failed') ||
+        errorString.contains('connection errored') ||
+        errorString.contains('Cannot connect')) {
       return 'Cannot connect to server. Check the URL and your internet connection.';
-    } else if (errorStr.contains('TlsException') ||
-        errorStr.contains('CERT_') ||
-        errorStr.contains('certificate') ||
-        errorStr.contains('Client Certificate')) {
-      return 'Certificate or TLS error. Check your custom CA or client certificate file and password.';
-    } else if (errorStr.contains('HandshakeException') ||
-        errorStr.contains('CERTIFICATE_VERIFY_FAILED') ||
-        errorStr.contains('SSL certificate')) {
-      return 'SSL certificate error. Enable "Allow Self-Signed Certificates" for custom CA servers.';
-    } else if (errorStr.contains('TimeoutException') ||
-        errorStr.contains('timed out')) {
-      return 'Connection timed out. Check your server URL.';
-    } else if (errorStr.contains('FormatException')) {
-      return 'Invalid server URL format.';
-    } else if (errorStr.contains('401') ||
-        errorStr.contains('Unauthorized') ||
-        errorStr.contains('Invalid username or password')) {
-      return 'Invalid username or password.';
-    } else if (errorStr.contains('404') ||
-        errorStr.contains('Not Found') ||
-        errorStr.contains('Server not found')) {
-      return 'Server not found. Check your URL path.';
-    } else {
-      return errorStr
-          .replaceAll('Exception:', '')
-          .replaceAll('Network error:', '')
-          .replaceAll(
-              'This indicates an error which most likely cannot be solved by the library.',
-              '')
-          .trim();
     }
+    if (errorString.contains('TlsException') ||
+        errorString.contains('CERT_') ||
+        errorString.contains('certificate') ||
+        errorString.contains('Client Certificate')) {
+      return 'Certificate or TLS error. Check your custom CA or client certificate file and password.';
+    }
+    if (errorString.contains('HandshakeException') ||
+        errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
+        errorString.contains('SSL certificate')) {
+      return 'SSL certificate error. Enable "Allow Self-Signed Certificates" for custom CA servers.';
+    }
+    if (errorString.contains('TimeoutException') ||
+        errorString.contains('timed out')) {
+      return 'Connection timed out. Check your server URL.';
+    }
+    if (errorString.contains('FormatException')) {
+      return 'Invalid server URL format.';
+    }
+    if (errorString.contains('401') ||
+        errorString.contains('Unauthorized') ||
+        errorString.contains('Invalid username or password')) {
+      return 'Invalid username or password.';
+    }
+    if (errorString.contains('404') ||
+        errorString.contains('Not Found') ||
+        errorString.contains('Server not found')) {
+      return 'Server not found. Check your URL path.';
+    }
+
+    return errorString
+        .replaceAll('Exception:', '')
+        .replaceAll('Network error:', '')
+        .replaceAll(
+          'This indicates an error which most likely cannot be solved by the library.',
+          '',
+        )
+        .trim();
   }
 
   Future<void> setLocalOnlyMode(bool enabled) async {
@@ -307,8 +298,6 @@ class AuthProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-
-  bool get isLocalOnlyMode => _config?.serverType == 'local';
 
   Future<List<ServerConfig>> getSavedProfiles() =>
       _storageService.getSavedProfiles();
@@ -342,7 +331,6 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> connectYtStream() async {
     if (!kIsWeb && Platform.isIOS) {
-      debugPrint('[Auth] YT Stream is disabled on iOS');
       return false;
     }
     return await login(

@@ -77,7 +77,7 @@ class Song {
       contentType: json['contentType']?.toString(),
       size: json['size'] as int?,
       path: json['path']?.toString(),
-      starred: json['starred'] != null ? true : false,
+      starred: json['starred'] != null,
       userRating: json['userRating'] as int?,
       isLocal: json['isLocal'] as bool? ?? false,
       replayGainTrackGain: (replayGain?['trackGain'] as num?)?.toDouble(),
@@ -118,7 +118,8 @@ class Song {
         if (replayGainAlbumPeak != null) 'albumPeak': replayGainAlbumPeak,
       },
       if (artistParticipants != null)
-        'artists': artistParticipants!.map((a) => a.toJson()).toList(),
+        'artists':
+            artistParticipants!.map((artist) => artist.toJson()).toList(),
       'created': created?.toIso8601String(),
       if (hasDolbyAtmos != null) 'hasDolbyAtmos': hasDolbyAtmos,
     };

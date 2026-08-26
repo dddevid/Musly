@@ -30,18 +30,18 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final offlineService = Provider.of<OfflineService>(context, listen: false);
-      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      final offlineService =
+          Provider.of<OfflineService>(context, listen: false);
+      final libraryProvider =
+          Provider.of<LibraryProvider>(context, listen: false);
 
       await offlineService.initialize();
       final downloadedIds = offlineService.getDownloadedSongIds();
 
-      // Filter library songs that are downloaded
       _downloadedSongs = libraryProvider.cachedAllSongs
           .where((s) => downloadedIds.contains(s.id))
           .toList();
 
-      // Find albums that have downloaded songs
       final albumIdsWithDownloads = _downloadedSongs
           .map((s) => s.albumId)
           .where((id) => id != null)
@@ -90,7 +90,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.download_done_rounded, size: 64, color: Colors.grey),
+            const Icon(Icons.download_done_rounded,
+                size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(l10n.noDownloadedSongsYet),
           ],

@@ -39,8 +39,12 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
           height: 56,
           decoration: BoxDecoration(
             color: isDark
-                ? (_isHovered ? const Color(0xFF383838) : const Color(0xFF282828))
-                : (_isHovered ? const Color(0xFFE5E7EB) : const Color(0xFFF3F4F6)),
+                ? (_isHovered
+                    ? const Color(0xFF383838)
+                    : const Color(0xFF282828))
+                : (_isHovered
+                    ? const Color(0xFFE5E7EB)
+                    : const Color(0xFFF3F4F6)),
             borderRadius: BorderRadius.circular(6),
             boxShadow: _isHovered
                 ? [
@@ -54,9 +58,9 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
           ),
           child: Row(
             children: [
-              // Left Artwork thumbnail
               ClipRRect(
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(6)),
+                borderRadius:
+                    const BorderRadius.horizontal(left: Radius.circular(6)),
                 child: SizedBox(
                   width: 56,
                   height: 56,
@@ -68,8 +72,6 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
                       ),
                 ),
               ),
-
-              // Title
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -86,8 +88,6 @@ class _QuickAccessTileState extends State<QuickAccessTile> {
                   ),
                 ),
               ),
-
-              // Green Play Button on Hover/Tap
               if (_isHovered && widget.onPlayPressed != null)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),

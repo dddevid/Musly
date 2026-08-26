@@ -44,7 +44,18 @@ class JellyfinService {
     try {
       final uri = Uri.parse(url);
       final q = Map<String, String>.from(uri.queryParameters);
-      for (final key in const ['p', 't', 's', 'password', 'api_key', 'token', 'apiToken', 'apiKey', 'auth', 'X-Emby-Token']) {
+      for (final key in const [
+        'p',
+        't',
+        's',
+        'password',
+        'api_key',
+        'token',
+        'apiToken',
+        'apiKey',
+        'auth',
+        'X-Emby-Token'
+      ]) {
         if (q.containsKey(key)) q[key] = '***';
       }
       return uri.replace(queryParameters: q).toString();
@@ -132,9 +143,10 @@ class JellyfinService {
       );
       final data = resp.data as Map<String, dynamic>;
       final product = (data['ProductName'] as String? ?? '').toLowerCase();
-      final serverType = product.contains('octofiesta') || product.contains('fiesta')
-          ? 'Octo-Fiesta'
-          : (product.contains('emby') ? 'Emby' : 'Jellyfin');
+      final serverType =
+          product.contains('octofiesta') || product.contains('fiesta')
+              ? 'Octo-Fiesta'
+              : (product.contains('emby') ? 'Emby' : 'Jellyfin');
       final version = data['Version'] as String?;
       return PingResult(
         success: true,
@@ -228,7 +240,7 @@ class JellyfinService {
     final ticks = item['RunTimeTicks'] as int?;
     final durationSec = ticks != null ? (ticks / 10000000).round() : null;
     final genres = item['Genres'] as List<dynamic>?;
-    // Emby may return AlbumArtists array instead of single AlbumArtistId.
+
     final albumArtists = item['AlbumArtists'] as List<dynamic>?;
     final fallbackArtistId = albumArtists != null && albumArtists.isNotEmpty
         ? (albumArtists.first as Map<String, dynamic>)['Id'] as String?
@@ -356,7 +368,6 @@ class JellyfinService {
     }
   }
 
-  /// Fetch ALL songs directly — much faster than album-by-album traversal.
   Future<List<Song>> getAllSongs() async {
     if (_userId == null) return [];
     final allSongs = <Song>[];

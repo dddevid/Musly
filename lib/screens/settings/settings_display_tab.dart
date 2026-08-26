@@ -66,7 +66,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _showMiniPlayerHeart = _playerUiSettings.getShowMiniPlayerHeart();
       _showMiniPlayerRepeat = _playerUiSettings.getShowMiniPlayerRepeat();
       _showMiniPlayerShuffle = _playerUiSettings.getShowMiniPlayerShuffle();
-      _showLiveLyricUnderArtwork = _playerUiSettings.getShowLiveLyricUnderArtwork();
+      _showLiveLyricUnderArtwork =
+          _playerUiSettings.getShowLiveLyricUnderArtwork();
       _liveSearch = _playerUiSettings.getLiveSearch();
       _lyricsBlurUnfocused = _playerUiSettings.getLyricsBlurUnfocused();
       _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
@@ -132,7 +133,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             ],
           ],
         ),
-
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.liveSearchSection.toUpperCase(),
@@ -142,7 +142,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
         const SizedBox(height: 24),
         SettingsSectionCard(
-          title: AppLocalizations.of(context)!.lyricsDisplaySection.toUpperCase(),
+          title:
+              AppLocalizations.of(context)!.lyricsDisplaySection.toUpperCase(),
           children: [
             _buildLyricsBlurToggle(),
             const SettingsDivider(),
@@ -155,7 +156,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         SettingsSectionCard(
           title: AppLocalizations.of(
             context,
-          )!.smartRecommendations.toUpperCase(),
+          )!
+              .smartRecommendations
+              .toUpperCase(),
           children: [
             _buildRecommendationsToggle(),
             const SettingsDivider(),
@@ -178,7 +181,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
           _buildEditorRow(
             icon: CupertinoIcons.moon_stars_fill,
             iconColor: const Color(0xFF5856D6),
@@ -192,9 +194,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               },
             ),
           ),
-
           const SizedBox(height: 20),
-
           _buildEditorRow(
             icon: Icons.palette_rounded,
             iconColor: const Color(0xFFFF9500),
@@ -207,7 +207,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               },
             ),
           ),
-
           if (!_isDesktop) ...[
             const SizedBox(height: 20),
             _buildEditorRow(
@@ -404,8 +403,6 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     );
   }
 
-
-
   Widget _buildLiveLyricUnderArtworkToggle() {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
@@ -494,7 +491,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             Flexible(
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -517,9 +515,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             vertical: 4,
           ),
           leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-        icon: CupertinoIcons.sparkles,
-      ),
+            gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+            icon: CupertinoIcons.sparkles,
+          ),
           title: Text(
             AppLocalizations.of(context)!.enableRecommendations,
             style: const TextStyle(fontSize: 16),
@@ -638,7 +636,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF5865F2), 
+              color: const Color(0xFF5865F2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -665,7 +663,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             activeTrackColor: Theme.of(context).colorScheme.primary,
             onChanged: (value) async {
               await player.setDiscordRpcEnabled(value);
-              
+
               setState(() {});
             },
           ),
@@ -701,7 +699,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               size: 18,
             ),
           ),
-          title: Text(l10n.discordStatusText, style: const TextStyle(fontSize: 16)),
+          title: Text(l10n.discordStatusText,
+              style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             l10n.discordStatusTextSubtitle,
             style: TextStyle(
@@ -730,6 +729,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       },
     );
   }
+
   Widget _buildLanguageSelector() {
     return Consumer<LocaleService>(
       builder: (context, localeService, _) {
@@ -824,9 +824,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                updated
-                    ? l10n.translationsUpdated
-                    : l10n.translationsUpToDate,
+                updated ? l10n.translationsUpdated : l10n.translationsUpToDate,
               ),
               backgroundColor: updated ? const Color(0xFF34C759) : null,
             ),
@@ -925,7 +923,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          AppLocalizations.of(context)?.communityTranslationsSubtitle ??
+                          AppLocalizations.of(context)
+                                  ?.communityTranslationsSubtitle ??
                               'Translations are provided by the community on Crowdin',
                           style: TextStyle(
                             fontSize: 12,
@@ -960,7 +959,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                 ),
               ),
               trailing: localeService.currentLocale == null
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(Icons.check,
+                      color: Theme.of(context).colorScheme.primary)
                   : null,
               onTap: () {
                 localeService.setLocale(null);
@@ -996,7 +996,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
                       ),
                     ),
                     trailing: isSelected
-                        ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                        ? Icon(Icons.check,
+                            color: Theme.of(context).colorScheme.primary)
                         : null,
                     onTap: () {
                       localeService.setLocale(Locale(entry.key));
@@ -1033,11 +1034,19 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
       title: Text(l10n.lyricsAlignment),
-      subtitle: Text(_lyricsAlignment == 'center' ? l10n.lyricsAlignmentCentered : l10n.lyricsAlignmentLeft),
+      subtitle: Text(_lyricsAlignment == 'center'
+          ? l10n.lyricsAlignmentCentered
+          : l10n.lyricsAlignmentLeft),
       trailing: SegmentedButton<String>(
         segments: [
-          ButtonSegment(value: 'left', label: Text(l10n.alignLeft), icon: const Icon(Icons.format_align_left, size: 16)),
-          ButtonSegment(value: 'center', label: Text(l10n.alignCenter), icon: const Icon(Icons.format_align_center, size: 16)),
+          ButtonSegment(
+              value: 'left',
+              label: Text(l10n.alignLeft),
+              icon: const Icon(Icons.format_align_left, size: 16)),
+          ButtonSegment(
+              value: 'center',
+              label: Text(l10n.alignCenter),
+              icon: const Icon(Icons.format_align_center, size: 16)),
         ],
         selected: {_lyricsAlignment},
         onSelectionChanged: (val) async {
@@ -1073,7 +1082,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         setState(() => _hideWindowTitlebar = val);
         if (_isDesktop) {
           try {
-            await windowManager.setTitleBarStyle(val ? TitleBarStyle.hidden : TitleBarStyle.normal);
+            await windowManager.setTitleBarStyle(
+                val ? TitleBarStyle.hidden : TitleBarStyle.normal);
           } catch (_) {}
         }
       },
@@ -1095,9 +1105,21 @@ class _ThemeModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = [
-      (mode: ThemeMode.system, label: AppLocalizations.of(context)!.themeModeSystem, icon: CupertinoIcons.device_phone_portrait),
-      (mode: ThemeMode.light, label: AppLocalizations.of(context)!.themeModeLight, icon: CupertinoIcons.sun_max_fill),
-      (mode: ThemeMode.dark, label: AppLocalizations.of(context)!.themeModeDark, icon: CupertinoIcons.moon_fill),
+      (
+        mode: ThemeMode.system,
+        label: AppLocalizations.of(context)!.themeModeSystem,
+        icon: CupertinoIcons.device_phone_portrait
+      ),
+      (
+        mode: ThemeMode.light,
+        label: AppLocalizations.of(context)!.themeModeLight,
+        icon: CupertinoIcons.sun_max_fill
+      ),
+      (
+        mode: ThemeMode.dark,
+        label: AppLocalizations.of(context)!.themeModeDark,
+        icon: CupertinoIcons.moon_fill
+      ),
     ];
 
     final accent = Theme.of(context).colorScheme.primary;
@@ -1189,7 +1211,8 @@ class _AccentColorPicker extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.6),
                           blurRadius: 8,
                           spreadRadius: 1,
                         ),
@@ -1216,7 +1239,9 @@ class _AccentColorPicker extends StatelessWidget {
 
         final l10n = AppLocalizations.of(context);
         return Tooltip(
-          message: isDynamic ? (l10n?.dynamicColor ?? 'Material You (Dynamic Color)') : '',
+          message: isDynamic
+              ? (l10n?.dynamicColor ?? 'Material You (Dynamic Color)')
+              : '',
           child: GestureDetector(
             onTap: () => onChanged(color),
             child: AnimatedContainer(
@@ -1227,7 +1252,8 @@ class _AccentColorPicker extends StatelessWidget {
               child: isSelected
                   ? const Icon(Icons.check, color: Colors.white, size: 16)
                   : (isDynamic
-                      ? const Icon(Icons.auto_awesome, color: Colors.white, size: 14)
+                      ? const Icon(Icons.auto_awesome,
+                          color: Colors.white, size: 14)
                       : null),
             ),
           ),

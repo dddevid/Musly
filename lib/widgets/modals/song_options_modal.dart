@@ -19,7 +19,6 @@ import '../../screens/detail/album_screen.dart';
 import '../../screens/detail/artist_screen.dart';
 
 class SongOptionsModal extends StatefulWidget {
-  /// Shows the song options bottom sheet modal.
   static Future<void> show(BuildContext context, Song song) {
     HapticFeedback.mediumImpact();
     return showModalBottomSheet(
@@ -584,13 +583,16 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
       final ctx = NavigationHelper.navigatorKey.currentContext;
       if (ctx != null) {
         final subsonic = Provider.of<SubsonicService>(ctx, listen: false);
-        subsonic.search(artist.name, artistCount: 3, albumCount: 0, songCount: 0).then((res) {
+        subsonic
+            .search(artist.name, artistCount: 3, albumCount: 0, songCount: 0)
+            .then((res) {
           if (res.artists.isNotEmpty) {
             final matched = res.artists.firstWhere(
               (a) => a.name.toLowerCase() == artist.name.toLowerCase(),
               orElse: () => res.artists.first,
             );
-            nav.push(MaterialPageRoute(builder: (_) => ArtistScreen(artistId: matched.id)));
+            nav.push(MaterialPageRoute(
+                builder: (_) => ArtistScreen(artistId: matched.id)));
           }
         }).catchError((_) {});
       }
@@ -646,7 +648,8 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                 (playlist) => ListTile(
                   leading: const Icon(Icons.queue_music_rounded),
                   title: Text(playlist.name),
-                  subtitle: Text(AppLocalizations.of(context)!.songsCount(playlist.songCount ?? 0)),
+                  subtitle: Text(AppLocalizations.of(context)!
+                      .songsCount(playlist.songCount ?? 0)),
                   onTap: () async {
                     Navigator.pop(context);
 
@@ -657,7 +660,6 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                     final l10n = AppLocalizations.of(context)!;
                     final messenger = ScaffoldMessenger.of(context);
 
-                    // Check if song already exists in the playlist
                     bool isDuplicate = false;
                     try {
                       final fullPlaylist =
@@ -674,7 +676,8 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                       );
                     } catch (_) {
                       if (playlist.songs != null) {
-                        isDuplicate = playlist.songs!.any((s) => s.id == song.id);
+                        isDuplicate =
+                            playlist.songs!.any((s) => s.id == song.id);
                       }
                     }
 
@@ -685,7 +688,8 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                         builder: (ctx) => AlertDialog(
                           title: Text(l10n.alreadyInPlaylist),
                           content: Text(
-                            l10n.alreadyInPlaylistConfirm(song.title, playlist.name),
+                            l10n.alreadyInPlaylistConfirm(
+                                song.title, playlist.name),
                           ),
                           actions: [
                             TextButton(

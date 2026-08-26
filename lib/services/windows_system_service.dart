@@ -71,7 +71,6 @@ class WindowsSystemService {
 
         _isInitialized = true;
 
-        // Initialize local notifier for lyrics
         await localNotifier.setup(
           appName: 'Musly',
           shortcutPolicy: ShortcutPolicy.requireNoCreate,
@@ -141,16 +140,14 @@ class WindowsSystemService {
     }
   }
 
-  /// Update current song info for lyrics display
   Future<void> updateSongInfo(Song? song) async {
     if (!kIsWeb && Platform.isWindows) {
       _currentSong = song;
-      // Clear lyrics when song changes
+
       await clearLyrics();
     }
   }
 
-  /// Update lyrics line - shows as Windows notification
   Future<void> updateLyrics(String? lyricsLine) async {
     if (!kIsWeb && Platform.isWindows && _lyricsEnabled) {
       if (lyricsLine == null || lyricsLine.isEmpty) {
@@ -159,10 +156,8 @@ class WindowsSystemService {
       }
 
       try {
-        // Close previous notification
         await _lyricsNotification?.close();
 
-        // Create new notification with current lyrics line
         _lyricsNotification = LocalNotification(
           title: _currentSong?.title ?? 'Now Playing',
           body: lyricsLine,
@@ -178,7 +173,6 @@ class WindowsSystemService {
     }
   }
 
-  /// Clear lyrics notification
   Future<void> clearLyrics() async {
     if (!kIsWeb && Platform.isWindows) {
       try {
@@ -191,7 +185,6 @@ class WindowsSystemService {
     }
   }
 
-  /// Enable/disable lyrics notifications
   Future<void> setLyricsEnabled(bool enabled) async {
     _lyricsEnabled = enabled;
     if (!enabled) {
@@ -200,7 +193,6 @@ class WindowsSystemService {
     debugPrint('[Windows] Lyrics notifications enabled: $enabled');
   }
 
-  /// Get lyrics enabled state
   bool get lyricsEnabled => _lyricsEnabled;
 
   Future<void> dispose() async {

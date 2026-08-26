@@ -59,7 +59,7 @@ class Playlist {
     List<Song>? songsList;
     if (json['entry'] != null) {
       songsList = (json['entry'] as List)
-          .map((e) => Song.fromJson(e as Map<String, dynamic>))
+          .map((entry) => Song.fromJson(entry as Map<String, dynamic>))
           .toList();
     }
 
@@ -94,7 +94,7 @@ class Playlist {
       'created': created?.toIso8601String(),
       'changed': changed?.toIso8601String(),
       'coverArt': coverArt,
-      'entry': songs?.map((s) => s.toJson()).toList(),
+      'entry': songs?.map((song) => song.toJson()).toList(),
     };
   }
 

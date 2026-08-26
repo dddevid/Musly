@@ -56,7 +56,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   void _updateDownloadState() {
     if (!mounted) return;
     final offline = OfflineService();
-    final allDown = offline.downloadedPlaylistIds.value.contains(widget.playlistId);
+    final allDown =
+        offline.downloadedPlaylistIds.value.contains(widget.playlistId);
     final queued = offline.queuedPlaylistIds.value.contains(widget.playlistId);
     if (allDown != _allDownloaded || queued != _isQueued) {
       setState(() {
@@ -118,8 +119,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       listen: false,
     );
     try {
-      final updatedSongs = List<Song>.from(_playlist!.songs!)
-        ..removeAt(index);
+      final updatedSongs = List<Song>.from(_playlist!.songs!)..removeAt(index);
       await subsonicService.updatePlaylist(
         playlistId: widget.playlistId,
         songIndexesToRemove: [index],
@@ -339,9 +339,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     final songs = _playlist?.songs;
     if (songs == null || songs.isEmpty) return;
     final offlineService = OfflineService();
-    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
+    final subsonicService =
+        Provider.of<SubsonicService>(context, listen: false);
     await offlineService.initialize();
-    offlineService.queuePlaylistDownload(widget.playlistId, songs, subsonicService);
+    offlineService.queuePlaylistDownload(
+        widget.playlistId, songs, subsonicService);
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -365,9 +367,12 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.removeDownloadsTitle),
-        content: Text(l10n.removePlaylistDownloadsConfirm(songs.length, _playlist!.name)),
+        content: Text(
+            l10n.removePlaylistDownloadsConfirm(songs.length, _playlist!.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.remove, style: const TextStyle(color: Colors.red)),
@@ -426,7 +431,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     if (_playlist == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text(AppLocalizations.of(context)!.playlistNotFound)),
+        body:
+            Center(child: Text(AppLocalizations.of(context)!.playlistNotFound)),
       );
     }
 
@@ -458,7 +464,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   ValueListenableBuilder<Set<String>>(
                     valueListenable: OfflineService().downloadedPlaylistIds,
                     builder: (context, downloaded, _) {
-                      final allDownloaded = downloaded.contains(widget.playlistId);
+                      final allDownloaded =
+                          downloaded.contains(widget.playlistId);
                       return Stack(
                         children: [
                           PlaylistArtwork(
@@ -531,7 +538,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 padding: const EdgeInsets.only(bottom: 150),
                 itemCount: _playlist!.songs!.length,
                 buildDefaultDragHandles: false,
-                // ignore: deprecated_member_use
                 onReorder: _onSongReorderedItem,
                 itemBuilder: (context, index) {
                   final song = _playlist!.songs![index];
@@ -597,11 +603,15 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   final maxHeight = isSmall ? 280.0 : 360.0;
                   final currentHeight = constraints.maxHeight;
                   final delta = (maxHeight - minHeight).clamp(1.0, 999.0);
-                  final progress = ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
+                  final progress =
+                      ((currentHeight - minHeight) / delta).clamp(0.0, 1.0);
 
                   final maxArtSize = isSmall ? 190.0 : 240.0;
-                  final availableHeight = (currentHeight - topPadding - (isSmall ? 16.0 : 24.0)).clamp(0.0, maxHeight);
-                  final artDimension = (maxArtSize * progress).clamp(0.0, availableHeight);
+                  final availableHeight =
+                      (currentHeight - topPadding - (isSmall ? 16.0 : 24.0))
+                          .clamp(0.0, maxHeight);
+                  final artDimension =
+                      (maxArtSize * progress).clamp(0.0, availableHeight);
                   final opacity = (progress * 1.3 - 0.1).clamp(0.0, 1.0);
 
                   if (artDimension <= 10.0 || opacity <= 0.0) {
@@ -664,7 +674,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               ] else ...[
                 IconButton(
                   tooltip: AppLocalizations.of(context)!.searchInPlaylist,
-                  icon: Icon(_showSearch ? CupertinoIcons.search_circle_fill : CupertinoIcons.search),
+                  icon: Icon(_showSearch
+                      ? CupertinoIcons.search_circle_fill
+                      : CupertinoIcons.search),
                   onPressed: () {
                     setState(() {
                       _showSearch = !_showSearch;
@@ -678,12 +690,15 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   onSelected: (value) {
                     if (value == 'queue_all') {
                       final songs = _playlist?.songs ?? [];
-                      final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                      final playerProvider =
+                          Provider.of<PlayerProvider>(context, listen: false);
                       for (final s in songs) {
                         playerProvider.addToQueue(s);
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.songsAddedToQueue(songs.length))),
+                        SnackBar(
+                            content: Text(AppLocalizations.of(context)!
+                                .songsAddedToQueue(songs.length))),
                       );
                     }
                   },
@@ -780,7 +795,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     const SizedBox(height: 16),
                     CupertinoSearchTextField(
                       placeholder: AppLocalizations.of(context)!.filterSongs,
-                      style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                      style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black),
                       onChanged: (val) {
                         setState(() {
                           _searchQuery = val.trim().toLowerCase();
@@ -854,7 +870,12 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 final allSongs = _playlist!.songs!;
                 final displaySongs = _searchQuery.isEmpty
                     ? allSongs
-                    : allSongs.where((s) => s.title.toLowerCase().contains(_searchQuery) || (s.artist?.toLowerCase().contains(_searchQuery) ?? false)).toList();
+                    : allSongs
+                        .where((s) =>
+                            s.title.toLowerCase().contains(_searchQuery) ||
+                            (s.artist?.toLowerCase().contains(_searchQuery) ??
+                                false))
+                        .toList();
 
                 return SliverFixedExtentList(
                   itemExtent: 68.0,

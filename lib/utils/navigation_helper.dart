@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:musly/screens/detail/album_screen.dart';
-import 'package:musly/screens/detail/playlist_screen.dart';
-import 'package:musly/screens/detail/artist_screen.dart';
-import 'package:musly/screens/detail/genre_screen.dart';
-import 'package:musly/screens/media/song_collection_screen.dart';
-import 'package:musly/screens/media/album_collection_screen.dart';
+
+import '../screens/detail/album_screen.dart';
+import '../screens/detail/artist_screen.dart';
+import '../screens/detail/genre_screen.dart';
+import '../screens/detail/playlist_screen.dart';
+import '../screens/media/album_collection_screen.dart';
+import '../screens/media/song_collection_screen.dart';
 
 class NavigationHelper {
   static final GlobalKey<NavigatorState> mobileNavigatorKey =
@@ -14,11 +15,10 @@ class NavigationHelper {
   static final GlobalKey<NavigatorState> desktopNavigatorKey =
       GlobalKey<NavigatorState>();
 
-  /// Global toggle state for the Desktop Queue RightSidebar
-  static final ValueNotifier<bool> isDesktopQueueOpen = ValueNotifier<bool>(false);
-
-  /// Global toggle state for the Desktop Lyrics RightSidebar
-  static final ValueNotifier<bool> isDesktopLyricsOpen = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> isDesktopQueueOpen =
+      ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> isDesktopLyricsOpen =
+      ValueNotifier<bool>(false);
 
   static void toggleDesktopQueue() {
     isDesktopQueueOpen.value = !isDesktopQueueOpen.value;
@@ -39,9 +39,8 @@ class NavigationHelper {
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   }
 
-  static GlobalKey<NavigatorState> get navigatorKey {
-    return isDesktop ? desktopNavigatorKey : mobileNavigatorKey;
-  }
+  static GlobalKey<NavigatorState> get navigatorKey =>
+      isDesktop ? desktopNavigatorKey : mobileNavigatorKey;
 
   static Widget? _currentTopWidget;
   static int _lastPushTimestamp = 0;
@@ -74,8 +73,8 @@ class NavigationHelper {
   static Future<T?> push<T>(BuildContext context, Widget page) {
     final now = DateTime.now().millisecondsSinceEpoch;
     if (_isSamePage(page, _currentTopWidget) ||
-        (now - _lastPushTimestamp < 350 && page.runtimeType == _currentTopWidget?.runtimeType)) {
-      debugPrint('[Navigation] Prevented duplicate push of ${page.runtimeType}');
+        (now - _lastPushTimestamp < 350 &&
+            page.runtimeType == _currentTopWidget?.runtimeType)) {
       return Future.value(null);
     }
 
@@ -85,12 +84,12 @@ class NavigationHelper {
     final nav = navigatorKey.currentState;
     final route = MaterialPageRoute<T>(
       builder: (_) => page,
-      settings: RouteSettings(name: page.runtimeType.toString(), arguments: page),
+      settings:
+          RouteSettings(name: page.runtimeType.toString(), arguments: page),
     );
 
-    final future = nav != null
-        ? nav.push<T>(route)
-        : Navigator.of(context).push<T>(route);
+    final future =
+        nav != null ? nav.push<T>(route) : Navigator.of(context).push<T>(route);
 
     return future.then((res) {
       if (_currentTopWidget == page) {

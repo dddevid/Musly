@@ -31,7 +31,6 @@ class AddToMenu extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag Handle
           Container(
             width: 40,
             height: 5,
@@ -41,8 +40,6 @@ class AddToMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Header (Cover, Title, Artist)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -74,7 +71,8 @@ class AddToMenu extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        song.artist ?? AppLocalizations.of(context)!.unknownArtist,
+                        song.artist ??
+                            AppLocalizations.of(context)!.unknownArtist,
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? Colors.white70 : Colors.black54,
@@ -88,11 +86,8 @@ class AddToMenu extends StatelessWidget {
               ],
             ),
           ),
-          
           const SizedBox(height: 16),
           Divider(color: Colors.grey.withValues(alpha: 0.2)),
-          
-          // Menu Options
           ListTile(
             leading: const Icon(Icons.playlist_add_rounded),
             title: Text(AppLocalizations.of(context)!.addToPlaylist),
@@ -107,16 +102,23 @@ class AddToMenu extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(AppLocalizations.of(context)!.alreadyInLibrary)),
+                SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.alreadyInLibrary)),
               );
             },
           ),
           ListTile(
-            leading: Icon(isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded),
-            title: Text(isStarred ? AppLocalizations.of(context)!.removeFromFavorites : AppLocalizations.of(context)!.addToFavorites),
+            leading: Icon(isStarred
+                ? Icons.favorite_rounded
+                : Icons.favorite_border_rounded),
+            title: Text(isStarred
+                ? AppLocalizations.of(context)!.removeFromFavorites
+                : AppLocalizations.of(context)!.addToFavorites),
             onTap: () async {
               Navigator.of(context).pop();
-              final subsonic = Provider.of<SubsonicService>(context, listen: false);
+              final subsonic =
+                  Provider.of<SubsonicService>(context, listen: false);
               try {
                 if (isStarred) {
                   await subsonic.unstar(id: song.id);
@@ -125,7 +127,10 @@ class AddToMenu extends StatelessWidget {
                 }
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(isStarred ? AppLocalizations.of(context)!.removeFromFavorites : AppLocalizations.of(context)!.addToFavorites)),
+                    SnackBar(
+                        content: Text(isStarred
+                            ? AppLocalizations.of(context)!.removeFromFavorites
+                            : AppLocalizations.of(context)!.addToFavorites)),
                   );
                 }
               } catch (e) {
@@ -155,10 +160,12 @@ class _PlaylistSelectionBottomSheet extends StatefulWidget {
   const _PlaylistSelectionBottomSheet({required this.song});
 
   @override
-  State<_PlaylistSelectionBottomSheet> createState() => _PlaylistSelectionBottomSheetState();
+  State<_PlaylistSelectionBottomSheet> createState() =>
+      _PlaylistSelectionBottomSheetState();
 }
 
-class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomSheet> {
+class _PlaylistSelectionBottomSheetState
+    extends State<_PlaylistSelectionBottomSheet> {
   List<Playlist>? _playlists;
   bool _isLoading = true;
 
@@ -184,7 +191,9 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorLoadingPlaylists(e.toString()))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .errorLoadingPlaylists(e.toString()))),
         );
       }
     }
@@ -227,7 +236,7 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
               child: CircularProgressIndicator(),
             )
           else if (_playlists == null || _playlists!.isEmpty)
-             Padding(
+            Padding(
               padding: const EdgeInsets.all(32.0),
               child: Text(AppLocalizations.of(context)!.noPlaylists),
             )
@@ -249,21 +258,27 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(4),
                               child: CachedNetworkImage(
-                                imageUrl: Provider.of<SubsonicService>(context, listen: false)
-                                    .getCoverArtUrl(playlist.coverArt!, size: 100),
+                                imageUrl: Provider.of<SubsonicService>(context,
+                                        listen: false)
+                                    .getCoverArtUrl(playlist.coverArt!,
+                                        size: 100),
                                 fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => const Icon(Icons.queue_music_rounded, color: Colors.grey),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.queue_music_rounded,
+                                        color: Colors.grey),
                               ),
                             )
-                          : const Icon(Icons.queue_music_rounded, color: Colors.grey),
+                          : const Icon(Icons.queue_music_rounded,
+                              color: Colors.grey),
                     ),
                     title: Text(playlist.name),
-                    subtitle: Text(AppLocalizations.of(context)!.songsCount(playlist.songCount ?? 0)),
+                    subtitle: Text(AppLocalizations.of(context)!
+                        .songsCount(playlist.songCount ?? 0)),
                     onTap: () async {
                       Navigator.of(context).pop();
-                      final subsonic = Provider.of<SubsonicService>(context, listen: false);
+                      final subsonic =
+                          Provider.of<SubsonicService>(context, listen: false);
 
-                      // Check if song already exists in the playlist
                       bool isDuplicate = false;
                       try {
                         final fullPlaylist =
@@ -276,11 +291,14 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                               (s.title.trim().toLowerCase() ==
                                       widget.song.title.trim().toLowerCase() &&
                                   (s.artist ?? '').trim().toLowerCase() ==
-                                      (widget.song.artist ?? '').trim().toLowerCase()),
+                                      (widget.song.artist ?? '')
+                                          .trim()
+                                          .toLowerCase()),
                         );
                       } catch (_) {
                         if (playlist.songs != null) {
-                          isDuplicate = playlist.songs!.any((s) => s.id == widget.song.id);
+                          isDuplicate = playlist.songs!
+                              .any((s) => s.id == widget.song.id);
                         }
                       }
 
@@ -292,7 +310,8 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                           builder: (ctx) => AlertDialog(
                             title: Text(l10n.alreadyInPlaylist),
                             content: Text(
-                              l10n.alreadyInPlaylistConfirm(widget.song.title, playlist.name),
+                              l10n.alreadyInPlaylistConfirm(
+                                  widget.song.title, playlist.name),
                             ),
                             actions: [
                               TextButton(
@@ -310,16 +329,23 @@ class _PlaylistSelectionBottomSheetState extends State<_PlaylistSelectionBottomS
                       }
 
                       try {
-                        await subsonic.updatePlaylist(playlistId: playlist.id, songIdsToAdd: [widget.song.id]);
+                        await subsonic.updatePlaylist(
+                            playlistId: playlist.id,
+                            songIdsToAdd: [widget.song.id]);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(AppLocalizations.of(context)!.addedToPlaylist(widget.song.title, playlist.name))),
+                            SnackBar(
+                                content: Text(AppLocalizations.of(context)!
+                                    .addedToPlaylist(
+                                        widget.song.title, playlist.name))),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(content: Text(AppLocalizations.of(context)!.errorAddingToPlaylist(e.toString()))),
+                            SnackBar(
+                                content: Text(AppLocalizations.of(context)!
+                                    .errorAddingToPlaylist(e.toString()))),
                           );
                         }
                       }

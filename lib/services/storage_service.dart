@@ -28,7 +28,8 @@ class StorageService {
   static const String _volumeKey = 'volume';
 
   String _profileKey(ServerConfig config) {
-    final raw = '${config.serverFamily}_${config.serverUrl}_${config.username}_${config.name ?? ""}';
+    final raw =
+        '${config.serverFamily}_${config.serverUrl}_${config.username}_${config.name ?? ""}';
     return md5.convert(utf8.encode(raw)).toString();
   }
 
@@ -36,7 +37,8 @@ class StorageService {
     try {
       return await _secureStorage.read(key: key);
     } on PlatformException catch (e) {
-      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
+      if (kDebugMode &&
+          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         return prefs.getString('fallback_secure_$key');
       }
@@ -48,7 +50,8 @@ class StorageService {
     try {
       await _secureStorage.write(key: key, value: value);
     } on PlatformException catch (e) {
-      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
+      if (kDebugMode &&
+          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         await prefs.setString('fallback_secure_$key', value);
       }
@@ -59,7 +62,8 @@ class StorageService {
     try {
       await _secureStorage.delete(key: key);
     } on PlatformException catch (e) {
-      if (kDebugMode && (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
+      if (kDebugMode &&
+          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
         final prefs = await _prefs;
         await prefs.remove('fallback_secure_$key');
       }
@@ -69,9 +73,7 @@ class StorageService {
   Future<void> _safeSecureDeleteAll() async {
     try {
       await _secureStorage.deleteAll();
-    } on PlatformException catch (_) {
-      // Ignored for fallback
-    }
+    } on PlatformException catch (_) {}
   }
 
   Future<void> init() async {
@@ -85,21 +87,21 @@ class StorageService {
 
   Future<void> saveServerConfig(ServerConfig config) async {
     final prefs = await _prefs;
-    
-    // Save secrets securely
+
     if (config.password.isNotEmpty) {
       await _safeSecureWrite('server_pwd_active', config.password);
     }
     if (config.apiToken != null && config.apiToken!.isNotEmpty) {
       await _safeSecureWrite('server_token_active', config.apiToken!);
     }
-    if (config.clientCertificatePassword != null && config.clientCertificatePassword!.isNotEmpty) {
-      await _safeSecureWrite('server_cert_pwd_active', config.clientCertificatePassword!);
+    if (config.clientCertificatePassword != null &&
+        config.clientCertificatePassword!.isNotEmpty) {
+      await _safeSecureWrite(
+          'server_cert_pwd_active', config.clientCertificatePassword!);
     }
-    
-    // Strip secrets from plain text storage
+
     final map = config.toJson();
-    map['password'] = ''; 
+    map['password'] = '';
     map['apiToken'] = null;
     map['clientCertificatePassword'] = null;
     await prefs.setString(_serverConfigKey, json.encode(map));
@@ -110,31 +112,37 @@ class StorageService {
     final configJson = prefs.getString(_serverConfigKey);
     if (configJson != null) {
       final map = json.decode(configJson) as Map<String, dynamic>;
-      
-      // Load secrets from secure storage
+
       final securePwd = await _safeSecureRead('server_pwd_active');
       final secureToken = await _safeSecureRead('server_token_active');
       final secureCertPwd = await _safeSecureRead('server_cert_pwd_active');
-      
-      // Migrate existing plaintext secrets to secure storage if found
-      if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
+
+      if (securePwd == null &&
+          map['password'] != null &&
+          map['password'].toString().isNotEmpty) {
         await _safeSecureWrite('server_pwd_active', map['password'].toString());
       } else if (securePwd != null) {
         map['password'] = securePwd;
       }
 
-      if (secureToken == null && map['apiToken'] != null && map['apiToken'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_token_active', map['apiToken'].toString());
+      if (secureToken == null &&
+          map['apiToken'] != null &&
+          map['apiToken'].toString().isNotEmpty) {
+        await _safeSecureWrite(
+            'server_token_active', map['apiToken'].toString());
       } else if (secureToken != null) {
         map['apiToken'] = secureToken;
       }
 
-      if (secureCertPwd == null && map['clientCertificatePassword'] != null && map['clientCertificatePassword'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_cert_pwd_active', map['clientCertificatePassword'].toString());
+      if (secureCertPwd == null &&
+          map['clientCertificatePassword'] != null &&
+          map['clientCertificatePassword'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_cert_pwd_active',
+            map['clientCertificatePassword'].toString());
       } else if (secureCertPwd != null) {
         map['clientCertificatePassword'] = secureCertPwd;
       }
-      
+
       final config = ServerConfig.fromJson(map);
       if (!kIsWeb && Platform.isIOS && config.isYoutube) {
         return null;
@@ -156,20 +164,19 @@ class StorageService {
     final prefs = await _prefs;
     final jsonStr = prefs.getString(_serverProfilesKey);
     if (jsonStr == null) return [];
-    
+
     final list = jsonDecode(jsonStr) as List<dynamic>;
     final profiles = <ServerConfig>[];
-    
+
     for (int i = 0; i < list.length; i++) {
       final map = Map<String, dynamic>.from(list[i] as Map);
       final pTemp = ServerConfig.fromJson(map);
       final pKey = _profileKey(pTemp);
 
-      // 1. Password
       String? securePwd = await _safeSecureRead('server_profile_pwd_$pKey');
       if (securePwd == null) {
-        // Check legacy key without profile name
-        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyRaw =
+            '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
         final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
         securePwd = await _safeSecureRead('server_profile_pwd_$legacyKey');
         if (securePwd != null) {
@@ -177,47 +184,58 @@ class StorageService {
         }
       }
       if (securePwd == null) {
-        // Check legacy index key
         securePwd = await _safeSecureRead('server_profile_pwd_$i');
         if (securePwd != null) {
           await _safeSecureWrite('server_profile_pwd_$pKey', securePwd);
           await _safeSecureDelete('server_profile_pwd_$i');
         }
       }
-      if (securePwd == null && map['password'] != null && map['password'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_profile_pwd_$pKey', map['password'].toString());
+      if (securePwd == null &&
+          map['password'] != null &&
+          map['password'].toString().isNotEmpty) {
+        await _safeSecureWrite(
+            'server_profile_pwd_$pKey', map['password'].toString());
       } else if (securePwd != null) {
         map['password'] = securePwd;
       }
 
-      // 2. API Token
       String? secureToken = await _safeSecureRead('server_profile_token_$pKey');
       if (secureToken == null) {
-        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyRaw =
+            '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
         final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
         secureToken = await _safeSecureRead('server_profile_token_$legacyKey');
         if (secureToken != null) {
           await _safeSecureWrite('server_profile_token_$pKey', secureToken);
         }
       }
-      if (secureToken == null && map['apiToken'] != null && map['apiToken'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_profile_token_$pKey', map['apiToken'].toString());
+      if (secureToken == null &&
+          map['apiToken'] != null &&
+          map['apiToken'].toString().isNotEmpty) {
+        await _safeSecureWrite(
+            'server_profile_token_$pKey', map['apiToken'].toString());
       } else if (secureToken != null) {
         map['apiToken'] = secureToken;
       }
 
-      // 3. Client Certificate Password
-      String? secureCertPwd = await _safeSecureRead('server_profile_cert_pwd_$pKey');
+      String? secureCertPwd =
+          await _safeSecureRead('server_profile_cert_pwd_$pKey');
       if (secureCertPwd == null) {
-        final legacyRaw = '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
+        final legacyRaw =
+            '${pTemp.serverFamily}_${pTemp.serverUrl}_${pTemp.username}';
         final legacyKey = md5.convert(utf8.encode(legacyRaw)).toString();
-        secureCertPwd = await _safeSecureRead('server_profile_cert_pwd_$legacyKey');
+        secureCertPwd =
+            await _safeSecureRead('server_profile_cert_pwd_$legacyKey');
         if (secureCertPwd != null) {
-          await _safeSecureWrite('server_profile_cert_pwd_$pKey', secureCertPwd);
+          await _safeSecureWrite(
+              'server_profile_cert_pwd_$pKey', secureCertPwd);
         }
       }
-      if (secureCertPwd == null && map['clientCertificatePassword'] != null && map['clientCertificatePassword'].toString().isNotEmpty) {
-        await _safeSecureWrite('server_profile_cert_pwd_$pKey', map['clientCertificatePassword'].toString());
+      if (secureCertPwd == null &&
+          map['clientCertificatePassword'] != null &&
+          map['clientCertificatePassword'].toString().isNotEmpty) {
+        await _safeSecureWrite('server_profile_cert_pwd_$pKey',
+            map['clientCertificatePassword'].toString());
       } else if (secureCertPwd != null) {
         map['clientCertificatePassword'] = secureCertPwd;
       }
@@ -240,11 +258,11 @@ class StorageService {
       (p) =>
           (config.isYoutube && p.isYoutube) ||
           (p.serverFamily == config.serverFamily &&
-           p.serverUrl == config.serverUrl &&
-           p.username == config.username &&
-           p.name == config.name),
+              p.serverUrl == config.serverUrl &&
+              p.username == config.username &&
+              p.name == config.name),
     );
-    
+
     final pKey = _profileKey(config);
     if (config.password.isNotEmpty) {
       await _safeSecureWrite('server_profile_pwd_$pKey', config.password);
@@ -252,8 +270,10 @@ class StorageService {
     if (config.apiToken != null && config.apiToken!.isNotEmpty) {
       await _safeSecureWrite('server_profile_token_$pKey', config.apiToken!);
     }
-    if (config.clientCertificatePassword != null && config.clientCertificatePassword!.isNotEmpty) {
-      await _safeSecureWrite('server_profile_cert_pwd_$pKey', config.clientCertificatePassword!);
+    if (config.clientCertificatePassword != null &&
+        config.clientCertificatePassword!.isNotEmpty) {
+      await _safeSecureWrite(
+          'server_profile_cert_pwd_$pKey', config.clientCertificatePassword!);
     }
 
     if (idx >= 0) {
@@ -261,7 +281,7 @@ class StorageService {
     } else {
       profiles.add(config);
     }
-    
+
     final prefs = await _prefs;
     final safeProfiles = profiles.map((p) {
       final map = p.toJson();
@@ -270,7 +290,7 @@ class StorageService {
       map['clientCertificatePassword'] = null;
       return map;
     }).toList();
-    
+
     await prefs.setString(_serverProfilesKey, jsonEncode(safeProfiles));
   }
 
@@ -286,18 +306,18 @@ class StorageService {
       (p) =>
           (config.isYoutube && p.isYoutube) ||
           (p.serverFamily == config.serverFamily &&
-           p.serverUrl == config.serverUrl &&
-           p.username == config.username &&
-           p.name == config.name),
+              p.serverUrl == config.serverUrl &&
+              p.username == config.username &&
+              p.name == config.name),
     );
-    
+
     if (idx >= 0) {
       final removed = profiles.removeAt(idx);
       final pKey = _profileKey(removed);
       await _safeSecureDelete('server_profile_pwd_$pKey');
       await _safeSecureDelete('server_profile_token_$pKey');
       await _safeSecureDelete('server_profile_cert_pwd_$pKey');
-      
+
       final prefs = await _prefs;
       final safeProfiles = profiles.map((p) {
         final map = p.toJson();
@@ -402,7 +422,7 @@ class StorageService {
 
   Future<bool> getDiscordRpcEnabled() async {
     final prefs = await _prefs;
-    return prefs.getBool('discord_rpc_enabled') ?? true; 
+    return prefs.getBool('discord_rpc_enabled') ?? true;
   }
 
   Future<void> saveMuslyConnectEnabled(bool enabled) async {
@@ -465,8 +485,6 @@ class StorageService {
     await prefs.setBool('onboarding_completed', completed);
   }
 
-  // ── 50 Songs Milestone Celebration ──────────────────────────────────────────
-
   Future<int> getListenedSongsCount() async {
     final prefs = await _prefs;
     return prefs.getInt('listened_songs_count') ?? 0;
@@ -506,4 +524,3 @@ class StorageService {
     await _safeSecureDeleteAll();
   }
 }
-

@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
 
-/// Helper for adapting layouts to small screens (e.g. iPhone SE 375×667).
 class ScreenHelper {
   static bool isDesktop(BuildContext context) {
     return MediaQuery.sizeOf(context).width >= 800;
   }
 
   static bool isSmallScreen(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    return size.width < 380;
+    return MediaQuery.sizeOf(context).width < 380;
   }
 
   static double playerHorizontalPadding(BuildContext context) {
     return isSmallScreen(context) ? 16 : 32;
   }
 
-  static double titleFontSize(BuildContext context,
-      {double normal = 22, double small = 18}) {
+  static double titleFontSize(
+    BuildContext context, {
+    double normal = 22,
+    double small = 18,
+  }) {
     return isSmallScreen(context) ? small : normal;
   }
 
-  static double subtitleFontSize(BuildContext context,
-      {double normal = 18, double small = 14}) {
+  static double subtitleFontSize(
+    BuildContext context, {
+    double normal = 18,
+    double small = 14,
+  }) {
     return isSmallScreen(context) ? small : normal;
   }
 

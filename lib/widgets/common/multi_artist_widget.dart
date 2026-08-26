@@ -11,33 +11,15 @@ import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'album_artwork.dart';
 
-/// Displays a list of artists as "Artist 1, Artist 2, …".
-///
-/// Behavior differs by platform:
-/// - **Desktop**: each artist name is an individually-clickable underlined link.
-/// - **Mobile / single artist**: tapping the whole row opens a bottom sheet
-///   (for multiple artists) or navigates directly (for a single artist).
-///
-/// Falls back gracefully when [artists] is null (non-Navidrome Subsonic servers):
-/// the [artistFallback] string is shown as a single clickable item that
-/// navigates via [artistIdFallback].
 class MultiArtistWidget extends StatelessWidget {
-  /// Parsed artist list from Navidrome's `participants` field. Optional.
   final List<ArtistRef>? artists;
 
-  /// The raw artist string from the standard Subsonic `artist` field.
-  /// Used when [artists] is null.
   final String? artistFallback;
 
-  /// The primary `artistId` from the Subsonic response, used as navigation
-  /// target when [artists] is null.
   final String? artistIdFallback;
 
-  /// Text style applied to artist names.
   final TextStyle? style;
 
-  /// Called synchronously just before navigating away (e.g. to pop a modal
-  /// screen before pushing the artist screen).
   final VoidCallback? onBeforeNavigate;
 
   const MultiArtistWidget({
@@ -162,7 +144,6 @@ class MultiArtistWidget extends StatelessWidget {
       );
     }
 
-    // Multiple artists
     if (_isDesktop) {
       return Wrap(
         children: [
@@ -175,8 +156,8 @@ class MultiArtistWidget extends StatelessWidget {
                   effectiveArtists[i].name,
                   style: style?.copyWith(
                     decoration: TextDecoration.underline,
-                    decorationColor: (style?.color ?? Colors.white)
-                        .withValues(alpha: 0.45),
+                    decorationColor:
+                        (style?.color ?? Colors.white).withValues(alpha: 0.45),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -189,7 +170,6 @@ class MultiArtistWidget extends StatelessWidget {
       );
     }
 
-    // Mobile: whole line opens bottom sheet
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(

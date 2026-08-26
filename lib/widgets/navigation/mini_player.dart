@@ -15,7 +15,6 @@ import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
-// import 'package:musly/services/musly_connect_service.dart';
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onTap;
@@ -40,12 +39,15 @@ class MiniPlayer extends StatelessWidget {
             return;
           }
           if (currentSong != null) {
-            final subsonic = Provider.of<SubsonicService>(context, listen: false);
-            final coverUrl = currentSong.coverArt != null ? subsonic.getCoverArtUrl(currentSong.coverArt, size: 600) : null;
+            final subsonic =
+                Provider.of<SubsonicService>(context, listen: false);
+            final coverUrl = currentSong.coverArt != null
+                ? subsonic.getCoverArtUrl(currentSong.coverArt, size: 600)
+                : null;
             final imageProvider = (coverUrl != null && coverUrl.isNotEmpty)
                 ? CachedNetworkImageProvider(coverUrl) as ImageProvider
                 : const AssetImage('assets/logo.png') as ImageProvider;
-            final topPadding = MediaQuery.of(context).padding.top;    
+            final topPadding = MediaQuery.of(context).padding.top;
 
             showModalBottomSheet(
               context: context,
@@ -58,8 +60,11 @@ class MiniPlayer extends StatelessWidget {
                 image: imageProvider,
                 title: currentSong.title,
                 artist: (currentSong.artistParticipants?.isNotEmpty == true
-                    ? currentSong.artistParticipants!.map((a) => a.name).join(', ')
-                    : currentSong.artist) ?? '',
+                        ? currentSong.artistParticipants!
+                            .map((a) => a.name)
+                            .join(', ')
+                        : currentSong.artist) ??
+                    '',
                 heroTag: 'cover_${currentSong.id}',
                 song: currentSong,
               ),
@@ -84,8 +89,7 @@ class MiniPlayer extends StatelessWidget {
           coverArt = null;
         } else if (currentSong != null) {
           title = currentSong.title;
-          subtitle =
-              currentSong.artistParticipants != null &&
+          subtitle = currentSong.artistParticipants != null &&
                   currentSong.artistParticipants!.isNotEmpty
               ? currentSong.artistParticipants!.map((a) => a.name).join(', ')
               : (currentSong.artist != null
@@ -143,7 +147,8 @@ class MiniPlayer extends StatelessWidget {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: _MiniPlayerProgressBar(borderRadius: 22, isGlass: true),
+                        child: _MiniPlayerProgressBar(
+                            borderRadius: 22, isGlass: true),
                       ),
                     ],
                   ),
@@ -164,9 +169,8 @@ class MiniPlayer extends StatelessWidget {
                     : Colors.white.withValues(alpha: 0.95),
                 border: Border(
                   top: BorderSide(
-                    color: isDark
-                        ? AppTheme.darkDivider
-                        : AppTheme.lightDivider,
+                    color:
+                        isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
                     width: 0.5,
                   ),
                 ),
@@ -178,7 +182,8 @@ class MiniPlayer extends StatelessWidget {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: _MiniPlayerProgressBar(borderRadius: 0, isGlass: false),
+                    child:
+                        _MiniPlayerProgressBar(borderRadius: 0, isGlass: false),
                   ),
                 ],
               ),
@@ -190,7 +195,6 @@ class MiniPlayer extends StatelessWidget {
   }
 }
 
-/// Smooth, high-precision progress bar for the mini player.
 class _MiniPlayerProgressBar extends StatelessWidget {
   final double borderRadius;
   final bool isGlass;
@@ -217,11 +221,16 @@ class _MiniPlayerProgressBar extends StatelessWidget {
             : progress.clamp(0.0, 1.0);
 
         final trackColor = isDark
-            ? (isGlass ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.12))
-            : (isGlass ? Colors.black.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.08));
+            ? (isGlass
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.white.withValues(alpha: 0.12))
+            : (isGlass
+                ? Colors.black.withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.08));
 
         return ClipRRect(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(borderRadius)),
+          borderRadius:
+              BorderRadius.vertical(bottom: Radius.circular(borderRadius)),
           child: Container(
             height: 2.5,
             width: double.infinity,
@@ -238,7 +247,8 @@ class _MiniPlayerProgressBar extends StatelessWidget {
                     ],
                   ),
                   borderRadius: cleanProgress >= 0.98
-                      ? BorderRadius.vertical(bottom: Radius.circular(borderRadius))
+                      ? BorderRadius.vertical(
+                          bottom: Radius.circular(borderRadius))
                       : BorderRadius.zero,
                 ),
               ),
@@ -303,43 +313,6 @@ class _MiniPlayerRow extends StatelessWidget {
                 if (subtitle != null)
                   Row(
                     children: [
-                      /*
-                      Consumer<MuslyConnectService>(
-                        builder: (context, connect, _) {
-                          if (!connect.isControllingRemoteDevice) return const SizedBox.shrink();
-                          final primaryColor = Theme.of(context).colorScheme.primary;
-                          return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: primaryColor.withValues(alpha: 0.4), width: 0.8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.devices_rounded, size: 10, color: primaryColor),
-                                const SizedBox(width: 3),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 80),
-                                  child: Text(
-                                    connect.activeRemoteDevice?.name ?? 'Connected',
-                                    style: TextStyle(
-                                      color: primaryColor,
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      */
                       if (isPlayingRadio) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -405,7 +378,8 @@ class _MiniPlayerControls extends StatelessWidget {
               valueListenable: playerUiSettings.showMiniPlayerRepeatNotifier,
               builder: (context, showRepeat, _) {
                 return ValueListenableBuilder<bool>(
-                  valueListenable: playerUiSettings.showMiniPlayerShuffleNotifier,
+                  valueListenable:
+                      playerUiSettings.showMiniPlayerShuffleNotifier,
                   builder: (context, showShuffle, _) {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -417,16 +391,21 @@ class _MiniPlayerControls extends StatelessWidget {
                               return IconButton(
                                 onPressed: provider.toggleFavorite,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                constraints: const BoxConstraints(
+                                    minWidth: 36, minHeight: 36),
                                 icon: Icon(
-                                  isStarred ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                  size: ScreenHelper.miniPlayerIconSize(context),
+                                  isStarred
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  size:
+                                      ScreenHelper.miniPlayerIconSize(context),
                                 ),
-                                color: isStarred ? Theme.of(context).colorScheme.primary : color,
+                                color: isStarred
+                                    ? Theme.of(context).colorScheme.primary
+                                    : color,
                               );
                             },
                           ),
-
                         if (showShuffle && !isRadio)
                           Selector<PlayerProvider, bool>(
                             selector: (_, p) => p.shuffleEnabled,
@@ -434,27 +413,32 @@ class _MiniPlayerControls extends StatelessWidget {
                               return IconButton(
                                 onPressed: provider.toggleShuffle,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                constraints: const BoxConstraints(
+                                    minWidth: 36, minHeight: 36),
                                 icon: Icon(
                                   CupertinoIcons.shuffle,
-                                  size: ScreenHelper.miniPlayerIconSize(context),
+                                  size:
+                                      ScreenHelper.miniPlayerIconSize(context),
                                 ),
-                                color: shuffleEnabled ? Theme.of(context).colorScheme.primary : color,
+                                color: shuffleEnabled
+                                    ? Theme.of(context).colorScheme.primary
+                                    : color,
                               );
                             },
                           ),
-
                         IconButton(
                           onPressed: provider.togglePlayPause,
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                          constraints:
+                              const BoxConstraints(minWidth: 40, minHeight: 40),
                           icon: Icon(
-                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
                             size: ScreenHelper.miniPlayerPlayIconSize(context),
                           ),
                           color: color,
                         ),
-
                         if (showRepeat && !isRadio)
                           Selector<PlayerProvider, RepeatMode>(
                             selector: (_, p) => p.repeatMode,
@@ -469,19 +453,26 @@ class _MiniPlayerControls extends StatelessWidget {
                               return IconButton(
                                 onPressed: provider.toggleRepeat,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                icon: Icon(icon, size: ScreenHelper.miniPlayerIconSize(context)),
-                                color: active ? Theme.of(context).colorScheme.primary : color,
+                                constraints: const BoxConstraints(
+                                    minWidth: 36, minHeight: 36),
+                                icon: Icon(icon,
+                                    size: ScreenHelper.miniPlayerIconSize(
+                                        context)),
+                                color: active
+                                    ? Theme.of(context).colorScheme.primary
+                                    : color,
                               );
                             },
                           ),
-
                         if (!isRadio)
                           IconButton(
                             onPressed: hasNext ? provider.skipNext : null,
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                            icon: Icon(Icons.skip_next_rounded, size: ScreenHelper.miniPlayerSkipIconSize(context)),
+                            constraints: const BoxConstraints(
+                                minWidth: 36, minHeight: 36),
+                            icon: Icon(Icons.skip_next_rounded,
+                                size: ScreenHelper.miniPlayerSkipIconSize(
+                                    context)),
                             color: color,
                           ),
                       ],

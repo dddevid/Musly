@@ -19,12 +19,12 @@ class JukeboxStatus {
   });
 
   static JukeboxStatus empty() => JukeboxStatus(
-    playing: false,
-    currentIndex: 0,
-    gain: 1.0,
-    position: Duration.zero,
-    playlist: [],
-  );
+        playing: false,
+        currentIndex: 0,
+        gain: 1.0,
+        position: Duration.zero,
+        playlist: [],
+      );
 
   Song? get currentSong => playlist.isNotEmpty && currentIndex < playlist.length
       ? playlist[currentIndex]
@@ -77,7 +77,7 @@ class JukeboxService extends ChangeNotifier {
       final msg = e.toString();
       if (msg.contains('501')) {
         _serverUnsupported = true;
-        _error = null; 
+        _error = null;
       } else {
         _error = msg.replaceFirst('Exception: ', '');
       }

@@ -46,7 +46,7 @@ class Album {
           ? DateTime.tryParse(json['created'].toString())
           : null,
       artistParticipants: ArtistRef.parseList(json['artists']),
-      starred: json['starred'] != null ? true : false,
+      starred: json['starred'] != null,
     );
   }
 
@@ -63,7 +63,7 @@ class Album {
       'genre': genre,
       'created': created?.toIso8601String(),
       'isLocal': isLocal,
-      'artists': artistParticipants?.map((a) => a.toJson()).toList(),
+      'artists': artistParticipants?.map((artist) => artist.toJson()).toList(),
       if (starred != null) 'starred': starred! ? 'starred' : null,
     };
   }

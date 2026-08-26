@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 
-/// Centralized UI feedback utility for consistent SnackBars and alerts across Musly.
 class UiFeedback {
   UiFeedback._();
 
-  /// Shows a standard floating success SnackBar.
   static void showSuccess(BuildContext context, String message) {
     _showSnackBar(
       context,
@@ -17,7 +16,6 @@ class UiFeedback {
     );
   }
 
-  /// Shows a floating error SnackBar.
   static void showError(BuildContext context, String message) {
     _showSnackBar(
       context,
@@ -29,7 +27,6 @@ class UiFeedback {
     );
   }
 
-  /// Shows an informative floating SnackBar.
   static void showInfo(BuildContext context, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _showSnackBar(
@@ -73,7 +70,9 @@ class UiFeedback {
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         margin: const EdgeInsets.all(16),
         duration: duration,
         elevation: 6,

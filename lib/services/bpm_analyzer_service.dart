@@ -16,7 +16,6 @@ class BpmAnalyzerService {
     if (_isInitialized) return;
 
     try {
-
       _prefs = await SharedPreferences.getInstance();
       await _cacheSettings.initialize();
       _isInitialized = true;

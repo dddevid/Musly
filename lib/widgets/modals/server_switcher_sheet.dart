@@ -35,7 +35,10 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   bool _isSameServer(ServerConfig a, ServerConfig? b) {
     if (b == null) return false;
     if (a.isYoutube && b.isYoutube) return true;
-    if (a.name != null && b.name != null && a.name!.isNotEmpty && b.name!.isNotEmpty) {
+    if (a.name != null &&
+        b.name != null &&
+        a.name!.isNotEmpty &&
+        b.name!.isNotEmpty) {
       return a.name == b.name &&
           a.serverFamily == b.serverFamily &&
           a.serverUrl == b.serverUrl &&
@@ -49,7 +52,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   Future<void> _switchToProfile(ServerConfig profile) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
 
     if (_isSameServer(profile, authProvider.config)) {
       Navigator.of(context).pop();
@@ -57,7 +61,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
     }
 
     setState(() {
-      _switchingServerKey = '${profile.serverFamily}_${profile.serverUrl}_${profile.username}';
+      _switchingServerKey =
+          '${profile.serverFamily}_${profile.serverUrl}_${profile.username}';
     });
 
     try {
@@ -72,7 +77,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF34C759), size: 18),
+                const Icon(CupertinoIcons.checkmark_circle_fill,
+                    color: Color(0xFF34C759), size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -84,7 +90,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
             ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -110,7 +117,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
   }
 
   void _showRenameDialog(ServerConfig profile) {
-    final controller = TextEditingController(text: profile.name ?? profile.displayServerName);
+    final controller =
+        TextEditingController(text: profile.name ?? profile.displayServerName);
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -193,7 +201,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
       builder: (context, snapshot) {
         var profiles = snapshot.data ?? [];
 
-        // Ensure current active config is present in list if not already saved
         if (currentConfig != null &&
             !profiles.any((p) => _isSameServer(p, currentConfig))) {
           profiles = [currentConfig, ...profiles];
@@ -216,7 +223,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Center(
                 child: Container(
                   width: 40,
@@ -228,8 +234,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                   ),
                 ),
               ),
-
-              // Sheet Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
                 child: Row(
@@ -250,7 +254,9 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                             l10n.switchServerSubtitle,
                             style: TextStyle(
                               fontSize: 13,
-                              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                              color: isDark
+                                  ? AppTheme.darkSecondaryText
+                                  : AppTheme.lightSecondaryText,
                             ),
                           ),
                         ],
@@ -261,20 +267,20 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                       icon: const Icon(CupertinoIcons.plus, size: 16),
                       label: Text(l10n.addServerButton),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ],
                 ),
               ),
-
               const Divider(height: 1),
-
-              // Server List
               Flexible(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shrinkWrap: true,
                   children: [
                     if (profiles.isEmpty && !hasYtStream)
@@ -289,12 +295,12 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                           ),
                         ),
                       ),
-
                     ...profiles.map((profile) {
                       final isActive = _isSameServer(profile, currentConfig);
                       final isSwitchingThis = _switchingServerKey ==
-                          '${profile.serverFamily}_${profile.serverUrl}_${profile.username}' ||
-                          (profile.isYoutube && _switchingServerKey == 'youtube');
+                              '${profile.serverFamily}_${profile.serverUrl}_${profile.username}' ||
+                          (profile.isYoutube &&
+                              _switchingServerKey == 'youtube');
 
                       return _buildServerCard(
                         context,
@@ -306,16 +312,15 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         onDelete: () => _confirmDeleteProfile(profile),
                       );
                     }),
-
                     if (!kIsWeb && !Platform.isIOS && !hasYtStream) ...[
                       const SizedBox(height: 12),
                       _buildQuickAddYtStreamTile(context),
                     ],
-
                     const SizedBox(height: 12),
-                    Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                    Divider(
+                        height: 1,
+                        color: isDark ? Colors.white10 : Colors.black12),
                     const SizedBox(height: 4),
-
                     ListTile(
                       dense: true,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -325,20 +330,23 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         size: 20,
                       ),
                       title: Text(
-                        AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        AppLocalizations.of(context)?.settingsTitle ??
+                            'Settings',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                       trailing: Icon(
                         CupertinoIcons.chevron_forward,
                         size: 16,
-                        color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
+                        color: isDark
+                            ? AppTheme.darkDivider
+                            : AppTheme.lightDivider,
                       ),
                       onTap: () {
                         Navigator.pop(context);
                         NavigationHelper.push(context, const SettingsScreen());
                       },
                     ),
-
                     ListTile(
                       dense: true,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -349,27 +357,37 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                       ),
                       title: Text(
                         AppLocalizations.of(context)?.logout ?? 'Logout',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.red),
                       ),
                       onTap: () async {
-                        final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+                        final playerProvider =
+                            Provider.of<PlayerProvider>(context, listen: false);
                         Navigator.pop(context);
                         final confirmed = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: Text(AppLocalizations.of(context)?.logout ?? 'Logout'),
+                            title: Text(AppLocalizations.of(context)?.logout ??
+                                'Logout'),
                             content: Text(
-                              AppLocalizations.of(context)?.logoutConfirmation ?? 'Are you sure you want to log out?',
+                              AppLocalizations.of(context)
+                                      ?.logoutConfirmation ??
+                                  'Are you sure you want to log out?',
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: Text(AppLocalizations.of(context)?.cancel ?? 'Cancel'),
+                                child: Text(
+                                    AppLocalizations.of(context)?.cancel ??
+                                        'Cancel'),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
                                 child: Text(
-                                  AppLocalizations.of(context)?.logout ?? 'Logout',
+                                  AppLocalizations.of(context)?.logout ??
+                                      'Logout',
                                   style: const TextStyle(color: Colors.red),
                                 ),
                               ),
@@ -385,7 +403,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
             ],
           ),
@@ -407,8 +424,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final l10n = AppLocalizations.of(context)!;
 
-    // Brand specific icons & colors
-    final (IconData icon, List<Color> gradient) = switch (profile.serverFamily) {
+    final (IconData icon, List<Color> gradient) =
+        switch (profile.serverFamily) {
       'youtube' => (
           CupertinoIcons.play_rectangle_fill,
           const [Color(0xFFFF3B30), Color(0xFFFF453A)],
@@ -433,7 +450,9 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
         border: Border.all(
           color: isActive
               ? primaryColor.withValues(alpha: 0.6)
-              : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+              : (isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.06)),
           width: isActive ? 1.5 : 1,
         ),
         boxShadow: isActive
@@ -453,7 +472,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              // Server icon badge
               Container(
                 width: 44,
                 height: 44,
@@ -468,8 +486,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                 child: Icon(icon, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 14),
-
-              // Title and URL info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,8 +497,11 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                             profile.displayServerName,
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                              color: isActive ? (isDark ? Colors.white : Colors.black) : null,
+                              fontWeight:
+                                  isActive ? FontWeight.bold : FontWeight.w600,
+                              color: isActive
+                                  ? (isDark ? Colors.white : Colors.black)
+                                  : null,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -491,15 +510,18 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         if (isActive) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                              color: const Color(0xFF34C759)
+                                  .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(CupertinoIcons.circle_fill, size: 6, color: Color(0xFF34C759)),
+                                Icon(CupertinoIcons.circle_fill,
+                                    size: 6, color: Color(0xFF34C759)),
                                 SizedBox(width: 4),
                                 Text(
                                   'ACTIVE',
@@ -523,7 +545,9 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                           : '${profile.username} • ${profile.displayUrl}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -531,8 +555,6 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                   ],
                 ),
               ),
-
-              // Trailing action / switch loader / menu
               if (isSwitching)
                 const SizedBox(
                   width: 24,
@@ -546,7 +568,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                     size: 20,
                     color: isDark ? Colors.white54 : Colors.black45,
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   onSelected: (val) {
                     if (val == 'switch') onTap();
                     if (val == 'rename') onRename();
@@ -558,7 +581,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         value: 'switch',
                         child: Row(
                           children: [
-                            const Icon(CupertinoIcons.arrow_2_squarepath, size: 18),
+                            const Icon(CupertinoIcons.arrow_2_squarepath,
+                                size: 18),
                             const SizedBox(width: 10),
                             Text(l10n.connectToServer),
                           ],
@@ -579,9 +603,11 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
                         value: 'delete',
                         child: Row(
                           children: [
-                            const Icon(CupertinoIcons.trash, size: 18, color: Colors.red),
+                            const Icon(CupertinoIcons.trash,
+                                size: 18, color: Colors.red),
                             const SizedBox(width: 10),
-                            Text(l10n.remove, style: const TextStyle(color: Colors.red)),
+                            Text(l10n.remove,
+                                style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -616,10 +642,13 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
             color: const Color(0xFFFF3B30).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(CupertinoIcons.play_rectangle_fill, color: Color(0xFFFF3B30), size: 18),
+          child: const Icon(CupertinoIcons.play_rectangle_fill,
+              color: Color(0xFFFF3B30), size: 18),
         ),
-        title: Text(l10n.addWebStream, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        subtitle: Text(l10n.addWebStreamSubtitle, style: const TextStyle(fontSize: 12)),
+        title: Text(l10n.addWebStream,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        subtitle: Text(l10n.addWebStreamSubtitle,
+            style: const TextStyle(fontSize: 12)),
         trailing: FilledButton.tonal(
           onPressed: () => _openAddServerScreen(family: 'youtube'),
           style: FilledButton.styleFrom(
@@ -627,7 +656,8 @@ class _ServerSwitcherSheetState extends State<ServerSwitcherSheet> {
             foregroundColor: const Color(0xFFFF3B30),
             padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
-          child: Text(l10n.add, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(l10n.add,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
     );

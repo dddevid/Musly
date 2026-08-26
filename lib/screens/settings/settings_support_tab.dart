@@ -26,12 +26,12 @@ class SettingsSupportTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final secondaryTextColor = isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+    final secondaryTextColor =
+        isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 24),
       children: [
-        // Heart icon at top
         Center(
           child: Container(
             width: 80,
@@ -52,7 +52,6 @@ class SettingsSupportTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
@@ -121,8 +120,6 @@ class SettingsSupportTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-
-        // Donation button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: _buildActionCard(
@@ -135,8 +132,6 @@ class SettingsSupportTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-
-        // Discord button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: _buildActionCard(
@@ -149,8 +144,6 @@ class SettingsSupportTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-
-        // Ways to support without money
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
@@ -193,8 +186,6 @@ class SettingsSupportTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-
-        // Made with love
         Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -203,15 +194,20 @@ class SettingsSupportTab extends StatelessWidget {
                 l10n.craftedWith,
                 style: TextStyle(
                   fontSize: 13.5,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
                 ),
               ),
-              const Icon(CupertinoIcons.heart_fill, size: 14, color: Color(0xFFFA2D48)),
+              const Icon(CupertinoIcons.heart_fill,
+                  size: 14, color: Color(0xFFFA2D48)),
               Text(
                 l10n.inItaly,
                 style: TextStyle(
                   fontSize: 13.5,
-                  color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                  color: isDark
+                      ? AppTheme.darkSecondaryText
+                      : AppTheme.lightSecondaryText,
                 ),
               ),
             ],
@@ -279,7 +275,9 @@ class SettingsSupportTab extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
                       ),
                     ),
                   ],
@@ -304,7 +302,8 @@ class SettingsSupportTab extends StatelessWidget {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final secondaryTextColor = isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+    final secondaryTextColor =
+        isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
 
     return Row(
       children: [

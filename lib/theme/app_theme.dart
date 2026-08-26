@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class AppTheme {
   static const Color brandRed = Color(0xFFFA243C);
@@ -14,7 +14,6 @@ class AppTheme {
   static const Color lightDivider = Color(0xFFE5E5EA);
   static const Color lightSecondaryText = Color(0xFF8E8E93);
 
-  // Modern music player design
   static const Color darkBackground = Color(0xFF000000);
   static const Color darkSurface = Color(0xFF121212);
   static const Color darkCard = Color(0xFF181818);
@@ -23,11 +22,9 @@ class AppTheme {
   static const Color darkSecondaryText = Color(0xFFB3B3B3);
   static const Color darkTertiaryText = Color(0xFF6B6B6B);
 
-  // Sidebar specific
   static const Color sidebarBackground = Color(0xFF000000);
   static const Color sidebarCard = Color(0xFF121212);
 
-  // Player bar specific
   static const Color playerBarDark = Color(0xFF181818);
   static const Color playerBarLight = Color(0xFFF8F8F8);
   static const Color playerBarBorder = Color(0xFF282828);
@@ -72,11 +69,14 @@ class AppTheme {
         cardTheme: CardThemeData(
           color: lightCard,
           elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        dividerTheme:
-            const DividerThemeData(color: lightDivider, thickness: 0.5),
+        dividerTheme: const DividerThemeData(
+          color: lightDivider,
+          thickness: 0.5,
+        ),
         textTheme: TextTheme(
           displayLarge: const TextStyle(
             fontSize: 34,
@@ -158,11 +158,14 @@ class AppTheme {
         cardTheme: CardThemeData(
           color: darkCard,
           elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        dividerTheme:
-            const DividerThemeData(color: darkDivider, thickness: 0.5),
+        dividerTheme: const DividerThemeData(
+          color: darkDivider,
+          thickness: 0.5,
+        ),
         textTheme: TextTheme(
           displayLarge: const TextStyle(
             fontSize: 34,
@@ -222,25 +225,25 @@ class AppTheme {
   static ThemeData _buildFromScheme(ColorScheme scheme) {
     final isDark = scheme.brightness == Brightness.dark;
     final accent = scheme.primary;
-    final bg = isDark ? darkBackground : lightBackground;
+    final background = isDark ? darkBackground : lightBackground;
     final surface = isDark ? darkSurface : lightSurface;
-    final secondary = isDark ? darkSecondaryText : lightSecondaryText;
-    final divider = isDark ? darkDivider : lightDivider;
-    final fg = isDark ? Colors.white : Colors.black;
+    final secondaryText = isDark ? darkSecondaryText : lightSecondaryText;
+    final dividerColor = isDark ? darkDivider : lightDivider;
+    final foregroundColor = isDark ? Colors.white : Colors.black;
 
     return ThemeData(
       useMaterial3: true,
       brightness: scheme.brightness,
       colorScheme: scheme,
       primaryColor: accent,
-      scaffoldBackgroundColor: bg,
+      scaffoldBackgroundColor: background,
       appBarTheme: AppBarTheme(
-        backgroundColor: bg,
-        foregroundColor: fg,
+        backgroundColor: background,
+        foregroundColor: foregroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
-          color: fg,
+          color: foregroundColor,
           fontSize: 34,
           fontWeight: FontWeight.bold,
           letterSpacing: -0.5,
@@ -249,39 +252,61 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
-      dividerTheme: DividerThemeData(color: divider, thickness: 0.5),
+      dividerTheme: DividerThemeData(
+        color: dividerColor,
+        thickness: 0.5,
+      ),
       textTheme: TextTheme(
         displayLarge: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
-            color: fg),
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.5,
+          color: foregroundColor,
+        ),
         displayMedium: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
-            color: fg),
-        headlineLarge:
-            TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: fg),
-        headlineMedium:
-            TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: fg),
-        titleLarge:
-            TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: fg),
-        titleMedium:
-            TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: fg),
-        bodyLarge: TextStyle(fontSize: 17, color: fg),
-        bodyMedium: TextStyle(fontSize: 15, color: fg),
-        bodySmall: TextStyle(fontSize: 13, color: secondary),
-        labelLarge:
-            TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: accent),
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.5,
+          color: foregroundColor,
+        ),
+        headlineLarge: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: foregroundColor,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: foregroundColor,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: foregroundColor,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: foregroundColor,
+        ),
+        bodyLarge: TextStyle(fontSize: 17, color: foregroundColor),
+        bodyMedium: TextStyle(fontSize: 15, color: foregroundColor),
+        bodySmall: TextStyle(fontSize: 13, color: secondaryText),
+        labelLarge: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: accent,
+        ),
       ),
       iconTheme: IconThemeData(color: accent),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         selectedItemColor: accent,
-        unselectedItemColor: secondary,
+        unselectedItemColor: secondaryText,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),

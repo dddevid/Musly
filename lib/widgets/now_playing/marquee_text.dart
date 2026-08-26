@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 class MarqueeText extends StatefulWidget {
   final String text;
   final TextStyle? style;
-  final double pauseDuration; // in seconds
-  final double scrollVelocity; // pixels per second
+  final double pauseDuration;
+  final double scrollVelocity;
 
   const MarqueeText({
     super.key,
@@ -44,24 +44,22 @@ class _MarqueeTextState extends State<MarqueeText> {
 
   void _checkNeedScroll() {
     if (!mounted) return;
-    
-    // Check text width
+
     final TextPainter textPainter = TextPainter(
       text: TextSpan(text: widget.text, style: widget.style),
       maxLines: 1,
       textDirection: TextDirection.ltr,
     )..layout(minWidth: 0, maxWidth: double.infinity);
-    
+
     _textWidth = textPainter.width;
-    
-    // Check container width
+
     if (context.size != null) {
       _containerWidth = context.size!.width;
-      
+
       setState(() {
         _needsScroll = _textWidth > _containerWidth;
       });
-      
+
       if (_needsScroll) {
         _startScroll();
       }
@@ -69,13 +67,14 @@ class _MarqueeTextState extends State<MarqueeText> {
   }
 
   void _startScroll() {
-    _stopScroll(); // Stop any existing scroll
-    
+    _stopScroll();
+
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0.0);
     }
 
-    _timer = Timer(Duration(milliseconds: (widget.pauseDuration * 1000).toInt()), _scroll);
+    _timer = Timer(
+        Duration(milliseconds: (widget.pauseDuration * 1000).toInt()), _scroll);
   }
 
   void _scroll() async {
@@ -92,12 +91,11 @@ class _MarqueeTextState extends State<MarqueeText> {
 
     if (!mounted) return;
 
-    // Pause at the end
-    await Future.delayed(Duration(milliseconds: (widget.pauseDuration * 1000).toInt()));
-    
+    await Future.delayed(
+        Duration(milliseconds: (widget.pauseDuration * 1000).toInt()));
+
     if (!mounted) return;
 
-    // Jump back to start and repeat
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0.0);
       _startScroll();
@@ -120,30 +118,23 @@ class _MarqueeTextState extends State<MarqueeText> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Only checking width on layout changes if needed, 
-        // but PostFrameCallback already handles text/style changes.
-        return SingleChildScrollView(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(), // User shouldn't scroll manually
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.text,
-                style: widget.style,
-                maxLines: 1,
-              ),
-              // Add a spacer at the end to ensure smooth loop back if we wanted a true infinite marquee,
-              // Modern music player design
-              if (_needsScroll)
-                const SizedBox(width: 40), // Gap before text ends
-            ],
-          ),
-        );
-      }
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.text,
+              style: widget.style,
+              maxLines: 1,
+            ),
+            if (_needsScroll) const SizedBox(width: 40),
+          ],
+        ),
+      );
+    });
   }
 }

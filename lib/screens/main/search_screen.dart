@@ -34,7 +34,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final _focusNode = FocusNode();
   SearchResult? _searchResult;
   bool _isSearching = false;
-  String _selectedFilter = 'All'; // 'All' | 'Songs' | 'Artists' | 'Albums' | 'Playlists'
+  String _selectedFilter = 'All';
   Timer? _debounceTimer;
   final List<String> _recentQueries = [];
 
@@ -44,7 +44,9 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    PlayerUiSettingsService().liveSearchNotifier.addListener(_onLiveSearchChanged);
+    PlayerUiSettingsService()
+        .liveSearchNotifier
+        .addListener(_onLiveSearchChanged);
   }
 
   void _onLiveSearchChanged() {
@@ -53,7 +55,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   void dispose() {
-    PlayerUiSettingsService().liveSearchNotifier.removeListener(_onLiveSearchChanged);
+    PlayerUiSettingsService()
+        .liveSearchNotifier
+        .removeListener(_onLiveSearchChanged);
     _searchController.dispose();
     _focusNode.dispose();
     _debounceTimer?.cancel();
@@ -84,7 +88,8 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
-      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      final libraryProvider =
+          Provider.of<LibraryProvider>(context, listen: false);
       final result = await libraryProvider.search(query);
 
       if (mounted && _searchController.text.trim() == query) {
@@ -125,18 +130,19 @@ class _SearchScreenState extends State<SearchScreen> {
     final hasResults = _searchResult != null && query.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       resizeToAvoidBottomInset: false,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Modern music player design
           SliverAppBar(
             automaticallyImplyLeading: false,
             pinned: true,
             floating: false,
             expandedHeight: 140,
-            backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+            backgroundColor:
+                isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsets.only(left: hPad, bottom: 62),
@@ -178,7 +184,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.whatDoYouWantToPlay,
+                      hintText:
+                          AppLocalizations.of(context)!.whatDoYouWantToPlay,
                       hintStyle: TextStyle(
                         color: Colors.black.withValues(alpha: 0.6),
                         fontSize: 15,
@@ -191,7 +198,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       suffixIcon: query.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(CupertinoIcons.clear_circled_solid, color: Colors.black54, size: 20),
+                              icon: const Icon(
+                                  CupertinoIcons.clear_circled_solid,
+                                  color: Colors.black54,
+                                  size: 20),
                               onPressed: _clearSearch,
                             )
                           : null,
@@ -203,8 +213,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-
-          // Search Filter Pills (When Results are Active)
           if (hasResults)
             SliverToBoxAdapter(
               child: Container(
@@ -227,8 +235,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             ),
-
-          // Body Content
           SliverToBoxAdapter(
             child: _isSearching
                 ? _buildSearchingState()
@@ -244,9 +250,10 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildFilterChip(String key, String label, bool isDark) {
     final isSelected = _selectedFilter == key;
     final primary = Theme.of(context).colorScheme.primary;
-    final onPrimary = ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
-        ? Colors.white
-        : Colors.black;
+    final onPrimary =
+        ThemeData.estimateBrightnessForColor(primary) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = key),
@@ -265,7 +272,9 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isSelected ? onPrimary : (isDark ? Colors.white : Colors.black87),
+              color: isSelected
+                  ? onPrimary
+                  : (isDark ? Colors.white : Colors.black87),
             ),
           ),
         ),
@@ -288,25 +297,27 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildBrowseAllSection(double hPad, bool isDark) {
     final authProvider = Provider.of<AuthProvider>(context);
     final subsonicService = Provider.of<SubsonicService>(context);
-    final isYoutube = subsonicService.isYoutube || authProvider.config?.isYoutube == true;
+    final isYoutube =
+        subsonicService.isYoutube || authProvider.config?.isYoutube == true;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recent Searches if any
           if (_recentQueries.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   AppLocalizations.of(context)!.recentSearches,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _recentQueries.clear()),
-                  child: Text(AppLocalizations.of(context)!.clear, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  child: Text(AppLocalizations.of(context)!.clear,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 ),
               ],
             ),
@@ -322,14 +333,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     _performSearch(q);
                   },
                   onDeleted: () => setState(() => _recentQueries.remove(q)),
-                  backgroundColor: isDark ? const Color(0xFF282828) : Colors.grey[200],
+                  backgroundColor:
+                      isDark ? const Color(0xFF282828) : Colors.grey[200],
                 );
               }).toList(),
             ),
             const SizedBox(height: 24),
           ],
-
-          // "Browse all" Title
           const Text(
             'Browse all',
             style: TextStyle(
@@ -339,13 +349,12 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Modern music player design
           LayoutBuilder(
             builder: (context, constraints) {
               final cols = _isDesktop ? 4 : 2;
               final spacing = 12.0;
-              final cardWidth = (constraints.maxWidth - spacing * (cols - 1)) / cols;
+              final cardWidth =
+                  (constraints.maxWidth - spacing * (cols - 1)) / cols;
 
               return Wrap(
                 spacing: spacing,
@@ -355,27 +364,39 @@ class _SearchScreenState extends State<SearchScreen> {
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Made For You',
-                      gradientColors: const [Color(0xFF1E3264), Color(0xFF283EA3)],
+                      gradientColors: const [
+                        Color(0xFF1E3264),
+                        Color(0xFF283EA3)
+                      ],
                       icon: CupertinoIcons.sparkles,
-                      onTap: () => NavigationHelper.push(context, const MadeForYouScreen()),
+                      onTap: () => NavigationHelper.push(
+                          context, const MadeForYouScreen()),
                     ),
                   ),
                   SizedBox(
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'New Releases',
-                      gradientColors: const [Color(0xFFE8115B), Color(0xFFFF4081)],
+                      gradientColors: const [
+                        Color(0xFFE8115B),
+                        Color(0xFFFF4081)
+                      ],
                       icon: CupertinoIcons.flame_fill,
-                      onTap: () => NavigationHelper.push(context, const NewReleasesScreen()),
+                      onTap: () => NavigationHelper.push(
+                          context, const NewReleasesScreen()),
                     ),
                   ),
                   SizedBox(
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Top Rated',
-                      gradientColors: const [Color(0xFF8D67AB), Color(0xFFBA68C8)],
+                      gradientColors: const [
+                        Color(0xFF8D67AB),
+                        Color(0xFFBA68C8)
+                      ],
                       icon: CupertinoIcons.star_fill,
-                      onTap: () => NavigationHelper.push(context, const TopRatedScreen()),
+                      onTap: () => NavigationHelper.push(
+                          context, const TopRatedScreen()),
                     ),
                   ),
                   if (!isYoutube)
@@ -383,34 +404,49 @@ class _SearchScreenState extends State<SearchScreen> {
                       width: cardWidth,
                       child: BrowseCategoryCard(
                         title: 'Radio Stations',
-                        gradientColors: const [Color(0xFF148A08), Color(0xFF43A047)],
+                        gradientColors: const [
+                          Color(0xFF148A08),
+                          Color(0xFF43A047)
+                        ],
                         icon: CupertinoIcons.antenna_radiowaves_left_right,
-                        onTap: () => NavigationHelper.push(context, const RadioScreen()),
+                        onTap: () =>
+                            NavigationHelper.push(context, const RadioScreen()),
                       ),
                     ),
                   SizedBox(
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Genres & Moods',
-                      gradientColors: const [Color(0xFFE91429), Color(0xFFFF5252)],
+                      gradientColors: const [
+                        Color(0xFFE91429),
+                        Color(0xFFFF5252)
+                      ],
                       icon: CupertinoIcons.music_albums_fill,
-                      onTap: () => NavigationHelper.push(context, const GenresScreen()),
+                      onTap: () =>
+                          NavigationHelper.push(context, const GenresScreen()),
                     ),
                   ),
                   SizedBox(
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Liked Songs',
-                      gradientColors: const [Color(0xFF450AF5), Color(0xFF8E8EE5)],
+                      gradientColors: const [
+                        Color(0xFF450AF5),
+                        Color(0xFF8E8EE5)
+                      ],
                       icon: CupertinoIcons.heart_fill,
-                      onTap: () => NavigationHelper.push(context, const FavoritesScreen()),
+                      onTap: () => NavigationHelper.push(
+                          context, const FavoritesScreen()),
                     ),
                   ),
                   SizedBox(
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Pop & Hits',
-                      gradientColors: const [Color(0xFF006450), Color(0xFF00897B)],
+                      gradientColors: const [
+                        Color(0xFF006450),
+                        Color(0xFF00897B)
+                      ],
                       icon: CupertinoIcons.music_mic,
                       onTap: () {
                         _searchController.text = 'Pop';
@@ -422,7 +458,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Hip-Hop & Rap',
-                      gradientColors: const [Color(0xFFBC5900), Color(0xFFFB8C00)],
+                      gradientColors: const [
+                        Color(0xFFBC5900),
+                        Color(0xFFFB8C00)
+                      ],
                       icon: CupertinoIcons.speaker_3_fill,
                       onTap: () {
                         _searchController.text = 'Hip-Hop';
@@ -434,7 +473,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Rock & Alt',
-                      gradientColors: const [Color(0xFF7358FF), Color(0xFF9575CD)],
+                      gradientColors: const [
+                        Color(0xFF7358FF),
+                        Color(0xFF9575CD)
+                      ],
                       icon: CupertinoIcons.guitars,
                       onTap: () {
                         _searchController.text = 'Rock';
@@ -446,7 +488,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     width: cardWidth,
                     child: BrowseCategoryCard(
                       title: 'Chill & Relax',
-                      gradientColors: const [Color(0xFF503750), Color(0xFF8E24AA)],
+                      gradientColors: const [
+                        Color(0xFF503750),
+                        Color(0xFF8E24AA)
+                      ],
                       icon: CupertinoIcons.moon_stars_fill,
                       onTap: () {
                         _searchController.text = 'Chill';
@@ -465,8 +510,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchResults(double hPad, bool isDark) {
     final result = _searchResult!;
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-    final subsonicService = Provider.of<SubsonicService>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+    final subsonicService =
+        Provider.of<SubsonicService>(context, listen: false);
 
     final query = _searchController.text.toLowerCase().trim();
     final songs = result.songs;
@@ -476,7 +523,10 @@ class _SearchScreenState extends State<SearchScreen> {
         .where((p) => p.name.toLowerCase().contains(query))
         .toList();
 
-    if (songs.isEmpty && artists.isEmpty && albums.isEmpty && playlists.isEmpty) {
+    if (songs.isEmpty &&
+        artists.isEmpty &&
+        albums.isEmpty &&
+        playlists.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 64),
         child: Center(
@@ -486,7 +536,8 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(height: 12),
               Text(
                 'No results found for "${_searchController.text}"',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -504,28 +555,27 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Modern music player design
           if (_selectedFilter == 'All' || _selectedFilter == 'Songs') ...[
-            if (songs.isNotEmpty || artists.isNotEmpty || albums.isNotEmpty) ...[
+            if (songs.isNotEmpty ||
+                artists.isNotEmpty ||
+                albums.isNotEmpty) ...[
               const Text(
                 'Top result',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-
-              if (artists.isNotEmpty && (_selectedFilter == 'All' || _selectedFilter == 'Artists'))
+              if (artists.isNotEmpty &&
+                  (_selectedFilter == 'All' || _selectedFilter == 'Artists'))
                 _buildArtistTopResult(artists.first, subsonicService)
               else if (songs.isNotEmpty)
                 _buildSongTopResult(songs.first, songs, subsonicService)
               else if (albums.isNotEmpty)
                 _buildAlbumTopResult(albums.first, subsonicService),
-
               const SizedBox(height: 24),
             ],
           ],
-
-          // 2. Songs List
-          if ((_selectedFilter == 'All' || _selectedFilter == 'Songs') && songs.isNotEmpty) ...[
+          if ((_selectedFilter == 'All' || _selectedFilter == 'Songs') &&
+              songs.isNotEmpty) ...[
             const Text(
               'Songs',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -539,9 +589,8 @@ class _SearchScreenState extends State<SearchScreen> {
             }),
             const SizedBox(height: 24),
           ],
-
-          // 3. Artists Carousel (Circular Avatars)
-          if ((_selectedFilter == 'All' || _selectedFilter == 'Artists') && artists.isNotEmpty) ...[
+          if ((_selectedFilter == 'All' || _selectedFilter == 'Artists') &&
+              artists.isNotEmpty) ...[
             HorizontalScrollSection(
               title: 'Artists',
               padding: EdgeInsets.zero,
@@ -565,9 +614,8 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 24),
           ],
-
-          // 4. Albums Grid / Carousel
-          if ((_selectedFilter == 'All' || _selectedFilter == 'Albums') && albums.isNotEmpty) ...[
+          if ((_selectedFilter == 'All' || _selectedFilter == 'Albums') &&
+              albums.isNotEmpty) ...[
             HorizontalScrollSection(
               title: 'Albums',
               padding: EdgeInsets.zero,
@@ -587,9 +635,8 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 24),
           ],
-
-          // 5. Playlists
-          if ((_selectedFilter == 'All' || _selectedFilter == 'Playlists') && playlists.isNotEmpty) ...[
+          if ((_selectedFilter == 'All' || _selectedFilter == 'Playlists') &&
+              playlists.isNotEmpty) ...[
             HorizontalScrollSection(
               title: 'Playlists',
               padding: EdgeInsets.zero,
@@ -602,7 +649,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   size: _isDesktop ? 175 : 150,
                   onTap: () => NavigationHelper.push(
                     context,
-                    PlaylistScreen(playlistId: playlist.id, playlistName: playlist.name),
+                    PlaylistScreen(
+                        playlistId: playlist.id, playlistName: playlist.name),
                   ),
                 );
               }).toList(),
@@ -613,7 +661,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSongTopResult(Song song, List<Song> queue, SubsonicService subsonicService) {
+  Widget _buildSongTopResult(
+      Song song, List<Song> queue, SubsonicService subsonicService) {
     return TopResultCard(
       title: song.title,
       subtitle: song.artist ?? 'Unknown Artist',

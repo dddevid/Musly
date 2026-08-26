@@ -19,7 +19,7 @@ class AirPlayButton extends StatelessWidget {
     final colorInt = tintColor.toARGB32();
 
     return SizedBox(
-      width: size + 16, 
+      width: size + 16,
       height: size + 16,
       child: UiKitView(
         viewType: 'musly/airplay_button',

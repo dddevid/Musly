@@ -61,72 +61,72 @@ class _AlbumCardState extends State<AlbumCard> {
                             ]
                           : [],
                     ),
-                  child: Stack(
-                    children: [
-                      AlbumArtwork(
-                        coverArt: widget.album.coverArt,
-                        size: widget.size,
-                        borderRadius: 8,
-                      ),
-                      if (_isHovered && widget.onPlayPressed != null)
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: _PlayButton(
-                            onPressed: widget.onPlayPressed!,
-                          ),
+                    child: Stack(
+                      children: [
+                        AlbumArtwork(
+                          coverArt: widget.album.coverArt,
+                          size: widget.size,
+                          borderRadius: 8,
                         ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.album.name,
-                      style: theme.textTheme.bodyMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                        if (_isHovered && widget.onPlayPressed != null)
+                          Positioned(
+                            bottom: 8,
+                            right: 8,
+                            child: _PlayButton(
+                              onPressed: widget.onPlayPressed!,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  ValueListenableBuilder<Set<String>>(
-                    valueListenable: OfflineService().downloadedPlaylistIds,
-                    builder: (context, downloadedIds, _) {
-                      if (downloadedIds.contains(widget.album.id)) {
-                        return const Padding(
-                          padding: EdgeInsets.only(left: 4),
-                          child: Icon(
-                            CupertinoIcons.arrow_down_circle_fill,
-                            size: 14,
-                            color: Colors.grey,
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ],
-              ),
-              if (widget.album.artist != null ||
-                  widget.album.artistParticipants != null)
-                MultiArtistWidget(
-                  artists: widget.album.artistParticipants,
-                  artistFallback: widget.album.artist,
-                  artistIdFallback: widget.album.artistId,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark
-                        ? AppTheme.darkSecondaryText
-                        : AppTheme.lightSecondaryText,
-                  ),
                 ),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.album.name,
+                        style: theme.textTheme.bodyMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    ValueListenableBuilder<Set<String>>(
+                      valueListenable: OfflineService().downloadedPlaylistIds,
+                      builder: (context, downloadedIds, _) {
+                        if (downloadedIds.contains(widget.album.id)) {
+                          return const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(
+                              CupertinoIcons.arrow_down_circle_fill,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
+                if (widget.album.artist != null ||
+                    widget.album.artistParticipants != null)
+                  MultiArtistWidget(
+                    artists: widget.album.artistParticipants,
+                    artistFallback: widget.album.artist,
+                    artistIdFallback: widget.album.artistId,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppTheme.darkSecondaryText
+                          : AppTheme.lightSecondaryText,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
 

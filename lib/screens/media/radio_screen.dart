@@ -108,12 +108,14 @@ class _RadioScreenState extends State<RadioScreen> {
                   _playStation(station);
                 },
               ),
-              if (station.homePageUrl != null && station.homePageUrl!.isNotEmpty)
+              if (station.homePageUrl != null &&
+                  station.homePageUrl!.isNotEmpty)
                 ListTile(
                   leading: const Icon(CupertinoIcons.globe),
                   title: Text(
                     'Homepage',
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    style:
+                        TextStyle(color: isDark ? Colors.white : Colors.black),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -129,7 +131,8 @@ class _RadioScreenState extends State<RadioScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.streamUrlLabel(station.streamUrl))),
+                    SnackBar(
+                        content: Text(l10n.streamUrlLabel(station.streamUrl))),
                   );
                 },
               ),
@@ -184,7 +187,8 @@ class _RadioScreenState extends State<RadioScreen> {
               const SizedBox(height: 16),
               Text(
                 l10n.failedToLoadRadioStations,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -219,7 +223,8 @@ class _RadioScreenState extends State<RadioScreen> {
               const SizedBox(height: 16),
               Text(
                 l10n.noRadioStations,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -269,8 +274,7 @@ class _RadioStationTile extends StatelessWidget {
 
     return Consumer<PlayerProvider>(
       builder: (context, playerProvider, child) {
-        final isPlaying =
-            playerProvider.isPlayingRadio &&
+        final isPlaying = playerProvider.isPlayingRadio &&
             playerProvider.currentRadioStation?.id == station.id;
 
         return ListTile(
@@ -288,7 +292,10 @@ class _RadioStationTile extends StatelessWidget {
                 colors: isPlaying
                     ? [
                         Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                        Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.7),
                       ]
                     : [const Color(0xFF5856D6), const Color(0xFF007AFF)],
               ),
@@ -330,7 +337,10 @@ class _RadioStationTile extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(

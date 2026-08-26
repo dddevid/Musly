@@ -1,16 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 
 class ImageCacheConfig {
   static void configure() {
-
     PaintingBinding.instance.imageCache.maximumSize = 1000;
     PaintingBinding.instance.imageCache.maximumSizeBytes = 150 << 20;
   }
 }
 
 class ImagePreloader {
-
   static Future<void> preloadImages(
     BuildContext context,
     List<String> imageUrls,
@@ -19,9 +17,7 @@ class ImagePreloader {
       if (url.isNotEmpty) {
         try {
           await precacheImage(CachedNetworkImageProvider(url), context);
-        } catch (_) {
-          
-        }
+        } catch (_) {}
       }
     }
   }
@@ -34,8 +30,6 @@ class ImagePreloader {
 
     try {
       await precacheImage(CachedNetworkImageProvider(imageUrl), context);
-    } catch (_) {
-      
-    }
+    } catch (_) {}
   }
 }

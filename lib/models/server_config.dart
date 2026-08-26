@@ -8,8 +8,8 @@ class ServerConfig {
   final List<String> selectedMusicFolderIds;
   final String? serverType;
   final String? serverVersion;
-  final String? customCertificatePath; 
-  final String? clientCertificatePath; 
+  final String? customCertificatePath;
+  final String? clientCertificatePath;
   final String? clientCertificatePassword;
   final String? name;
   final String serverFamily;
@@ -65,9 +65,8 @@ class ServerConfig {
       password: json['password'] ?? '',
       useLegacyAuth: json['useLegacyAuth'] ?? false,
       allowSelfSignedCertificates: json['allowSelfSignedCertificates'] ?? false,
-      selectedMusicFolderIds:
-          (json['selectedMusicFolderIds'] as List<dynamic>?)
-              ?.map((e) => e.toString())
+      selectedMusicFolderIds: (json['selectedMusicFolderIds'] as List<dynamic>?)
+              ?.map((folderId) => folderId.toString())
               .toList() ??
           [],
       serverType: json['serverType'],

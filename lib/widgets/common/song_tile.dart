@@ -52,7 +52,8 @@ class SongTile extends StatelessWidget {
 
         final tile = ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           leading: _buildLeading(context, isPlaying),
           title: Text(
             song.title,
@@ -81,7 +82,8 @@ class SongTile extends StatelessWidget {
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(CupertinoIcons.text_badge_plus, color: Colors.white, size: 18),
+                    const Icon(CupertinoIcons.text_badge_plus,
+                        color: Colors.white, size: 18),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -94,7 +96,8 @@ class SongTile extends StatelessWidget {
                 ),
                 duration: const Duration(seconds: 2),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             );
           },

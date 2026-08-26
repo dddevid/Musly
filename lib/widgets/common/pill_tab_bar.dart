@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A modern, segmented pill tab bar for switching between media views (e.g. Songs, Albums, Playlists).
 class PillTabBar extends StatelessWidget {
   final List<String> tabs;
   final int selectedIndex;
@@ -43,8 +42,8 @@ class PillTabBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? (isDark
-                            ? Colors.white.withValues(alpha: 0.15)
-                            : Colors.white)
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.white)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: isSelected && !isDark
@@ -66,9 +65,8 @@ class PillTabBar extends StatelessWidget {
                       child: Text(
                         tabs[index],
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
                           color: isSelected
                               ? (isDark ? Colors.white : Colors.black)
                               : (isDark ? Colors.white70 : Colors.black54),

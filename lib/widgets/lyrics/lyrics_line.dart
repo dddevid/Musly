@@ -10,7 +10,7 @@ class LyricsLineWidget extends StatelessWidget {
   final LyricLineState state;
   final Duration currentTime;
   final VoidCallback onTap;
-  final int distance; // Distance from current line (0 for current, 1 for next/prev, etc.)
+  final int distance;
 
   const LyricsLineWidget({
     super.key,
@@ -79,7 +79,6 @@ class LyricsLineWidget extends StatelessWidget {
           );
         }
 
-        // Calculate blur based on distance if blur enabled
         final double sigma = (distance * 0.8).clamp(0.0, 3.0);
         return SizedBox(
           key: const ValueKey('future_blur'),
@@ -104,8 +103,8 @@ class LyricsLineWidget extends StatelessWidget {
                 child: child,
               );
             },
-            child: line.hasWords 
-                ? _buildWordByWord(textAlign, glowEffect) 
+            child: line.hasWords
+                ? _buildWordByWord(textAlign, glowEffect)
                 : _buildLineLevel(textAlign, glowEffect),
           ),
         );
@@ -140,9 +139,11 @@ class LyricsLineWidget extends StatelessWidget {
         children: line.words!.map((word) {
           double progress = 0.0;
           if (currentTime >= word.startTime && currentTime <= word.endTime) {
-             final duration = word.endTime.inMilliseconds - word.startTime.inMilliseconds;
-             final elapsed = currentTime.inMilliseconds - word.startTime.inMilliseconds;
-             progress = (elapsed / duration).clamp(0.0, 1.0);
+            final duration =
+                word.endTime.inMilliseconds - word.startTime.inMilliseconds;
+            final elapsed =
+                currentTime.inMilliseconds - word.startTime.inMilliseconds;
+            progress = (elapsed / duration).clamp(0.0, 1.0);
           } else if (currentTime > word.endTime) {
             progress = 1.0;
           }

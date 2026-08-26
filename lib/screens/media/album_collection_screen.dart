@@ -16,7 +16,6 @@ enum AlbumCollectionType {
   custom,
 }
 
-/// Unified, responsive screen for displaying collections of albums (New Releases, Top Rated, Starred, Recent, etc.)
 class AlbumCollectionScreen extends StatefulWidget {
   final AlbumCollectionType type;
   final String? customTitle;
@@ -31,28 +30,24 @@ class AlbumCollectionScreen extends StatefulWidget {
     this.customFetcher,
   });
 
-  /// Factory constructor for New Releases
   const AlbumCollectionScreen.newReleases({super.key})
       : type = AlbumCollectionType.newest,
         customTitle = null,
         initialAlbums = null,
         customFetcher = null;
 
-  /// Factory constructor for Top Rated
   const AlbumCollectionScreen.topRated({super.key})
       : type = AlbumCollectionType.topRated,
         customTitle = null,
         initialAlbums = null,
         customFetcher = null;
 
-  /// Factory constructor for Starred / Liked Albums
   const AlbumCollectionScreen.starred({super.key})
       : type = AlbumCollectionType.starred,
         customTitle = null,
         initialAlbums = null,
         customFetcher = null;
 
-  /// Factory constructor for Recent Albums
   const AlbumCollectionScreen.recent({super.key})
       : type = AlbumCollectionType.recent,
         customTitle = null,
@@ -227,7 +222,9 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
               ],
             ),
           ),
-          if (!_isLoading && _filteredAlbums != null && _filteredAlbums!.length >= 8)
+          if (!_isLoading &&
+              _filteredAlbums != null &&
+              _filteredAlbums!.length >= 8)
             _buildAlphabetSidebar(context),
         ],
       ),
@@ -354,7 +351,8 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
     int targetIndex = -1;
     if (letter == '#') {
       targetIndex = _filteredAlbums!.indexWhere((a) {
-        final first = a.name.trim().isNotEmpty ? a.name.trim()[0].toUpperCase() : '';
+        final first =
+            a.name.trim().isNotEmpty ? a.name.trim()[0].toUpperCase() : '';
         return first.isNotEmpty && !RegExp(r'[A-Z]').hasMatch(first);
       });
     } else {
@@ -382,7 +380,8 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
   }
 
   Widget _buildAlphabetSidebar(BuildContext context) {
-    final alphabet = List.generate(26, (i) => String.fromCharCode(65 + i))..add('#');
+    final alphabet = List.generate(26, (i) => String.fromCharCode(65 + i))
+      ..add('#');
 
     return Positioned(
       right: 4,
@@ -403,7 +402,8 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
                   onTap: () => _scrollToLetter(letter),
                   borderRadius: BorderRadius.circular(6),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 4),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 1.0, horizontal: 4),
                     child: Text(
                       letter,
                       style: const TextStyle(
@@ -423,7 +423,6 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
   }
 }
 
-/// Backward compatibility wrapper for LikedAlbumsScreen
 class LikedAlbumsScreen extends StatelessWidget {
   const LikedAlbumsScreen({super.key});
 
@@ -433,7 +432,6 @@ class LikedAlbumsScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for NewReleasesScreen
 class NewReleasesScreen extends StatelessWidget {
   const NewReleasesScreen({super.key});
 
@@ -443,7 +441,6 @@ class NewReleasesScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for TopRatedScreen
 class TopRatedScreen extends StatelessWidget {
   const TopRatedScreen({super.key});
 
@@ -453,7 +450,6 @@ class TopRatedScreen extends StatelessWidget {
   }
 }
 
-/// Backward compatibility wrapper for AlbumsScreen
 class AlbumsScreen extends StatelessWidget {
   const AlbumsScreen({super.key});
 

@@ -34,7 +34,7 @@ class _FantasyScreenState extends State<FantasyScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(days: 1), 
+      duration: const Duration(days: 1),
     )..addListener(_onTick);
 
     _controller.forward();
@@ -42,9 +42,7 @@ class _FantasyScreenState extends State<FantasyScreen>
 
   void _onTick() {
     final now = DateTime.now();
-    final dt =
-        now.difference(_lastTick).inMicroseconds /
-        16666.0; 
+    final dt = now.difference(_lastTick).inMicroseconds / 16666.0;
     _lastTick = now;
 
     final size = context.size;
@@ -81,7 +79,6 @@ class _FantasyScreenState extends State<FantasyScreen>
     }
 
     if (bounced) {
-      
       final rng = Random();
       final increment = (pi / 2) + rng.nextDouble() * (pi / 3);
       na = na + increment * (rng.nextBool() ? 1 : -1);

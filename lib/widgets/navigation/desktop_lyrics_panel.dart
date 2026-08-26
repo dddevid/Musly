@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/models/lyric_line.dart';
-import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/lrc_ttml_parser.dart';
 import 'package:musly/services/subsonic_service.dart';
@@ -90,7 +89,8 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
             if (lines != null) {
               final parsed = lines
                   .map((l) => LyricLine(
-                        startTime: Duration(milliseconds: l['start'] as int? ?? 0),
+                        startTime:
+                            Duration(milliseconds: l['start'] as int? ?? 0),
                         text: l['value'] as String? ?? '',
                       ))
                   .where((l) => l.text.trim().isNotEmpty)
@@ -181,7 +181,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
       ),
       child: Stack(
         children: [
-          // Background blurred artwork
           if (currentSong?.coverArt != null)
             Positioned.fill(
               child: Opacity(
@@ -199,13 +198,9 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
                 ),
               ),
             ),
-
-          // Dark overlay
           Positioned.fill(
             child: Container(color: Colors.black.withValues(alpha: 0.65)),
           ),
-
-          // Top gradient fade
           Positioned(
             top: 0,
             left: 0,
@@ -223,8 +218,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
               ),
             ),
           ),
-
-          // Close button
           Positioned(
             top: 14,
             right: 14,
@@ -254,8 +247,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
               ),
             ),
           ),
-
-          // Lyrics Body
           Positioned.fill(
             top: 48,
             bottom: 68,
@@ -264,7 +255,8 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
                 if (notification is UserScrollNotification) {
                   _userIsScrolling = true;
                   _resumeAutoScrollTimer?.cancel();
-                  _resumeAutoScrollTimer = Timer(const Duration(seconds: 4), () {
+                  _resumeAutoScrollTimer =
+                      Timer(const Duration(seconds: 4), () {
                     if (mounted) setState(() => _userIsScrolling = false);
                   });
                 }
@@ -273,8 +265,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
               child: _buildLyricsContent(player),
             ),
           ),
-
-          // Bottom gradient fade
           Positioned(
             bottom: 64,
             left: 0,
@@ -292,8 +282,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
               ),
             ),
           ),
-
-          // Bottom song info footer
           if (currentSong != null)
             Positioned(
               bottom: 0,
@@ -301,7 +289,8 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
               right: 0,
               height: 64,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFF080808).withValues(alpha: 0.95),
                   border: Border(
@@ -349,9 +338,11 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
                     ),
                     if (_isSynced)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFA243C).withValues(alpha: 0.18),
+                          color:
+                              const Color(0xFFFA243C).withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -394,7 +385,6 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
         builder: (context, snapshot) {
           final position = snapshot.data ?? Duration.zero;
 
-          // Find active line index
           int activeIndex = -1;
           for (int i = 0; i < _lines.length; i++) {
             if (position >= _lines[i].startTime) {
@@ -431,7 +421,8 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
                 opacity = 0.12;
               }
 
-              final fontSize = isActive ? 26.0 : (distance.abs() == 1 ? 20.0 : 16.0);
+              final fontSize =
+                  isActive ? 26.0 : (distance.abs() == 1 ? 20.0 : 16.0);
               final marginBottom = isActive ? 24.0 : 12.0;
 
               _lineKeys.putIfAbsent(index, () => GlobalKey());
@@ -454,7 +445,8 @@ class _DesktopLyricsPanelState extends State<DesktopLyricsPanel> {
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: fontSize,
-                        fontWeight: isActive ? FontWeight.w900 : FontWeight.w700,
+                        fontWeight:
+                            isActive ? FontWeight.w900 : FontWeight.w700,
                         color: Colors.white.withValues(alpha: opacity),
                         height: 1.25,
                       ),

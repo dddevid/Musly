@@ -1,7 +1,3 @@
-// ── Musly Connect & Group Listening Modal ────────────────────────────────────
-// Clean, human-crafted device selector inspired by Spotify Connect & Apple AirPlay.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -9,14 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'package:provider/provider.dart';
-// import '../../models/connect_device.dart';
-// import '../../models/song.dart';
+
 import '../../providers/player_provider.dart';
-// import '../../services/beatsync_service.dart';
-// import '../../services/musly_connect_service.dart';
+
 import '../../services/cast_service.dart';
 import '../../services/upnp_service.dart';
-// import 'beatsync_party_screen.dart';
 
 class ConnectDevicesModal extends StatefulWidget {
   final bool isDesktopDialog;
@@ -103,7 +96,6 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     return Consumer2<CastService, UpnpService>(
       builder: (context, castService, upnpService, _) {
         final player = Provider.of<PlayerProvider>(context, listen: false);
-        // final isInParty = beatSync.isInParty;
 
         return Container(
           decoration: BoxDecoration(
@@ -133,7 +125,6 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Mobile Drag Handle
                 if (!widget.isDesktopDialog) ...[
                   Center(
                     child: Container(
@@ -147,8 +138,6 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                   ),
                   const SizedBox(height: 14),
                 ],
-
-                // Modal Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -184,44 +173,14 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
                   ],
                 ),
                 const SizedBox(height: 18),
-
-                // Main Device List
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Current Device / Output ───────────────────────────
                         _buildCurrentDeviceTile(player, isDark),
                         const SizedBox(height: 16),
-
-                        // ── Group Session / Party Mode (BeatSync Disabled) ────
-                        // if (!isInParty) ...[
-                        //   _buildGroupSessionCard(context, beatSync, partyRooms, isDark),
-                        //   const SizedBox(height: 20),
-                        // ],
-
-                        // ── Available Musly Devices (Musly Connect disabled) ──
-                        // _buildSectionLabel('MUSLY CONNECT DEVICES'),
-                        // const SizedBox(height: 6),
-                        //
-                        // if (compatibleDevices.isEmpty)
-                        //   _buildEmptyNotice('No other devices running Musly found on this Wi-Fi.')
-                        // else
-                        //   ...compatibleDevices.map(
-                        //     (device) => _buildMuslyDeviceRow(
-                        //       context: context,
-                        //       device: device,
-                        //       connectService: connectService,
-                        //       player: player,
-                        //       isDark: isDark,
-                        //     ),
-                        //   ),
-                        //
-                        // const SizedBox(height: 16),
-
-                        // ── Cast & UPnP Wireless Speakers ──────────────────────
                         StreamBuilder<List<GoogleCastDevice>>(
                           stream: _discoveryManager.devicesStream,
                           builder: (context, snapshot) {
@@ -273,19 +232,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
     );
   }
 
-  // Unused since Musly Connect device list is disabled (see build()).
-  // Widget _buildEmptyNotice(String text) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-  //     child: Text(
-  //       text,
-  //       style: const TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
-  //     ),
-  //   );
-  // }
-
-  Widget _buildCurrentDeviceTile(
-      PlayerProvider player, bool isDark) {
+  Widget _buildCurrentDeviceTile(PlayerProvider player, bool isDark) {
     final deviceName = Platform.isWindows
         ? 'Windows PC'
         : (Platform.isMacOS
@@ -310,8 +257,7 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               color: primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.volume_up_rounded,
-                color: primaryColor, size: 20),
+            child: Icon(Icons.volume_up_rounded, color: primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -336,234 +282,11 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
               ],
             ),
           ),
-          // Subtle audio wave indicator
-          Icon(CupertinoIcons.waveform,
-              color: primaryColor, size: 18),
+          Icon(CupertinoIcons.waveform, color: primaryColor, size: 18),
         ],
       ),
     );
   }
-
-  /*
-  Widget _buildActiveRemoteControlTile(
-    BuildContext context,
-    MuslyConnectService connectService,
-    bool isDark,
-  ) {
-    final remoteName =
-        connectService.activeRemoteDevice?.name ?? 'Remote Device';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1DB954).withValues(alpha: isDark ? 0.14 : 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.devices_rounded, color: Color(0xFF1DB954), size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  remoteName,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Controlling remote playback',
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF1DB954),
-                      fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              connectService.disconnectRemote();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Switched back to this device')),
-              );
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              backgroundColor: isDark ? Colors.white12 : Colors.black12,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text(
-              'Disconnect',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  */
-
-  /*
-  // BeatSync code commented out temporarily
-  Widget _buildActivePartyTile(BuildContext context, BeatSyncService beatSync, bool isDark) {
-    ...
-  }
-
-  Widget _buildGroupSessionCard(...) {
-    ...
-  }
-  */
-
-  /*
-  // Unused since Musly Connect device list is disabled (see build()).
-  Future<void> _handleTransferToDevice(
-    BuildContext context,
-    ConnectDevice device,
-    PlayerProvider player,
-    MuslyConnectService connectService,
-  ) async {
-    final queue = player.queue.isNotEmpty
-        ? player.queue
-        : (player.currentSong != null ? [player.currentSong!] : <Song>[]);
-
-    if (queue.isEmpty) {
-      await connectService.connectToRemoteDevice(device);
-      if (context.mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connected to ${device.name}')),
-        );
-      }
-      return;
-    }
-
-    final pos = player.position.inSeconds;
-    final idx = player.currentIndex.clamp(0, queue.length - 1);
-
-    // 1. Immediately pause the local audio player engine on this device
-    await player.pauseLocal();
-
-    // 2. Connect to the target device as controller
-    await connectService.connectToRemoteDevice(device);
-
-    // 3. Send queue to target device
-    final ok = await connectService.transferPlaybackToRemote(
-      queue,
-      idx,
-      pos,
-      targetDevice: device,
-    );
-
-    if (ok && context.mounted) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Playback transferred to ${device.name}'),
-          backgroundColor: const Color(0xFF1DB954),
-        ),
-      );
-    }
-  }
-  */
-
-  /*
-  // Unused since Musly Connect device list is disabled (see build()).
-  Widget _buildMuslyDeviceRow({
-    required BuildContext context,
-    required ConnectDevice device,
-    required MuslyConnectService connectService,
-    required PlayerProvider player,
-    required bool isDark,
-  }) {
-    final isControlling = connectService.activeRemoteDevice?.id == device.id;
-    final tileBg = isDark ? const Color(0xFF1A1B24) : const Color(0xFFF3F4F7);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      decoration: BoxDecoration(
-        color: isControlling ? const Color(0xFF1DB954).withValues(alpha: 0.1) : tileBg,
-        borderRadius: BorderRadius.circular(12),
-        border: isControlling
-            ? Border.all(color: const Color(0xFF1DB954).withValues(alpha: 0.35))
-            : null,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () async {
-            if (isControlling) {
-              connectService.disconnectRemote();
-            } else {
-              await _handleTransferToDevice(context, device, player, connectService);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            child: Row(
-              children: [
-                Icon(
-                  _getPlatformIcon(device.platform),
-                  size: 22,
-                  color: isControlling ? const Color(0xFF1DB954) : (isDark ? Colors.white70 : Colors.black87),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        device.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isControlling ? const Color(0xFF1DB954) : null,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        device.isPlaying && device.currentSongTitle != null
-                            ? 'Playing: ${device.currentSongTitle}'
-                            : 'Musly Connect • Ready',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isControlling ? const Color(0xFF1DB954) : Colors.grey,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                // Play Here transfer button
-                IconButton(
-                  icon: const Icon(CupertinoIcons.arrow_right_arrow_left, size: 18),
-                  tooltip: 'Transfer audio here',
-                  color: isDark ? Colors.white60 : Colors.black54,
-                  onPressed: () => _handleTransferToDevice(context, device, player, connectService),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-  */
 
   Widget _buildCastRow(BuildContext context, GoogleCastDevice castDevice,
       CastService cast, bool isDark) {
@@ -649,26 +372,4 @@ class _ConnectDevicesModalState extends State<ConnectDevicesModal> {
       ),
     );
   }
-
-  /*
-  // Unused since Musly Connect device list is disabled (see build()).
-  IconData _getPlatformIcon(String platform) {
-    switch (platform.toLowerCase()) {
-      case 'android':
-        return Icons.phone_android_rounded;
-      case 'ios':
-        return Icons.phone_iphone_rounded;
-      case 'windows':
-        return Icons.desktop_windows_rounded;
-      case 'macos':
-        return Icons.laptop_mac_rounded;
-      case 'linux':
-        return Icons.computer_rounded;
-      case 'tv':
-        return Icons.tv_rounded;
-      default:
-        return Icons.speaker_rounded;
-    }
-  }
-  */
 }

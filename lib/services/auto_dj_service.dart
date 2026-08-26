@@ -33,22 +33,22 @@ class SongAnalysis {
   });
 
   Map<String, dynamic> toJson() => {
-    'songId': songId,
-    'bpm': bpm,
-    'genre': genre,
-    'year': year,
-    'energy': energy,
-    'duration': duration,
-  };
+        'songId': songId,
+        'bpm': bpm,
+        'genre': genre,
+        'year': year,
+        'energy': energy,
+        'duration': duration,
+      };
 
   factory SongAnalysis.fromJson(Map<String, dynamic> json) => SongAnalysis(
-    songId: json['songId'] as String,
-    bpm: json['bpm'] as int,
-    genre: json['genre'] as String?,
-    year: json['year'] as int?,
-    energy: (json['energy'] as num).toDouble(),
-    duration: json['duration'] as int,
-  );
+        songId: json['songId'] as String,
+        bpm: json['bpm'] as int,
+        genre: json['genre'] as String?,
+        year: json['year'] as int?,
+        energy: (json['energy'] as num).toDouble(),
+        duration: json['duration'] as int,
+      );
 }
 
 class AutoDjService extends ChangeNotifier {
@@ -266,7 +266,6 @@ class AutoDjService extends ChangeNotifier {
     final List<Future<List<Song>>> futures = [];
 
     if (currentSong != null) {
-      
       futures.add(
         _subsonicService!.getSimilarSongs(
           currentSong.id,
@@ -300,13 +299,12 @@ class AutoDjService extends ChangeNotifier {
         _analysisCache.containsKey(currentSong.id)) {
       final smartQueue = generateQueue(
         seedSong: currentSong,
-        availableSongs: availableSongs
-            .where((s) => !existingIds.contains(s.id))
-            .toList(),
+        availableSongs:
+            availableSongs.where((s) => !existingIds.contains(s.id)).toList(),
         queueLength: _songsToAdd,
       );
       if (smartQueue.length > 1) {
-        return smartQueue.skip(1).toList(); 
+        return smartQueue.skip(1).toList();
       }
     }
 
@@ -529,9 +527,8 @@ class AutoDjService extends ChangeNotifier {
     final queue = <Song>[seedSong];
     final usedIds = <String>{seedSong.id};
 
-    final candidates = availableSongs
-        .where((s) => s.id != seedSong.id)
-        .toList();
+    final candidates =
+        availableSongs.where((s) => s.id != seedSong.id).toList();
 
     for (int i = 0; i < queueLength - 1 && candidates.isNotEmpty; i++) {
       final lastSong = queue.last;

@@ -67,7 +67,7 @@ class _LibraryItem {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  String? _selectedFilter; // null (All) | 'Playlists' | 'Albums' | 'Artists' | 'Downloaded' | 'Songs'
+  String? _selectedFilter;
   bool _isGridView = false;
   _SortOption _currentSort = _SortOption.recents;
 
@@ -116,13 +116,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(CupertinoIcons.music_note_list, color: Theme.of(context).colorScheme.primary, size: 22),
+                child: Icon(CupertinoIcons.music_note_list,
+                    color: Theme.of(context).colorScheme.primary, size: 22),
               ),
-              title: Text(AppLocalizations.of(context)!.createPlaylist, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(AppLocalizations.of(context)!.createPlaylistSubtitle, style: const TextStyle(fontSize: 12)),
+              title: Text(AppLocalizations.of(context)!.createPlaylist,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.createPlaylistSubtitle,
+                  style: const TextStyle(fontSize: 12)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showCreatePlaylistDialog(context);
@@ -137,10 +144,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   color: const Color(0xFF6366F1).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.dns_rounded, color: Color(0xFF6366F1), size: 22),
+                child: const Icon(Icons.dns_rounded,
+                    color: Color(0xFF6366F1), size: 22),
               ),
-              title: Text(AppLocalizations.of(context)!.addMusicSource, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(AppLocalizations.of(context)!.addMusicSourceSubtitle, style: const TextStyle(fontSize: 12)),
+              title: Text(AppLocalizations.of(context)!.addMusicSource,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.addMusicSourceSubtitle,
+                  style: const TextStyle(fontSize: 12)),
               onTap: () {
                 Navigator.pop(ctx);
                 NavigationHelper.push(context, const AddServerScreen());
@@ -174,7 +185,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             onPressed: () async {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
-                final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                final libraryProvider =
+                    Provider.of<LibraryProvider>(context, listen: false);
                 await libraryProvider.createPlaylist(name);
                 if (ctx.mounted) Navigator.pop(ctx);
               }
@@ -188,9 +200,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   void _showSortMenu(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // fix #230: account for mini player height (~80px) + system bottom inset
-    // so all sort options are fully visible and tappable when a song is playing.
-    final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 80.0 + 16.0;
+
+    final bottomPadding =
+        MediaQuery.of(context).viewPadding.bottom + 80.0 + 16.0;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -223,7 +235,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
             _buildSortOptionTile(ctx, 'Recents', _SortOption.recents),
-            _buildSortOptionTile(ctx, 'Recently added', _SortOption.recentlyAdded),
+            _buildSortOptionTile(
+                ctx, 'Recently added', _SortOption.recentlyAdded),
             _buildSortOptionTile(ctx, 'Alphabetical', _SortOption.alphabetical),
             _buildSortOptionTile(ctx, 'Creator', _SortOption.creator),
           ],
@@ -232,7 +245,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildSortOptionTile(BuildContext ctx, String title, _SortOption option) {
+  Widget _buildSortOptionTile(
+      BuildContext ctx, String title, _SortOption option) {
     final isSelected = _currentSort == option;
     return ListTile(
       title: Text(
@@ -243,7 +257,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
       ),
       trailing: isSelected
-          ? Icon(CupertinoIcons.checkmark, color: Theme.of(context).colorScheme.primary, size: 18)
+          ? Icon(CupertinoIcons.checkmark,
+              color: Theme.of(context).colorScheme.primary, size: 18)
           : null,
       onTap: () {
         setState(() => _currentSort = option);
@@ -263,7 +278,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final items = <_LibraryItem>[];
     final offlineService = OfflineService();
 
-    // Pinned Liked Songs
     if (_selectedFilter == null || _selectedFilter == 'Playlists') {
       items.add(
         _LibraryItem(
@@ -275,7 +289,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    // Pinned Downloaded Songs
     if (_selectedFilter == null || _selectedFilter == 'Downloaded') {
       items.add(
         _LibraryItem(
@@ -287,7 +300,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    // Playlists
     if (_selectedFilter == null || _selectedFilter == 'Playlists') {
       var playlists = libraryProvider.playlists;
       playlists = _sortList(playlists, (p) => p.name);
@@ -307,8 +319,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       }
     }
 
-    // Albums (only on server mode or when filtered)
-    if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Albums') {
+    if ((_selectedFilter == null && !isYoutube) ||
+        _selectedFilter == 'Albums') {
       var albums = libraryProvider.recentAlbums;
       albums = _sortList(albums, (a) => a.name);
       for (final a in albums) {
@@ -324,8 +336,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       }
     }
 
-    // Artists (only on server mode or when filtered)
-    if ((_selectedFilter == null && !isYoutube) || _selectedFilter == 'Artists') {
+    if ((_selectedFilter == null && !isYoutube) ||
+        _selectedFilter == 'Artists') {
       var artists = libraryProvider.artists;
       artists = _sortList(artists, (a) => a.name);
       for (final art in artists) {
@@ -341,7 +353,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
       }
     }
 
-    // Radio stations & Liked Albums shortcuts
     if (_selectedFilter == null && !isYoutube) {
       items.add(
         _LibraryItem(
@@ -361,10 +372,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    // Downloaded Filter items
     if (_selectedFilter == 'Downloaded') {
       final downloadedIds = offlineService.getDownloadedSongIds();
-      final downloadedSongs = (libraryProvider.cachedAllSongs ?? [])
+      final downloadedSongs = libraryProvider.cachedAllSongs
           .where((s) => downloadedIds.contains(s.id))
           .toList();
       for (final song in downloadedSongs) {
@@ -375,7 +385,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             subtitle: song.artist ?? 'Unknown Artist',
             data: song,
             onTap: () {
-              final player = Provider.of<PlayerProvider>(context, listen: false);
+              final player =
+                  Provider.of<PlayerProvider>(context, listen: false);
               player.playSong(song, playlist: downloadedSongs);
             },
           ),
@@ -383,9 +394,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       }
     }
 
-    // Songs Filter items
     if (_selectedFilter == 'Songs' && !isYoutube) {
-      var allSongs = libraryProvider.cachedAllSongs ?? [];
+      var allSongs = libraryProvider.cachedAllSongs;
       allSongs = _sortList(allSongs, (s) => s.title);
       for (final song in allSongs) {
         items.add(
@@ -395,7 +405,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             subtitle: song.artist ?? 'Unknown Artist',
             data: song,
             onTap: () {
-              final player = Provider.of<PlayerProvider>(context, listen: false);
+              final player =
+                  Provider.of<PlayerProvider>(context, listen: false);
               player.playSong(song, playlist: allSongs);
             },
           ),
@@ -413,23 +424,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final hPad = _isDesktop ? 32.0 : 16.0;
     final authProvider = Provider.of<AuthProvider>(context);
     final subsonicService = Provider.of<SubsonicService>(context);
-    final isYoutube = subsonicService.isYoutube || authProvider.config?.isYoutube == true;
+    final isYoutube =
+        subsonicService.isYoutube || authProvider.config?.isYoutube == true;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: Consumer<LibraryProvider>(
         builder: (context, libraryProvider, _) {
           return CustomScrollView(
             cacheExtent: 600.0,
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
             slivers: [
-              // 1. Header
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 pinned: true,
                 floating: true,
                 expandedHeight: 120,
-                backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+                backgroundColor:
+                    isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
                 elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding: EdgeInsets.only(left: hPad, bottom: 44),
@@ -445,19 +459,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 actions: [
                   IconButton(
-                    icon: Icon(CupertinoIcons.search, color: isDark ? Colors.white : Colors.black87, size: 22),
+                    icon: Icon(CupertinoIcons.search,
+                        color: isDark ? Colors.white : Colors.black87,
+                        size: 22),
                     tooltip: AppLocalizations.of(context)!.searchInLibrary,
                     onPressed: () => _showLibrarySearch(context),
                   ),
                   IconButton(
-                    icon: Icon(CupertinoIcons.plus, color: isDark ? Colors.white : Colors.black87, size: 24),
+                    icon: Icon(CupertinoIcons.plus,
+                        color: isDark ? Colors.white : Colors.black87,
+                        size: 24),
                     tooltip: AppLocalizations.of(context)!.add,
                     onPressed: () => _showAddMenu(context),
                   ),
                   IconButton(
-                    icon: Icon(CupertinoIcons.gear_alt, color: isDark ? Colors.white : Colors.black87, size: 22),
+                    icon: Icon(CupertinoIcons.gear_alt,
+                        color: isDark ? Colors.white : Colors.black87,
+                        size: 22),
                     tooltip: AppLocalizations.of(context)!.settings,
-                    onPressed: () => NavigationHelper.push(context, const SettingsScreen()),
+                    onPressed: () =>
+                        NavigationHelper.push(context, const SettingsScreen()),
                   ),
                   if (_isDesktop) const SizedBox(width: 12),
                 ],
@@ -465,7 +486,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   preferredSize: const Size.fromHeight(48),
                   child: Container(
                     height: 48,
-                    padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 6),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: hPad, vertical: 6),
                     alignment: Alignment.centerLeft,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -474,28 +496,53 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         children: [
                           if (_selectedFilter != null) ...[
                             GestureDetector(
-                              onTap: () => setState(() => _selectedFilter = null),
+                              onTap: () =>
+                                  setState(() => _selectedFilter = null),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
                                 margin: const EdgeInsets.only(right: 8),
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF282828) : Colors.grey[300],
+                                  color: isDark
+                                      ? const Color(0xFF282828)
+                                      : Colors.grey[300],
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Icon(CupertinoIcons.clear, size: 14, color: isDark ? Colors.white : Colors.black),
+                                child: Icon(CupertinoIcons.clear,
+                                    size: 14,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
                               ),
                             ),
                           ],
-                          _buildFilterChip('Playlists', AppLocalizations.of(context)?.playlists ?? 'Playlists', isDark),
+                          _buildFilterChip(
+                              'Playlists',
+                              AppLocalizations.of(context)?.playlists ??
+                                  'Playlists',
+                              isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Albums', AppLocalizations.of(context)?.albums ?? 'Albums', isDark),
+                          _buildFilterChip(
+                              'Albums',
+                              AppLocalizations.of(context)?.albums ?? 'Albums',
+                              isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Artists', AppLocalizations.of(context)?.artists ?? 'Artists', isDark),
+                          _buildFilterChip(
+                              'Artists',
+                              AppLocalizations.of(context)?.artists ??
+                                  'Artists',
+                              isDark),
                           const SizedBox(width: 8),
-                          _buildFilterChip('Downloaded', AppLocalizations.of(context)?.downloadedSongs ?? 'Downloaded', isDark),
+                          _buildFilterChip(
+                              'Downloaded',
+                              AppLocalizations.of(context)?.downloadedSongs ??
+                                  'Downloaded',
+                              isDark),
                           if (!isYoutube) ...[
                             const SizedBox(width: 8),
-                            _buildFilterChip('Songs', AppLocalizations.of(context)?.songs ?? 'Songs', isDark),
+                            _buildFilterChip(
+                                'Songs',
+                                AppLocalizations.of(context)?.songs ?? 'Songs',
+                                isDark),
                           ],
                         ],
                       ),
@@ -503,23 +550,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ),
                 ),
               ),
-
-              // 2. Sort Option & Grid/List Toggle
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Sort Option Button
                       InkWell(
                         onTap: () => _showSortMenu(context),
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 4),
                           child: Row(
                             children: [
-                              const Icon(CupertinoIcons.arrow_up_arrow_down, size: 14),
+                              const Icon(CupertinoIcons.arrow_up_arrow_down,
+                                  size: 14),
                               const SizedBox(width: 6),
                               Text(
                                 switch (_currentSort) {
@@ -528,33 +574,35 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                   _SortOption.alphabetical => 'Alphabetical',
                                   _SortOption.creator => 'Creator',
                                 },
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
                         ),
                       ),
-
-                      // View Mode Toggle (List / Grid)
                       IconButton(
                         icon: Icon(
-                          _isGridView ? CupertinoIcons.list_bullet : CupertinoIcons.square_grid_2x2,
+                          _isGridView
+                              ? CupertinoIcons.list_bullet
+                              : CupertinoIcons.square_grid_2x2,
                           size: 18,
                         ),
-                        tooltip: _isGridView ? 'Switch to List' : 'Switch to Grid',
-                        onPressed: () => setState(() => _isGridView = !_isGridView),
+                        tooltip:
+                            _isGridView ? 'Switch to List' : 'Switch to Grid',
+                        onPressed: () =>
+                            setState(() => _isGridView = !_isGridView),
                       ),
                     ],
                   ),
                 ),
               ),
-
-              // 3. Dynamic Items (Virtual List or Virtual Grid for 60/120 FPS performance)
               if (_isGridView)
-                _buildSliverGrid(context, libraryProvider, isDark, isYoutube, hPad)
+                _buildSliverGrid(
+                    context, libraryProvider, isDark, isYoutube, hPad)
               else
-                _buildSliverList(context, libraryProvider, isDark, isYoutube, hPad),
-
+                _buildSliverList(
+                    context, libraryProvider, isDark, isYoutube, hPad),
               const SliverToBoxAdapter(child: SizedBox(height: 80)),
             ],
           );
@@ -586,7 +634,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: isSelected
-                ? (ThemeData.estimateBrightnessForColor(Theme.of(context).colorScheme.primary) == Brightness.dark
+                ? (ThemeData.estimateBrightnessForColor(
+                            Theme.of(context).colorScheme.primary) ==
+                        Brightness.dark
                     ? Colors.white
                     : Colors.black)
                 : (isDark ? Colors.white : Colors.black87),
@@ -832,7 +882,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             item.subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
           ),
           onTap: item.onTap,
@@ -857,7 +909,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             item.subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
           ),
           onTap: item.onTap,
@@ -885,7 +939,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             item.subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
           ),
           onTap: item.onTap,
@@ -910,7 +966,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             item.subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
           ),
           onTap: item.onTap,
@@ -938,7 +996,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
             child: const Center(
-              child: Icon(CupertinoIcons.heart_fill, color: Colors.white, size: 36),
+              child: Icon(CupertinoIcons.heart_fill,
+                  color: Colors.white, size: 36),
             ),
           ),
           onTap: item.onTap,
@@ -958,7 +1017,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
             child: const Center(
-              child: Icon(CupertinoIcons.arrow_down_circle_fill, color: Colors.white, size: 36),
+              child: Icon(CupertinoIcons.arrow_down_circle_fill,
+                  color: Colors.white, size: 36),
             ),
           ),
           onTap: item.onTap,
@@ -974,7 +1034,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Center(
-              child: Icon(CupertinoIcons.antenna_radiowaves_left_right, color: Color(0xFF34C759), size: 36),
+              child: Icon(CupertinoIcons.antenna_radiowaves_left_right,
+                  color: Color(0xFF34C759), size: 36),
             ),
           ),
           onTap: item.onTap,
@@ -990,7 +1051,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Center(
-              child: Icon(CupertinoIcons.star_fill, color: Color(0xFFFF9500), size: 36),
+              child: Icon(CupertinoIcons.star_fill,
+                  color: Color(0xFFFF9500), size: 36),
             ),
           ),
           onTap: item.onTap,
@@ -1059,16 +1121,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
         child: Icon(icon, color: Colors.white, size: 24),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      title: Text(title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
       subtitle: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CupertinoIcons.pin_fill, size: 12, color: Theme.of(context).colorScheme.primary),
+          Icon(CupertinoIcons.pin_fill,
+              size: 12, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               subtitle,
-              style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w500),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -1091,7 +1158,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Column(
-        crossAxisAlignment: isRound ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isRound ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           AspectRatio(
             aspectRatio: 1.0,
@@ -1114,7 +1182,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+              color: isDark
+                  ? AppTheme.darkSecondaryText
+                  : AppTheme.lightSecondaryText,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1128,12 +1198,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final list = List<T>.from(items);
     switch (_currentSort) {
       case _SortOption.alphabetical:
-        list.sort((a, b) => nameSelector(a).toLowerCase().compareTo(nameSelector(b).toLowerCase()));
+        list.sort((a, b) => nameSelector(a)
+            .toLowerCase()
+            .compareTo(nameSelector(b).toLowerCase()));
         break;
       case _SortOption.recents:
       case _SortOption.recentlyAdded:
       case _SortOption.creator:
-        // Preserves default recent or natural order
         break;
     }
     return list;

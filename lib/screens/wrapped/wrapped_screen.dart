@@ -36,14 +36,13 @@ class _WrappedScreenState extends State<WrappedScreen>
   int _suspenseCountdown = 3;
   bool _topSongRevealed = false;
 
-  // Real-time slide progress animation
   double _currentSlideProgress = 0.0;
   Timer? _progressTicker;
 
   @override
   void initState() {
     super.initState();
-    // Fullscreen immersive display like Spotify Wrapped stories
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     _auraController = AnimationController(
@@ -61,7 +60,6 @@ class _WrappedScreenState extends State<WrappedScreen>
       duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
 
-    // Pause active playback when entering Wrapped
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final player = Provider.of<PlayerProvider>(context, listen: false);
       if (player.isPlaying) {
@@ -85,7 +83,8 @@ class _WrappedScreenState extends State<WrappedScreen>
   }
 
   Future<void> _loadData() async {
-    final recService = Provider.of<RecommendationService>(context, listen: false);
+    final recService =
+        Provider.of<RecommendationService>(context, listen: false);
     final libProvider = Provider.of<LibraryProvider>(context, listen: false);
 
     final allSongs = libProvider.cachedAllSongs.isNotEmpty
@@ -115,7 +114,8 @@ class _WrappedScreenState extends State<WrappedScreen>
     const intervalMs = 50;
     final increment = intervalMs / slideDurationMs;
 
-    _progressTicker = Timer.periodic(const Duration(milliseconds: intervalMs), (timer) {
+    _progressTicker =
+        Timer.periodic(const Duration(milliseconds: intervalMs), (timer) {
       if (!mounted || _isPaused || _isSuspenseLocked) return;
 
       setState(() {
@@ -142,7 +142,6 @@ class _WrappedScreenState extends State<WrappedScreen>
 
     _progressTicker?.cancel();
 
-    // 3-second suspense countdown with haptics
     _suspenseTimer?.cancel();
     _suspenseTimer = Timer.periodic(const Duration(milliseconds: 900), (timer) {
       if (!mounted) return;
@@ -160,7 +159,6 @@ class _WrappedScreenState extends State<WrappedScreen>
           _topSongRevealed = true;
         });
 
-        // Automatically start playing the #1 top song in background!
         if (_data != null && _data!.topSongs.isNotEmpty) {
           final topSong = _data!.topSongs.first.song;
           final player = Provider.of<PlayerProvider>(context, listen: false);
@@ -182,7 +180,6 @@ class _WrappedScreenState extends State<WrappedScreen>
         _currentSlideProgress = 0.0;
       });
 
-      // Trigger suspense on Slide 4 (Top Songs Reveal)
       if (_currentSlide == 4 && !_topSongRevealed) {
         _triggerTopSongSuspense();
       } else {
@@ -212,7 +209,8 @@ class _WrappedScreenState extends State<WrappedScreen>
     Navigator.of(context).pop();
   }
 
-  String _getChronotypeName(AppLocalizations? l10n, String id, String fallback) {
+  String _getChronotypeName(
+      AppLocalizations? l10n, String id, String fallback) {
     if (l10n == null) return fallback;
     return switch (id) {
       'midnight_wanderer' => l10n.chronotypeMidnightWanderer,
@@ -223,7 +221,8 @@ class _WrappedScreenState extends State<WrappedScreen>
     };
   }
 
-  String _getChronotypeDesc(AppLocalizations? l10n, String id, String fallback) {
+  String _getChronotypeDesc(
+      AppLocalizations? l10n, String id, String fallback) {
     if (l10n == null) return fallback;
     return switch (id) {
       'midnight_wanderer' => l10n.chronotypeMidnightWandererDesc,
@@ -270,14 +269,35 @@ class _WrappedScreenState extends State<WrappedScreen>
     };
   }
 
-  List<String> _getArchetypeTraits(AppLocalizations? l10n, PersonalityArchetype arch) {
+  List<String> _getArchetypeTraits(
+      AppLocalizations? l10n, PersonalityArchetype arch) {
     if (l10n == null) return arch.traits;
     return switch (arch.id) {
-      'luminary' => [l10n.archetypeLuminaryTrait1, l10n.archetypeLuminaryTrait2, l10n.archetypeLuminaryTrait3],
-      'devotee' => [l10n.archetypeDevoteeTrait1, l10n.archetypeDevoteeTrait2, l10n.archetypeDevoteeTrait3],
-      'night_owl' => [l10n.archetypeNightOwlTrait1, l10n.archetypeNightOwlTrait2, l10n.archetypeNightOwlTrait3],
-      'sunrise_harmonizer' => [l10n.archetypeSunriseTrait1, l10n.archetypeSunriseTrait2, l10n.archetypeSunriseTrait3],
-      'alchemist' => [l10n.archetypeAlchemistTrait1, l10n.archetypeAlchemistTrait2, l10n.archetypeAlchemistTrait3],
+      'luminary' => [
+          l10n.archetypeLuminaryTrait1,
+          l10n.archetypeLuminaryTrait2,
+          l10n.archetypeLuminaryTrait3
+        ],
+      'devotee' => [
+          l10n.archetypeDevoteeTrait1,
+          l10n.archetypeDevoteeTrait2,
+          l10n.archetypeDevoteeTrait3
+        ],
+      'night_owl' => [
+          l10n.archetypeNightOwlTrait1,
+          l10n.archetypeNightOwlTrait2,
+          l10n.archetypeNightOwlTrait3
+        ],
+      'sunrise_harmonizer' => [
+          l10n.archetypeSunriseTrait1,
+          l10n.archetypeSunriseTrait2,
+          l10n.archetypeSunriseTrait3
+        ],
+      'alchemist' => [
+          l10n.archetypeAlchemistTrait1,
+          l10n.archetypeAlchemistTrait2,
+          l10n.archetypeAlchemistTrait3
+        ],
       _ => arch.traits,
     };
   }
@@ -355,7 +375,8 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isSeason = WrappedService.isWrappedSeason(devPreview: widget.devPreview);
+    final isSeason =
+        WrappedService.isWrappedSeason(devPreview: widget.devPreview);
     final l10n = AppLocalizations.of(context);
 
     if (!isSeason) {
@@ -386,7 +407,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                   ],
                 ),
                 child: const Center(
-                  child: CupertinoActivityIndicator(color: Colors.white, radius: 16),
+                  child: CupertinoActivityIndicator(
+                      color: Colors.white, radius: 16),
                 ),
               ),
               const SizedBox(height: 28),
@@ -401,8 +423,10 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                l10n?.synthesizingUniverse ?? 'Synthesizing your listening universe',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
+                l10n?.synthesizingUniverse ??
+                    'Synthesizing your listening universe',
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
               ),
             ],
           ),
@@ -436,23 +460,16 @@ class _WrappedScreenState extends State<WrappedScreen>
         },
         child: Stack(
           children: [
-            // Dynamic Ambient Aura Mesh Shader Background
             _buildAnimatedBackground(),
-
-            // Floating Audio Visualizer Particles
             _buildFloatingAuraParticles(),
-
-            // Active Story Slide Content
             SafeArea(
               child: Column(
                 children: [
-                  // Progress Bars & Header Controls
                   _buildHeaderProgress(),
-
-                  // Slide Viewport
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 380),
                         switchInCurve: Curves.easeOutCubic,
@@ -466,8 +483,6 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ],
               ),
             ),
-
-            // Paused Indicator Overlay
             if (_isPaused)
               Positioned(
                 top: 50,
@@ -479,12 +494,14 @@ class _WrappedScreenState extends State<WrappedScreen>
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
                         color: Colors.black45,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(CupertinoIcons.pause_fill, color: Colors.white70, size: 12),
+                            Icon(CupertinoIcons.pause_fill,
+                                color: Colors.white70, size: 12),
                             SizedBox(width: 6),
                             Text(
                               'PAUSED',
@@ -542,19 +559,24 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                   ],
                 ),
-                child: const Icon(CupertinoIcons.gift_fill, color: Colors.white, size: 48),
+                child: const Icon(CupertinoIcons.gift_fill,
+                    color: Colors.white, size: 48),
               ),
               const SizedBox(height: 32),
               Text(
                 l10n?.wrappedSeasonal ?? 'Musly Playback is Seasonal',
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
               Text(
                 l10n?.muslyPlaybackAnnualSubtitle ??
                     'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!',
-                style: const TextStyle(fontSize: 14, color: Colors.white70, height: 1.55),
+                style: const TextStyle(
+                    fontSize: 14, color: Colors.white70, height: 1.55),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 36),
@@ -567,12 +589,15 @@ class _WrappedScreenState extends State<WrappedScreen>
                   );
                 },
                 icon: const Icon(CupertinoIcons.sparkles, size: 18),
-                label: Text(l10n?.muslyPlaybackDev ?? 'Playback Preview (Test Mode)'),
+                label: Text(
+                    l10n?.muslyPlaybackDev ?? 'Playback Preview (Test Mode)'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFFA243C),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
                   elevation: 8,
                 ),
               ),
@@ -585,14 +610,46 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   Widget _buildAnimatedBackground() {
     final palettes = [
-      [const Color(0xFFFA243C), const Color(0xFF7928CA), const Color(0xFF030305)], // 0. Intro
-      [const Color(0xFF00C6FF), const Color(0xFF0072FF), const Color(0xFF020710)], // 1. Minutes
-      [const Color(0xFFFF512F), const Color(0xFFDD2476), const Color(0xFF0C0308)], // 2. Chronotype
-      [const Color(0xFF8E2DE2), const Color(0xFF4A00E0), const Color(0xFF080310)], // 3. Genres
-      [const Color(0xFFFF0844), const Color(0xFFFFB199), const Color(0xFF0C0305)], // 4. Top Songs
-      [const Color(0xFF11998E), const Color(0xFF38EF7D), const Color(0xFF030D08)], // 5. Top Artists
-      [const Color(0xFFFF007A), const Color(0xFF7928CA), const Color(0xFF080310)], // 6. Personality
-      [const Color(0xFFFA243C), const Color(0xFFFF8C00), const Color(0xFF040406)], // 7. Bento Card
+      [
+        const Color(0xFFFA243C),
+        const Color(0xFF7928CA),
+        const Color(0xFF030305)
+      ],
+      [
+        const Color(0xFF00C6FF),
+        const Color(0xFF0072FF),
+        const Color(0xFF020710)
+      ],
+      [
+        const Color(0xFFFF512F),
+        const Color(0xFFDD2476),
+        const Color(0xFF0C0308)
+      ],
+      [
+        const Color(0xFF8E2DE2),
+        const Color(0xFF4A00E0),
+        const Color(0xFF080310)
+      ],
+      [
+        const Color(0xFFFF0844),
+        const Color(0xFFFFB199),
+        const Color(0xFF0C0305)
+      ],
+      [
+        const Color(0xFF11998E),
+        const Color(0xFF38EF7D),
+        const Color(0xFF030D08)
+      ],
+      [
+        const Color(0xFFFF007A),
+        const Color(0xFF7928CA),
+        const Color(0xFF080310)
+      ],
+      [
+        const Color(0xFFFA243C),
+        const Color(0xFFFF8C00),
+        const Color(0xFF040406)
+      ],
     ];
 
     final currentColors = palettes[_currentSlide % palettes.length];
@@ -689,16 +746,20 @@ class _WrappedScreenState extends State<WrappedScreen>
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFA243C).withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFA243C).withValues(alpha: 0.35)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFFA243C).withValues(alpha: 0.35)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(CupertinoIcons.sparkles, color: Color(0xFFFA243C), size: 12),
+                        const Icon(CupertinoIcons.sparkles,
+                            color: Color(0xFFFA243C), size: 12),
                         const SizedBox(width: 6),
                         Text(
                           'PLAYBACK ${_data!.year}',
@@ -720,8 +781,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                   child: Container(
                     color: Colors.white.withValues(alpha: 0.1),
                     child: IconButton(
-                      icon: const Icon(CupertinoIcons.xmark, color: Colors.white70, size: 18),
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      icon: const Icon(CupertinoIcons.xmark,
+                          color: Colors.white70, size: 18),
+                      constraints:
+                          const BoxConstraints(minWidth: 36, minHeight: 36),
                       padding: EdgeInsets.zero,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
@@ -754,16 +817,20 @@ class _WrappedScreenState extends State<WrappedScreen>
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 7),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF0844).withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFF0844).withValues(alpha: 0.6)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 13),
+                          const Icon(CupertinoIcons.lock_fill,
+                              color: Color(0xFFFF0844), size: 13),
                           const SizedBox(width: 7),
                           Text(
                             l10n?.drumroll ?? 'DRUMROLL...',
@@ -805,7 +872,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF0844).withValues(alpha: 0.65),
+                          color:
+                              const Color(0xFFFF0844).withValues(alpha: 0.65),
                           blurRadius: 44 * scale,
                           spreadRadius: 8 * scale,
                         ),
@@ -865,7 +933,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 0: Intro / Overture ─────────────────────────────────────────────
   Widget _buildIntroSlide() {
     final l10n = AppLocalizations.of(context);
     return Column(
@@ -899,7 +966,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ),
               ],
             ),
-            child: const Icon(CupertinoIcons.music_albums_fill, color: Colors.white, size: 58),
+            child: const Icon(CupertinoIcons.music_albums_fill,
+                color: Colors.white, size: 58),
           ),
         ),
         const SizedBox(height: 38),
@@ -937,10 +1005,14 @@ class _WrappedScreenState extends State<WrappedScreen>
             children: [
               Text(
                 l10n?.tapToBegin ?? 'Tap to begin',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14),
               ),
               const SizedBox(width: 10),
-              const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 15),
+              const Icon(CupertinoIcons.arrow_right,
+                  color: Colors.white, size: 15),
             ],
           ),
         ),
@@ -948,7 +1020,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 1: Total Minutes & Percentile ────────────────────────────────────
   Widget _buildMinutesSlide() {
     final mins = _data!.totalMinutesListened;
     final hours = (mins / 60).toStringAsFixed(1);
@@ -962,7 +1033,8 @@ class _WrappedScreenState extends State<WrappedScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
           borderRadius: BorderRadius.circular(20),
           backgroundColor: const Color(0xFF00C6FF).withValues(alpha: 0.16),
-          border: Border.all(color: const Color(0xFF00C6FF).withValues(alpha: 0.45)),
+          border: Border.all(
+              color: const Color(0xFF00C6FF).withValues(alpha: 0.45)),
           child: Text(
             _getPercentileText(l10n, mins).toUpperCase(),
             style: const TextStyle(
@@ -1007,9 +1079,11 @@ class _WrappedScreenState extends State<WrappedScreen>
             children: [
               _buildMetric(l10n?.totalHours ?? 'Total hours', hours),
               Container(width: 1, height: 42, color: Colors.white24),
-              _buildMetric(l10n?.uniqueTracks ?? 'Unique tracks', _formatNumber(_data!.totalUniqueTracks)),
+              _buildMetric(l10n?.uniqueTracks ?? 'Unique tracks',
+                  _formatNumber(_data!.totalUniqueTracks)),
               Container(width: 1, height: 42, color: Colors.white24),
-              _buildMetric(l10n?.artists ?? 'Artists', '${_data!.totalUniqueArtists}'),
+              _buildMetric(
+                  l10n?.artists ?? 'Artists', '${_data!.totalUniqueArtists}'),
             ],
           ),
         ),
@@ -1017,11 +1091,12 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 2: Musical Chronotype ───────────────────────────────────────────
   Widget _buildChronotypeSlide() {
     final l10n = AppLocalizations.of(context);
-    final chronoName = _getChronotypeName(l10n, _data!.chronotypeId, _data!.chronotypeName);
-    final chronoDesc = _getChronotypeDesc(l10n, _data!.chronotypeId, _data!.chronotypeDescription);
+    final chronoName =
+        _getChronotypeName(l10n, _data!.chronotypeId, _data!.chronotypeName);
+    final chronoDesc = _getChronotypeDesc(
+        l10n, _data!.chronotypeId, _data!.chronotypeDescription);
 
     return Column(
       key: const ValueKey('chronotype'),
@@ -1040,7 +1115,8 @@ class _WrappedScreenState extends State<WrappedScreen>
         _buildGlassCard(
           padding: const EdgeInsets.all(28),
           backgroundColor: const Color(0xFFFF512F).withValues(alpha: 0.2),
-          border: Border.all(color: const Color(0xFFFF512F).withValues(alpha: 0.45)),
+          border: Border.all(
+              color: const Color(0xFFFF512F).withValues(alpha: 0.45)),
           child: Column(
             children: [
               Container(
@@ -1058,18 +1134,25 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                   ],
                 ),
-                child: const Icon(CupertinoIcons.clock_fill, color: Colors.white, size: 36),
+                child: const Icon(CupertinoIcons.clock_fill,
+                    color: Colors.white, size: 36),
               ),
               const SizedBox(height: 22),
               Text(
                 chronoName,
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 chronoDesc,
-                style: TextStyle(fontSize: 15, color: Colors.white.withValues(alpha: 0.85), height: 1.45),
+                style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    height: 1.45),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -1079,7 +1162,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 3: Genre Galaxy ─────────────────────────────────────────────────
   Widget _buildGenreGalaxySlide() {
     final l10n = AppLocalizations.of(context);
     return Column(
@@ -1088,12 +1170,20 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           l10n?.genreGalaxy ?? 'GENRE GALAXY',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF8E2DE2), letterSpacing: 1.6),
+          style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF8E2DE2),
+              letterSpacing: 1.6),
         ),
         const SizedBox(height: 6),
         Text(
           l10n?.soundsThatGuidedYou ?? 'The sounds that guided you',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
+          style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.4),
         ),
         const SizedBox(height: 22),
         Expanded(
@@ -1107,12 +1197,15 @@ class _WrappedScreenState extends State<WrappedScreen>
               final isTop = i == 0;
 
               return _buildGlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 backgroundColor: isTop
                     ? g.accentColor.withValues(alpha: 0.16)
                     : Colors.white.withValues(alpha: 0.06),
                 border: Border.all(
-                  color: isTop ? g.accentColor.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.12),
+                  color: isTop
+                      ? g.accentColor.withValues(alpha: 0.45)
+                      : Colors.white.withValues(alpha: 0.12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1140,13 +1233,19 @@ class _WrappedScreenState extends State<WrappedScreen>
                             const SizedBox(width: 12),
                             Text(
                               g.name,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                           ],
                         ),
                         Text(
                           '$pct%',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: g.accentColor),
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: g.accentColor),
                         ),
                       ],
                     ),
@@ -1156,7 +1255,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                       child: LinearProgressIndicator(
                         value: g.percentage,
                         backgroundColor: Colors.white10,
-                        valueColor: AlwaysStoppedAnimation<Color>(g.accentColor),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(g.accentColor),
                         minHeight: 6,
                       ),
                     ),
@@ -1170,7 +1270,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 4: Top Songs & Reveal ───────────────────────────────────────────
   Widget _buildTopSongsSlide() {
     final l10n = AppLocalizations.of(context);
     final songs = _data!.topSongs;
@@ -1185,20 +1284,29 @@ class _WrappedScreenState extends State<WrappedScreen>
           children: [
             Text(
               l10n?.topSongsHeader ?? 'TOP SONGS',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF0844), letterSpacing: 1.6),
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFFF0844),
+                  letterSpacing: 1.6),
             ),
             _buildGlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
               borderRadius: BorderRadius.circular(12),
               backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.2),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4)),
               child: Row(
                 children: [
                   const _EqualizerBars(color: Color(0xFF10B981)),
                   const SizedBox(width: 7),
                   Text(
                     l10n?.nowPlayingHeader ?? 'NOW PLAYING',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF10B981)),
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF10B981)),
                   ),
                 ],
               ),
@@ -1208,32 +1316,43 @@ class _WrappedScreenState extends State<WrappedScreen>
         const SizedBox(height: 6),
         Text(
           l10n?.yourMostListenedSongs ?? 'Your most listened songs',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
+          style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.4),
         ),
         const SizedBox(height: 18),
-        // Hero #1 Song Card
         if (topSong != null) ...[
           _buildGlassCard(
             padding: const EdgeInsets.all(16),
             backgroundColor: const Color(0xFFFF0844).withValues(alpha: 0.18),
-            border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.5)),
+            border: Border.all(
+                color: const Color(0xFFFF0844).withValues(alpha: 0.5)),
             child: Row(
               children: [
                 Stack(
                   children: [
-                    AlbumArtwork(coverArt: topSong.song.coverArt, size: 70, borderRadius: 14),
+                    AlbumArtwork(
+                        coverArt: topSong.song.coverArt,
+                        size: 70,
+                        borderRadius: 14),
                     Positioned(
                       top: 4,
                       left: 4,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF0844),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           '#1',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900),
                         ),
                       ),
                     ),
@@ -1246,21 +1365,31 @@ class _WrappedScreenState extends State<WrappedScreen>
                     children: [
                       Text(
                         topSong.song.title,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white),
+                        style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        topSong.song.artist ?? (l10n?.unknownArtist ?? 'Unknown Artist'),
-                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
+                        topSong.song.artist ??
+                            (l10n?.unknownArtist ?? 'Unknown Artist'),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.7)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        l10n?.playsCount(topSong.playCount) ?? '${topSong.playCount} plays',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB199)),
+                        l10n?.playsCount(topSong.playCount) ??
+                            '${topSong.playCount} plays',
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFFB199)),
                       ),
                     ],
                   ),
@@ -1270,8 +1399,6 @@ class _WrappedScreenState extends State<WrappedScreen>
           ),
           const SizedBox(height: 14),
         ],
-
-        // Runner-ups #2 to #5
         Expanded(
           child: ListView.separated(
             physics: const BouncingScrollPhysics(),
@@ -1281,7 +1408,8 @@ class _WrappedScreenState extends State<WrappedScreen>
               final rank = songs[i + 1];
 
               return _buildGlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 backgroundColor: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 child: Row(
@@ -1295,7 +1423,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    AlbumArtwork(coverArt: rank.song.coverArt, size: 40, borderRadius: 8),
+                    AlbumArtwork(
+                        coverArt: rank.song.coverArt,
+                        size: 40,
+                        borderRadius: 8),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -1303,13 +1434,19 @@ class _WrappedScreenState extends State<WrappedScreen>
                         children: [
                           Text(
                             rank.song.title,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            rank.song.artist ?? (l10n?.unknownArtist ?? 'Unknown Artist'),
-                            style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.6)),
+                            rank.song.artist ??
+                                (l10n?.unknownArtist ?? 'Unknown Artist'),
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.6)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1318,7 +1455,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                     Text(
                       '${rank.playCount}',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.7)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -1330,7 +1470,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 5: Top Artists ──────────────────────────────────────────────────
   Widget _buildTopArtistsSlide() {
     final l10n = AppLocalizations.of(context);
     final artists = _data!.topArtists;
@@ -1345,16 +1484,25 @@ class _WrappedScreenState extends State<WrappedScreen>
           children: [
             Text(
               l10n?.topArtistsHeader ?? 'TOP ARTISTS',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF11998E), letterSpacing: 1.6),
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF11998E),
+                  letterSpacing: 1.6),
             ),
             _buildGlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
               borderRadius: BorderRadius.circular(12),
               backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.2),
-              border: Border.all(color: const Color(0xFF11998E).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFF11998E).withValues(alpha: 0.4)),
               child: Text(
                 _getSuperfanBadge(l10n, _data!.topArtistPlayCount),
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF38EF7D)),
+                style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF38EF7D)),
               ),
             ),
           ],
@@ -1362,26 +1510,38 @@ class _WrappedScreenState extends State<WrappedScreen>
         const SizedBox(height: 6),
         Text(
           l10n?.yourMusicalAnchors ?? 'Your musical anchors',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
+          style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.4),
         ),
         const SizedBox(height: 18),
-        // Hero #1 Artist
         if (topArtist != null) ...[
           _buildGlassCard(
             padding: const EdgeInsets.all(18),
             backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.2),
-            border: Border.all(color: const Color(0xFF38EF7D).withValues(alpha: 0.5)),
+            border: Border.all(
+                color: const Color(0xFF38EF7D).withValues(alpha: 0.5)),
             child: Row(
               children: [
-                if (topArtist.coverArt != null && topArtist.coverArt!.isNotEmpty)
-                  AlbumArtwork(coverArt: topArtist.coverArt, size: 68, borderRadius: 34)
+                if (topArtist.coverArt != null &&
+                    topArtist.coverArt!.isNotEmpty)
+                  AlbumArtwork(
+                      coverArt: topArtist.coverArt, size: 68, borderRadius: 34)
                 else
                   CircleAvatar(
                     radius: 34,
-                    backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.35),
+                    backgroundColor:
+                        const Color(0xFF11998E).withValues(alpha: 0.35),
                     child: Text(
-                      topArtist.name.isNotEmpty ? topArtist.name[0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      topArtist.name.isNotEmpty
+                          ? topArtist.name[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                   ),
                 const SizedBox(width: 16),
@@ -1390,27 +1550,39 @@ class _WrappedScreenState extends State<WrappedScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF38EF7D).withValues(alpha: 0.25),
+                          color:
+                              const Color(0xFF38EF7D).withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           '#1 ARTIST',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF38EF7D)),
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF38EF7D)),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         topArtist.name,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        l10n?.playsCount(topArtist.playCount) ?? '${topArtist.playCount} plays',
-                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.75), fontWeight: FontWeight.w600),
+                        l10n?.playsCount(topArtist.playCount) ??
+                            '${topArtist.playCount} plays',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -1420,8 +1592,6 @@ class _WrappedScreenState extends State<WrappedScreen>
           ),
           const SizedBox(height: 14),
         ],
-
-        // Runner-ups #2 to #5
         Expanded(
           child: ListView.separated(
             physics: const BouncingScrollPhysics(),
@@ -1431,7 +1601,8 @@ class _WrappedScreenState extends State<WrappedScreen>
               final rank = artists[i + 1];
 
               return _buildGlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 backgroundColor: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 child: Row(
@@ -1446,28 +1617,39 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                     const SizedBox(width: 12),
                     if (rank.coverArt != null && rank.coverArt!.isNotEmpty)
-                      AlbumArtwork(coverArt: rank.coverArt, size: 38, borderRadius: 19)
+                      AlbumArtwork(
+                          coverArt: rank.coverArt, size: 38, borderRadius: 19)
                     else
                       CircleAvatar(
                         radius: 19,
-                        backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.3),
+                        backgroundColor:
+                            const Color(0xFF11998E).withValues(alpha: 0.3),
                         child: Text(
-                          rank.name.isNotEmpty ? rank.name[0].toUpperCase() : '?',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          rank.name.isNotEmpty
+                              ? rank.name[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         rank.name,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       '${rank.playCount}',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.7)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -1479,7 +1661,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 6: Listening Personality Archetype ──────────────────────────────
   Widget _buildPersonalitySlide() {
     final l10n = AppLocalizations.of(context);
     final arch = _data!.archetype;
@@ -1494,13 +1675,18 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           l10n?.yourListeningPersonality ?? 'YOUR LISTENING PERSONALITY',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.6),
+          style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFFFF007A),
+              letterSpacing: 1.6),
         ),
         const SizedBox(height: 24),
         _buildGlassCard(
           padding: const EdgeInsets.all(28),
           backgroundColor: arch.gradientColors.first.withValues(alpha: 0.22),
-          border: Border.all(color: arch.gradientColors.first.withValues(alpha: 0.5)),
+          border: Border.all(
+              color: arch.gradientColors.first.withValues(alpha: 0.5)),
           child: Column(
             children: [
               Container(
@@ -1522,7 +1708,8 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 18),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
                 decoration: BoxDecoration(
                   color: Colors.black38,
                   borderRadius: BorderRadius.circular(14),
@@ -1530,19 +1717,30 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ),
                 child: Text(
                   archBadge,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.3),
+                  style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 1.3),
                 ),
               ),
               const SizedBox(height: 14),
               Text(
                 archTitle,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
+                style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.4),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 archDesc,
-                style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), height: 1.45),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    height: 1.45),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 22),
@@ -1552,7 +1750,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                 alignment: WrapAlignment.center,
                 children: archTraits.map((t) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
@@ -1560,7 +1759,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                     child: Text(
                       t,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                   );
                 }).toList(),
@@ -1572,7 +1774,6 @@ class _WrappedScreenState extends State<WrappedScreen>
     );
   }
 
-  // ── Slide 7: Bento Summary & Share Card ───────────────────────────────────
   Widget _buildSummaryCardSlide() {
     final l10n = AppLocalizations.of(context);
     return Column(
@@ -1610,7 +1811,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                   ),
                   Text(
                     '${_data!.year}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70),
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white70),
                   ),
                 ],
               ),
@@ -1622,7 +1826,10 @@ class _WrappedScreenState extends State<WrappedScreen>
                   border: Border.all(color: Colors.white10),
                   child: Row(
                     children: [
-                      AlbumArtwork(coverArt: _data!.topSongs.first.song.coverArt, size: 54, borderRadius: 12),
+                      AlbumArtwork(
+                          coverArt: _data!.topSongs.first.song.coverArt,
+                          size: 54,
+                          borderRadius: 12),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -1630,18 +1837,25 @@ class _WrappedScreenState extends State<WrappedScreen>
                           children: [
                             Text(
                               l10n?.topSongBadge ?? 'Song #1',
-                              style: const TextStyle(fontSize: 11, color: Color(0xFFFF0844), fontWeight: FontWeight.w800),
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFFFF0844),
+                                  fontWeight: FontWeight.w800),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _data!.topSongs.first.song.title,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               _data!.topSongs.first.song.artist ?? '',
-                              style: const TextStyle(fontSize: 12, color: Colors.white70),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.white70),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1656,9 +1870,14 @@ class _WrappedScreenState extends State<WrappedScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMetric(l10n?.minutes ?? 'Minutes', _formatNumber(_data!.totalMinutesListened)),
+                  _buildMetric(l10n?.minutes ?? 'Minutes',
+                      _formatNumber(_data!.totalMinutesListened)),
                   Container(width: 1, height: 34, color: Colors.white24),
-                  _buildMetric(l10n?.topArtistMetric ?? 'Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'N/A'),
+                  _buildMetric(
+                      l10n?.topArtistMetric ?? 'Top Artist',
+                      _data!.topArtists.isNotEmpty
+                          ? _data!.topArtists.first.name
+                          : 'N/A'),
                   Container(width: 1, height: 34, color: Colors.white24),
                   _buildMetric(l10n?.genreMetric ?? 'Genre', _data!.topGenre),
                 ],
@@ -1680,7 +1899,8 @@ class _WrappedScreenState extends State<WrappedScreen>
               backgroundColor: const Color(0xFFFA243C),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               elevation: 8,
             ),
           ),
@@ -1694,12 +1914,19 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
+          style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.3),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.65), fontWeight: FontWeight.w600),
+          style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.65),
+              fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -1708,14 +1935,14 @@ class _WrappedScreenState extends State<WrappedScreen>
 
 class _EqualizerBars extends StatefulWidget {
   final Color color;
-  final double size;
-  const _EqualizerBars({this.color = Colors.white, this.size = 14});
+  const _EqualizerBars({this.color = Colors.white});
 
   @override
   State<_EqualizerBars> createState() => _EqualizerBarsState();
 }
 
-class _EqualizerBarsState extends State<_EqualizerBars> with SingleTickerProviderStateMixin {
+class _EqualizerBarsState extends State<_EqualizerBars>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -1759,7 +1986,7 @@ class _EqualizerBarsState extends State<_EqualizerBars> with SingleTickerProvide
   Widget _bar(double height) {
     return Container(
       width: 2.2,
-      height: height.clamp(3.0, widget.size),
+      height: height.clamp(3.0, 14.0),
       decoration: BoxDecoration(
         color: widget.color,
         borderRadius: BorderRadius.circular(2),
@@ -1783,7 +2010,8 @@ class _ParticlePainter extends CustomPainter {
     for (int i = 0; i < particleCount; i++) {
       final x = (size.width * (i * 0.13 + 0.1)) % size.width;
       final baseY = size.height * (i * 0.17 + 0.05) % size.height;
-      final y = (baseY + animationValue * 20 * (i.isEven ? 1 : -1)) % size.height;
+      final y =
+          (baseY + animationValue * 20 * (i.isEven ? 1 : -1)) % size.height;
       final radius = (i % 3 + 1.5);
       canvas.drawCircle(Offset(x, y), radius, paint);
     }

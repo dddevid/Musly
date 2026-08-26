@@ -4,29 +4,24 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Dialog shown on first app launch for privacy policy consent
 class PrivacyPolicyDialog extends StatefulWidget {
   const PrivacyPolicyDialog({super.key});
 
   static const String _prefsKey = 'privacy_policy_accepted';
   static const String _firstLaunchKey = 'first_app_launch';
 
-  /// Check if dialog should be shown (only on first launch)
   static Future<bool> shouldShow() async {
     final prefs = await SharedPreferences.getInstance();
     final hasAccepted = prefs.getBool(_prefsKey) ?? false;
     final isFirstLaunch = prefs.getBool(_firstLaunchKey) ?? true;
 
-    // Mark that we've checked first launch
     if (isFirstLaunch) {
       await prefs.setBool(_firstLaunchKey, false);
     }
 
-    // Show if never accepted and this is first launch
     return !hasAccepted && isFirstLaunch;
   }
 
-  /// Mark privacy policy as accepted
   static Future<void> markAccepted() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsKey, true);
@@ -52,7 +47,6 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
   }
 
   void _onDecline() {
-    // User declined - still mark as shown but don't track
     Navigator.of(context).pop(false);
   }
 
@@ -69,7 +63,6 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header with icon
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -118,15 +111,12 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                 ],
               ),
             ),
-
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Key privacy points
                     _buildPrivacyPoint(
                       icon: CupertinoIcons.lock_fill,
                       color: const Color(0xFF22C55E),
@@ -147,10 +137,7 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                       title: l10n.privateOpenTitle,
                       description: l10n.privateOpenDescription,
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Privacy policy link
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
@@ -221,8 +208,6 @@ class _PrivacyPolicyDialogState extends State<PrivacyPolicyDialog> {
                 ),
               ),
             ),
-
-            // Actions
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(

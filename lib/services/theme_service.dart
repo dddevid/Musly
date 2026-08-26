@@ -13,7 +13,6 @@ enum AccentColor {
 }
 
 extension AccentColorExt on AccentColor {
-  
   Color get color {
     switch (this) {
       case AccentColor.red:

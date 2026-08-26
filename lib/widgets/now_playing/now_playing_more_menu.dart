@@ -6,7 +6,8 @@ import '../../l10n/app_localizations.dart';
 class NowPlayingMoreMenu extends StatelessWidget {
   const NowPlayingMoreMenu({super.key});
 
-  void _setSleepTimer(BuildContext context, int minutes, PlayerProvider provider) {
+  void _setSleepTimer(
+      BuildContext context, int minutes, PlayerProvider provider) {
     if (minutes == 0) {
       provider.setSleepTimer(Duration.zero, endCurrentSong: false);
     } else if (minutes == -1) {
@@ -31,20 +32,20 @@ class NowPlayingMoreMenu extends StatelessWidget {
         builder: (context, provider, child) {
           final sleepTimerRemaining = provider.sleepTimerRemaining;
           final sleepTimerEndCurrentSong = provider.sleepTimerEndCurrentSong;
-          
+
           String sleepTimerText = "Off";
           if (sleepTimerEndCurrentSong) {
             sleepTimerText = AppLocalizations.of(context)!.endOfSong;
           } else if (sleepTimerRemaining != null) {
             final minutes = sleepTimerRemaining.inMinutes;
-            final seconds = (sleepTimerRemaining.inSeconds % 60).toString().padLeft(2, '0');
+            final seconds =
+                (sleepTimerRemaining.inSeconds % 60).toString().padLeft(2, '0');
             sleepTimerText = "$minutes:$seconds";
           }
 
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle
               Container(
                 width: 40,
                 height: 5,
@@ -54,8 +55,6 @@ class NowPlayingMoreMenu extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              
-              // Sleep Timer Section
               ListTile(
                 leading: const Icon(Icons.timer_outlined),
                 title: Text(AppLocalizations.of(context)!.sleepTimer),
@@ -84,24 +83,32 @@ class NowPlayingMoreMenu extends StatelessWidget {
                           onPressed: () => _setSleepTimer(context, 0, provider),
                         ),
                         SimpleDialogOption(
-                          child: Text(AppLocalizations.of(context)!.sleepTimerMinutes(5)),
+                          child: Text(AppLocalizations.of(context)!
+                              .sleepTimerMinutes(5)),
                           onPressed: () => _setSleepTimer(context, 5, provider),
                         ),
                         SimpleDialogOption(
-                          child: Text(AppLocalizations.of(context)!.sleepTimerMinutes(10)),
-                          onPressed: () => _setSleepTimer(context, 10, provider),
+                          child: Text(AppLocalizations.of(context)!
+                              .sleepTimerMinutes(10)),
+                          onPressed: () =>
+                              _setSleepTimer(context, 10, provider),
                         ),
                         SimpleDialogOption(
-                          child: Text(AppLocalizations.of(context)!.sleepTimerMinutes(15)),
-                          onPressed: () => _setSleepTimer(context, 15, provider),
+                          child: Text(AppLocalizations.of(context)!
+                              .sleepTimerMinutes(15)),
+                          onPressed: () =>
+                              _setSleepTimer(context, 15, provider),
                         ),
                         SimpleDialogOption(
-                          child: Text(AppLocalizations.of(context)!.sleepTimerMinutes(30)),
-                          onPressed: () => _setSleepTimer(context, 30, provider),
+                          child: Text(AppLocalizations.of(context)!
+                              .sleepTimerMinutes(30)),
+                          onPressed: () =>
+                              _setSleepTimer(context, 30, provider),
                         ),
                         SimpleDialogOption(
                           child: Text(AppLocalizations.of(context)!.endOfSong),
-                          onPressed: () => _setSleepTimer(context, -1, provider),
+                          onPressed: () =>
+                              _setSleepTimer(context, -1, provider),
                         ),
                       ],
                     ),
@@ -109,17 +116,17 @@ class NowPlayingMoreMenu extends StatelessWidget {
                 },
               ),
               const Divider(indent: 56),
-
-              // Speed Dial Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(AppLocalizations.of(context)!.playbackSpeed, style: const TextStyle(fontSize: 16)),
+                        Text(AppLocalizations.of(context)!.playbackSpeed,
+                            style: const TextStyle(fontSize: 16)),
                         Text(
                           "${provider.playbackSpeed.toStringAsFixed(2)}x",
                           style: TextStyle(
@@ -133,7 +140,7 @@ class NowPlayingMoreMenu extends StatelessWidget {
                       value: provider.playbackSpeed,
                       min: 0.5,
                       max: 2.0,
-                      divisions: 6, // 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0
+                      divisions: 6,
                       onChanged: (val) {
                         provider.setPlaybackSpeed(val);
                       },
@@ -141,12 +148,11 @@ class NowPlayingMoreMenu extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // Pitch Correction Section
               SwitchListTile(
                 secondary: const Icon(Icons.music_note_rounded),
                 title: Text(AppLocalizations.of(context)!.preservePitch),
-                subtitle: Text(AppLocalizations.of(context)!.preservePitchSubtitle),
+                subtitle:
+                    Text(AppLocalizations.of(context)!.preservePitchSubtitle),
                 value: provider.pitchCorrection,
                 onChanged: (val) {
                   provider.togglePitchCorrection();

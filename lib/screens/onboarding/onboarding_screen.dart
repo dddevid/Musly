@@ -56,103 +56,103 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   List<_OnboardingItem> _getSlides(AppLocalizations l10n) => [
-    _OnboardingItem(
-      titlePrefix: l10n.onboardingSlide1TitlePrefix,
-      titleHighlight: l10n.onboardingSlide1TitleHighlight,
-      description: l10n.onboardingSlide1Description,
-      highlightColor: const Color(0xFF60A5FA),
-      auraColors: const [
-        Color(0xFF1E3A8A),
-        Color(0xFF2563EB),
-        Color(0xFF38BDF8),
-        Color(0xFF60A5FA),
-      ],
-      buttonGradient: const [Color(0xFF2563EB), Color(0xFF38BDF8)],
-      glowColor: const Color(0xFF2563EB),
-      buttonText: l10n.onboardingNext,
-      features: [
-        _OnboardingFeature(
-          icon: CupertinoIcons.music_note_2,
-          title: l10n.onboardingSlide1Feature1Title,
-          description: l10n.onboardingSlide1Feature1Desc,
+        _OnboardingItem(
+          titlePrefix: l10n.onboardingSlide1TitlePrefix,
+          titleHighlight: l10n.onboardingSlide1TitleHighlight,
+          description: l10n.onboardingSlide1Description,
+          highlightColor: const Color(0xFF60A5FA),
+          auraColors: const [
+            Color(0xFF1E3A8A),
+            Color(0xFF2563EB),
+            Color(0xFF38BDF8),
+            Color(0xFF60A5FA),
+          ],
+          buttonGradient: const [Color(0xFF2563EB), Color(0xFF38BDF8)],
+          glowColor: const Color(0xFF2563EB),
+          buttonText: l10n.onboardingNext,
+          features: [
+            _OnboardingFeature(
+              icon: CupertinoIcons.music_note_2,
+              title: l10n.onboardingSlide1Feature1Title,
+              description: l10n.onboardingSlide1Feature1Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.folder_fill,
+              title: l10n.onboardingSlide1Feature2Title,
+              description: l10n.onboardingSlide1Feature2Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.waveform,
+              title: l10n.onboardingSlide1Feature3Title,
+              description: l10n.onboardingSlide1Feature3Desc,
+            ),
+          ],
         ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.folder_fill,
-          title: l10n.onboardingSlide1Feature2Title,
-          description: l10n.onboardingSlide1Feature2Desc,
+        _OnboardingItem(
+          titlePrefix: l10n.onboardingSlide2TitlePrefix,
+          titleHighlight: l10n.onboardingSlide2TitleHighlight,
+          description: l10n.onboardingSlide2Description,
+          highlightColor: const Color(0xFFFB923C),
+          auraColors: const [
+            Color(0xFF7C2D12),
+            Color(0xFFEA580C),
+            Color(0xFFF97316),
+            Color(0xFFFBBF24),
+          ],
+          buttonGradient: const [Color(0xFFEA580C), Color(0xFFF97316)],
+          glowColor: const Color(0xFFEA580C),
+          buttonText: l10n.onboardingNext,
+          features: [
+            _OnboardingFeature(
+              icon: CupertinoIcons.sparkles,
+              title: l10n.onboardingSlide2Feature1Title,
+              description: l10n.onboardingSlide2Feature1Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.antenna_radiowaves_left_right,
+              title: l10n.onboardingSlide2Feature2Title,
+              description: l10n.onboardingSlide2Feature2Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.device_laptop,
+              title: l10n.onboardingSlide2Feature3Title,
+              description: l10n.onboardingSlide2Feature3Desc,
+            ),
+          ],
         ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.waveform,
-          title: l10n.onboardingSlide1Feature3Title,
-          description: l10n.onboardingSlide1Feature3Desc,
+        _OnboardingItem(
+          titlePrefix: l10n.onboardingSlide3TitlePrefix,
+          titleHighlight: l10n.onboardingSlide3TitleHighlight,
+          description: l10n.onboardingSlide3Description,
+          highlightColor: const Color(0xFF34D399),
+          auraColors: const [
+            Color(0xFF064E3B),
+            Color(0xFF059669),
+            Color(0xFF10B981),
+            Color(0xFF34D399),
+          ],
+          buttonGradient: const [Color(0xFF059669), Color(0xFF10B981)],
+          glowColor: const Color(0xFF10B981),
+          buttonText: l10n.onboardingGetStarted,
+          features: [
+            _OnboardingFeature(
+              icon: CupertinoIcons.shield_fill,
+              title: l10n.onboardingSlide3Feature1Title,
+              description: l10n.onboardingSlide3Feature1Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.text_quote,
+              title: l10n.onboardingSlide3Feature2Title,
+              description: l10n.onboardingSlide3Feature2Desc,
+            ),
+            _OnboardingFeature(
+              icon: CupertinoIcons.arrow_down_circle_fill,
+              title: l10n.onboardingSlide3Feature3Title,
+              description: l10n.onboardingSlide3Feature3Desc,
+            ),
+          ],
         ),
-      ],
-    ),
-    _OnboardingItem(
-      titlePrefix: l10n.onboardingSlide2TitlePrefix,
-      titleHighlight: l10n.onboardingSlide2TitleHighlight,
-      description: l10n.onboardingSlide2Description,
-      highlightColor: const Color(0xFFFB923C),
-      auraColors: const [
-        Color(0xFF7C2D12),
-        Color(0xFFEA580C),
-        Color(0xFFF97316),
-        Color(0xFFFBBF24),
-      ],
-      buttonGradient: const [Color(0xFFEA580C), Color(0xFFF97316)],
-      glowColor: const Color(0xFFEA580C),
-      buttonText: l10n.onboardingNext,
-      features: [
-        _OnboardingFeature(
-          icon: CupertinoIcons.sparkles,
-          title: l10n.onboardingSlide2Feature1Title,
-          description: l10n.onboardingSlide2Feature1Desc,
-        ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.antenna_radiowaves_left_right,
-          title: l10n.onboardingSlide2Feature2Title,
-          description: l10n.onboardingSlide2Feature2Desc,
-        ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.device_laptop,
-          title: l10n.onboardingSlide2Feature3Title,
-          description: l10n.onboardingSlide2Feature3Desc,
-        ),
-      ],
-    ),
-    _OnboardingItem(
-      titlePrefix: l10n.onboardingSlide3TitlePrefix,
-      titleHighlight: l10n.onboardingSlide3TitleHighlight,
-      description: l10n.onboardingSlide3Description,
-      highlightColor: const Color(0xFF34D399),
-      auraColors: const [
-        Color(0xFF064E3B),
-        Color(0xFF059669),
-        Color(0xFF10B981),
-        Color(0xFF34D399),
-      ],
-      buttonGradient: const [Color(0xFF059669), Color(0xFF10B981)],
-      glowColor: const Color(0xFF10B981),
-      buttonText: l10n.onboardingGetStarted,
-      features: [
-        _OnboardingFeature(
-          icon: CupertinoIcons.shield_fill,
-          title: l10n.onboardingSlide3Feature1Title,
-          description: l10n.onboardingSlide3Feature1Desc,
-        ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.text_quote,
-          title: l10n.onboardingSlide3Feature2Title,
-          description: l10n.onboardingSlide3Feature2Desc,
-        ),
-        _OnboardingFeature(
-          icon: CupertinoIcons.arrow_down_circle_fill,
-          title: l10n.onboardingSlide3Feature3Title,
-          description: l10n.onboardingSlide3Feature3Desc,
-        ),
-      ],
-    ),
-  ];
+      ];
 
   @override
   void initState() {
@@ -240,7 +240,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           value: SystemUiOverlayStyle.light,
           child: Stack(
             children: [
-              // Ambient Aura Mesh Gradient
               Positioned.fill(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 500),
@@ -252,8 +251,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           : const Alignment(0.4, -0.65),
                       radius: isDesktop ? 1.35 : 1.15,
                       colors: [
-                        currentItem.auraColors[1].withValues(alpha: isDesktop ? 0.75 : 0.85),
-                        currentItem.auraColors[0].withValues(alpha: isDesktop ? 0.55 : 0.65),
+                        currentItem.auraColors[1]
+                            .withValues(alpha: isDesktop ? 0.75 : 0.85),
+                        currentItem.auraColors[0]
+                            .withValues(alpha: isDesktop ? 0.55 : 0.65),
                         currentItem.auraColors[2].withValues(alpha: 0.25),
                         const Color(0xFF090A0E).withValues(alpha: 0.95),
                         const Color(0xFF090A0E),
@@ -263,8 +264,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-
-              // Secondary soft blurred orb
               Positioned(
                 top: isDesktop ? -40 : -80,
                 left: isDesktop ? 100 : -60,
@@ -282,15 +281,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-
-              // Content Canvas
               SafeArea(
                 child: isDesktop
                     ? _buildDesktopLayout(context, currentItem)
                     : _buildMobileLayout(context, currentItem),
               ),
-
-              // Desktop floating prev/next navigation chevrons on window edges
               if (isDesktop) ...[
                 if (_currentPage > 0)
                   Positioned(
@@ -320,9 +315,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // ── Desktop Layout ─────────────────────────────────────────────────────────
-
-  Widget _buildDesktopLayout(BuildContext context, _OnboardingItem currentItem) {
+  Widget _buildDesktopLayout(
+      BuildContext context, _OnboardingItem currentItem) {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 720),
@@ -330,7 +324,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
           child: Column(
             children: [
-              // Top Bar: Logo + App Name + Close / Skip button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -350,7 +343,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(18),
-                          child: Image.asset('assets/logobig.png', fit: BoxFit.cover),
+                          child: Image.asset('assets/logobig.png',
+                              fit: BoxFit.cover),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -369,11 +363,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onTap: _completeOnboarding,
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -389,30 +385,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Icon(CupertinoIcons.xmark, size: 14, color: Colors.white70),
+                          const Icon(CupertinoIcons.xmark,
+                              size: 14, color: Colors.white70),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // Split Columns
               Expanded(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Left Showcase Showcase Card
                     Expanded(
                       flex: 5,
                       child: _buildShowcaseVisualCard(currentItem),
                     ),
-
                     const SizedBox(width: 48),
-
-                    // Right Content Pane
                     Expanded(
                       flex: 6,
                       child: Column(
@@ -428,7 +418,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Headline
                                   RichText(
                                     text: TextSpan(
                                       style: const TextStyle(
@@ -450,34 +439,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       ],
                                     ),
                                   ),
-
                                   const SizedBox(height: 14),
-
-                                  // Subtitle
                                   Text(
                                     currentItem.description,
                                     style: TextStyle(
                                       fontSize: 15.5,
                                       height: 1.5,
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                       fontWeight: FontWeight.w400,
                                     ),
                                   ),
-
                                   const SizedBox(height: 24),
-
-                                  // Feature Bullet List
                                   ...currentItem.features.map((feature) {
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
                                       child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
-                                              color: currentItem.highlightColor.withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(10),
+                                              color: currentItem.highlightColor
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Icon(
                                               feature.icon,
@@ -488,7 +476,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           const SizedBox(width: 14),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   feature.title,
@@ -503,7 +492,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                                   feature.description,
                                                   style: TextStyle(
                                                     fontSize: 12.5,
-                                                    color: Colors.white.withValues(alpha: 0.55),
+                                                    color: Colors.white
+                                                        .withValues(
+                                                            alpha: 0.55),
                                                   ),
                                                 ),
                                               ],
@@ -517,49 +508,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 28),
-
-                          // Slide Indicators & Navigation Buttons
                           Row(
                             children: [
-                              // Slide Indicators
                               Row(
                                 children: List.generate(3, (index) {
                                   final isActive = index == _currentPage;
                                   return GestureDetector(
                                     onTap: () => _goToPage(index),
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 260),
+                                      duration:
+                                          const Duration(milliseconds: 260),
                                       margin: const EdgeInsets.only(right: 8),
                                       width: isActive ? 28 : 8,
                                       height: 6,
                                       decoration: BoxDecoration(
                                         color: isActive
                                             ? currentItem.highlightColor
-                                            : Colors.white.withValues(alpha: 0.2),
+                                            : Colors.white
+                                                .withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),
                                   );
                                 }),
                               ),
-
                               const Spacer(),
-
                               if (_currentPage > 0) ...[
                                 TextButton(
                                   onPressed: _onPrevPressed,
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.white70,
-                                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 18, vertical: 12),
                                   ),
-                                  child: Text(AppLocalizations.of(context)!.back),
+                                  child:
+                                      Text(AppLocalizations.of(context)!.back),
                                 ),
                                 const SizedBox(width: 8),
                               ],
-
-                              // Primary CTA button
                               Container(
                                 height: 46,
                                 decoration: BoxDecoration(
@@ -571,7 +558,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   borderRadius: BorderRadius.circular(23),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: currentItem.glowColor.withValues(alpha: 0.35),
+                                      color: currentItem.glowColor
+                                          .withValues(alpha: 0.35),
                                       blurRadius: 16,
                                       offset: const Offset(0, 4),
                                     ),
@@ -583,14 +571,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     onTap: _onNextPressed,
                                     borderRadius: BorderRadius.circular(23),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 28),
                                       child: Center(
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              widget.onFinished == null && _currentPage == 2
-                                                  ? AppLocalizations.of(context)!.finishTour
+                                              widget.onFinished == null &&
+                                                      _currentPage == 2
+                                                  ? AppLocalizations.of(
+                                                          context)!
+                                                      .finishTour
                                                   : currentItem.buttonText,
                                               style: const TextStyle(
                                                 fontSize: 15,
@@ -600,7 +592,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            const Icon(CupertinoIcons.arrow_right, size: 16, color: Colors.white),
+                                            const Icon(
+                                                CupertinoIcons.arrow_right,
+                                                size: 16,
+                                                color: Colors.white),
                                           ],
                                         ),
                                       ),
@@ -623,7 +618,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // Visual showcase card on the left side of desktop
   Widget _buildShowcaseVisualCard(_OnboardingItem currentItem) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 450),
@@ -646,7 +640,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Dynamic showcase icon/artwork
           Container(
             width: 100,
             height: 100,
@@ -668,19 +661,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Icon(
               _currentPage == 0
                   ? CupertinoIcons.music_note_2
-                  : (_currentPage == 1 ? CupertinoIcons.sparkles : CupertinoIcons.shield_fill),
+                  : (_currentPage == 1
+                      ? CupertinoIcons.sparkles
+                      : CupertinoIcons.shield_fill),
               color: Colors.white,
               size: 48,
             ),
           ),
           const SizedBox(height: 24),
-
-          // Chips showcase
           Wrap(
             spacing: 8,
             runSpacing: 8,
             alignment: WrapAlignment.center,
-            children: _getShowcaseChipsForPage(_currentPage, currentItem.highlightColor),
+            children: _getShowcaseChipsForPage(
+                _currentPage, currentItem.highlightColor),
           ),
         ],
       ),
@@ -772,8 +766,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // ── Mobile Layout ──────────────────────────────────────────────────────────
-
   Widget _buildMobileLayout(BuildContext context, _OnboardingItem currentItem) {
     final l10n = AppLocalizations.of(context)!;
     final slides = _getSlides(l10n);
@@ -782,8 +774,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-
-        // Top App Branding
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Row(
@@ -818,8 +808,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ],
           ),
         ),
-
-        // Swipeable Slides Content
         Expanded(
           child: PageView.builder(
             controller: _pageController,
@@ -835,8 +823,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Spacer(),
-
-                    // Headline
                     RichText(
                       text: TextSpan(
                         style: const TextStyle(
@@ -859,8 +845,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-
-                    // Subtitle
                     Text(
                       slide.description,
                       style: TextStyle(
@@ -870,7 +854,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -878,14 +861,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             },
           ),
         ),
-
-        // Bottom Controls (Page Indicators & Action Buttons)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Slide Indicators
               Row(
                 children: List.generate(3, (index) {
                   final isActive = index == _currentPage;
@@ -903,10 +883,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   );
                 }),
               ),
-
               const SizedBox(height: 28),
-
-              // Primary CTA Button
               Container(
                 width: double.infinity,
                 height: 52,
@@ -946,10 +923,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // Secondary Action
               Center(
                 child: TextButton(
                   onPressed: _completeOnboarding,
@@ -971,7 +945,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
             ],
           ),

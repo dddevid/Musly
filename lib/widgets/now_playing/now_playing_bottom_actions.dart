@@ -66,7 +66,9 @@ class _ActionButton extends StatelessWidget {
       icon: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          color: isActive ? activeColor.withValues(alpha: 0.2) : Colors.transparent,
+          color: isActive
+              ? activeColor.withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Icon(

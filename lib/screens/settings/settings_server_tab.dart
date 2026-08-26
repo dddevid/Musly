@@ -26,26 +26,21 @@ class SettingsServerTab extends StatefulWidget {
 }
 
 class _SettingsServerTabState extends State<SettingsServerTab> {
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context);
     final currentConfig = authProvider.config;
 
-    final isYoutube =
-        currentConfig?.isYoutube == true ||
+    final isYoutube = currentConfig?.isYoutube == true ||
         Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         _buildActiveServerCard(context, authProvider, currentConfig, isYoutube),
-
         const SizedBox(height: 24),
-
         _buildSavedServersSection(context, authProvider, currentConfig),
-
         if (!isYoutube) ...[
           const SizedBox(height: 24),
           SettingsSectionCard(
@@ -53,15 +48,15 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
             children: [_buildMusicFoldersButton()],
           ),
         ],
-
-        if (currentConfig != null && !isYoutube && !currentConfig.isJellyfin) ...[
+        if (currentConfig != null &&
+            !isYoutube &&
+            !currentConfig.isJellyfin) ...[
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.sectionJukebox,
             children: [_buildJukeboxSection()],
           ),
         ],
-
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: l10n.sectionAccount,
@@ -81,14 +76,27 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
     final isDark = context.isDark;
 
     final (IconData icon, List<Color> gradient, String serviceLabel) = isYoutube
-        ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)], 'Web Stream')
+        ? (
+            CupertinoIcons.play_rectangle_fill,
+            const [Color(0xFFFF3B30), Color(0xFFFF453A)],
+            'Web Stream'
+          )
         : config?.isJellyfin == true
-            ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)], 'Jellyfin')
-            : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)], config?.serverType ?? 'Navidrome / Subsonic');
+            ? (
+                CupertinoIcons.tv_fill,
+                const [Color(0xFF00A4DC), Color(0xFF0077A3)],
+                'Jellyfin'
+              )
+            : (
+                CupertinoIcons.music_note_2,
+                const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                config?.serverType ?? 'Navidrome / Subsonic'
+              );
 
     final l10n = AppLocalizations.of(context)!;
     final serverName = config?.displayServerName ?? serviceLabel;
-    final displayUrl = config?.displayUrl ?? (isYoutube ? 'Web Stream' : l10n.serverStatusNotConnected);
+    final displayUrl = config?.displayUrl ??
+        (isYoutube ? 'Web Stream' : l10n.serverStatusNotConnected);
 
     final isConnected = authProvider.state == AuthState.authenticated;
     final isAuthenticating = authProvider.state == AuthState.authenticating;
@@ -129,7 +137,6 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                   child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 14),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,9 +156,12 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: (isConnected ? const Color(0xFF34C759) : Colors.orange)
+                              color: (isConnected
+                                      ? const Color(0xFF34C759)
+                                      : Colors.orange)
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -161,7 +171,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                 Icon(
                                   CupertinoIcons.circle_fill,
                                   size: 6,
-                                  color: isConnected ? const Color(0xFF34C759) : Colors.orange,
+                                  color: isConnected
+                                      ? const Color(0xFF34C759)
+                                      : Colors.orange,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -173,7 +185,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
-                                    color: isConnected ? const Color(0xFF34C759) : Colors.orange,
+                                    color: isConnected
+                                        ? const Color(0xFF34C759)
+                                        : Colors.orange,
                                     letterSpacing: 0.3,
                                   ),
                                 ),
@@ -190,7 +204,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                               displayUrl,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                                color: isDark
+                                    ? AppTheme.darkSecondaryText
+                                    : AppTheme.lightSecondaryText,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -201,29 +217,32 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 8),
-
                 FilledButton.tonalIcon(
                   onPressed: () => ServerSwitcherSheet.show(context),
                   icon: const Icon(CupertinoIcons.arrow_2_squarepath, size: 14),
                   label: Text(l10n.switchServerButton),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ],
             ),
           ),
-
           if (!isYoutube && config != null) ...[
-            Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+            Divider(
+                height: 1,
+                color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
-                  Icon(CupertinoIcons.person_fill, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                  Icon(CupertinoIcons.person_fill,
+                      size: 14,
+                      color: isDark ? Colors.white54 : Colors.black45),
                   const SizedBox(width: 6),
                   Text(
                     config.username,
@@ -235,7 +254,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                   ),
                   if (config.lanUrl != null && config.lanUrl!.isNotEmpty) ...[
                     const Spacer(),
-                    Icon(CupertinoIcons.wifi, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                    Icon(CupertinoIcons.wifi,
+                        size: 14,
+                        color: isDark ? Colors.white54 : Colors.black45),
                     const SizedBox(width: 4),
                     Text(
                       'LAN: ${config.lanUrl}',
@@ -245,9 +266,12 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                       ),
                     ),
                   ],
-                  if (config.serverVersion != null && config.serverVersion!.isNotEmpty) ...[
+                  if (config.serverVersion != null &&
+                      config.serverVersion!.isNotEmpty) ...[
                     const Spacer(),
-                    Icon(CupertinoIcons.info_circle, size: 14, color: isDark ? Colors.white54 : Colors.black45),
+                    Icon(CupertinoIcons.info_circle,
+                        size: 14,
+                        color: isDark ? Colors.white54 : Colors.black45),
                     const SizedBox(width: 6),
                     Text(
                       'v${config.serverVersion}',
@@ -281,7 +305,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         if (currentConfig != null &&
             !profiles.any((p) =>
                 (p.isYoutube && currentConfig.isYoutube) ||
-                (p.serverUrl == currentConfig.serverUrl && p.username == currentConfig.username))) {
+                (p.serverUrl == currentConfig.serverUrl &&
+                    p.username == currentConfig.username))) {
           profiles = [currentConfig, ...profiles];
         }
 
@@ -308,7 +333,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                     onTap: () => ServerSwitcherSheet.show(context),
                     borderRadius: BorderRadius.circular(6),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       child: Text(
                         l10n.manage,
                         style: TextStyle(
@@ -328,7 +354,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 color: isDark ? AppTheme.darkSurface : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.black.withValues(alpha: 0.05),
                 ),
               ),
               child: ClipRRect(
@@ -336,21 +364,35 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 child: Column(
                   children: [
                     ...profiles.map((profile) {
-                      final isActive = (profile.isYoutube && currentConfig?.isYoutube == true) ||
+                      final isActive = (profile.isYoutube &&
+                              currentConfig?.isYoutube == true) ||
                           (currentConfig?.serverUrl == profile.serverUrl &&
                               currentConfig?.username == profile.username);
 
-                      final (IconData pIcon, List<Color> pGradient) = profile.isYoutube
-                          ? (CupertinoIcons.play_rectangle_fill, const [Color(0xFFFF3B30), Color(0xFFFF453A)])
+                      final (
+                        IconData pIcon,
+                        List<Color> pGradient
+                      ) = profile.isYoutube
+                          ? (
+                              CupertinoIcons.play_rectangle_fill,
+                              const [Color(0xFFFF3B30), Color(0xFFFF453A)]
+                            )
                           : profile.isJellyfin
-                              ? (CupertinoIcons.tv_fill, const [Color(0xFF00A4DC), Color(0xFF0077A3)])
-                              : (CupertinoIcons.music_note_2, const [Color(0xFF6366F1), Color(0xFF8B5CF6)]);
+                              ? (
+                                  CupertinoIcons.tv_fill,
+                                  const [Color(0xFF00A4DC), Color(0xFF0077A3)]
+                                )
+                              : (
+                                  CupertinoIcons.music_note_2,
+                                  const [Color(0xFF6366F1), Color(0xFF8B5CF6)]
+                                );
 
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 2),
                             leading: Container(
                               width: 34,
                               height: 34,
@@ -364,21 +406,27 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                               profile.displayServerName,
                               style: TextStyle(
                                 fontSize: 15,
-                                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                                fontWeight: isActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
                               ),
                             ),
                             subtitle: Text(
                               profile.displayUrl,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
+                                color: isDark
+                                    ? AppTheme.darkSecondaryText
+                                    : AppTheme.lightSecondaryText,
                               ),
                             ),
                             trailing: isActive
                                 ? Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                                      color: const Color(0xFF34C759)
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -393,26 +441,41 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                                 : Icon(
                                     CupertinoIcons.arrow_2_squarepath,
                                     size: 16,
-                                    color: isDark ? Colors.white38 : Colors.black38,
+                                    color: isDark
+                                        ? Colors.white38
+                                        : Colors.black38,
                                   ),
                             onTap: isActive
                                 ? null
                                 : () async {
-                                    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-                                    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                                    final playerProvider =
+                                        Provider.of<PlayerProvider>(context,
+                                            listen: false);
+                                    final libraryProvider =
+                                        Provider.of<LibraryProvider>(context,
+                                            listen: false);
                                     await playerProvider.stop();
                                     await authProvider.switchProfile(profile);
                                     await libraryProvider.refresh();
                                   },
                           ),
                           if (profile != profiles.last)
-                            Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                            Divider(
+                                height: 1,
+                                color: isDark
+                                    ? AppTheme.darkDivider
+                                    : AppTheme.lightDivider),
                         ],
                       );
                     }),
-                    Divider(height: 1, color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                    Divider(
+                        height: 1,
+                        color: isDark
+                            ? AppTheme.darkDivider
+                            : AppTheme.lightDivider),
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 2),
                       leading: Icon(
                         CupertinoIcons.plus_circle_fill,
                         color: Theme.of(context).colorScheme.primary,
@@ -426,8 +489,10 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                           fontSize: 14,
                         ),
                       ),
-                      trailing: const Icon(CupertinoIcons.chevron_right, size: 14),
-                      onTap: () => NavigationHelper.push(context, const AddServerScreen()),
+                      trailing:
+                          const Icon(CupertinoIcons.chevron_right, size: 14),
+                      onTap: () => NavigationHelper.push(
+                          context, const AddServerScreen()),
                     ),
                   ],
                 ),
@@ -528,7 +593,9 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               padding: const EdgeInsets.only(left: 56),
               child: Container(
                 height: 0.5,
-                color: context.isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
+                color: context.isDark
+                    ? AppTheme.darkDivider
+                    : AppTheme.lightDivider,
               ),
             ),
             ListTile(
@@ -569,7 +636,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
       ),
       onTap: () {
-        final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+        final playerProvider =
+            Provider.of<PlayerProvider>(context, listen: false);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         showDialog(
           context: context,
@@ -626,25 +694,23 @@ class _MusicFoldersDialogState extends State<_MusicFoldersDialog> {
   }
 
   bool _isFolderEnabled(MusicFolder folder) {
-    
     return _selected.isEmpty || _selected.contains(folder.id);
   }
 
   void _toggle(MusicFolder folder) {
     setState(() {
       if (_selected.isEmpty) {
-        
         _selected = widget.folders
             .map((f) => f.id)
             .where((id) => id != folder.id)
             .toSet();
       } else if (_selected.contains(folder.id)) {
         _selected.remove(folder.id);
-        
+
         if (_selected.isEmpty) _selected = {};
       } else {
         _selected.add(folder.id);
-        
+
         if (_selected.length == widget.folders.length) _selected = {};
       }
     });

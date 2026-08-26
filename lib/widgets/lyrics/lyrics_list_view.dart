@@ -49,8 +49,6 @@ class _LyricsListViewState extends State<LyricsListView> {
   bool _isManualScrolling = false;
   Timer? _resumeAutoScrollTimer;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -62,12 +60,11 @@ class _LyricsListViewState extends State<LyricsListView> {
   @override
   void didUpdateWidget(LyricsListView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.lyrics != widget.lyrics) {
       _buildItems();
     }
-    
-    // Only process update if we are playing and not manually scrolling
+
     if (oldWidget.currentTime != widget.currentTime) {
       _updateCurrentIndex();
     }
@@ -80,7 +77,6 @@ class _LyricsListViewState extends State<LyricsListView> {
       return;
     }
 
-    // Start interlude
     if (widget.lyrics[0].startTime > const Duration(seconds: 10)) {
       _items.add(LyricsItem(
         type: ItemType.interlude,
@@ -91,13 +87,13 @@ class _LyricsListViewState extends State<LyricsListView> {
 
     for (int i = 0; i < widget.lyrics.length; i++) {
       final line = widget.lyrics[i];
-      final nextTime = i < widget.lyrics.length - 1 
-          ? widget.lyrics[i+1].startTime 
+      final nextTime = i < widget.lyrics.length - 1
+          ? widget.lyrics[i + 1].startTime
           : const Duration(hours: 24);
-      
-      final lyricEndTime = line.endTime ?? 
-          (nextTime - line.startTime > const Duration(seconds: 5) 
-              ? line.startTime + const Duration(seconds: 5) 
+
+      final lyricEndTime = line.endTime ??
+          (nextTime - line.startTime > const Duration(seconds: 5)
+              ? line.startTime + const Duration(seconds: 5)
               : nextTime);
 
       _items.add(LyricsItem(
@@ -128,23 +124,22 @@ class _LyricsListViewState extends State<LyricsListView> {
     int newIndex = -1;
     for (int i = 0; i < _items.length; i++) {
       final item = _items[i];
-      if (widget.currentTime >= item.startTime && widget.currentTime < item.endTime) {
+      if (widget.currentTime >= item.startTime &&
+          widget.currentTime < item.endTime) {
         newIndex = i;
         break;
       }
     }
 
-    // Check if it's unsynced (all start times are zero and we have multiple lines)
-    final isUnsynced = _items.length > 1 && 
+    final isUnsynced = _items.length > 1 &&
         _items.every((item) => item.startTime == Duration.zero);
 
     if (isUnsynced) {
-      newIndex = -1; // No highlight
+      newIndex = -1;
     } else if (newIndex == -1 && widget.currentTime >= _items.last.startTime) {
       newIndex = _items.length - 1;
     }
-    
-    // Before first item
+
     if (newIndex == -1 && !isUnsynced) {
       newIndex = 0;
     }
@@ -163,7 +158,12 @@ class _LyricsListViewState extends State<LyricsListView> {
   }
 
   void _scrollToCurrentLine() {
-    if (_isManualScrolling || !_scrollController.hasClients || _currentIndex < 0 || _currentIndex >= _keys.length) return;
+    if (_isManualScrolling ||
+        !_scrollController.hasClients ||
+        _currentIndex < 0 ||
+        _currentIndex >= _keys.length) {
+      return;
+    }
 
     final key = _keys[_currentIndex];
     if (key.currentContext != null) {
@@ -224,16 +224,17 @@ class _LyricsListViewState extends State<LyricsListView> {
       child: SingleChildScrollView(
         controller: _scrollController,
         padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height / 2, // Allow first/last item to center
+          vertical: MediaQuery.of(context).size.height / 2,
         ),
         child: Column(
           children: List.generate(_items.length, (index) {
             final item = _items[index];
-            
+
             if (item.type == ItemType.interlude) {
               return Container(
                 key: _keys[index],
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0, vertical: 12.0),
                 child: InterludeDotsWidget(
                   currentTime: widget.currentTime,
                   targetTime: item.endTime,
@@ -243,7 +244,7 @@ class _LyricsListViewState extends State<LyricsListView> {
 
             final line = item.line!;
             final lyricIndex = item.lyricIndex!;
-            
+
             LyricLineState state = LyricLineState.future;
             if (_currentLyricIndex != -1) {
               if (lyricIndex < _currentLyricIndex) {
@@ -252,16 +253,14 @@ class _LyricsListViewState extends State<LyricsListView> {
                 state = LyricLineState.current;
               }
             } else {
-              // During an interlude, we want all lyrics to look past or future
-              // We can determine this by comparing startTime with currentTime
               if (item.endTime <= widget.currentTime) {
                 state = LyricLineState.past;
               }
             }
 
-            final distance = _currentLyricIndex != -1 
-                ? (lyricIndex - _currentLyricIndex).abs() 
-                : 3; // large distance when interlude is active
+            final distance = _currentLyricIndex != -1
+                ? (lyricIndex - _currentLyricIndex).abs()
+                : 3;
 
             return Container(
               key: _keys[index],
@@ -274,7 +273,7 @@ class _LyricsListViewState extends State<LyricsListView> {
                   onTap: () {
                     HapticFeedback.selectionClick();
                     widget.onSeek(line.startTime);
-                    
+
                     setState(() => _isManualScrolling = false);
                     _resumeAutoScrollTimer?.cancel();
                   },

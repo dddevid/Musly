@@ -34,7 +34,8 @@ class _PlayPauseAction extends Action<PlayPauseIntent> {
     if (primaryFocus != null) {
       final focusedContext = primaryFocus.context;
       if (focusedContext != null &&
-          focusedContext.findAncestorWidgetOfExactType<EditableText>() != null) {
+          focusedContext.findAncestorWidgetOfExactType<EditableText>() !=
+              null) {
         return false;
       }
     }
@@ -129,10 +130,8 @@ class _MainScreenState extends State<MainScreen> {
         libraryProvider.initialize();
       }
 
-      // Initialize usage time tracking for donation dialog
       UsageTimeService().initialize();
 
-      // Check periodically if we should show the support dialog (every 2 minutes)
       _startUsageTimeChecker();
 
       Future.delayed(const Duration(seconds: 2), () {
@@ -142,7 +141,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _startUsageTimeChecker() {
-    // Check every 2 minutes if we should show the support dialog
     Future.delayed(const Duration(minutes: 2), () {
       if (!mounted) return;
 
@@ -150,7 +148,6 @@ class _MainScreenState extends State<MainScreen> {
       if (usageService.shouldShowDialog) {
         _showSupportDialog();
       } else {
-        // Continue checking
         _startUsageTimeChecker();
       }
     });
@@ -323,7 +320,8 @@ class _MainScreenState extends State<MainScreen> {
                         label: Text(l10n.downloadUpdate),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           foregroundColor: ThemeData.estimateBrightnessForColor(
                                       Theme.of(context).colorScheme.primary) ==
                                   Brightness.dark
@@ -400,8 +398,8 @@ class _MainScreenState extends State<MainScreen> {
                         builder: (context, hasCurrentSong, _) {
                           return hasCurrentSong
                               ? DesktopLyricsPanel(
-                                  onClose: () =>
-                                      NavigationHelper.isDesktopLyricsOpen.value = false,
+                                  onClose: () => NavigationHelper
+                                      .isDesktopLyricsOpen.value = false,
                                 )
                               : const SizedBox.shrink();
                         },
@@ -418,8 +416,8 @@ class _MainScreenState extends State<MainScreen> {
                         builder: (context, hasCurrentSong, _) {
                           return hasCurrentSong
                               ? RightSidebar(
-                                  onClose: () =>
-                                      NavigationHelper.isDesktopQueueOpen.value = false,
+                                  onClose: () => NavigationHelper
+                                      .isDesktopQueueOpen.value = false,
                                 )
                               : const SizedBox.shrink();
                         },
@@ -445,7 +443,8 @@ class _MainScreenState extends State<MainScreen> {
 
       return Shortcuts(
         shortcuts: <ShortcutActivator, Intent>{
-          const SingleActivator(LogicalKeyboardKey.space): const PlayPauseIntent(),
+          const SingleActivator(LogicalKeyboardKey.space):
+              const PlayPauseIntent(),
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
@@ -644,9 +643,7 @@ class _MainScreenState extends State<MainScreen> {
       child: Container(
         height: 62,
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xF018181A)
-              : const Color(0xF5FFFFFF),
+          color: isDark ? const Color(0xF018181A) : const Color(0xF5FFFFFF),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isDark
@@ -662,73 +659,72 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         ),
-              child: Row(
-                children: List.generate(items.length, (idx) {
-                  final item = items[idx];
-                  final isSelected = _currentIndex == idx;
-                  return Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        final navigatorState =
-                            NavigationHelper.mobileNavigatorKey.currentState;
-                        navigatorState?.popUntil((route) => route.isFirst);
+        child: Row(
+          children: List.generate(items.length, (idx) {
+            final item = items[idx];
+            final isSelected = _currentIndex == idx;
+            return Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  final navigatorState =
+                      NavigationHelper.mobileNavigatorKey.currentState;
+                  navigatorState?.popUntil((route) => route.isFirst);
 
-                        if (idx == 2) {
-                          final now = DateTime.now();
-                          if (now.difference(_lastSearchTap).inSeconds > 3) {
-                            _searchTapCount = 0;
-                          }
-                          _searchTapCount++;
-                          _lastSearchTap = now;
-                          if (_searchTapCount >= 11) {
-                            _searchTapCount = 0;
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const FantasyScreen(),
-                              ),
-                            );
-                            return;
-                          }
-                        } else {
-                          _searchTapCount = 0;
-                        }
+                  if (idx == 2) {
+                    final now = DateTime.now();
+                    if (now.difference(_lastSearchTap).inSeconds > 3) {
+                      _searchTapCount = 0;
+                    }
+                    _searchTapCount++;
+                    _lastSearchTap = now;
+                    if (_searchTapCount >= 11) {
+                      _searchTapCount = 0;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const FantasyScreen(),
+                        ),
+                      );
+                      return;
+                    }
+                  } else {
+                    _searchTapCount = 0;
+                  }
 
-                        setState(() => _currentIndex = idx);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 150),
-                            child: Icon(
-                              isSelected ? item.activeIcon : item.icon,
-                              key: ValueKey(isSelected),
-                              color: isSelected
-                                  ? accent
-                                  : (isDark ? Colors.white54 : Colors.black38),
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            item.label,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              color: isSelected
-                                  ? accent
-                                  : (isDark ? Colors.white54 : Colors.black38),
-                            ),
-                          ),
-                        ],
+                  setState(() => _currentIndex = idx);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        isSelected ? item.activeIcon : item.icon,
+                        key: ValueKey(isSelected),
+                        color: isSelected
+                            ? accent
+                            : (isDark ? Colors.white54 : Colors.black38),
+                        size: 22,
                       ),
                     ),
-                  );
-                }),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                        color: isSelected
+                            ? accent
+                            : (isDark ? Colors.white54 : Colors.black38),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            );
+          }),
+        ),
       ),
     );
   }

@@ -35,10 +35,9 @@ class _PlaybackProgressSliderState extends State<PlaybackProgressSlider> {
   @override
   Widget build(BuildContext context) {
     final maxDuration = widget.duration.inMilliseconds.toDouble();
-    final currentDuration = _isDragging 
-        ? _dragValue 
-        : widget.position.inMilliseconds.toDouble();
-        
+    final currentDuration =
+        _isDragging ? _dragValue : widget.position.inMilliseconds.toDouble();
+
     final safeMax = maxDuration > 0 ? maxDuration : 1.0;
     final progress = (currentDuration / safeMax).clamp(0.0, 1.0);
 
@@ -72,7 +71,7 @@ class _PlaybackProgressSliderState extends State<PlaybackProgressSlider> {
             widget.onChanged(Duration(milliseconds: tapValue.toInt()));
           },
           child: Container(
-            height: 30, // Tappable area
+            height: 30,
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: CustomPaint(
               size: const Size(double.infinity, 30),
@@ -129,33 +128,30 @@ class _SliderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final trackHeight = isDragging ? 8.0 : 4.0;
     final trackRadius = Radius.circular(trackHeight / 2);
-    
+
     final centerY = size.height / 2;
-    
-    // Inactive track
+
     final inactivePaint = Paint()
       ..color = inactiveColor
       ..style = PaintingStyle.fill;
-    
+
     final inactiveRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, centerY - trackHeight / 2, size.width, trackHeight),
       trackRadius,
     );
     canvas.drawRRect(inactiveRect, inactivePaint);
-    
-    // Active track
+
     final activeWidth = size.width * progress;
     final activePaint = Paint()
       ..color = activeColor
       ..style = PaintingStyle.fill;
-      
+
     final activeRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, centerY - trackHeight / 2, activeWidth, trackHeight),
       trackRadius,
     );
     canvas.drawRRect(activeRect, activePaint);
 
-    // Thumb (only visible when dragging)
     if (isDragging) {
       final thumbRadius = trackHeight + 2;
       final thumbPaint = Paint()..color = Colors.white;
@@ -166,8 +162,8 @@ class _SliderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _SliderPainter oldDelegate) {
     return oldDelegate.progress != progress ||
-           oldDelegate.isDragging != isDragging ||
-           oldDelegate.activeColor != activeColor ||
-           oldDelegate.inactiveColor != inactiveColor;
+        oldDelegate.isDragging != isDragging ||
+        oldDelegate.activeColor != activeColor ||
+        oldDelegate.inactiveColor != inactiveColor;
   }
 }

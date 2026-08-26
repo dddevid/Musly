@@ -4,7 +4,7 @@ class LyricLine {
   final String text;
   final Duration startTime;
   final Duration? endTime;
-  final List<LyricWord>? words; // Only present if word-level sync is available
+  final List<LyricWord>? words;
 
   LyricLine({
     required this.text,

@@ -92,11 +92,13 @@ class CastService extends ChangeNotifier {
       _handleMediaStatusChange(status);
     });
 
-    _playerPositionSubscription = _remoteMediaClient.playerPositionStream.listen((
+    _playerPositionSubscription =
+        _remoteMediaClient.playerPositionStream.listen((
       pos,
     ) {
       if (_state == CastState.connected &&
-          (_mediaState.position - pos).abs() > const Duration(milliseconds: 250)) {
+          (_mediaState.position - pos).abs() >
+              const Duration(milliseconds: 250)) {
         _mediaState = _mediaState.copyWith(position: pos);
         notifyListeners();
       }
@@ -168,7 +170,8 @@ class CastService extends ChangeNotifier {
       duration: mediaInfo?.duration ?? _mediaState.duration,
       title: title ?? _mediaState.title,
       artist: artist ?? _mediaState.artist,
-      imageUrl: metadata?.images?.firstOrNull?.url.toString() ?? _mediaState.imageUrl,
+      imageUrl:
+          metadata?.images?.firstOrNull?.url.toString() ?? _mediaState.imageUrl,
       volume: status.volume.toDouble(),
       playerState: status.playerState,
       idleReason: status.idleReason,
@@ -259,7 +262,8 @@ class CastService extends ChangeNotifier {
     }
 
     try {
-      debugPrint('CastService: Loading media: $title by $artist (playPos: ${playPosition.inSeconds}s)');
+      debugPrint(
+          'CastService: Loading media: $title by $artist (playPos: ${playPosition.inSeconds}s)');
 
       final List<GoogleCastImage> images = [];
       if (imageUrl.isNotEmpty &&
@@ -303,12 +307,15 @@ class CastService extends ChangeNotifier {
         duration: duration ?? Duration.zero,
         isPlaying: autoPlay,
         position: playPosition,
-        playerState: autoPlay ? CastMediaPlayerState.playing : CastMediaPlayerState.paused,
+        playerState: autoPlay
+            ? CastMediaPlayerState.playing
+            : CastMediaPlayerState.paused,
         idleReason: null,
       );
       notifyListeners();
 
-      debugPrint('CastService: Media loaded successfully ($resolvedContentType)');
+      debugPrint(
+          'CastService: Media loaded successfully ($resolvedContentType)');
       return true;
     } catch (e) {
       debugPrint('CastService: Error loading media: $e');

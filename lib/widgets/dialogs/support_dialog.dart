@@ -4,19 +4,16 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/l10n/app_localizations.dart';
 
-/// Dialog shown on app startup asking users to join Discord or support the project
 class SupportDialog extends StatefulWidget {
   const SupportDialog({super.key});
 
   static const String _prefsKey = 'support_dialog_dont_show';
 
-  /// Check if dialog should be shown
   static Future<bool> shouldShow() async {
     final prefs = await SharedPreferences.getInstance();
     return !(prefs.getBool(_prefsKey) ?? false);
   }
 
-  /// Mark dialog as "don't show again"
   static Future<void> dontShowAgain() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsKey, true);
@@ -75,137 +72,125 @@ class _SupportDialogState extends State<SupportDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-              // Logo/Icon
-              Container(
-                width: isSmallScreen ? 64 : 80,
-                height: isSmallScreen ? 64 : 80,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFA2D48), Color(0xFFFF6B6B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Icon(
-                  CupertinoIcons.heart_fill,
-                  color: Colors.white,
-                  size: isSmallScreen ? 32 : 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Title
-              Text(
-                l10n.supportMuslyTitle,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 20 : 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: isSmallScreen ? 16 : 20),
-
-              // Description
-              Text(
-                l10n.supportDialogDescription,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 13 : 14,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(height: isSmallScreen ? 20 : 24),
-
-              // Discord button
-              _buildActionButton(
-                icon: CupertinoIcons.chat_bubble_fill,
-                title: l10n.supportDialogJoinDiscord,
-                subtitle: l10n.supportDialogDiscordSubtitle,
-                color: const Color(0xFF5865F2),
-                onTap: _launchDiscord,
-              ),
-              SizedBox(height: isSmallScreen ? 8 : 12),
-
-              // Donation button
-              _buildActionButton(
-                icon: CupertinoIcons.heart_fill,
-                title: l10n.supportDialogDonateTitle,
-                subtitle: l10n.supportDialogDonateSubtitle,
-                color: const Color(0xFFFA2D48),
-                onTap: _launchDonation,
-                compact: isSmallScreen,
-              ),
-              SizedBox(height: isSmallScreen ? 16 : 20),
-
-              // Don't show again checkbox
-              Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Checkbox(
-                      value: _dontShowAgain,
-                      onChanged: (value) {
-                        setState(() {
-                          _dontShowAgain = value ?? false;
-                        });
-                      },
-                      activeColor: const Color(0xFFFA2D48),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Container(
+                  width: isSmallScreen ? 64 : 80,
+                  height: isSmallScreen ? 64 : 80,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFA2D48), Color(0xFFFF6B6B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _dontShowAgain = !_dontShowAgain;
-                        });
-                      },
-                      child: Text(
-                        l10n.dontShowAgain,
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 13 : 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  child: Icon(
+                    CupertinoIcons.heart_fill,
+                    color: Colors.white,
+                    size: isSmallScreen ? 32 : 40,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.supportMuslyTitle,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 20 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: isSmallScreen ? 16 : 20),
+                Text(
+                  l10n.supportDialogDescription,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 13 : 14,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: isSmallScreen ? 20 : 24),
+                _buildActionButton(
+                  icon: CupertinoIcons.chat_bubble_fill,
+                  title: l10n.supportDialogJoinDiscord,
+                  subtitle: l10n.supportDialogDiscordSubtitle,
+                  color: const Color(0xFF5865F2),
+                  onTap: _launchDiscord,
+                ),
+                SizedBox(height: isSmallScreen ? 8 : 12),
+                _buildActionButton(
+                  icon: CupertinoIcons.heart_fill,
+                  title: l10n.supportDialogDonateTitle,
+                  subtitle: l10n.supportDialogDonateSubtitle,
+                  color: const Color(0xFFFA2D48),
+                  onTap: _launchDonation,
+                  compact: isSmallScreen,
+                ),
+                SizedBox(height: isSmallScreen ? 16 : 20),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        value: _dontShowAgain,
+                        onChanged: (value) {
+                          setState(() {
+                            _dontShowAgain = value ?? false;
+                          });
+                        },
+                        activeColor: const Color(0xFFFA2D48),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _dontShowAgain = !_dontShowAgain;
+                          });
+                        },
+                        child: Text(
+                          l10n.dontShowAgain,
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 13 : 14,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: isSmallScreen ? 16 : 20),
-
-              // Close button
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: _onClose,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                  ],
+                ),
+                SizedBox(height: isSmallScreen ? 16 : 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _onClose,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          vertical: isSmallScreen ? 12 : 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.maybeLater,
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  child: Text(
-                    l10n.maybeLater,
-                    style: TextStyle(
-                      fontSize: isSmallScreen ? 14 : 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildActionButton({
     required IconData icon,

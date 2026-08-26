@@ -7,8 +7,6 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/playlist_cover_service.dart';
 import 'album_artwork.dart';
 
-// Modern music player design
-/// from the songs inside the playlist if multiple distinct album covers are present.
 class PlaylistArtwork extends StatelessWidget {
   final Playlist? playlist;
   final List<Song>? songs;
@@ -36,9 +34,9 @@ class PlaylistArtwork extends StatelessWidget {
       builder: (context, _, __) {
         final playlistId = playlist?.id ?? '';
 
-        // 1. Check if a pre-rendered composite 2x2 image file exists on disk
         if (playlistId.isNotEmpty) {
-          final cachedMosaicPath = PlaylistCoverService().getCoverPath(playlistId);
+          final cachedMosaicPath =
+              PlaylistCoverService().getCoverPath(playlistId);
           if (cachedMosaicPath != null) {
             return AlbumArtwork(
               coverArt: cachedMosaicPath,
@@ -49,7 +47,6 @@ class PlaylistArtwork extends StatelessWidget {
           }
         }
 
-        // Collect songs from parameter, playlist object, or look up in LibraryProvider
         List<Song> allSongs = songs ?? playlist?.songs ?? [];
         if (allSongs.isEmpty && playlist != null) {
           try {
@@ -74,7 +71,6 @@ class PlaylistArtwork extends StatelessWidget {
           }
         }
 
-        // Modern music player design
         if (distinctCovers.length >= 4) {
           return _build2x2Grid(
             validSize,
@@ -108,7 +104,6 @@ class PlaylistArtwork extends StatelessWidget {
           );
         }
 
-        // 3. Fallback to explicit coverArt if non-empty and no song collage
         final explicitArt = coverArt ?? playlist?.coverArt;
         if (explicitArt != null && explicitArt.isNotEmpty) {
           return AlbumArtwork(
@@ -119,7 +114,6 @@ class PlaylistArtwork extends StatelessWidget {
           );
         }
 
-        // 4. Fallback placeholder (0 songs / no artwork)
         return Container(
           width: validSize,
           height: validSize,

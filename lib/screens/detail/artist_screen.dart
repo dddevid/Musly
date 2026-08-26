@@ -53,9 +53,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
             .where((s) => s.artistId == widget.artistId)
             .toList();
       } else {
-        // fix #186: fetch artist and info independently so a failure in one
-        // doesn't prevent the other data from loading (e.g. Emby returns
-        // 404 for getArtist but still serves albums and top songs).
         try {
           artist = await subsonicService.getArtist(widget.artistId);
         } catch (e) {
@@ -66,7 +63,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
           _artistInfo = await subsonicService.getArtistInfo(widget.artistId);
         } catch (_) {}
 
-        // Fallback 1: look up from cached library artists
         if (artist == null) {
           final cached = libraryProvider.artists.where(
             (a) => a.id == widget.artistId,
@@ -74,7 +70,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
           if (cached.isNotEmpty) artist = cached.first;
         }
 
-        // Fallback 2: build a minimal Artist from cached songs
         if (artist == null) {
           final songMatch = libraryProvider.cachedAllSongs.where(
             (s) => s.artistId == widget.artistId,
@@ -95,7 +90,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
         } catch (_) {}
 
         if (albums.isNotEmpty) {
-          // Fallback 3: if artist still null, derive name from albums
           artist ??= Artist(
             id: widget.artistId,
             name: albums.first.artist ?? 'Unknown Artist',
@@ -192,7 +186,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
     if (_albums.isEmpty) return;
 
     final offlineService = OfflineService();
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
     final subsonicService = libraryProvider.subsonicService;
 
     await offlineService.initialize();
@@ -209,7 +204,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
           : await subsonicService.getAlbumSongs(album.id);
 
       if (albumSongs.isNotEmpty) {
-        offlineService.queuePlaylistDownload(album.id, albumSongs, subsonicService);
+        offlineService.queuePlaylistDownload(
+            album.id, albumSongs, subsonicService);
         queuedSongs += albumSongs.length;
       }
     }
@@ -218,7 +214,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
       final l10n = AppLocalizations.of(context)!;
       messenger.showSnackBar(
         SnackBar(
-          content: Text(l10n.queuedSongsFromAlbumsForDownload(queuedSongs, _albums.length)),
+          content: Text(l10n.queuedSongsFromAlbumsForDownload(
+              queuedSongs, _albums.length)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -275,7 +272,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
                       (_artist!.id.isNotEmpty ? 'ar-${_artist!.id}' : null);
                   if (art == null) {
                     return Container(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.15),
                       child: Center(
                         child: Icon(
                           CupertinoIcons.mic_fill,
@@ -308,7 +308,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
               IconButton(
                 icon: const Icon(CupertinoIcons.cloud_download),
                 tooltip: AppLocalizations.of(context)!.downloadAllAlbums,
-                onPressed: _albums.isEmpty ? null : () => _downloadArtistAlbums(),
+                onPressed:
+                    _albums.isEmpty ? null : () => _downloadArtistAlbums(),
               ),
               IconButton(
                 icon: const Icon(Icons.queue_music_rounded),
@@ -373,7 +374,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
                   ],
                   Builder(
                     builder: (context) {
-                      // Categorize albums by song count
                       final albums = _albums
                           .where((a) => (a.songCount ?? 0) >= 7)
                           .toList();

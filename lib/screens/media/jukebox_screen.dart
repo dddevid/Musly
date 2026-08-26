@@ -123,12 +123,10 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
 
           return Column(
             children: [
-              
               Container(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: AlbumArtwork(
@@ -138,12 +136,11 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
                     Text(
                       song?.title ?? l10n.noSongPlaying,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -153,14 +150,13 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                       Text(
                         song!.artist!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isDark
-                              ? AppTheme.darkSecondaryText
-                              : AppTheme.lightSecondaryText,
-                        ),
+                              color: isDark
+                                  ? AppTheme.darkSecondaryText
+                                  : AppTheme.lightSecondaryText,
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     const SizedBox(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -169,8 +165,8 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                           onPressed: jukebox.isLoading
                               ? null
                               : () {
-                                  final subsonic = context
-                                      .read<SubsonicService>();
+                                  final subsonic =
+                                      context.read<SubsonicService>();
                                   jukebox.skipPrevious(subsonic);
                                 },
                         ),
@@ -183,8 +179,8 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                           onPressed: jukebox.isLoading
                               ? null
                               : () {
-                                  final subsonic = context
-                                      .read<SubsonicService>();
+                                  final subsonic =
+                                      context.read<SubsonicService>();
                                   if (status.playing) {
                                     jukebox.pause(subsonic);
                                   } else {
@@ -197,15 +193,14 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                           onPressed: jukebox.isLoading
                               ? null
                               : () {
-                                  final subsonic = context
-                                      .read<SubsonicService>();
+                                  final subsonic =
+                                      context.read<SubsonicService>();
                                   jukebox.skipNext(subsonic);
                                 },
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-
                     Row(
                       children: [
                         Icon(
@@ -234,7 +229,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         ),
                       ],
                     ),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -242,8 +236,8 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                           onPressed: jukebox.isLoading
                               ? null
                               : () {
-                                  final subsonic = context
-                                      .read<SubsonicService>();
+                                  final subsonic =
+                                      context.read<SubsonicService>();
                                   jukebox.shuffleQueue(subsonic);
                                 },
                           icon: const Icon(CupertinoIcons.shuffle),
@@ -253,8 +247,8 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                           onPressed: jukebox.isLoading
                               ? null
                               : () {
-                                  final subsonic = context
-                                      .read<SubsonicService>();
+                                  final subsonic =
+                                      context.read<SubsonicService>();
                                   jukebox.clearQueue(subsonic);
                                 },
                           icon: const Icon(CupertinoIcons.trash),
@@ -268,7 +262,6 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                   ],
                 ),
               ),
-
               if (status.playlist.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -279,7 +272,9 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                     children: [
                       Text(
                         l10n.queue,
-                        style: Theme.of(context).textTheme.titleMedium
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
@@ -315,10 +310,11 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                         title: Text(
                           s.title,
                           style: TextStyle(
-                            fontWeight: isCurrent
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isCurrent ? Theme.of(context).colorScheme.primary : null,
+                            fontWeight:
+                                isCurrent ? FontWeight.bold : FontWeight.normal,
+                            color: isCurrent
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -351,10 +347,10 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                     child: Text(
                       l10n.jukeboxQueueEmpty,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isDark
-                            ? AppTheme.darkSecondaryText
-                            : AppTheme.lightSecondaryText,
-                      ),
+                            color: isDark
+                                ? AppTheme.darkSecondaryText
+                                : AppTheme.lightSecondaryText,
+                          ),
                     ),
                   ),
                 ),

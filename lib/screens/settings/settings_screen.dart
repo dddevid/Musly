@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final tabs = [
       (icon: CupertinoIcons.play_circle, text: l10n.tabPlayback),
       (icon: CupertinoIcons.folder, text: l10n.tabStorage),
@@ -61,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       (icon: CupertinoIcons.heart_fill, text: l10n.tabSupport),
       (icon: CupertinoIcons.info, text: l10n.tabAbout),
     ];
-    
+
     final tabViews = const [
       SettingsPlaybackTab(),
       SettingsStorageTab(),
@@ -73,11 +73,13 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     if (_isDesktop) {
       return Scaffold(
-        backgroundColor: _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+        backgroundColor:
+            _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
         appBar: AppBar(
           title: Text(l10n.settingsTitle),
           centerTitle: false,
-          backgroundColor: _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+          backgroundColor:
+              _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
         ),
@@ -88,7 +90,8 @@ class _SettingsScreenState extends State<SettingsScreen>
               decoration: BoxDecoration(
                 border: Border(
                   right: BorderSide(
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                    color:
+                        Theme.of(context).dividerColor.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -100,17 +103,25 @@ class _SettingsScreenState extends State<SettingsScreen>
                   return ListTile(
                     leading: Icon(
                       tabs[index].icon,
-                      color: isSelected ? Theme.of(context).colorScheme.primary : (_isDark ? Colors.white70 : Colors.black87),
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : (_isDark ? Colors.white70 : Colors.black87),
                     ),
                     title: Text(
                       tabs[index].text,
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Theme.of(context).colorScheme.primary : (_isDark ? Colors.white : Colors.black),
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : (_isDark ? Colors.white : Colors.black),
                       ),
                     ),
                     selected: isSelected,
-                    selectedTileColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    selectedTileColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
                     onTap: () {
                       setState(() => _selectedIndex = index);
                       _tabController.animateTo(index);
@@ -123,7 +134,12 @@ class _SettingsScreenState extends State<SettingsScreen>
               child: TabBarView(
                 controller: _tabController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: tabViews.map((v) => Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 800), child: v))).toList(),
+                children: tabViews
+                    .map((v) => Center(
+                        child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 800),
+                            child: v)))
+                    .toList(),
               ),
             ),
           ],
@@ -132,15 +148,13 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     return Scaffold(
-      backgroundColor: _isDark
-          ? AppTheme.darkBackground
-          : AppTheme.lightBackground,
+      backgroundColor:
+          _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       appBar: AppBar(
         title: Text(l10n.settingsTitle),
         centerTitle: false,
-        backgroundColor: _isDark
-            ? AppTheme.darkBackground
-            : AppTheme.lightBackground,
+        backgroundColor:
+            _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         bottom: TabBar(
@@ -160,7 +174,9 @@ class _SettingsScreenState extends State<SettingsScreen>
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
-          tabs: tabs.map((t) => Tab(icon: Icon(t.icon, size: 20), text: t.text)).toList(),
+          tabs: tabs
+              .map((t) => Tab(icon: Icon(t.icon, size: 20), text: t.text))
+              .toList(),
         ),
       ),
       body: TabBarView(

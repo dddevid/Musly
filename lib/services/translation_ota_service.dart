@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TranslationOtaService {
-  static final TranslationOtaService _instance = TranslationOtaService._internal();
+  static final TranslationOtaService _instance =
+      TranslationOtaService._internal();
   factory TranslationOtaService() => _instance;
   TranslationOtaService._internal();
 
@@ -20,25 +21,39 @@ class TranslationOtaService {
   static const String _otaPrefix = 'ota_l10n_';
   static const String _otaTimestampPrefix = 'ota_l10n_ts_';
   static const String _discoveredLocalesKey = 'ota_discovered_locales';
+  static const String _percentagesKey = 'ota_percentages_cache';
 
   final Map<String, String> _activeTranslations = {};
   final Set<String> _discoveredLocales = {};
+  final Map<String, int> _percentages = {};
 
   Set<String> get discoveredLocales => Set.unmodifiable(_discoveredLocales);
-  Map<String, String> get activeTranslations => Map.unmodifiable(_activeTranslations);
+  Map<String, String> get activeTranslations =>
+      Map.unmodifiable(_activeTranslations);
+  Map<String, int> get completionPercentages =>
+      Map.unmodifiable(_percentages);
 
-  /// Load cached OTA translations and discovered locales from SharedPreferences
   Future<void> init(String? currentLocaleCode) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // Load discovered locales
+
       final savedLocales = prefs.getStringList(_discoveredLocalesKey);
       if (savedLocales != null) {
         _discoveredLocales.addAll(savedLocales);
       }
 
-      // Load active translations for current locale if available
+      final cachedPercentagesRaw = prefs.getString(_percentagesKey);
+      if (cachedPercentagesRaw != null) {
+        final decoded = json.decode(cachedPercentagesRaw);
+        if (decoded is Map<String, dynamic>) {
+          for (final entry in decoded.entries) {
+            if (entry.value is num) {
+              _percentages[entry.key] = (entry.value as num).toInt();
+            }
+          }
+        }
+      }
+
       if (currentLocaleCode != null) {
         await loadCachedLocale(currentLocaleCode);
       }
@@ -47,7 +62,6 @@ class TranslationOtaService {
     }
   }
 
-  /// Load cached translations for a specific locale from local storage
   Future<void> loadCachedLocale(String localeCode) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -68,22 +82,21 @@ class TranslationOtaService {
     }
   }
 
-  /// Check and fetch live translations from GitHub raw / Crowdin for the given locale
-  Future<bool> syncTranslations({String? localeCode, bool force = false}) async {
+  Future<bool> syncTranslations(
+      {String? localeCode, bool force = false}) async {
     final targetLocale = localeCode ?? 'en';
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final lastTs = prefs.getInt('$_otaTimestampPrefix$targetLocale') ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
 
-      // Throttle automatic checks to at most once every 30 minutes unless forced
       if (!force && (now - lastTs < 30 * 60 * 1000)) {
         return false;
       }
 
-      // 1. Fetch latest .arb file for target locale from GitHub master
-      final url = 'https://raw.githubusercontent.com/dddevid/Musly/master/lib/l10n/app_$targetLocale.arb';
+      final url =
+          'https://raw.githubusercontent.com/dddevid/Musly/master/lib/l10n/app_$targetLocale.arb';
       final response = await _dio.get<String>(
         url,
         options: Options(responseType: ResponseType.plain),
@@ -99,17 +112,18 @@ class TranslationOtaService {
             }
           }
 
-          // Save to prefs
-          await prefs.setString('$_otaPrefix$targetLocale', json.encode(stringsOnly));
+          await prefs.setString(
+              '$_otaPrefix$targetLocale', json.encode(stringsOnly));
           await prefs.setInt('$_otaTimestampPrefix$targetLocale', now);
 
           _activeTranslations.clear();
           _activeTranslations.addAll(stringsOnly);
-          debugPrint('TranslationOtaService: Synced ${stringsOnly.length} strings for $targetLocale');
+          debugPrint(
+              'TranslationOtaService: Synced ${stringsOnly.length} strings for $targetLocale');
         }
       }
 
-      // 2. Discover any newly added languages in lib/l10n
+      await _syncPercentages(prefs);
       await _discoverRemoteLanguages(prefs);
       return true;
     } catch (e) {
@@ -118,7 +132,38 @@ class TranslationOtaService {
     }
   }
 
-  /// Discover newly added language files from GitHub repository
+  Future<void> _syncPercentages(SharedPreferences prefs) async {
+    try {
+      final url =
+          'https://raw.githubusercontent.com/dddevid/Musly/master/lib/l10n/translation_percentages.json';
+      final res = await _dio.get<String>(
+        url,
+        options: Options(responseType: ResponseType.plain),
+      );
+
+      if (res.statusCode == 200 && res.data != null) {
+        final decoded = json.decode(res.data!);
+        if (decoded is Map<String, dynamic>) {
+          final Map<String, int> parsed = {};
+          for (final entry in decoded.entries) {
+            if (entry.value is num) {
+              parsed[entry.key] = (entry.value as num).toInt();
+            }
+          }
+          if (parsed.isNotEmpty) {
+            _percentages.addAll(parsed);
+            await prefs.setString(_percentagesKey, json.encode(_percentages));
+            debugPrint(
+              'TranslationOtaService: Synced ${parsed.length} translation percentages',
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('TranslationOtaService: Percentage sync error: $e');
+    }
+  }
+
   Future<void> _discoverRemoteLanguages(SharedPreferences prefs) async {
     try {
       final res = await _dio.get<dynamic>(
@@ -131,7 +176,9 @@ class TranslationOtaService {
         for (final item in items) {
           if (item is Map && item['name'] is String) {
             final name = item['name'] as String;
-            if (name.startsWith('app_') && name.endsWith('.arb') && name != 'app_en.arb') {
+            if (name.startsWith('app_') &&
+                name.endsWith('.arb') &&
+                name != 'app_en.arb') {
               final code = name.substring(4, name.length - 4);
               if (code.isNotEmpty) {
                 found.add(code);
@@ -142,15 +189,22 @@ class TranslationOtaService {
 
         if (found.isNotEmpty) {
           _discoveredLocales.addAll(found);
-          await prefs.setStringList(_discoveredLocalesKey, _discoveredLocales.toList());
+          await prefs.setStringList(
+              _discoveredLocalesKey, _discoveredLocales.toList());
         }
       }
-    } catch (_) {
-      // Ignore discovery errors (e.g. offline or rate limited)
-    }
+    } catch (_) {}
   }
 
-  /// Get live translation for a key if available
+  int? getCompletionPercentage(String localeCode) {
+    return _percentages[localeCode];
+  }
+
+  @visibleForTesting
+  void setCompletionPercentages(Map<String, int> percentages) {
+    _percentages.addAll(percentages);
+  }
+
   String? get(String key) {
     return _activeTranslations[key];
   }

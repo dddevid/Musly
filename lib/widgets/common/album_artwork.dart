@@ -172,10 +172,8 @@ class AlbumArtwork extends StatelessWidget {
       height: validSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(resolvedRadius),
-
-        boxShadow: resolvedShadow != null && validSize > 60
-            ? [resolvedShadow]
-            : null,
+        boxShadow:
+            resolvedShadow != null && validSize > 60 ? [resolvedShadow] : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(resolvedRadius),
@@ -200,7 +198,8 @@ class AlbumArtwork extends StatelessWidget {
     }
 
     if (OfflineService().downloadedSongIds.value.isNotEmpty) {
-      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      final offlinePath =
+          OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
       if (offlinePath != null) {
         return Image.file(
           File(offlinePath),
@@ -258,7 +257,8 @@ class AlbumArtwork extends StatelessWidget {
     }
 
     if (OfflineService().downloadedSongIds.value.isNotEmpty) {
-      final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+      final offlinePath =
+          OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
       if (offlinePath != null) {
         return Image.file(
           File(offlinePath),

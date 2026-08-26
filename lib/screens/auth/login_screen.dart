@@ -42,11 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _allowSelfSignedCertificates = false;
   bool _obscurePassword = true;
   bool _showAdvancedOptions = false;
-  String _serverFamily = 'subsonic'; // 'subsonic' | 'jellyfin' | 'youtube'
+  String _serverFamily = 'subsonic';
   String? _customCertificatePath;
   String? _customCertificateName;
   final _profileNameController = TextEditingController();
-  
+
   String? _clientCertificatePath;
   String? _clientCertificateName;
   final _clientCertPasswordController = TextEditingController();
@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     _serverController.addListener(_clearError);
     _usernameController.addListener(_clearError);
     _passwordController.addListener(_clearError);
@@ -119,7 +119,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildErrorCard(ThemeData theme) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final error = _loginError ?? (authProvider.state == AuthState.error ? authProvider.error : null);
+    final error = _loginError ??
+        (authProvider.state == AuthState.error ? authProvider.error : null);
     if (error == null || error.isEmpty) return const SizedBox.shrink();
 
     final type = _categoriseError(error);
@@ -131,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (type) {
       case _LoginErrorType.ssl:
         icon = CupertinoIcons.lock_slash;
-        color = const Color(0xFFFF9500); 
+        color = const Color(0xFFFF9500);
         if (!_allowSelfSignedCertificates) {
           hint = 'Try enabling "Allow Self-Signed Certificates" below.';
         }
@@ -190,16 +191,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.copy_rounded, size: 16, color: color.withValues(alpha: 0.7)),
-                  tooltip: AppLocalizations.of(context)?.copyError ?? 'Copy error',
+                  icon: Icon(Icons.copy_rounded,
+                      size: 16, color: color.withValues(alpha: 0.7)),
+                  tooltip:
+                      AppLocalizations.of(context)?.copyError ?? 'Copy error',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: error));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          AppLocalizations.of(context)?.errorCopiedToClipboard ??
+                          AppLocalizations.of(context)
+                                  ?.errorCopiedToClipboard ??
                               'Error copied to clipboard',
                         ),
                         duration: const Duration(seconds: 2),
@@ -223,7 +228,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ],
-            
             if (type == _LoginErrorType.ssl &&
                 !_allowSelfSignedCertificates) ...[
               const SizedBox(height: 10),
@@ -311,7 +315,8 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text(
               AppLocalizations.of(
                 context,
-              )!.failedToSelectClientCert(e.toString()),
+              )!
+                  .failedToSelectClientCert(e.toString()),
             ),
             backgroundColor: Colors.red,
           ),
@@ -341,7 +346,8 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text(
               AppLocalizations.of(
                 context,
-              )!.failedToSelectCertificate(e.toString()),
+              )!
+                  .failedToSelectCertificate(e.toString()),
             ),
             backgroundColor: Colors.red,
           ),
@@ -351,7 +357,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    // Modern music player design
     if (_serverFamily != 'youtube') {
       if (!_formKey.currentState!.validate()) return;
     }
@@ -393,7 +398,6 @@ class _LoginScreenState extends State<LoginScreen> {
         () => _loginError = authProvider.error ?? 'Failed to connect to server',
       );
     }
-    
   }
 
   Future<void> _useLocalFiles() async {
@@ -424,7 +428,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final added = await localService.pickAndAddFiles();
         if (mounted) {
           if (localService.songs.isNotEmpty) {
-            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            final authProvider =
+                Provider.of<AuthProvider>(context, listen: false);
             await authProvider.setLocalOnlyMode(true);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -509,116 +514,201 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  Center(
-                    child: Container(
-                      width: ScreenHelper.loginLogoSize(context),
-                      height: ScreenHelper.loginLogoSize(context),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.4,
+                      Center(
+                        child: Container(
+                          width: ScreenHelper.loginLogoSize(context),
+                          height: ScreenHelper.loginLogoSize(context),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.4,
+                                ),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Transform.translate(
+                              offset: const Offset(0, 8),
+                              child: Image.asset(
+                                'assets/logobig.png',
+                                width: ScreenHelper.loginLogoSize(context),
+                                height: ScreenHelper.loginLogoSize(context),
+                                fit: BoxFit.fill,
+                              ),
                             ),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Transform.translate(
-                          offset: const Offset(0, 8),
-                          child: Image.asset(
-                            'assets/logobig.png',
-                            width: ScreenHelper.loginLogoSize(context),
-                            height: ScreenHelper.loginLogoSize(context),
-                            fit: BoxFit.fill,
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    AppLocalizations.of(context)!.appName,
-                    style: theme.textTheme.displayLarge?.copyWith(
-                      fontSize: ScreenHelper.isSmallScreen(context) ? 32 : null,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)!.connectToServerSubtitle,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.lightSecondaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  _SavedProfilesSwitcher(
-                    onProfileSelected: (profile) async {
-                      final authProvider = Provider.of<AuthProvider>(
-                        context,
-                        listen: false,
-                      );
-                      await authProvider.switchProfile(profile);
-                      if (mounted && authProvider.error != null) {
-                        setState(
-                          () => _loginError = authProvider.error,
-                        );
-                      }
-                    },
-                    onProfileDeleted: (profile) async {
-                      final authProvider = Provider.of<AuthProvider>(
-                        context,
-                        listen: false,
-                      );
-                      await authProvider.deleteProfile(profile);
-                      setState(() {});
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-                  _ServerFamilyToggle(
-                    serverFamily: _serverFamily,
-                    onChanged: (v) {
-                      setState(() {
-                        _serverFamily = v;
-                        _useLegacyAuth = false;
-                      });
-                      StorageService().saveLastSelectedFamily(v);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  if (_serverFamily == 'local') ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF34C759).withValues(alpha: 0.08),
-                        border: Border.all(
-                          color: const Color(0xFF34C759).withValues(alpha: 0.3),
+                      const SizedBox(height: 32),
+                      Text(
+                        AppLocalizations.of(context)!.appName,
+                        style: theme.textTheme.displayLarge?.copyWith(
+                          fontSize:
+                              ScreenHelper.isSmallScreen(context) ? 32 : null,
                         ),
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                      const SizedBox(height: 8),
+                      Text(
+                        AppLocalizations.of(context)!.connectToServerSubtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.lightSecondaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _SavedProfilesSwitcher(
+                        onProfileSelected: (profile) async {
+                          final authProvider = Provider.of<AuthProvider>(
+                            context,
+                            listen: false,
+                          );
+                          await authProvider.switchProfile(profile);
+                          if (mounted && authProvider.error != null) {
+                            setState(
+                              () => _loginError = authProvider.error,
+                            );
+                          }
+                        },
+                        onProfileDeleted: (profile) async {
+                          final authProvider = Provider.of<AuthProvider>(
+                            context,
+                            listen: false,
+                          );
+                          await authProvider.deleteProfile(profile);
+                          setState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _ServerFamilyToggle(
+                        serverFamily: _serverFamily,
+                        onChanged: (v) {
+                          setState(() {
+                            _serverFamily = v;
+                            _useLegacyAuth = false;
+                          });
+                          StorageService().saveLastSelectedFamily(v);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      if (_serverFamily == 'local') ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF34C759).withValues(alpha: 0.08),
+                            border: Border.all(
+                              color: const Color(0xFF34C759)
+                                  .withValues(alpha: 0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    CupertinoIcons.folder_badge_plus,
+                                    color: Color(0xFF34C759),
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Play audio files directly from this device without connecting to any remote server.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color:
+                                            theme.brightness == Brightness.dark
+                                                ? Colors.white70
+                                                : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  onPressed: isBusy ? null : _useLocalFiles,
+                                  icon: _isScanning
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.white),
+                                          ),
+                                        )
+                                      : const Icon(CupertinoIcons.folder_open),
+                                  label: Text(
+                                    _isScanning
+                                        ? _scanStatus
+                                        : 'Scan & Play Local Files',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF34C759),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                ),
+                              ),
+                              if (_isScanning) ...[
+                                const SizedBox(height: 12),
+                                LinearProgressIndicator(
+                                  value:
+                                      _scanProgress > 0 ? _scanProgress : null,
+                                  backgroundColor: const Color(0xFF34C759)
+                                      .withValues(alpha: 0.2),
+                                  color: const Color(0xFF34C759),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ] else if (_serverFamily == 'youtube') ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF0000).withAlpha(20),
+                            border: Border.all(
+                              color: const Color(0xFFFF0000).withAlpha(80),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
                             children: [
                               const Icon(
-                                CupertinoIcons.folder_badge_plus,
-                                color: Color(0xFF34C759),
-                                size: 22,
+                                CupertinoIcons.info_circle,
+                                color: Color(0xFFFF0000),
+                                size: 18,
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Play audio files directly from this device without connecting to any remote server.',
+                                  'Web Stream streams music directly online. No account required — tap Connect to start.',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: theme.brightness == Brightness.dark
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
                                         ? Colors.white70
                                         : Colors.black87,
                                   ),
@@ -626,555 +716,504 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              onPressed: isBusy ? null : _useLocalFiles,
-                              icon: _isScanning
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : const Icon(CupertinoIcons.folder_open),
-                              label: Text(
-                                _isScanning ? _scanStatus : 'Scan & Play Local Files',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF34C759),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ),
-                          if (_isScanning) ...[
-                            const SizedBox(height: 12),
-                            LinearProgressIndicator(
-                              value: _scanProgress > 0 ? _scanProgress : null,
-                              backgroundColor: const Color(0xFF34C759).withValues(alpha: 0.2),
-                              color: const Color(0xFF34C759),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ] else if (_serverFamily == 'youtube') ...[                    
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF0000).withAlpha(20),
-                        border: Border.all(
-                          color: const Color(0xFFFF0000).withAlpha(80),
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            CupertinoIcons.info_circle,
-                            color: Color(0xFFFF0000),
-                            size: 18,
+                      ] else ...[
+                        TextFormField(
+                          controller: _serverController,
+                          focusNode: _serverFocusNode,
+                          keyboardType: TextInputType.url,
+                          autocorrect: false,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) =>
+                              _usernameFocusNode.requestFocus(),
+                          decoration: InputDecoration(
+                            labelText:
+                                AppLocalizations.of(context)?.serverUrl ??
+                                    'Server URL',
+                            hintText: _serverFamily == 'jellyfin'
+                                ? 'https://jellyfin.example.com'
+                                : 'https://your-server.com',
+                            prefixIcon: const Icon(CupertinoIcons.globe),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Web Stream streams music directly online. No account required — tap Connect to start.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white70
-                                    : Colors.black87,
-                              ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter server URL';
+                            }
+                            final url = value.trim();
+                            if (!url.startsWith('http://') &&
+                                !url.startsWith('https://')) {
+                              return 'URL must start with http:// or https://';
+                            }
+                            return null;
+                          },
+                        ),
+                        if (_isRemoteInsecureHttp(_serverController.text)) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: Colors.amber.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                    CupertinoIcons.exclamationmark_shield_fill,
+                                    size: 16,
+                                    color: Colors.amber),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Insecure HTTP: Passwords and streaming traffic are not encrypted over public networks. HTTPS is recommended.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.brightness == Brightness.dark
+                                          ? Colors.amber[200]
+                                          : Colors.amber[900],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                  ] else ...[                    
-                    TextFormField(
-                      controller: _serverController,
-                      focusNode: _serverFocusNode,
-                      keyboardType: TextInputType.url,
-                      autocorrect: false,
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _usernameFocusNode.requestFocus(),
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.serverUrl ?? 'Server URL',
-                        hintText: _serverFamily == 'jellyfin'
-                            ? 'https://jellyfin.example.com'
-                            : 'https://your-server.com',
-                        prefixIcon: const Icon(CupertinoIcons.globe),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _usernameController,
+                          focusNode: _usernameFocusNode,
+                          autocorrect: false,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) =>
+                              _passwordFocusNode.requestFocus(),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)?.username ??
+                                'Username',
+                            prefixIcon: const Icon(CupertinoIcons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter username';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter server URL';
-                        }
-                        final url = value.trim();
-                        if (!url.startsWith('http://') &&
-                            !url.startsWith('https://')) {
-                          return 'URL must start with http:// or https://';
-                        }
-                        return null;
-                      },
-                    ),
-                    if (_isRemoteInsecureHttp(_serverController.text)) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          focusNode: _passwordFocusNode,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) {
+                            if (!isBusy) _login();
+                          },
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)?.password ??
+                                'Password',
+                            prefixIcon: const Icon(CupertinoIcons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? CupertinoIcons.eye
+                                    : CupertinoIcons.eye_slash,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter password';
+                            }
+                            return null;
+                          },
                         ),
-                        child: Row(
+                      ],
+                      if (_serverFamily == 'subsonic') ...[
+                        const SizedBox(height: 16),
+                        Row(
                           children: [
-                            const Icon(CupertinoIcons.exclamationmark_shield_fill, size: 16, color: Colors.amber),
-                            const SizedBox(width: 8),
+                            CupertinoSwitch(
+                              value: _useLegacyAuth,
+                              activeTrackColor: theme.colorScheme.primary,
+                              onChanged: (value) {
+                                setState(() {
+                                  _useLegacyAuth = value;
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
-                                'Insecure HTTP: Passwords and streaming traffic are not encrypted over public networks. HTTPS is recommended.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.brightness == Brightness.dark ? Colors.amber[200] : Colors.amber[900],
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Legacy Authentication',
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                  Text(
+                                    'Use for older Subsonic servers',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-
-                    TextFormField(
-                      controller: _usernameController,
-                      focusNode: _usernameFocusNode,
-                      autocorrect: false,
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.username ?? 'Username',
-                        prefixIcon: const Icon(CupertinoIcons.person),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter username';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    TextFormField(
-                      controller: _passwordController,
-                      focusNode: _passwordFocusNode,
-                      obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) { if (!isBusy) _login(); },
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.password ?? 'Password',
-                        prefixIcon: const Icon(CupertinoIcons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? CupertinoIcons.eye
-                                : CupertinoIcons.eye_slash,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter password';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-
-                  if (_serverFamily == 'subsonic') ...[
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        CupertinoSwitch(
-                          value: _useLegacyAuth,
-                          activeTrackColor: theme.colorScheme.primary,
-                          onChanged: (value) {
-                            setState(() {
-                              _useLegacyAuth = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Legacy Authentication',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              Text(
-                                'Use for older Subsonic servers',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
                         ),
                       ],
-                    ),
-                  ],
-
-                  if (_serverFamily == 'subsonic' || _serverFamily == 'jellyfin') ...[
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        CupertinoSwitch(
-                          value: _allowSelfSignedCertificates,
-                          activeTrackColor: theme.colorScheme.primary,
-                          onChanged: (value) {
+                      if (_serverFamily == 'subsonic' ||
+                          _serverFamily == 'jellyfin') ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            CupertinoSwitch(
+                              value: _allowSelfSignedCertificates,
+                              activeTrackColor: theme.colorScheme.primary,
+                              onChanged: (value) {
+                                setState(() {
+                                  _allowSelfSignedCertificates = value;
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Allow Self-Signed Certificates',
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                  Text(
+                                    'For servers with custom TLS/SSL certificates',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        InkWell(
+                          onTap: () {
                             setState(() {
-                              _allowSelfSignedCertificates = value;
+                              _showAdvancedOptions = !_showAdvancedOptions;
                             });
                           },
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
+                              Icon(
+                                _showAdvancedOptions
+                                    ? CupertinoIcons.chevron_down
+                                    : CupertinoIcons.chevron_right,
+                                size: 18,
+                                color: theme.textTheme.bodyMedium?.color,
+                              ),
+                              const SizedBox(width: 8),
                               Text(
-                                'Allow Self-Signed Certificates',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              Text(
-                                'For servers with custom TLS/SSL certificates',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _showAdvancedOptions = !_showAdvancedOptions;
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          Icon(
-                            _showAdvancedOptions
-                                ? CupertinoIcons.chevron_down
-                                : CupertinoIcons.chevron_right,
-                            size: 18,
-                            color: theme.textTheme.bodyMedium?.color,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Advanced Options',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    if (_showAdvancedOptions) ...[
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _profileNameController,
-                        autocorrect: false,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)?.profileNameOptional ?? 'Profile Name (optional)',
-                          hintText: 'e.g. Home, Work, VPN',
-                          prefixIcon: const Icon(CupertinoIcons.tag),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: theme.brightness == Brightness.dark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFF2F2F7),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Custom TLS/SSL Certificate',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Upload a custom certificate for servers with non-standard CA',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 12),
-                            if (_customCertificateName != null)
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: theme.brightness == Brightness.dark
-                                      ? const Color(0xFF3C3C3E)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.doc_fill,
-                                      size: 20,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _customCertificateName!,
-                                        style: theme.textTheme.bodyMedium,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        CupertinoIcons.xmark_circle_fill,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _customCertificatePath = null;
-                                          _customCertificateName = null;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: _pickCertificateFile,
-                                  icon: const Icon(CupertinoIcons.doc_on_clipboard),
-                                  label: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.selectCertificate,
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: theme.colorScheme.primary,
-                                    side: BorderSide(
-                                      color: theme.colorScheme.primary.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: theme.brightness == Brightness.dark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFF2F2F7),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Client Certificate (mTLS)',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'PKCS#12 (.p12/.pfx) client certificate for mutual TLS authentication',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 12),
-                            if (_clientCertificateName != null) ...[
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: theme.brightness == Brightness.dark
-                                      ? const Color(0xFF3C3C3E)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.lock_shield_fill,
-                                      size: 20,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _clientCertificateName!,
-                                        style: theme.textTheme.bodyMedium,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        CupertinoIcons.xmark_circle_fill,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _clientCertificatePath = null;
-                                          _clientCertificateName = null;
-                                          _clientCertPasswordController.clear();
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                controller: _clientCertPasswordController,
-                                obscureText: _obscureClientCertPassword,
-                                decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)?.clientCertPassword ?? 'Certificate Password',
-                                  hintText: 'Password for .p12 / .pfx (optional)',
-                                  prefixIcon: const Icon(CupertinoIcons.lock_shield),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscureClientCertPassword
-                                          ? CupertinoIcons.eye
-                                          : CupertinoIcons.eye_slash,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscureClientCertPassword =
-                                            !_obscureClientCertPassword;
-                                      });
-                                    },
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ] else
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: _pickClientCertificate,
-                                  icon: const Icon(Icons.security_rounded),
-                                  label: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.selectClientCertificate,
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: theme.colorScheme.primary,
-                                    side: BorderSide(
-                                      color: theme.colorScheme.primary.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-
-                  if (_serverFamily != 'local') ...[
-                    const SizedBox(height: 24),
-                    _buildErrorCard(theme),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          foregroundColor: ThemeData.estimateBrightnessForColor(
-                                      theme.colorScheme.primary) ==
-                                  Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'Connect',
-                                style: TextStyle(
-                                  fontSize: 17,
+                                'Advanced Options',
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                      ),
-                    ),
-                  ],
+                            ],
+                          ),
+                        ),
+                        if (_showAdvancedOptions) ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _profileNameController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)
+                                      ?.profileNameOptional ??
+                                  'Profile Name (optional)',
+                              hintText: 'e.g. Home, Work, VPN',
+                              prefixIcon: const Icon(CupertinoIcons.tag),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.brightness == Brightness.dark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFF2F2F7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Custom TLS/SSL Certificate',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Upload a custom certificate for servers with non-standard CA',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                const SizedBox(height: 12),
+                                if (_customCertificateName != null)
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: theme.brightness == Brightness.dark
+                                          ? const Color(0xFF3C3C3E)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.doc_fill,
+                                          size: 20,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            _customCertificateName!,
+                                            style: theme.textTheme.bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            CupertinoIcons.xmark_circle_fill,
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _customCertificatePath = null;
+                                              _customCertificateName = null;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _pickCertificateFile,
+                                      icon: const Icon(
+                                          CupertinoIcons.doc_on_clipboard),
+                                      label: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!
+                                            .selectCertificate,
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor:
+                                            theme.colorScheme.primary,
+                                        side: BorderSide(
+                                          color: theme.colorScheme.primary
+                                              .withValues(
+                                            alpha: 0.5,
+                                          ),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.brightness == Brightness.dark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFF2F2F7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Client Certificate (mTLS)',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'PKCS#12 (.p12/.pfx) client certificate for mutual TLS authentication',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                const SizedBox(height: 12),
+                                if (_clientCertificateName != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: theme.brightness == Brightness.dark
+                                          ? const Color(0xFF3C3C3E)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.lock_shield_fill,
+                                          size: 20,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            _clientCertificateName!,
+                                            style: theme.textTheme.bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            CupertinoIcons.xmark_circle_fill,
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _clientCertificatePath = null;
+                                              _clientCertificateName = null;
+                                              _clientCertPasswordController
+                                                  .clear();
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _clientCertPasswordController,
+                                    obscureText: _obscureClientCertPassword,
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(context)
+                                              ?.clientCertPassword ??
+                                          'Certificate Password',
+                                      hintText:
+                                          'Password for .p12 / .pfx (optional)',
+                                      prefixIcon: const Icon(
+                                          CupertinoIcons.lock_shield),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscureClientCertPassword
+                                              ? CupertinoIcons.eye
+                                              : CupertinoIcons.eye_slash,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscureClientCertPassword =
+                                                !_obscureClientCertPassword;
+                                          });
+                                        },
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ] else
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _pickClientCertificate,
+                                      icon: const Icon(Icons.security_rounded),
+                                      label: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!
+                                            .selectClientCertificate,
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor:
+                                            theme.colorScheme.primary,
+                                        side: BorderSide(
+                                          color: theme.colorScheme.primary
+                                              .withValues(
+                                            alpha: 0.5,
+                                          ),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                      if (_serverFamily != 'local') ...[
+                        const SizedBox(height: 24),
+                        _buildErrorCard(theme),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor:
+                                  ThemeData.estimateBrightnessForColor(
+                                              theme.colorScheme.primary) ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Text(
+                                    'Connect',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1361,7 +1400,9 @@ class _ServerFamilyToggle extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? c.activeColor.withAlpha(28)
-                      : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03)),
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : Colors.black.withValues(alpha: 0.03)),
                   border: Border.all(
                     color: selected
                         ? c.activeColor

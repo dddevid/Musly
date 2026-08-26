@@ -1,16 +1,14 @@
-/// A lightweight artist reference parsed from Navidrome's `participants` or `artists` field.
-/// Standard Subsonic servers do not provide this field, so it is always optional.
 class ArtistRef {
   final String id;
   final String name;
-  /// Explicit cover art ID from the API response. When absent, falls back to
-  /// [id] for servers (like Navidrome) that serve artist images via
-  /// `getCoverArt?id={artistId}`.
   final String? coverArt;
 
-  const ArtistRef({required this.id, required this.name, this.coverArt});
+  const ArtistRef({
+    required this.id,
+    required this.name,
+    this.coverArt,
+  });
 
-  /// Cover art ID for `getCoverArt`: explicit [coverArt] if set, otherwise [id].
   String? get effectiveCoverArt {
     if (coverArt != null && coverArt!.isNotEmpty) return coverArt;
     return id.isNotEmpty ? id : null;
@@ -25,49 +23,53 @@ class ArtistRef {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    if (coverArt != null) 'coverArt': coverArt,
-  };
+        'id': id,
+        'name': name,
+        if (coverArt != null) 'coverArt': coverArt,
+      };
 
   static final RegExp _artistSplitRegex = RegExp(
     r'\s*(?:,|/|;|&|\\|\||\bfeat\.?|\bft\.?|\bfeaturing\b|\band\b|\bx\b|\bwith\b)\s*',
     caseSensitive: false,
   );
 
-  /// Splits combined artist strings like "Drake / 21 Savage" or "Queen; David Bowie"
   static List<String> splitArtistNames(String raw) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return [];
+
     final parts = trimmed
         .split(_artistSplitRegex)
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
+        .map((segment) => segment.trim())
+        .where((segment) => segment.isNotEmpty)
         .toList();
+
     return parts.isEmpty ? [trimmed] : parts;
   }
 
   static List<ArtistRef>? parseList(dynamic data) {
     if (data == null || data is! List) return null;
-    final list = <ArtistRef>[];
-    for (final e in data) {
-      if (e is Map<String, dynamic>) {
-        final ref = ArtistRef.fromJson(e);
-        final splits = splitArtistNames(ref.name);
-        if (splits.length > 1) {
-          for (final s in splits) {
-            list.add(ArtistRef(
+
+    final parsedRefs = <ArtistRef>[];
+    for (final item in data) {
+      if (item is Map<String, dynamic>) {
+        final ref = ArtistRef.fromJson(item);
+        final splitNames = splitArtistNames(ref.name);
+
+        if (splitNames.length > 1) {
+          for (final splitName in splitNames) {
+            parsedRefs.add(ArtistRef(
               id: '',
-              name: s,
+              name: splitName,
               coverArt: ref.coverArt,
             ));
           }
         } else if (ref.id.isNotEmpty || ref.name.isNotEmpty) {
-          list.add(ref);
+          parsedRefs.add(ref);
         }
       }
     }
-    return list.isEmpty ? null : list;
+
+    return parsedRefs.isEmpty ? null : parsedRefs;
   }
 
   static List<ArtistRef> fromListOrFallback(
@@ -76,24 +78,29 @@ class ArtistRef {
     String? fallbackId,
   }) {
     if (participants != null && participants.isNotEmpty) {
-      final expanded = <ArtistRef>[];
-      for (final p in participants) {
-        final splits = splitArtistNames(p.name);
-        if (splits.length > 1) {
-          for (final s in splits) {
-            expanded.add(ArtistRef(id: '', name: s, coverArt: p.coverArt));
+      final expandedList = <ArtistRef>[];
+      for (final participant in participants) {
+        final splitNames = splitArtistNames(participant.name);
+        if (splitNames.length > 1) {
+          for (final splitName in splitNames) {
+            expandedList.add(
+              ArtistRef(
+                  id: '', name: splitName, coverArt: participant.coverArt),
+            );
           }
         } else {
-          expanded.add(p);
+          expandedList.add(participant);
         }
       }
-      if (expanded.isNotEmpty) return expanded;
+      if (expandedList.isNotEmpty) return expandedList;
     }
 
     if (fallbackName != null && fallbackName.trim().isNotEmpty) {
-      final splits = splitArtistNames(fallbackName);
-      if (splits.length > 1) {
-        return splits.map((s) => ArtistRef(id: '', name: s)).toList();
+      final splitNames = splitArtistNames(fallbackName);
+      if (splitNames.length > 1) {
+        return splitNames
+            .map((splitName) => ArtistRef(id: '', name: splitName))
+            .toList();
       }
       return [ArtistRef(id: fallbackId ?? '', name: fallbackName.trim())];
     }

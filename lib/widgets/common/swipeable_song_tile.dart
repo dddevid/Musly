@@ -2,8 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// A widget that wraps any song tile to enable a Spotify-style "Swipe to Queue" gesture.
-/// Swiping right reveals an animated queue icon and triggers haptic feedback on passing the threshold.
 class SwipeableSongTile extends StatefulWidget {
   final Widget child;
   final VoidCallback onSwipeToQueue;
@@ -54,8 +52,8 @@ class _SwipeableSongTileState extends State<SwipeableSongTile>
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     if (!widget.enabled) return;
 
-    // Only allow swiping right (positive delta)
-    final newOffset = (_dragOffset + details.primaryDelta!).clamp(0.0, _maxDrag);
+    final newOffset =
+        (_dragOffset + details.primaryDelta!).clamp(0.0, _maxDrag);
     if (newOffset != _dragOffset) {
       final wasReached = _thresholdReached;
       final isReached = newOffset >= _threshold;
@@ -94,14 +92,12 @@ class _SwipeableSongTileState extends State<SwipeableSongTile>
     final iconScale = 0.6 + (0.5 * progress) + (_thresholdReached ? 0.15 : 0.0);
     final primary = Theme.of(context).colorScheme.primary;
     final iconColor = _thresholdReached ? Colors.white : primary;
-    final bgColor = _thresholdReached
-        ? primary
-        : primary.withValues(alpha: 0.18);
+    final bgColor =
+        _thresholdReached ? primary : primary.withValues(alpha: 0.18);
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Background swipe indicator
         Positioned.fill(
           child: Align(
             alignment: Alignment.centerLeft,
@@ -126,8 +122,6 @@ class _SwipeableSongTileState extends State<SwipeableSongTile>
             ),
           ),
         ),
-
-        // Foreground Tile
         Transform.translate(
           offset: Offset(_dragOffset, 0),
           child: GestureDetector(

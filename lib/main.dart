@@ -18,10 +18,9 @@ import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
-// import 'services/musly_connect_service.dart';
-// import 'services/beatsync_service.dart';
+
 import 'services/tv_detection_service.dart';
-// import 'models/connect_device.dart';
+
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
 import 'package:musly/widgets/dialogs/milestone_celebration_dialog.dart';
 import 'widgets/navigation/tv_remote_scope.dart';
@@ -30,8 +29,6 @@ import 'screens/screens.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'theme/theme.dart';
 import 'utils/image_cache.dart';
-
-// Global instance for analytics (to be shown after auth)
 
 class AppScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -42,10 +39,8 @@ class AppScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-/// Shows the privacy policy dialog on first launch
 Future<void> _showPrivacyPolicyIfNeeded() async {
   if (await PrivacyPolicyDialog.shouldShow()) {
-    // Small delay to ensure UI is fully loaded
     await Future.delayed(const Duration(milliseconds: 300));
     if (navigatorKey.currentContext != null) {
       final result = await showDialog<bool>(
@@ -54,7 +49,6 @@ Future<void> _showPrivacyPolicyIfNeeded() async {
         barrierDismissible: false,
       );
 
-      // If user declined, exit the application
       if (result == false) {
         exit(0);
       } else {
@@ -66,7 +60,6 @@ Future<void> _showPrivacyPolicyIfNeeded() async {
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-/// Checks if the app is running on an emulator/simulator
 Future<bool> _isRunningOnEmulator() async {
   if (kDebugMode) return false;
   if (kIsWeb) return false;
@@ -75,7 +68,6 @@ Future<bool> _isRunningOnEmulator() async {
   return !(await SafeDevice.isRealDevice);
 }
 
-/// Widget shown when app is running on emulator
 class _EmulatorWarningScreen extends StatelessWidget {
   const _EmulatorWarningScreen();
 
@@ -124,7 +116,6 @@ class _EmulatorWarningScreen extends StatelessWidget {
                     const SizedBox(height: 48),
                     FilledButton.icon(
                       onPressed: () {
-                        // Exit the app
                         exit(0);
                       },
                       icon: const Icon(Icons.exit_to_app),
@@ -228,8 +219,6 @@ void main() async {
     debugPrint('Failed to initialize jukebox service: $e');
   });
 
-
-  // Initialize favorite playlists service
   FavoritePlaylistsService().initialize().catchError((e) {
     debugPrint('Failed to initialize favorite playlists service: $e');
   });
@@ -238,13 +227,10 @@ void main() async {
     debugPrint('Failed to initialize playlist cover service: $e');
   });
 
-  // Initialize analytics service (privacy-first, anonymous)
   final analyticsService = AnalyticsService();
   analyticsService.initialize().catchError((e) {
     debugPrint('Failed to initialize analytics: $e');
   });
-
-  // Analytics service is initialized and used via AnalyticsNavigatorObserver
 
   try {
     await PlayerUiSettingsService().initialize();
@@ -252,18 +238,10 @@ void main() async {
     debugPrint('Failed to initialize player UI settings: $e');
   }
 
-  // Initialise the audio service BEFORE runApp so the background audio engine
-  // is ready and fully decoupled from the Flutter widget lifecycle on iOS.
   final audioHandler = await initAudioService();
 
-  // Create TranscodingService instance to share across providers
   final transcodingService = TranscodingService();
 
-  // Create these providers eagerly (not lazily via `create:`) so their
-  // Android Auto callbacks are registered on the audio handler as soon as the
-  // engine starts. This matters for the headless cold start: when Android
-  // Auto launches the app with no UI, no widget ever reads the providers, so
-  // lazy construction would leave the browse tree and search unwired.
   final authProvider = AuthProvider(subsonicService, storageService);
   final playerProvider = PlayerProvider(
     subsonicService,
@@ -277,60 +255,6 @@ void main() async {
   final libraryProvider = LibraryProvider(subsonicService, audioHandler);
   playerProvider.setLibraryProvider(libraryProvider);
 
-  // final muslyConnectService = MuslyConnectService();
-  // final beatSyncService = BeatSyncService();
-
-  /*
-  // Wire Musly Connect remote execution callbacks
-  muslyConnectService.onRemotePlay = () => playerProvider.play();
-  muslyConnectService.onRemotePause = () => playerProvider.pause();
-  muslyConnectService.onRemoteTogglePlayPause = () => playerProvider.togglePlayPause();
-  muslyConnectService.onRemoteNext = () => playerProvider.skipNext();
-  muslyConnectService.onRemotePrevious = () => playerProvider.skipPrevious();
-  muslyConnectService.onRemoteSeek = (sec) => playerProvider.seek(Duration(seconds: sec));
-  muslyConnectService.onRemoteVolume = (vol) => playerProvider.setVolume(vol);
-  muslyConnectService.onRemoteToggleShuffle = (val) => playerProvider.toggleShuffle(forceValue: val);
-  muslyConnectService.onRemoteSetRepeatMode = (idx) => playerProvider.setRepeatModeIndex(idx);
-  muslyConnectService.onRemoteTransferQueue = (queue, index, posSec) async {
-    if (queue.isNotEmpty) {
-      final safeIndex = index.clamp(0, queue.length - 1);
-      final initialPosition = posSec > 0 ? Duration(seconds: posSec) : null;
-      await playerProvider.playSong(
-        queue[safeIndex],
-        playlist: queue,
-        startIndex: safeIndex,
-        initialPosition: initialPosition,
-      );
-    }
-  };
-
-  muslyConnectService.onRemoteRequestState = () {
-    muslyConnectService.broadcastLocalState(
-      currentSong: playerProvider.currentSong,
-      isPlaying: playerProvider.isPlaying,
-      positionSeconds: playerProvider.position.inSeconds,
-      durationSeconds: playerProvider.duration.inSeconds,
-      volume: playerProvider.volume,
-      shuffleEnabled: playerProvider.shuffleEnabled,
-      repeatModeIndex: playerProvider.repeatMode.index,
-      currentIndex: playerProvider.currentIndex,
-    );
-  };
-  */
-
-  /*
-  // Wire BeatSync [BETA] scheduled playback callbacks (Temporarily disabled)
-  beatSyncService.onScheduledPlay = (song, startPosMs) {
-    playerProvider.playSong(song);
-    if (startPosMs > 0) {
-      playerProvider.seek(Duration(milliseconds: startPosMs));
-    }
-  };
-  beatSyncService.onScheduledPause = () => playerProvider.pause();
-  beatSyncService.onScheduledSeek = (seekMs) => playerProvider.seek(Duration(milliseconds: seekMs));
-  */
-
-  // Wire 50-Songs Milestone Celebration
   playerProvider.onMilestone50Triggered = () {
     final ctx = navigatorKey.currentContext;
     if (ctx != null) {
@@ -341,29 +265,8 @@ void main() async {
     }
   };
 
-  // Initialize TV detection
   final tvDetectionService = TvDetectionService();
   await tvDetectionService.initialize();
-
-  /*
-  // Initialize Musly Connect LAN discovery
-  final deviceName = Platform.isWindows
-      ? 'Windows PC'
-      : (Platform.isMacOS
-          ? 'Mac'
-          : (Platform.isLinux
-              ? 'Linux PC'
-              : (Platform.isIOS ? 'iPhone' : 'Android Device')));
-  muslyConnectService.initialize(
-    deviceName: deviceName,
-    mode: subsonicService.isYoutube
-        ? ConnectMode.webStream
-        : (subsonicService.isJellyfin ? ConnectMode.jellyfin : ConnectMode.subsonic),
-    serverHash: subsonicService.activeBaseUrl,
-  ).catchError((e) {
-    debugPrint('MuslyConnect initialization error: $e');
-  });
-  */
 
   final Widget appWithProviders = MultiProvider(
     providers: [
@@ -382,9 +285,8 @@ void main() async {
       ChangeNotifierProvider<ThemeService>.value(value: themeService),
       ChangeNotifierProvider<UpnpService>.value(value: upnpService),
       ChangeNotifierProvider<JukeboxService>.value(value: jukeboxService),
-      // ChangeNotifierProvider<MuslyConnectService>.value(value: muslyConnectService),
-      // ChangeNotifierProvider<BeatSyncService>.value(value: beatSyncService),
-      ChangeNotifierProvider<TvDetectionService>.value(value: tvDetectionService),
+      ChangeNotifierProvider<TvDetectionService>.value(
+          value: tvDetectionService),
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],
@@ -419,7 +321,6 @@ class MuslyApp extends StatelessWidget {
         } else {
           final accent = themeService.accentColor.color;
           if (lightDynamic != null && darkDynamic != null) {
-            // Override dynamic color scheme with user-selected accent color
             final harmonisedLight = lightDynamic.harmonized().copyWith(
                   primary: accent,
                   secondary: accent.withAlpha(200),
@@ -447,7 +348,8 @@ class MuslyApp extends StatelessWidget {
           locale: localeService.currentLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          builder: (context, child) => TvRemoteScope(child: child ?? const SizedBox.shrink()),
+          builder: (context, child) =>
+              TvRemoteScope(child: child ?? const SizedBox.shrink()),
           home: const AuthWrapper(),
           navigatorObservers: [AnalyticsNavigatorObserver()],
         );
@@ -484,7 +386,8 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       try {
-        Provider.of<PlayerProvider>(context, listen: false).checkPending50Milestone();
+        Provider.of<PlayerProvider>(context, listen: false)
+            .checkPending50Milestone();
       } catch (_) {}
     }
   }
@@ -531,7 +434,6 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
           body: Center(child: CircularProgressIndicator()),
         );
       case AuthState.authenticated:
-        // Show privacy policy first if needed
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _showPrivacyPolicyIfNeeded();
         });
@@ -545,8 +447,6 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
           onDisconnect: () => authProvider.disconnect(),
         );
       case AuthState.authenticating:
-        // When authenticating interactively from LoginScreen (no active session yet),
-        // keep LoginScreen mounted so its inline loading and detailed error states are preserved.
         if (authProvider.config == null) {
           if (!_checkedOnboarding) {
             return const Scaffold(
@@ -708,49 +608,49 @@ class _ServerUnreachableScreen extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Theme.of(ctx).brightness == Brightness.dark
-                      ? AppTheme.darkDivider
-                      : AppTheme.lightDivider,
-                  borderRadius: BorderRadius.circular(2.5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 36,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).brightness == Brightness.dark
+                        ? AppTheme.darkDivider
+                        : AppTheme.lightDivider,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.switchServer,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 16),
+                Text(
+                  l10n.switchServer,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              ...profiles.map((profile) {
-                final label = profile.name?.isNotEmpty == true
-                    ? profile.name!
-                    : '${profile.username}@${Uri.tryParse(profile.serverUrl)?.host ?? profile.serverUrl}';
-                return ListTile(
-                  leading: const Icon(Icons.person_outline),
-                  title: Text(label),
-                  subtitle: Text(profile.serverUrl,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    await authProvider.switchProfile(profile);
-                  },
-                );
-              }),
-              const SizedBox(height: 8),
-            ],
+                const SizedBox(height: 16),
+                ...profiles.map((profile) {
+                  final label = profile.name?.isNotEmpty == true
+                      ? profile.name!
+                      : '${profile.username}@${Uri.tryParse(profile.serverUrl)?.host ?? profile.serverUrl}';
+                  return ListTile(
+                    leading: const Icon(Icons.person_outline),
+                    title: Text(label),
+                    subtitle: Text(profile.serverUrl,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await authProvider.switchProfile(profile);
+                    },
+                  );
+                }),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

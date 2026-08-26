@@ -23,7 +23,6 @@ class RightSidebar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
           Container(
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -60,8 +59,6 @@ class RightSidebar extends StatelessWidget {
               ],
             ),
           ),
-
-          // Content
           Expanded(
             child: Consumer<PlayerProvider>(
               builder: (context, player, _) {
@@ -92,12 +89,13 @@ class RightSidebar extends StatelessWidget {
                   );
                 }
 
-                final upcomingCount = (queue.length - currentIndex - 1).clamp(0, queue.length);
+                final upcomingCount =
+                    (queue.length - currentIndex - 1).clamp(0, queue.length);
 
                 return ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   children: [
-                    // Now Playing Section
                     if (currentSong != null) ...[
                       const Padding(
                         padding: EdgeInsets.fromLTRB(8, 4, 8, 8),
@@ -117,7 +115,8 @@ class RightSidebar extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFFFA243C).withValues(alpha: 0.1),
                           border: Border.all(
-                            color: const Color(0xFFFA243C).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFFFA243C).withValues(alpha: 0.2),
                             width: 1,
                           ),
                           borderRadius: BorderRadius.circular(8),
@@ -161,8 +160,6 @@ class RightSidebar extends StatelessWidget {
                         ),
                       ),
                     ],
-
-                    // Next Up Section
                     if (upcomingCount > 0) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),

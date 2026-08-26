@@ -15,8 +15,6 @@ import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
 import 'package:musly/services/crossfade_service.dart';
-// import 'package:musly/services/musly_connect_service.dart'; // Musly Connect disabled
-// import 'package:musly/screens/connect/connect_devices_modal.dart'; // Musly Connect disabled
 
 class SettingsPlaybackTab extends StatefulWidget {
   const SettingsPlaybackTab({super.key});
@@ -85,8 +83,6 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ],
           ],
         ),
-        // const SizedBox(height: 24), // Musly Connect disabled
-        // _buildConnectSection(), // Musly Connect disabled
         const SizedBox(height: 24),
         _buildCrossfadeSection(),
         const SizedBox(height: 24),
@@ -336,65 +332,6 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     );
   }
 
-  /*
-  // Musly Connect settings section disabled
-  Widget _buildConnectSection() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Consumer<MuslyConnectService>(
-      builder: (context, connect, _) {
-        final compatiblePeers = connect.getCompatibleDevices();
-
-        return SettingsSectionCard(
-          title: 'Musly Connect & Devices',
-          children: [
-            SwitchListTile.adaptive(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              secondary: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.devices_rounded, color: Theme.of(context).colorScheme.primary, size: 18),
-              ),
-              title: const Text('Enable Musly Connect', style: TextStyle(fontSize: 16)),
-              subtitle: Text(
-                'Discover nearby devices over Wi-Fi for remote control and listening sessions',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white54 : Colors.black54,
-                ),
-              ),
-              value: connect.enabled,
-              onChanged: (v) async => await connect.setEnabled(v),
-            ),
-            if (connect.enabled) ...[
-              const SettingsDivider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                title: const Text('Available Devices', style: TextStyle(fontSize: 15)),
-                subtitle: Text(
-                  compatiblePeers.isEmpty
-                      ? 'LAN Discovery active • No nearby devices'
-                      : '${compatiblePeers.length} nearby device(s) found',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                ),
-                trailing: const Icon(CupertinoIcons.chevron_forward, size: 18),
-                onTap: () => ConnectDevicesModal.show(context),
-              ),
-            ],
-          ],
-        );
-      },
-    );
-  }
-  */
-
   Widget _buildCrossfadeSection() {
     final accent = Theme.of(context).colorScheme.primary;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -418,7 +355,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle,
                 color: Colors.white, size: 18),
           ),
-          title: Text(l10n.trackCrossfade, style: const TextStyle(fontSize: 16)),
+          title:
+              Text(l10n.trackCrossfade, style: const TextStyle(fontSize: 16)),
           subtitle: Text(
             crossfadeSec == 0
                 ? l10n.crossfadeOffSubtitle
@@ -431,7 +369,9 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
             ),
           ),
           trailing: Text(
-            crossfadeSec == 0 ? l10n.replayGainModeOff : l10n.crossfadeDurationBadge(crossfadeSec),
+            crossfadeSec == 0
+                ? l10n.replayGainModeOff
+                : l10n.crossfadeDurationBadge(crossfadeSec),
             style: TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold, color: accent),
           ),

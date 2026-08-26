@@ -38,7 +38,6 @@ class _InterludeDotsWidgetState extends State<InterludeDotsWidget>
     final timeLeft = widget.targetTime - widget.currentTime;
     final msLeft = timeLeft.inMilliseconds;
 
-    // Disappear logic 3..2..1 before the vocal starts
     int visibleDots = 3;
     if (msLeft <= 1000) {
       visibleDots = 0;
@@ -52,7 +51,7 @@ class _InterludeDotsWidgetState extends State<InterludeDotsWidget>
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
       child: visibleDots == 0
-          ? const SizedBox(width: double.infinity, height: 0) // Shrink completely
+          ? const SizedBox(width: double.infinity, height: 0)
           : Container(
               height: 40,
               alignment: Alignment.centerLeft,
@@ -62,16 +61,14 @@ class _InterludeDotsWidgetState extends State<InterludeDotsWidget>
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(3, (index) {
-                      // Staggered sine wave calculation
-                      // Each dot has a different phase offset
-                      final phase = index * 0.33; // 0, 0.33, 0.66
+                      final phase = index * 0.33;
                       final progress = (_pulseController.value + phase) % 1.0;
-                      
-                      // Sine wave for smooth pulsing (0 -> 1 -> 0)
-                      final sineValue = (0.5 - (0.5 * (1.0 - progress * 2.0).abs())) * 2.0;
+
+                      final sineValue =
+                          (0.5 - (0.5 * (1.0 - progress * 2.0).abs())) * 2.0;
 
                       final isVisible = index < visibleDots;
-                      // Animiamo in scala da 0.7 (min) a 1.5 (max)
+
                       final scale = isVisible ? 0.7 + (0.8 * sineValue) : 0.0;
                       final color = Color.lerp(
                         Colors.white.withValues(alpha: 0.3),

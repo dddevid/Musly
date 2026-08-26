@@ -4,16 +4,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/models.dart';
 
-/// SQLite-based persistent storage for the music library.
-///
-/// Replaces the previous SharedPreferences + single-blob JSON approach
-/// which caused OutOfMemoryError with libraries containing 100k+ songs.
-///
-/// Batch inserts use transactions and 1k-record chunks so that even
-/// millions of rows can be written without spikes in memory usage.
 class LibraryDatabaseService {
   static const String _dbName = 'musly_library.db';
-  static const int _dbVersion = 3; // bumped to 3 for starred albums
+  static const int _dbVersion = 3;
   static const int _batchSize = 1000;
 
   Database? _db;
@@ -41,20 +34,18 @@ class LibraryDatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // v1 -> v2: add starred / userRating columns if missing
       try {
-        await db.execute(
-            'ALTER TABLE songs ADD COLUMN starred INTEGER DEFAULT 0');
+        await db
+            .execute('ALTER TABLE songs ADD COLUMN starred INTEGER DEFAULT 0');
       } catch (_) {}
       try {
-        await db.execute(
-            'ALTER TABLE songs ADD COLUMN userRating INTEGER');
+        await db.execute('ALTER TABLE songs ADD COLUMN userRating INTEGER');
       } catch (_) {}
     }
     if (oldVersion < 3) {
       try {
-        await db.execute(
-            'ALTER TABLE albums ADD COLUMN starred INTEGER DEFAULT 0');
+        await db
+            .execute('ALTER TABLE albums ADD COLUMN starred INTEGER DEFAULT 0');
       } catch (_) {}
     }
   }
@@ -139,21 +130,19 @@ class LibraryDatabaseService {
         'CREATE INDEX IF NOT EXISTS idx_song_albumId ON songs(albumId)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_song_artistId ON songs(artistId)');
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_song_title ON songs(title)');
+    await db
+        .execute('CREATE INDEX IF NOT EXISTS idx_song_title ON songs(title)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_song_starred ON songs(starred)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_song_isLocal ON songs(isLocal)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_album_artistId ON albums(artistId)');
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_album_name ON albums(name)');
+    await db
+        .execute('CREATE INDEX IF NOT EXISTS idx_album_name ON albums(name)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_album_isLocal ON albums(isLocal)');
   }
-
-  // ── Batch inserts ───────────────────────────────────────────────────────
 
   Future<void> insertSongsBatch(List<Song> songs) async {
     if (songs.isEmpty) return;
@@ -201,9 +190,8 @@ class LibraryDatabaseService {
     await db.transaction((txn) async {
       for (var i = 0; i < artists.length; i += _batchSize) {
         final batch = txn.batch();
-        final end = (i + _batchSize < artists.length)
-            ? i + _batchSize
-            : artists.length;
+        final end =
+            (i + _batchSize < artists.length) ? i + _batchSize : artists.length;
         for (var j = i; j < end; j++) {
           batch.insert(
             'artists',
@@ -237,8 +225,6 @@ class LibraryDatabaseService {
     });
   }
 
-  // ── Full-table queries (kept for backward-compat) ───────────────────────
-
   Future<List<Song>> getAllSongs() async {
     final db = await database;
     final maps = await db.query('songs');
@@ -263,8 +249,6 @@ class LibraryDatabaseService {
     return maps.map((m) => _playlistFromMap(m)).toList();
   }
 
-  // ── Targeted single-item & query operations ─────────────────────────
-
   Future<void> insertOrUpdateSong(Song song) async {
     final db = await database;
     await db.insert(
@@ -276,7 +260,8 @@ class LibraryDatabaseService {
 
   Future<Song?> getSong(String id) async {
     final db = await database;
-    final maps = await db.query('songs', where: 'id = ?', whereArgs: [id], limit: 1);
+    final maps =
+        await db.query('songs', where: 'id = ?', whereArgs: [id], limit: 1);
     if (maps.isEmpty) return null;
     return _songFromMap(maps.first);
   }
@@ -291,8 +276,10 @@ class LibraryDatabaseService {
       whereArgs: ids,
     );
     final songMap = {for (final m in maps) m['id'] as String: _songFromMap(m)};
-    // Preserve requested order and create fallback for missing IDs
-    return ids.map((id) => songMap[id] ?? Song(id: id, title: 'Unknown Track')).toList();
+
+    return ids
+        .map((id) => songMap[id] ?? Song(id: id, title: 'Unknown Track'))
+        .toList();
   }
 
   Future<void> insertOrUpdatePlaylist(Playlist playlist) async {
@@ -306,7 +293,8 @@ class LibraryDatabaseService {
 
   Future<Playlist?> getPlaylist(String id) async {
     final db = await database;
-    final maps = await db.query('playlists', where: 'id = ?', whereArgs: [id], limit: 1);
+    final maps =
+        await db.query('playlists', where: 'id = ?', whereArgs: [id], limit: 1);
     if (maps.isEmpty) return null;
     final playlist = _playlistFromMap(maps.first);
     final songIds = playlist.songs?.map((s) => s.id).toList() ?? [];
@@ -377,21 +365,22 @@ class LibraryDatabaseService {
     return maps.map((m) => _playlistFromMap(m)).toList();
   }
 
-  // ── Paginated / low-memory queries ──────────────────────────────────────
-
-  Future<List<Song>> getSongsPaginated({int limit = 500, int offset = 0}) async {
+  Future<List<Song>> getSongsPaginated(
+      {int limit = 500, int offset = 0}) async {
     final db = await database;
     final maps = await db.query('songs', limit: limit, offset: offset);
     return maps.map((m) => _songFromMap(m)).toList();
   }
 
-  Future<List<Album>> getAlbumsPaginated({int limit = 500, int offset = 0}) async {
+  Future<List<Album>> getAlbumsPaginated(
+      {int limit = 500, int offset = 0}) async {
     final db = await database;
     final maps = await db.query('albums', limit: limit, offset: offset);
     return maps.map((m) => _albumFromMap(m)).toList();
   }
 
-  Future<List<Artist>> getArtistsPaginated({int limit = 500, int offset = 0}) async {
+  Future<List<Artist>> getArtistsPaginated(
+      {int limit = 500, int offset = 0}) async {
     final db = await database;
     final maps = await db.query('artists', limit: limit, offset: offset);
     return maps.map((m) => _artistFromMap(m)).toList();
@@ -415,8 +404,6 @@ class LibraryDatabaseService {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  // ── Destructive operations ────────────────────────────────────────────
-
   Future<void> clearAll() async {
     final db = await database;
     await db.transaction((txn) async {
@@ -427,14 +414,16 @@ class LibraryDatabaseService {
     });
   }
 
-  /// Clear only server-side data, preserving local library entries and user favorites/playlists.
   Future<void> clearServerData() async {
     final db = await database;
     await db.transaction((txn) async {
-      await txn.delete('songs', where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
-      await txn.delete('albums', where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
+      await txn.delete('songs',
+          where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
+      await txn.delete('albums',
+          where: 'isLocal = 0 AND (starred IS NULL OR starred = 0)');
       await txn.delete('artists', where: 'isLocal = 0');
-      await txn.delete('playlists', where: "owner != 'Local' AND owner IS NOT NULL");
+      await txn.delete('playlists',
+          where: "owner != 'Local' AND owner IS NOT NULL");
     });
   }
 
@@ -450,8 +439,6 @@ class LibraryDatabaseService {
       _db = null;
     }
   }
-
-  // ── Helpers: Song ───────────────────────────────────────────────────────
 
   Map<String, dynamic> _songToMap(Song song) {
     return {
@@ -522,8 +509,6 @@ class LibraryDatabaseService {
     );
   }
 
-  // ── Helpers: Album ──────────────────────────────────────────────────────
-
   Map<String, dynamic> _albumToMap(Album album) {
     return {
       'id': album.id,
@@ -569,8 +554,6 @@ class LibraryDatabaseService {
     );
   }
 
-  // ── Helpers: Artist ─────────────────────────────────────────────────────
-
   Map<String, dynamic> _artistToMap(Artist artist) {
     return {
       'id': artist.id,
@@ -592,8 +575,6 @@ class LibraryDatabaseService {
       isLocal: (m['isLocal'] as int?) == 1,
     );
   }
-
-  // ── Helpers: Playlist ─────────────────────────────────────────────────
 
   Map<String, dynamic> _playlistToMap(Playlist playlist) {
     String? songIdsVal;

@@ -28,7 +28,6 @@ Map<String, dynamic> _decodeJsonMap(String jsonStr) {
   return jsonDecode(jsonStr) as Map<String, dynamic>;
 }
 
-/// Audio stream information returned by yt-dlp.
 class YtStreamInfo {
   final String url;
   final Map<String, String> headers;
@@ -41,27 +40,20 @@ class YtStreamInfo {
   });
 }
 
-/// Service that interacts with yt-dlp to extract high-quality audio streams and metadata.
-///
-/// Platforms:
-/// - **Android**: Runs CPython 3.11 with `yt-dlp` embedded directly in the app via Chaquopy / MethodChannel.
-/// - **Desktop (macOS / Windows / Linux)**: Spawns the host Python interpreter or `yt-dlp` CLI subprocess.
-// Modern music player design
 class YtDlpService {
   static final YtDlpService _instance = YtDlpService._internal();
   factory YtDlpService() => _instance;
   YtDlpService._internal();
 
-  static const MethodChannel _androidChannel = MethodChannel('com.devid.musly/ytdlp');
+  static const MethodChannel _androidChannel =
+      MethodChannel('com.devid.musly/ytdlp');
 
   yt.YoutubeExplode? _fallbackYt;
 
-  // Stream Info cache: videoId -> YtStreamInfo
   final Map<String, YtStreamInfo> _streamInfoCache = {};
   final Map<String, DateTime> _streamCacheTime = {};
   static const Duration _cacheTtl = Duration(hours: 5);
 
-  // Cached paths for detected binaries on desktop
   String? _detectedYtDlpPath;
   String? _detectedPythonPath;
   bool _detectionDone = false;
@@ -82,8 +74,6 @@ class YtDlpService {
     _streamInfoCache.remove(videoId);
     _streamCacheTime.remove(videoId);
   }
-
-  // ── Binary Detection (Desktop) ──────────────────────────────────────────────
 
   Future<void> _detectBinaries() async {
     if (_detectionDone || Platform.isAndroid || Platform.isIOS) return;
@@ -116,7 +106,8 @@ class YtDlpService {
         );
         if (result.exitCode == 0) {
           _detectedYtDlpPath = bin;
-          debugPrint('[yt-dlp] Found yt-dlp binary at: $bin (v${result.stdout.toString().trim()})');
+          debugPrint(
+              '[yt-dlp] Found yt-dlp binary at: $bin (v${result.stdout.toString().trim()})');
           break;
         }
       } catch (_) {}
@@ -151,28 +142,31 @@ class YtDlpService {
         );
         if (result.exitCode == 0) {
           _detectedPythonPath = py;
-          debugPrint('[yt-dlp] Found Python interpreter at: $py (${result.stdout.toString().trim()})');
+          debugPrint(
+              '[yt-dlp] Found Python interpreter at: $py (${result.stdout.toString().trim()})');
           break;
         }
       } catch (_) {}
     }
   }
 
-  // ── Process Execution Helper (Desktop) ──────────────────────────────────────
-
-  Future<ProcessResult?> _runYtDlp(List<String> args, {Duration timeout = const Duration(seconds: 20)}) async {
+  Future<ProcessResult?> _runYtDlp(List<String> args,
+      {Duration timeout = const Duration(seconds: 20)}) async {
     await _detectBinaries();
 
     if (_detectedYtDlpPath != null) {
       try {
-        final result = await Process.run(_detectedYtDlpPath!, args).timeout(timeout);
+        final result =
+            await Process.run(_detectedYtDlpPath!, args).timeout(timeout);
         if (result.exitCode == 0) return result;
       } catch (_) {}
     }
 
     if (_detectedPythonPath != null) {
       try {
-        final result = await Process.run(_detectedPythonPath!, ['-m', 'yt_dlp', ...args]).timeout(timeout);
+        final result =
+            await Process.run(_detectedPythonPath!, ['-m', 'yt_dlp', ...args])
+                .timeout(timeout);
         if (result.exitCode == 0) return result;
       } catch (_) {}
     }
@@ -180,10 +174,8 @@ class YtDlpService {
     return null;
   }
 
-  // ── Stream URL Extraction ───────────────────────────────────────────────────
-
-  /// Resolves the stream info (URL and matching HTTP headers) for [videoId].
-  Future<YtStreamInfo> resolveStreamInfo(String videoId, {bool forceRefresh = false}) async {
+  Future<YtStreamInfo> resolveStreamInfo(String videoId,
+      {bool forceRefresh = false}) async {
     if (Platform.isIOS) {
       throw UnsupportedError('YT Stream is disabled on iOS');
     }
@@ -192,7 +184,8 @@ class YtDlpService {
     if (!forceRefresh) {
       final cached = _streamInfoCache[cleanId];
       if (cached != null) {
-        final age = DateTime.now().difference(_streamCacheTime[cleanId] ?? DateTime.now());
+        final age = DateTime.now()
+            .difference(_streamCacheTime[cleanId] ?? DateTime.now());
         if (age < _cacheTtl) {
           return cached;
         }
@@ -200,8 +193,6 @@ class YtDlpService {
     }
 
     if (Platform.isAndroid) {
-      // Parallel race: native Dart AOT and Android Python Chaquopy simultaneously.
-      // The fastest resolver returns immediately to achieve sub-second playback start.
       final completer = Completer<YtStreamInfo>();
       int errors = 0;
       const total = 2;
@@ -227,7 +218,6 @@ class YtDlpService {
       return completer.future;
     }
 
-    // Desktop
     try {
       final info = await _resolveViaDartExplode(cleanId);
       _streamInfoCache[cleanId] = info;
@@ -242,13 +232,15 @@ class YtDlpService {
   }
 
   Future<YtStreamInfo> _resolveViaAndroidPython(String cleanId) async {
-    final jsonStr = await _androidChannel.invokeMethod<String>('getStreamUrl', {'videoId': cleanId});
+    final jsonStr = await _androidChannel
+        .invokeMethod<String>('getStreamUrl', {'videoId': cleanId});
     if (jsonStr != null && jsonStr.isNotEmpty) {
       final data = jsonDecode(jsonStr) as Map<String, dynamic>;
       final url = data['url'] as String? ?? '';
       if (url.isNotEmpty) {
         final rawHeaders = data['headers'] as Map<String, dynamic>? ?? {};
-        final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        final headers =
+            rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
         final ext = data['ext'] as String? ?? 'mp4';
         return YtStreamInfo(url: url, headers: headers, ext: ext);
       }
@@ -288,26 +280,33 @@ class YtDlpService {
         lastError = e;
       }
     }
-    throw lastError ?? Exception('No audio streams available via Dart for $cleanId');
+    throw lastError ??
+        Exception('No audio streams available via Dart for $cleanId');
   }
 
   Future<YtStreamInfo> _resolveViaDesktopYtDlp(String cleanId) async {
-    final targetUrl = cleanId.startsWith('http') ? cleanId : 'https://www.youtube.com/watch?v=$cleanId';
+    final targetUrl = cleanId.startsWith('http')
+        ? cleanId
+        : 'https://www.youtube.com/watch?v=$cleanId';
     final result = await _runYtDlp([
       '-j',
-      '-f', 'ba/b[acodec!=none]/bestaudio/best',
-      '--extractor-args', 'youtube:player_client=mweb,android_music,android,ios',
+      '-f',
+      'ba/b[acodec!=none]/bestaudio/best',
+      '--extractor-args',
+      'youtube:player_client=mweb,android_music,android,ios',
       '--no-warnings',
       '--',
       targetUrl,
     ], timeout: const Duration(seconds: 15));
 
     if (result != null && result.exitCode == 0) {
-      final json = jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
+      final json =
+          jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
       final url = json['url'] as String?;
       if (url != null && url.isNotEmpty) {
         final rawHeaders = json['http_headers'] as Map<String, dynamic>? ?? {};
-        final headers = rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        final headers =
+            rawHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
         final ext = json['ext'] as String? ?? 'mp4';
         return YtStreamInfo(url: url, headers: headers, ext: ext);
       }
@@ -315,29 +314,29 @@ class YtDlpService {
     throw Exception('Desktop yt-dlp resolution failed for $cleanId');
   }
 
-  /// Extracts the direct audio stream URL for a given [videoId].
-  Future<String> resolveStreamUrl(String videoId, {bool forceRefresh = false}) async {
+  Future<String> resolveStreamUrl(String videoId,
+      {bool forceRefresh = false}) async {
     final info = await resolveStreamInfo(videoId, forceRefresh: forceRefresh);
     return info.url;
   }
 
-  // ── Search & Discovery ──────────────────────────────────────────────────────
-
-  // Modern music player design
-  Future<Map<String, List<Map<String, dynamic>>>> searchDual(String query, {int limit = 25}) async {
+  Future<Map<String, List<Map<String, dynamic>>>> searchDual(String query,
+      {int limit = 25}) async {
     if (Platform.isIOS) {
       return {'music': [], 'youtube': []};
     }
-    // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
+
     if (Platform.isAndroid) {
       try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('searchDual', {
+        final jsonStr =
+            await _androidChannel.invokeMethod<String>('searchDual', {
           'query': query,
           'limit': limit,
         });
         if (jsonStr != null && jsonStr.isNotEmpty) {
           final dualResult = await compute(_decodeDualSearch, jsonStr);
-          debugPrint('[yt-dlp/Android Python] Dual search "$query": ${dualResult['music']?.length ?? 0} music, ${dualResult['youtube']?.length ?? 0} youtube');
+          debugPrint(
+              '[yt-dlp/Android Python] Dual search "$query": ${dualResult['music']?.length ?? 0} music, ${dualResult['youtube']?.length ?? 0} youtube');
           return dualResult;
         }
       } catch (e) {
@@ -345,7 +344,6 @@ class YtDlpService {
       }
     }
 
-    // 2. Desktop: Parallel searches
     try {
       final results = await Future.wait([
         search('$query audio', limit: limit),
@@ -364,12 +362,12 @@ class YtDlpService {
     }
   }
 
-  // Modern music player design
-  Future<List<Map<String, dynamic>>> search(String query, {int limit = 25}) async {
+  Future<List<Map<String, dynamic>>> search(String query,
+      {int limit = 25}) async {
     if (Platform.isIOS) {
       return [];
     }
-    // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
+
     if (Platform.isAndroid) {
       try {
         final jsonStr = await _androidChannel.invokeMethod<String>('search', {
@@ -379,7 +377,8 @@ class YtDlpService {
         if (jsonStr != null && jsonStr.isNotEmpty) {
           final items = await compute(_decodeJsonList, jsonStr);
           if (items.isNotEmpty) {
-            debugPrint('[yt-dlp/Android Python] Search "$query" returned ${items.length} items');
+            debugPrint(
+                '[yt-dlp/Android Python] Search "$query" returned ${items.length} items');
             return items;
           }
         }
@@ -388,7 +387,6 @@ class YtDlpService {
       }
     }
 
-    // 2. Desktop: Execute host Python / yt-dlp subprocess
     final searchParam = 'ytsearch$limit:$query';
     try {
       final result = await _runYtDlp([
@@ -441,7 +439,8 @@ class YtDlpService {
         }
 
         if (items.isNotEmpty) {
-          debugPrint('[yt-dlp/Desktop Python] Search "$query" returned ${items.length} items');
+          debugPrint(
+              '[yt-dlp/Desktop Python] Search "$query" returned ${items.length} items');
           return items;
         }
       }
@@ -449,7 +448,6 @@ class YtDlpService {
       debugPrint('[yt-dlp/Desktop Python] Search error: $e');
     }
 
-    // Modern music player design
     debugPrint('[yt-dlp] Falling back to youtube_explode_dart search');
     final searchResults = await _fallbackClient.search.search(
       query,
@@ -470,14 +468,12 @@ class YtDlpService {
     }).toList();
   }
 
-  // ── Playlist Retrieval ──────────────────────────────────────────────────────
-
-  // Modern music player design
-  Future<List<Map<String, dynamic>>> getPlaylistVideos(String playlistId, {int limit = 100}) async {
-    // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
+  Future<List<Map<String, dynamic>>> getPlaylistVideos(String playlistId,
+      {int limit = 100}) async {
     if (Platform.isAndroid) {
       try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('getPlaylist', {
+        final jsonStr =
+            await _androidChannel.invokeMethod<String>('getPlaylist', {
           'playlistId': playlistId,
           'limit': limit,
         });
@@ -492,7 +488,6 @@ class YtDlpService {
       }
     }
 
-    // 2. Desktop: Execute host Python / yt-dlp subprocess
     final playlistUrl = playlistId.startsWith('http')
         ? playlistId
         : 'https://www.youtube.com/playlist?list=$playlistId';
@@ -546,8 +541,10 @@ class YtDlpService {
       debugPrint('[yt-dlp/Desktop Python] getPlaylist error: $e');
     }
 
-    // Modern music player design
-    final videos = await _fallbackClient.playlists.getVideos(playlistId).take(limit).toList();
+    final videos = await _fallbackClient.playlists
+        .getVideos(playlistId)
+        .take(limit)
+        .toList();
     return videos.map((v) {
       final music = v.musicData.isNotEmpty ? v.musicData.first : null;
       return <String, dynamic>{
@@ -562,15 +559,17 @@ class YtDlpService {
     }).toList();
   }
 
-  // Modern music player design
-  Future<List<Map<String, dynamic>>> getRadioTracks(String videoId, {int limit = 50}) async {
-    final radioUrl = 'https://music.youtube.com/watch?v=$videoId&list=RD$videoId';
-    final fallbackRadioUrl = 'https://www.youtube.com/watch?v=$videoId&list=RD$videoId';
+  Future<List<Map<String, dynamic>>> getRadioTracks(String videoId,
+      {int limit = 50}) async {
+    final radioUrl =
+        'https://music.youtube.com/watch?v=$videoId&list=RD$videoId';
+    final fallbackRadioUrl =
+        'https://www.youtube.com/watch?v=$videoId&list=RD$videoId';
 
-    // 1. Android: Chaquopy Python
     if (Platform.isAndroid) {
       try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('getPlaylist', {
+        final jsonStr =
+            await _androidChannel.invokeMethod<String>('getPlaylist', {
           'playlistId': 'RDAMVM$videoId',
           'limit': limit,
         });
@@ -582,9 +581,9 @@ class YtDlpService {
         debugPrint('[yt-dlp/Android Python] getRadioTracks RDAMVM error: $e');
       }
 
-      // Try RD fallback on Android
       try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('getPlaylist', {
+        final jsonStr =
+            await _androidChannel.invokeMethod<String>('getPlaylist', {
           'playlistId': fallbackRadioUrl,
           'limit': limit,
         });
@@ -595,7 +594,6 @@ class YtDlpService {
       } catch (_) {}
     }
 
-    // 2. Desktop: Subprocess execution with yt-dlp
     final urlsToTry = [radioUrl, fallbackRadioUrl];
     for (final url in urlsToTry) {
       try {
@@ -662,16 +660,13 @@ class YtDlpService {
     return [];
   }
 
-  // ── Video Metadata ──────────────────────────────────────────────────────────
-
-  /// Fetches metadata for a single video.
   Future<Map<String, dynamic>?> getVideoInfo(String videoId) async {
     final cleanId = videoId.replaceFirst('ytmusic://', '');
 
-    // 1. Android: Execute embedded Python interpreter with yt-dlp (Chaquopy)
     if (Platform.isAndroid) {
       try {
-        final jsonStr = await _androidChannel.invokeMethod<String>('getVideoInfo', {
+        final jsonStr =
+            await _androidChannel.invokeMethod<String>('getVideoInfo', {
           'videoId': cleanId,
         });
         if (jsonStr != null && jsonStr.isNotEmpty) {
@@ -683,8 +678,9 @@ class YtDlpService {
       }
     }
 
-    // 2. Desktop: Execute host Python / yt-dlp subprocess
-    final targetUrl = cleanId.startsWith('http') ? cleanId : 'https://www.youtube.com/watch?v=$cleanId';
+    final targetUrl = cleanId.startsWith('http')
+        ? cleanId
+        : 'https://www.youtube.com/watch?v=$cleanId';
 
     try {
       final result = await _runYtDlp([
@@ -695,10 +691,15 @@ class YtDlpService {
       ], timeout: const Duration(seconds: 10));
 
       if (result != null && result.exitCode == 0) {
-        final json = jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
+        final json =
+            jsonDecode(result.stdout.toString().trim()) as Map<String, dynamic>;
         final title = json['title'] as String? ?? 'Unknown Title';
-        final artist = json['uploader'] as String? ?? json['channel'] as String? ?? 'Unknown Artist';
-        final duration = (json['duration'] is num) ? (json['duration'] as num).toInt() : null;
+        final artist = json['uploader'] as String? ??
+            json['channel'] as String? ??
+            'Unknown Artist';
+        final duration = (json['duration'] is num)
+            ? (json['duration'] as num).toInt()
+            : null;
 
         return {
           'id': cleanId,
@@ -711,7 +712,6 @@ class YtDlpService {
       }
     } catch (_) {}
 
-    // Modern music player design
     try {
       final video = await _fallbackClient.videos.get(cleanId);
       final music = video.musicData.isNotEmpty ? video.musicData.first : null;

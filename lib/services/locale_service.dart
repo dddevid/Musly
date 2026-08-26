@@ -12,7 +12,6 @@ class LocaleService extends ChangeNotifier {
 
   TranslationOtaService get otaService => _otaService;
 
-  /// Comprehensive dictionary of native language names with English labels.
   static const Map<String, String> _languageNames = {
     'en': 'English',
     'sq': 'Shqip (Albanian)',
@@ -81,7 +80,6 @@ class LocaleService extends ChangeNotifier {
     'zh_HK': '繁體中文 (Hong Kong)',
   };
 
-  /// Flag emojis corresponding to language/locale codes.
   static const Map<String, String> _flagMap = {
     'en': '🇬🇧',
     'sq': '🇦🇱',
@@ -148,12 +146,11 @@ class LocaleService extends ChangeNotifier {
     'zh': '🇨🇳',
   };
 
-  /// Returns all languages supported by the app (dynamically combining compiled locales + OTA discovered locales).
-  /// Any new language added on Crowdin will automatically show up here.
   static Map<String, String> get supportedLanguages {
     final Map<String, String> result = {};
     final preferredOrder = ['en', 'sq', 'it'];
-    final allSupportedCodes = AppLocalizations.supportedLocales.map((l) => l.languageCode).toSet();
+    final allSupportedCodes =
+        AppLocalizations.supportedLocales.map((l) => l.languageCode).toSet();
     allSupportedCodes.addAll(TranslationOtaService().discoveredLocales);
 
     for (final code in preferredOrder) {
@@ -176,12 +173,10 @@ class LocaleService extends ChangeNotifier {
     if (localeCode != null) {
       _currentLocale = Locale(localeCode);
     }
-    
-    // Initialize OTA local cache
+
     await _otaService.init(_currentLocale?.languageCode ?? 'en');
     notifyListeners();
 
-    // Check for updates in background (non-blocking)
     syncOtaTranslations(force: false);
   }
 
@@ -202,11 +197,9 @@ class LocaleService extends ChangeNotifier {
       );
     }
 
-    // Sync OTA in background for newly selected locale
     syncOtaTranslations(force: false);
   }
 
-  /// Sync translations Over-The-Air from GitHub/Crowdin live
   Future<bool> syncOtaTranslations({bool force = false}) async {
     final activeCode = _currentLocale?.languageCode ?? 'en';
     final updated = await _otaService.syncTranslations(
@@ -219,10 +212,10 @@ class LocaleService extends ChangeNotifier {
     return updated;
   }
 
-  /// Translation completion percentages for supported languages based on the Crowdin catalog.
   static const Map<String, int> translationPercentages = {
     'en': 100,
-    'it': 89,
+    'it': 90,
+    'az': 73,
     'es': 54,
     'fr': 54,
     'pt': 54,
@@ -232,7 +225,6 @@ class LocaleService extends ChangeNotifier {
     'de': 43,
     'sq': 24,
     'ro': 11,
-    'az': 1,
     'ar': 0,
     'bn': 0,
     'da': 0,
@@ -251,11 +243,15 @@ class LocaleService extends ChangeNotifier {
   };
 
   static int getCompletionPercentage(String languageCode) {
-    return translationPercentages[languageCode] ?? 0;
+    return TranslationOtaService().getCompletionPercentage(languageCode) ??
+        translationPercentages[languageCode] ??
+        0;
   }
 
   String getLanguageName(String languageCode) {
-    return supportedLanguages[languageCode] ?? _languageNames[languageCode] ?? languageCode.toUpperCase();
+    return supportedLanguages[languageCode] ??
+        _languageNames[languageCode] ??
+        languageCode.toUpperCase();
   }
 
   static String getFlagEmoji(String languageCode) {

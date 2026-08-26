@@ -82,7 +82,8 @@ class CastButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.cast_connected, color: Theme.of(context).colorScheme.primary, size: 28),
+            Icon(Icons.cast_connected,
+                color: Theme.of(context).colorScheme.primary, size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -121,7 +122,8 @@ class CastButton extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    if (castService.mediaState.imageUrl != null && castService.mediaState.imageUrl!.isNotEmpty)
+                    if (castService.mediaState.imageUrl != null &&
+                        castService.mediaState.imageUrl!.isNotEmpty)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: CachedNetworkImage(
@@ -186,8 +188,8 @@ class CastButton extends StatelessWidget {
                     cs.mediaState.volume == 0
                         ? Icons.volume_off
                         : cs.mediaState.volume < 0.5
-                        ? Icons.volume_down
-                        : Icons.volume_up,
+                            ? Icons.volume_down
+                            : Icons.volume_up,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   Expanded(
@@ -222,7 +224,7 @@ class CastButton extends StatelessWidget {
               color: Color(0xFFFF3B30),
             ),
             label: Text(
-              AppLocalizations.of(context)!.close, // Use close instead of disconnect for simplicity since 'disconnect' is missing
+              AppLocalizations.of(context)!.close,
               style: const TextStyle(color: Color(0xFFFF3B30)),
             ),
           ),
@@ -306,7 +308,6 @@ class CastButton extends StatelessWidget {
             Consumer<UpnpService>(
               builder: (context, us, _) {
                 if (us.volume < 0) {
-                  
                   return Text(
                     'Playback is being sent to this DLNA device. '
                     'Use Musly\'s player controls to manage playback.',
@@ -325,8 +326,8 @@ class CastButton extends StatelessWidget {
                       us.volume == 0
                           ? Icons.volume_off
                           : us.volume < 50
-                          ? Icons.volume_down
-                          : Icons.volume_up,
+                              ? Icons.volume_down
+                              : Icons.volume_up,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     Expanded(
@@ -381,9 +382,8 @@ class CastButton extends StatelessWidget {
         Icon(
           icon,
           size: 16,
-          color: isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
+          color:
+              isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText,
         ),
         const SizedBox(width: 8),
         Expanded(

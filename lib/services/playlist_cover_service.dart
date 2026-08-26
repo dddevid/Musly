@@ -18,10 +18,9 @@ bool _isLocalFile(String? s) {
   return false;
 }
 
-/// Service that creates, caches, and maintains a single 2x2 composite image file
-/// on disk for playlists with multiple songs, avoiding separate network image loads.
 class PlaylistCoverService {
-  static final PlaylistCoverService _instance = PlaylistCoverService._internal();
+  static final PlaylistCoverService _instance =
+      PlaylistCoverService._internal();
   factory PlaylistCoverService() => _instance;
   PlaylistCoverService._internal();
 
@@ -30,7 +29,6 @@ class PlaylistCoverService {
   Directory? _coverDir;
   bool _initialized = false;
 
-  /// Notifier that increments whenever a playlist composite cover is created/updated.
   final ValueNotifier<int> coverUpdates = ValueNotifier<int>(0);
 
   Future<void> init() async {
@@ -41,14 +39,14 @@ class PlaylistCoverService {
       if (!await _coverDir!.exists()) {
         await _coverDir!.create(recursive: true);
       } else {
-        // Scan directory and index existing composite covers
         final entities = _coverDir!.listSync();
         for (final entity in entities) {
           if (entity is File && entity.path.endsWith('.png')) {
             final filename = entity.uri.pathSegments.last;
-            // Expected filename: playlist_mosaic_<playlistId>_<sig>.png
+
             if (filename.startsWith('playlist_mosaic_')) {
-              final withoutPrefix = filename.substring('playlist_mosaic_'.length);
+              final withoutPrefix =
+                  filename.substring('playlist_mosaic_'.length);
               final lastUnderscore = withoutPrefix.lastIndexOf('_');
               if (lastUnderscore != -1) {
                 final playlistId = withoutPrefix.substring(0, lastUnderscore);
@@ -64,19 +62,20 @@ class PlaylistCoverService {
     }
   }
 
-  /// Returns the cached local composite cover file path for [playlistId], if available.
   String? getCoverPath(String playlistId) {
     final path = _coverPaths[playlistId];
     if (path != null && File(path).existsSync()) {
       return path;
     }
-    // Fallback sync check if dir exists
+
     if (_coverDir != null && _coverDir!.existsSync()) {
       try {
         final matches = _coverDir!
             .listSync()
             .whereType<File>()
-            .where((f) => f.path.contains('playlist_mosaic_${playlistId}_') && f.path.endsWith('.png'))
+            .where((f) =>
+                f.path.contains('playlist_mosaic_${playlistId}_') &&
+                f.path.endsWith('.png'))
             .toList();
         if (matches.isNotEmpty) {
           _coverPaths[playlistId] = matches.first.path;
@@ -87,7 +86,6 @@ class PlaylistCoverService {
     return null;
   }
 
-  /// Computes a deterministic hash signature of the first distinct album covers of [songs].
   String? computeSignature(List<Song> songs) {
     final distinctCovers = <String>[];
     final seen = <String>{};
@@ -103,7 +101,6 @@ class PlaylistCoverService {
     return md5.convert(utf8.encode(distinctCovers.join('::'))).toString();
   }
 
-  /// Checks if the composite cover for [playlistId] is up-to-date and generates it if changed.
   Future<String?> checkAndGenerateCover({
     required String playlistId,
     required List<Song> songs,
@@ -124,11 +121,11 @@ class PlaylistCoverService {
     }
 
     if (distinctCovers.length < 2) {
-      // 0 or 1 distinct covers do not require a composite 2x2 grid file
       return null;
     }
 
-    final signature = md5.convert(utf8.encode(distinctCovers.join('::'))).toString();
+    final signature =
+        md5.convert(utf8.encode(distinctCovers.join('::'))).toString();
     final expectedFilename = 'playlist_mosaic_${playlistId}_$signature.png';
     final expectedFile = File('${_coverDir!.path}/$expectedFilename');
 
@@ -155,7 +152,8 @@ class PlaylistCoverService {
       }
       return resultPath;
     } catch (e) {
-      debugPrint('[PlaylistCoverService] Error generating mosaic for playlist $playlistId: $e');
+      debugPrint(
+          '[PlaylistCoverService] Error generating mosaic for playlist $playlistId: $e');
       return null;
     } finally {
       _inProgress.remove(playlistId);
@@ -168,7 +166,6 @@ class PlaylistCoverService {
     required String signature,
     required SubsonicService subsonicService,
   }) async {
-    // Determine the 4 quadrants: [TL, TR, BL, BR]
     final List<String> fourCovers;
     if (covers.length >= 4) {
       fourCovers = [covers[0], covers[1], covers[2], covers[3]];
@@ -178,19 +175,21 @@ class PlaylistCoverService {
       fourCovers = [covers[0], covers[1], covers[1], covers[0]];
     }
 
-    // Load byte data for all 4 covers concurrently
-    final imageFutures = fourCovers.map((c) => _loadCoverImage(c, subsonicService)).toList();
+    final imageFutures =
+        fourCovers.map((c) => _loadCoverImage(c, subsonicService)).toList();
     final images = await Future.wait(imageFutures);
 
     const int targetSize = 512;
     const double halfSize = targetSize / 2.0;
 
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, targetSize.toDouble(), targetSize.toDouble()));
+    final canvas = Canvas(recorder,
+        Rect.fromLTWH(0, 0, targetSize.toDouble(), targetSize.toDouble()));
 
-    // Draw background color
     final bgPaint = Paint()..color = const Color(0xFF1E1E1E);
-    canvas.drawRect(Rect.fromLTWH(0, 0, targetSize.toDouble(), targetSize.toDouble()), bgPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, targetSize.toDouble(), targetSize.toDouble()),
+        bgPaint);
 
     final quadrants = [
       const Rect.fromLTWH(0, 0, halfSize, halfSize),
@@ -209,7 +208,6 @@ class PlaylistCoverService {
           fit: BoxFit.cover,
         );
       } else {
-        // Draw placeholder tile
         final pPaint = Paint()..color = const Color(0xFF2C2C2C);
         canvas.drawRect(quadrants[i], pPaint);
       }
@@ -217,17 +215,16 @@ class PlaylistCoverService {
 
     final picture = recorder.endRecording();
     final compositeUiImage = await picture.toImage(targetSize, targetSize);
-    final byteData = await compositeUiImage.toByteData(format: ui.ImageByteFormat.png);
+    final byteData =
+        await compositeUiImage.toByteData(format: ui.ImageByteFormat.png);
 
     if (byteData == null) return null;
     final bytes = byteData.buffer.asUint8List();
 
-    // Clean up old mosaic files for this playlist
     try {
-      final oldFiles = _coverDir!
-          .listSync()
-          .whereType<File>()
-          .where((f) => f.path.contains('playlist_mosaic_${playlistId}_') && f.path.endsWith('.png'));
+      final oldFiles = _coverDir!.listSync().whereType<File>().where((f) =>
+          f.path.contains('playlist_mosaic_${playlistId}_') &&
+          f.path.endsWith('.png'));
       for (final oldFile in oldFiles) {
         try {
           oldFile.deleteSync();
@@ -235,12 +232,14 @@ class PlaylistCoverService {
       }
     } catch (_) {}
 
-    final targetFile = File('${_coverDir!.path}/playlist_mosaic_${playlistId}_$signature.png');
+    final targetFile =
+        File('${_coverDir!.path}/playlist_mosaic_${playlistId}_$signature.png');
     await targetFile.writeAsBytes(bytes, flush: true);
     return targetFile.path;
   }
 
-  Future<ui.Image?> _loadCoverImage(String coverArt, SubsonicService subsonicService) async {
+  Future<ui.Image?> _loadCoverImage(
+      String coverArt, SubsonicService subsonicService) async {
     try {
       Uint8List? bytes;
 
@@ -252,7 +251,8 @@ class PlaylistCoverService {
       }
 
       if (bytes == null) {
-        final offlinePath = OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
+        final offlinePath =
+            OfflineService().getLocalCoverArtPathByCoverArtId(coverArt);
         if (offlinePath != null && await File(offlinePath).exists()) {
           bytes = await File(offlinePath).readAsBytes();
         }
@@ -269,7 +269,8 @@ class PlaylistCoverService {
       }
 
       if (bytes != null && bytes.isNotEmpty) {
-        final codec = await ui.instantiateImageCodec(bytes, targetWidth: 256, targetHeight: 256);
+        final codec = await ui.instantiateImageCodec(bytes,
+            targetWidth: 256, targetHeight: 256);
         final frame = await codec.getNextFrame();
         return frame.image;
       }
