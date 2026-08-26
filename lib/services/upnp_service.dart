@@ -202,7 +202,41 @@ class UpnpService extends ChangeNotifier {
 
   static String? _xmlText(String xml, String tag) {
     final pattern = RegExp('<$tag>([^<]*)</$tag>', caseSensitive: false);
-    return pattern.firstMatch(xml)?.group(1)?.trim();
+    final raw = pattern.firstMatch(xml)?.group(1)?.trim();
+    return raw == null ? null : decodeXmlEntities(raw);
+  }
+
+  /// Decode one layer of XML character entities.
+  ///
+  /// `&amp;` is decoded last so `&amp;lt;` yields the literal `&lt;` the sender
+  /// meant, not `<`.
+  static String decodeXmlEntities(String input) {
+    return input
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&apos;', "'")
+        .replaceAll('&#39;', "'")
+        .replaceAll('&#x27;', "'")
+        .replaceAll('&amp;', '&');
+  }
+
+  /// Canonical form for comparing two URIs, never for reconstructing one.
+  ///
+  /// Renderers echo a URI back through more escaping layers than we sent it
+  /// through (SOAP envelope, then embedded DIDL-Lite), so `...&v=1.16.1...`
+  /// returns as `...&amp;amp;v=1.16.1...`. Since the depth is not knowable in
+  /// advance this decodes to a fixed point — more aggressive than XML
+  /// semantics, but applied to both sides of every comparison, so equal tracks
+  /// still match and different ones still differ. Bounded so it cannot spin.
+  static String canonicalUri(String uri) {
+    var out = uri.trim();
+    for (var i = 0; i < 5; i++) {
+      final next = decodeXmlEntities(out);
+      if (next == out) break;
+      out = next;
+    }
+    return out;
   }
 
   static String? _extractAvTransportUrl(String xml, String location) {
@@ -309,6 +343,15 @@ class UpnpService extends ChangeNotifier {
 
     try {
       final state = await getPlaybackState();
+
+      // Low-rate heartbeat: a healthy poll was previously silent, so a
+      // renderer drifting out of sync left no trace in the logs at all.
+      if (_pollCount % 30 == 1) {
+        debugPrint('UPnP: poll #$_pollCount healthy — '
+            'state=${state?.transportState ?? "null"} '
+            'pos=${state?.position.inSeconds ?? -1}s errs=$_consecutivePollErrors');
+      }
+
       if (state == null) {
         _consecutivePollErrors++;
         _safeNotifyListeners();
