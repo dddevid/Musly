@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Search Radio Queue Generation**
   - When playing a song directly from search results, Musly now dynamically creates a radio queue populated with similar songs (matching genre, artist top tracks, and recommendations) instead of playing consecutive unrelated search query results.
 
+- **Musly Wrapped & Year in Review Localization**
+  - Fully localized all user interface texts, story slides (Intro, Minutes, Chronotypes, Genre Galaxy, Top Songs & Countdown, Top Artists, and Personality Archetypes), metrics, badges, and home banners into English, Italian, and all supported languages via `AppLocalizations`.
+
 ### Fixed
 
 - **Now Playing Queue Reordering & Song Options Menu (#236)**
