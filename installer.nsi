@@ -4,7 +4,7 @@
 ; Version (passed via /DMUSLY_VERSION=x.x.x from CI, or fallback)
 
 !ifndef MUSLY_VERSION
-  !define MUSLY_VERSION "2.0.1"
+  !define MUSLY_VERSION "2.0.2"
 !endif
 
 ;--------------------------------
@@ -106,7 +106,7 @@ Section "Musly" SecMain
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Musly" \
                    "Publisher" "dddevid"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Musly" \
-                   "DisplayVersion" "2.0.1"
+                   "DisplayVersion" "2.0.2"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Musly" \
                    "URLInfoAbout" "https://github.com/dddevid/Musly"
   
