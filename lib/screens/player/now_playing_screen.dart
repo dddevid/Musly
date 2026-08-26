@@ -193,6 +193,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Widget build(BuildContext context) {
     final accentColor = _bgColors.isNotEmpty ? _bgColors.first : Colors.white;
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final view = View.of(context);
+    final viewPadding = MediaQueryData.fromView(view).padding;
+    final mediaQueryPadding = MediaQuery.of(context).padding;
+    
+    final effectiveTopPadding = widget.topPadding > 0
+        ? widget.topPadding
+        : (viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top);
+        
+    final effectiveLeftPadding = viewPadding.left > 0 ? viewPadding.left : mediaQueryPadding.left;
+    final effectiveRightPadding = viewPadding.right > 0 ? viewPadding.right : mediaQueryPadding.right;
 
     return Theme(
       data: ThemeData.dark(),
@@ -217,7 +227,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       },
                       children: [
                         // Page 0: Main Cover Art View
-                        _buildMainView(accentColor, isLandscape: isLandscape),
+                        _buildMainView(
+                          accentColor,
+                          isLandscape: isLandscape,
+                          effectiveTopPadding: effectiveTopPadding,
+                          effectiveLeftPadding: effectiveLeftPadding,
+                          effectiveRightPadding: effectiveRightPadding,
+                        ),
                         
                         // Page 1: Lyrics View
                         _fetchedLyrics.isNotEmpty
@@ -253,14 +269,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
               // 2. Drag Handle (Top) - Portrait only
               if (!isLandscape)
-                SafeArea(
-                  bottom: false,
-                  child: Align(
-                    alignment: Alignment.topCenter,
+                Positioned(
+                  top: effectiveTopPadding > 0 ? effectiveTopPadding + 8.0 : 16.0,
+                  left: 0,
+                  right: 0,
+                  child: Center(
                     child: Container(
                       width: 36,
                       height: 5,
-                      margin: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(3),
@@ -270,44 +286,42 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
 
               // 3. Header (Persistent across pages)
-              SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: isLandscape ? 4.0 : 8.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          _currentPage == 0 ? Icons.keyboard_arrow_down_rounded : Icons.close_rounded, 
-                          color: Colors.white, 
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          if (_currentPage != 0) {
-                            _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
+              Positioned(
+                top: isLandscape
+                    ? (effectiveTopPadding > 0 ? effectiveTopPadding + 4.0 : 8.0)
+                    : (effectiveTopPadding > 0 ? effectiveTopPadding + 14.0 : 22.0),
+                left: isLandscape ? effectiveLeftPadding + 12.0 : 8.0,
+                right: isLandscape ? effectiveRightPadding + 12.0 : 8.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _currentPage == 0 ? Icons.keyboard_arrow_down_rounded : Icons.close_rounded, 
+                        color: Colors.white, 
+                        size: 32,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 28),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            isScrollControlled: true,
-                            useRootNavigator: true,
-                            builder: (context) => const NowPlayingMoreMenu(),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                      onPressed: () {
+                        if (_currentPage != 0) {
+                          _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 28),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          useRootNavigator: true,
+                          builder: (context) => const NowPlayingMoreMenu(),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -543,7 +557,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  Widget _buildMainView(Color accentColor, {bool isLandscape = false}) {
+  Widget _buildMainView(
+    Color accentColor, {
+    bool isLandscape = false,
+    required double effectiveTopPadding,
+    required double effectiveLeftPadding,
+    required double effectiveRightPadding,
+  }) {
     return Consumer<PlayerProvider>(
       builder: (context, provider, child) {
         final currentSong = provider.currentSong ?? widget.song;
@@ -560,6 +580,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             artist,
             isStarred,
             accentColor,
+            effectiveTopPadding,
+            effectiveLeftPadding,
+            effectiveRightPadding,
           );
         }
 
@@ -571,6 +594,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           artist,
           isStarred,
           accentColor,
+          effectiveTopPadding,
         );
       },
     );
@@ -584,10 +608,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     String artist,
     bool isStarred,
     Color accentColor,
+    double effectiveTopPadding,
+    double effectiveLeftPadding,
+    double effectiveRightPadding,
   ) {
+    final topPadding = effectiveTopPadding > 0 ? effectiveTopPadding + 44.0 : 48.0;
     return SafeArea(
+      top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 48.0, 20.0, 4.0),
+        padding: EdgeInsets.fromLTRB(
+          effectiveLeftPadding > 0 ? effectiveLeftPadding + 16.0 : 20.0,
+          topPadding,
+          effectiveRightPadding > 0 ? effectiveRightPadding + 16.0 : 20.0,
+          4.0,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -742,15 +776,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     String artist,
     bool isStarred,
     Color accentColor,
+    double effectiveTopPadding,
   ) {
     final screenHeight = MediaQuery.of(context).size.height;
     final isSmall = screenHeight < 720;
     final isVerySmall = screenHeight < 620;
+    final headerClearance = effectiveTopPadding > 0
+        ? effectiveTopPadding + (isSmall ? 60.0 : 70.0)
+        : (isSmall ? 48.0 : 64.0);
 
     return SafeArea(
+      top: false,
       child: Column(
         children: [
-          SizedBox(height: isSmall ? 40 : 56), // Space for header
+          SizedBox(height: headerClearance), // Space for header & status bar
           
           // Album Art with horizontal swipe navigation (Issue #201) and Live Lyric
           Expanded(

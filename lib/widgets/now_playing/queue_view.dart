@@ -29,12 +29,20 @@ class QueueView extends StatelessWidget {
 
         final isLandscape =
             MediaQuery.of(context).orientation == Orientation.landscape;
+        final view = View.of(context);
+        final viewPadding = MediaQueryData.fromView(view).padding;
+        final mediaQueryPadding = MediaQuery.of(context).padding;
+        final topPadding = viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top;
+        final headerClearance = topPadding > 0
+            ? topPadding + (isLandscape ? 44.0 : 64.0)
+            : (isLandscape ? 48.0 : 56.0);
 
         return SafeArea(
+          top: false,
           child: ReorderableListView.builder(
             buildDefaultDragHandles: false,
             padding: EdgeInsets.only(
-              top: isLandscape ? 48 : 56,
+              top: headerClearance,
               bottom: 40,
               left: 24,
               right: 24,
