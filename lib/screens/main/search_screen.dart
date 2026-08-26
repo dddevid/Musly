@@ -112,14 +112,9 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  void _playSong(Song song, [List<Song>? queue]) {
+  void _playSong(Song song) {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-    final subsonic = Provider.of<SubsonicService>(context, listen: false);
-    if (subsonic.isYoutube || playerProvider.autoDjService.isEnabled) {
-      playerProvider.playSongWithRadio(song);
-    } else {
-      playerProvider.playSong(song, playlist: [song], startIndex: 0);
-    }
+    playerProvider.playSongWithRadio(song);
   }
 
   @override
@@ -539,7 +534,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ...songs.take(_selectedFilter == 'All' ? 5 : 20).map((song) {
               return SongTile(
                 song: song,
-                onTap: () => _playSong(song, songs),
+                onTap: () => _playSong(song),
               );
             }),
             const SizedBox(height: 24),
@@ -624,8 +619,8 @@ class _SearchScreenState extends State<SearchScreen> {
       subtitle: song.artist ?? 'Unknown Artist',
       typeLabel: 'Song',
       imageUrl: song.coverArt,
-      onTap: () => _playSong(song, queue),
-      onPlayPressed: () => _playSong(song, queue),
+      onTap: () => _playSong(song),
+      onPlayPressed: () => _playSong(song),
     );
   }
 

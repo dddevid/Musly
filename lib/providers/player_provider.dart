@@ -1710,7 +1710,35 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _fetchAndQueueRadioTracks(Song song) async {
     if (_currentSong?.id != song.id) return;
     try {
-      final similar = await _subsonicService.getSimilarSongs(song.id, count: 25);
+      List<Song> similar = await _subsonicService.getSimilarSongs(song.id, count: 25);
+
+      // Fallback 1: Similar by genre
+      if (similar.isEmpty && song.genre != null && song.genre!.trim().isNotEmpty) {
+        try {
+          similar = await _subsonicService.getRandomSongs(size: 25, genre: song.genre!.trim());
+        } catch (_) {}
+      }
+
+      // Fallback 2: Artist top songs or artist songs
+      if (similar.isEmpty && song.artistId != null && song.artistId!.trim().isNotEmpty) {
+        try {
+          similar = await _subsonicService.getArtistTopSongs(song.artistId!, count: 25);
+        } catch (_) {}
+      }
+      if (similar.isEmpty && song.artist != null && song.artist!.trim().isNotEmpty) {
+        try {
+          final res = await _subsonicService.search(song.artist!);
+          similar = res.songs.where((s) => s.id != song.id).toList();
+        } catch (_) {}
+      }
+
+      // Fallback 3: Random songs from library
+      if (similar.isEmpty) {
+        try {
+          similar = await _subsonicService.getRandomSongs(size: 25);
+        } catch (_) {}
+      }
+
       if (similar.isNotEmpty && _currentSong?.id == song.id) {
         final existingIds = _queue.map((s) => s.id).toSet();
         final toAdd = similar.where((s) => !existingIds.contains(s.id)).toList();
