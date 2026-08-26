@@ -180,6 +180,7 @@ void main() {
   group('Wrapped Archetype & Model Tests', () {
     test('PersonalityArchetype initializes and provides valid properties', () {
       const archetype = PersonalityArchetype(
+        id: 'luminary',
         name: 'The Luminary',
         emoji: '✨',
         badge: 'SONIC EXPLORER',
@@ -189,6 +190,7 @@ void main() {
         gradientColors: [],
       );
 
+      expect(archetype.id, equals('luminary'));
       expect(archetype.name, equals('The Luminary'));
       expect(archetype.emoji, equals('✨'));
       expect(archetype.badge, equals('SONIC EXPLORER'));

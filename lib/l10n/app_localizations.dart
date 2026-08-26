@@ -364,7 +364,7 @@ abstract class AppLocalizations {
   /// **'Albums'**
   String get albums;
 
-  /// Artists section label
+  /// Wrapped artists metric label
   ///
   /// In en, this message translates to:
   /// **'Artists'**
@@ -3646,13 +3646,13 @@ abstract class AppLocalizations {
   /// **'Musly Wrapped'**
   String get muslyWrapped;
 
-  /// Title when Wrapped is accessed outside seasonal window
+  /// Musly Playback seasonal dialog header
   ///
   /// In en, this message translates to:
-  /// **'Musly Wrapped is Seasonal'**
+  /// **'Musly Playback is Seasonal'**
   String get wrappedSeasonal;
 
-  /// Button to play top songs playlist
+  /// Wrapped summary card play button
   ///
   /// In en, this message translates to:
   /// **'Play Your Top Songs'**
@@ -4018,28 +4018,28 @@ abstract class AppLocalizations {
   /// **'Replay the introductory onboarding experience'**
   String get welcomeTourSubtitle;
 
-  /// Title for developer preview of annual wrapped
+  /// Playback preview in debug mode
   ///
   /// In en, this message translates to:
-  /// **'Musly Playback (Dev Preview)'**
+  /// **'Playback Preview (Test Mode)'**
   String get muslyPlaybackDev;
 
-  /// Subtitle for developer preview of annual wrapped
+  /// Playback preview subtitle
   ///
   /// In en, this message translates to:
-  /// **'Developer test preview of Year-in-Review'**
+  /// **'Explore your Year-in-Review preview directly without waiting for November'**
   String get muslyPlaybackDevSubtitle;
 
-  /// Title for annual playback review
+  /// Musly Playback annual title in settings
   ///
   /// In en, this message translates to:
   /// **'Musly Playback'**
   String get muslyPlaybackAnnual;
 
-  /// Subtitle for annual playback review
+  /// Musly Playback annual subtitle in settings
   ///
   /// In en, this message translates to:
-  /// **'Your annual Year in Review and listening insights'**
+  /// **'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!'**
   String get muslyPlaybackAnnualSubtitle;
 
   /// Section header for support in about tab
@@ -4438,85 +4438,85 @@ abstract class AppLocalizations {
   /// **'Offline mode?'**
   String get offlineModeQuestion;
 
-  /// Playback countdown slide label
+  /// Suspense countdown badge
   ///
   /// In en, this message translates to:
   /// **'DRUMROLL...'**
   String get drumroll;
 
-  /// Playback suspense slide title
+  /// Suspense countdown title
   ///
   /// In en, this message translates to:
   /// **'Ready to discover\nyour #1 song?'**
   String get readyToDiscoverTopSong;
 
-  /// Playback welcome slide button
+  /// Wrapped intro tap to begin button
   ///
   /// In en, this message translates to:
   /// **'Tap to begin'**
   String get tapToBegin;
 
-  /// Playback minutes header
+  /// Wrapped minutes slide header
   ///
   /// In en, this message translates to:
   /// **'MINUTES LISTENED'**
   String get minutesListened;
 
-  /// Playback total hours metric label
+  /// Wrapped total hours metric
   ///
   /// In en, this message translates to:
   /// **'Total hours'**
   String get totalHours;
 
-  /// Playback unique tracks metric label
+  /// Wrapped unique tracks metric
   ///
   /// In en, this message translates to:
   /// **'Unique tracks'**
   String get uniqueTracks;
 
-  /// Playback top songs slide header
+  /// Wrapped top songs slide header
   ///
   /// In en, this message translates to:
   /// **'TOP SONGS'**
   String get topSongsHeader;
 
-  /// Playback top songs title
+  /// Wrapped top songs title
   ///
   /// In en, this message translates to:
   /// **'Your most listened songs'**
   String get yourMostListenedSongs;
 
-  /// Playback top artists header
+  /// Wrapped top artists header
   ///
   /// In en, this message translates to:
   /// **'TOP ARTISTS'**
   String get topArtistsHeader;
 
-  /// Number of plays for a track in Wrapped/Playback
+  /// Song play count
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 play} other{{count} plays}}'**
   String playsCount(int count);
 
-  /// Badge for the #1 song in Wrapped
+  /// Wrapped top song badge in summary
   ///
   /// In en, this message translates to:
   /// **'Song #1'**
   String get topSongBadge;
 
-  /// Top artist metric label in Wrapped summary
+  /// Top artist metric label
   ///
   /// In en, this message translates to:
   /// **'Top Artist'**
   String get topArtistMetric;
 
-  /// Genre metric label in Wrapped summary
+  /// Genre metric label
   ///
   /// In en, this message translates to:
   /// **'Genre'**
   String get genreMetric;
 
-  /// Header in Wrapped summary slide
+  /// Wrapped summary card header
   ///
   /// In en, this message translates to:
   /// **'MUSLY PLAYBACK'**
@@ -4552,13 +4552,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 nearby device found} other{{count} nearby devices found}}'**
   String nearbyDevicesFound(int count);
 
-  /// Minutes label
+  /// Minutes metric label
   ///
   /// In en, this message translates to:
   /// **'Minutes'**
   String get minutes;
 
-  /// Now playing upper-case badge/header
+  /// Wrapped now playing badge
   ///
   /// In en, this message translates to:
   /// **'NOW PLAYING'**
@@ -5157,6 +5157,348 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Material You (Dynamic Color)'**
   String get dynamicColor;
+
+  /// Musly Playback / Wrapped title
+  ///
+  /// In en, this message translates to:
+  /// **'Musly Playback'**
+  String get muslyPlayback;
+
+  /// Wrapped loading subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Synthesizing your listening universe'**
+  String get synthesizingUniverse;
+
+  /// Suspense countdown subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready for the beat drop...'**
+  String get getReadyForBeatDrop;
+
+  /// Wrapped intro slide title with year
+  ///
+  /// In en, this message translates to:
+  /// **'Your {year}\nin Sound'**
+  String yourYearInSound(int year);
+
+  /// Wrapped intro slide subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'You explored sonic depths, relived moments, and built memories through music.'**
+  String get yourYearInSoundSubtitle;
+
+  /// Wrapped chronotype slide header
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR MUSICAL CHRONOTYPE'**
+  String get yourMusicalChronotype;
+
+  /// Wrapped genre slide header
+  ///
+  /// In en, this message translates to:
+  /// **'GENRE GALAXY'**
+  String get genreGalaxy;
+
+  /// Wrapped genre slide title
+  ///
+  /// In en, this message translates to:
+  /// **'The sounds that guided you'**
+  String get soundsThatGuidedYou;
+
+  /// Wrapped top artists title
+  ///
+  /// In en, this message translates to:
+  /// **'Your musical anchors'**
+  String get yourMusicalAnchors;
+
+  /// Wrapped personality slide header
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LISTENING PERSONALITY'**
+  String get yourListeningPersonality;
+
+  /// Wrapped home banner subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your Year in Review is ready!'**
+  String get yourYearInReviewIsReady;
+
+  /// Chronotype name for night listener
+  ///
+  /// In en, this message translates to:
+  /// **'Midnight Wanderer 🌙'**
+  String get chronotypeMidnightWanderer;
+
+  /// Chronotype description for night listener
+  ///
+  /// In en, this message translates to:
+  /// **'Your deepest music moments unfold late at night when the world is quiet.'**
+  String get chronotypeMidnightWandererDesc;
+
+  /// Chronotype name for morning listener
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise Harmonizer ☀️'**
+  String get chronotypeSunriseHarmonizer;
+
+  /// Chronotype description for morning listener
+  ///
+  /// In en, this message translates to:
+  /// **'You kickstart every morning with rhythm, setting the soundtrack for the entire day.'**
+  String get chronotypeSunriseHarmonizerDesc;
+
+  /// Chronotype name for afternoon listener
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon Flow ⚡'**
+  String get chronotypeAfternoonFlow;
+
+  /// Chronotype description for afternoon listener
+  ///
+  /// In en, this message translates to:
+  /// **'Midday is your prime listening peak, powering through your momentum with high-energy sound.'**
+  String get chronotypeAfternoonFlowDesc;
+
+  /// Chronotype name for evening listener
+  ///
+  /// In en, this message translates to:
+  /// **'Twilight Lounger 🌆'**
+  String get chronotypeTwilightLounger;
+
+  /// Chronotype description for evening listener
+  ///
+  /// In en, this message translates to:
+  /// **'Evenings are made for unwinding and losing yourself in immersive album journeys.'**
+  String get chronotypeTwilightLoungerDesc;
+
+  /// Archetype title for Luminary
+  ///
+  /// In en, this message translates to:
+  /// **'The Luminary'**
+  String get archetypeLuminary;
+
+  /// Archetype badge for Luminary
+  ///
+  /// In en, this message translates to:
+  /// **'SONIC EXPLORER'**
+  String get archetypeLuminaryBadge;
+
+  /// Archetype description for Luminary
+  ///
+  /// In en, this message translates to:
+  /// **'You shine light on diverse genres and constantly seek out fresh musical horizons.'**
+  String get archetypeLuminaryDesc;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Eclectic Taste'**
+  String get archetypeLuminaryTrait1;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Genre Fluid'**
+  String get archetypeLuminaryTrait2;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'High Discovery'**
+  String get archetypeLuminaryTrait3;
+
+  /// Archetype title for Devotee
+  ///
+  /// In en, this message translates to:
+  /// **'The Devotee'**
+  String get archetypeDevotee;
+
+  /// Archetype badge for Devotee
+  ///
+  /// In en, this message translates to:
+  /// **'SUPERFAN'**
+  String get archetypeDevoteeBadge;
+
+  /// Archetype description for Devotee
+  ///
+  /// In en, this message translates to:
+  /// **'When you love an artist or album, you listen on repeat with unmatched dedication.'**
+  String get archetypeDevoteeDesc;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Loyalty'**
+  String get archetypeDevoteeTrait1;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Album Listener'**
+  String get archetypeDevoteeTrait2;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Emotional Bond'**
+  String get archetypeDevoteeTrait3;
+
+  /// Archetype title for Night Owl
+  ///
+  /// In en, this message translates to:
+  /// **'The Night Owl'**
+  String get archetypeNightOwl;
+
+  /// Archetype badge for Night Owl
+  ///
+  /// In en, this message translates to:
+  /// **'NOCTURNAL VIBES'**
+  String get archetypeNightOwlBadge;
+
+  /// Archetype description for Night Owl
+  ///
+  /// In en, this message translates to:
+  /// **'Your soul belongs to midnight soundscapes, atmospheric chords, and starry listening sessions.'**
+  String get archetypeNightOwlDesc;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Atmospheric'**
+  String get archetypeNightOwlTrait1;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Introspective'**
+  String get archetypeNightOwlTrait2;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Late-Night Flow'**
+  String get archetypeNightOwlTrait3;
+
+  /// Archetype title for Sunrise Harmonizer
+  ///
+  /// In en, this message translates to:
+  /// **'The Sunrise Harmonizer'**
+  String get archetypeSunrise;
+
+  /// Archetype badge for Sunrise Harmonizer
+  ///
+  /// In en, this message translates to:
+  /// **'ENERGY CATALYST'**
+  String get archetypeSunriseBadge;
+
+  /// Archetype description for Sunrise Harmonizer
+  ///
+  /// In en, this message translates to:
+  /// **'You wake up the world with high vibrations and let optimistic melodies spark your day.'**
+  String get archetypeSunriseDesc;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Uplifting'**
+  String get archetypeSunriseTrait1;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Morning Energy'**
+  String get archetypeSunriseTrait2;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Rhythmic Drive'**
+  String get archetypeSunriseTrait3;
+
+  /// Archetype title for Sonic Alchemist
+  ///
+  /// In en, this message translates to:
+  /// **'The Sonic Alchemist'**
+  String get archetypeAlchemist;
+
+  /// Archetype badge for Sonic Alchemist
+  ///
+  /// In en, this message translates to:
+  /// **'VIBE CURATOR'**
+  String get archetypeAlchemistBadge;
+
+  /// Archetype description for Sonic Alchemist
+  ///
+  /// In en, this message translates to:
+  /// **'You transmute everyday moments into cinematic experiences with perfectly curated soundtracks.'**
+  String get archetypeAlchemistDesc;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Curator Instinct'**
+  String get archetypeAlchemistTrait1;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Cinematic Vibe'**
+  String get archetypeAlchemistTrait2;
+
+  /// Archetype trait
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Master'**
+  String get archetypeAlchemistTrait3;
+
+  /// Percentile badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 0.5% Global Listener'**
+  String get percentileTop05;
+
+  /// Percentile badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 1% Global Listener'**
+  String get percentileTop1;
+
+  /// Percentile badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 5% Global Listener'**
+  String get percentileTop5;
+
+  /// Percentile badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 10% Global Listener'**
+  String get percentileTop10;
+
+  /// Percentile badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top Music Aficionado'**
+  String get percentileTopAficionado;
+
+  /// Superfan badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 0.1% Superfan'**
+  String get superfanBadge01;
+
+  /// Fan badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 1% Fan'**
+  String get superfanBadge1;
+
+  /// Fan badge
+  ///
+  /// In en, this message translates to:
+  /// **'Top 5% Fan'**
+  String get superfanBadge5;
 }
 
 class _AppLocalizationsDelegate

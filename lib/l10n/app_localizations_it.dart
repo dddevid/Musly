@@ -1940,10 +1940,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get muslyWrapped => 'Musly Wrapped';
 
   @override
-  String get wrappedSeasonal => 'Musly Wrapped è Stagionale';
+  String get wrappedSeasonal => 'Musly Playback è Stagionale';
 
   @override
-  String get playYourTopSongs => 'Riproduci i Tuoi Brani Preferiti';
+  String get playYourTopSongs => 'Riproduci i tuoi brani top';
 
   @override
   String get milestone50SongsTitle => 'Grazie di cuore!';
@@ -2154,18 +2154,18 @@ class AppLocalizationsIt extends AppLocalizations {
       'Rivedi l\'esperienza introduttiva iniziale';
 
   @override
-  String get muslyPlaybackDev => 'Musly Playback (Anteprima sviluppatore)';
+  String get muslyPlaybackDev => 'Anteprima Playback (Modalità Test)';
 
   @override
   String get muslyPlaybackDevSubtitle =>
-      'Anteprima di test per sviluppatori del riepilogo dell\'anno';
+      'Esplora direttamente l\'anteprima del tuo Year-in-Review senza attendere novembre';
 
   @override
   String get muslyPlaybackAnnual => 'Musly Playback';
 
   @override
   String get muslyPlaybackAnnualSubtitle =>
-      'Il tuo riepilogo annuale e le tue statistiche di ascolto';
+      'Il tuo Year-in-Review annuale si sblocca automaticamente ogni anno tra fine novembre e metà gennaio.\n\nContinua ad ascoltare musica per espandere il tuo universo sonoro!';
 
   @override
   String get sectionAboutSupport => 'SUPPORTO';
@@ -2407,13 +2407,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get drumroll => 'RULLO DI TAMBURI...';
 
   @override
-  String get readyToDiscoverTopSong => 'Pronto a scoprire\nil tuo brano #1?';
+  String get readyToDiscoverTopSong => 'Pronto a scoprire\nla tua canzone #1?';
 
   @override
   String get tapToBegin => 'Tocca per iniziare';
 
   @override
-  String get minutesListened => 'MINUTI DI ASCOLTO';
+  String get minutesListened => 'MINUTI ASCOLTATI';
 
   @override
   String get totalHours => 'Ore totali';
@@ -2422,13 +2422,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get uniqueTracks => 'Brani unici';
 
   @override
-  String get topSongsHeader => 'TOP BRANI';
+  String get topSongsHeader => 'BRANI PREFERITI';
 
   @override
   String get yourMostListenedSongs => 'I tuoi brani più ascoltati';
 
   @override
-  String get topArtistsHeader => 'TOP ARTISTI';
+  String get topArtistsHeader => 'I TUOI ARTISTI TOP';
 
   @override
   String playsCount(int count) {
@@ -2816,4 +2816,187 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dynamicColor => 'Material You (Colore dinamico)';
+
+  @override
+  String get muslyPlayback => 'Musly Playback';
+
+  @override
+  String get synthesizingUniverse => 'Sintetizzando il tuo universo sonoro';
+
+  @override
+  String get getReadyForBeatDrop => 'Preparati al drop sonoro...';
+
+  @override
+  String yourYearInSound(int year) {
+    return 'Il tuo $year\nin Musica';
+  }
+
+  @override
+  String get yourYearInSoundSubtitle =>
+      'Hai esplorato profondità sonore, rivissuto momenti e creato ricordi attraverso la musica.';
+
+  @override
+  String get yourMusicalChronotype => 'IL TUO CRONOTIPO MUSICALE';
+
+  @override
+  String get genreGalaxy => 'GALASSIA DEI GENERI';
+
+  @override
+  String get soundsThatGuidedYou => 'I suoni che ti hanno guidato';
+
+  @override
+  String get yourMusicalAnchors => 'I tuoi pilastri musicali';
+
+  @override
+  String get yourListeningPersonality => 'LA TUA PERSONALITÀ MUSICALE';
+
+  @override
+  String get yourYearInReviewIsReady => 'Il tuo Year in Review è pronto!';
+
+  @override
+  String get chronotypeMidnightWanderer => 'Esploratore Notturno 🌙';
+
+  @override
+  String get chronotypeMidnightWandererDesc =>
+      'I tuoi momenti musicali più profondi avvengono a tarda notte, quando il mondo tace.';
+
+  @override
+  String get chronotypeSunriseHarmonizer => 'Armonizzatore dell\'Alba ☀️';
+
+  @override
+  String get chronotypeSunriseHarmonizerDesc =>
+      'Inizi ogni mattina con ritmo, impostando la colonna sonora per l\'intera giornata.';
+
+  @override
+  String get chronotypeAfternoonFlow => 'Flusso del Pomeriggio ⚡';
+
+  @override
+  String get chronotypeAfternoonFlowDesc =>
+      'Il pomeriggio è il tuo momento clou per l\'ascolto, alimentando la tua energia con suoni carichi di ritmo.';
+
+  @override
+  String get chronotypeTwilightLounger => 'Sognatore del Crepuscolo 🌆';
+
+  @override
+  String get chronotypeTwilightLoungerDesc =>
+      'Le serate sono fatte per rilassarsi e perdersi in viaggi immersivi tra gli album.';
+
+  @override
+  String get archetypeLuminary => 'Il Luminare';
+
+  @override
+  String get archetypeLuminaryBadge => 'ESPLORATORE SONORO';
+
+  @override
+  String get archetypeLuminaryDesc =>
+      'Porti alla luce generi diversi e cerchi costantemente nuovi orizzonti musicali.';
+
+  @override
+  String get archetypeLuminaryTrait1 => 'Gusto Eclettico';
+
+  @override
+  String get archetypeLuminaryTrait2 => 'Fluido tra Generi';
+
+  @override
+  String get archetypeLuminaryTrait3 => 'Alta Scoperta';
+
+  @override
+  String get archetypeDevotee => 'Il Devoto';
+
+  @override
+  String get archetypeDevoteeBadge => 'SUPERFAN';
+
+  @override
+  String get archetypeDevoteeDesc =>
+      'Quando ami un artista o un album, lo ascolti a ripetizione con dedizione senza pari.';
+
+  @override
+  String get archetypeDevoteeTrait1 => 'Profonda Fedeltà';
+
+  @override
+  String get archetypeDevoteeTrait2 => 'Ascoltatore di Album';
+
+  @override
+  String get archetypeDevoteeTrait3 => 'Legame Emotivo';
+
+  @override
+  String get archetypeNightOwl => 'Il Gufo Notturno';
+
+  @override
+  String get archetypeNightOwlBadge => 'VIBRAZIONI NOTTURNE';
+
+  @override
+  String get archetypeNightOwlDesc =>
+      'La tua anima appartiene ai paesaggi sonori di mezzanotte, accordi d\'atmosfera e sessioni sotto le stelle.';
+
+  @override
+  String get archetypeNightOwlTrait1 => 'Atmosferico';
+
+  @override
+  String get archetypeNightOwlTrait2 => 'Introspettivo';
+
+  @override
+  String get archetypeNightOwlTrait3 => 'Flusso Notturno';
+
+  @override
+  String get archetypeSunrise => 'L\'Armonizzatore dell\'Alba';
+
+  @override
+  String get archetypeSunriseBadge => 'CATALIZZATORE D\'ENERGIA';
+
+  @override
+  String get archetypeSunriseDesc =>
+      'Svegli il mondo con vibrazioni positive e lasci che melodie ottimiste accendano la tua giornata.';
+
+  @override
+  String get archetypeSunriseTrait1 => 'Coinvolgente';
+
+  @override
+  String get archetypeSunriseTrait2 => 'Energia Mattutina';
+
+  @override
+  String get archetypeSunriseTrait3 => 'Carica Ritmica';
+
+  @override
+  String get archetypeAlchemist => 'L\'Alchimista Sonoro';
+
+  @override
+  String get archetypeAlchemistBadge => 'CURATORE DI VIBRAZIONI';
+
+  @override
+  String get archetypeAlchemistDesc =>
+      'Trasformi i momenti quotidiani in esperienze cinematografiche con colonne sonore perfettamente curate.';
+
+  @override
+  String get archetypeAlchemistTrait1 => 'Istinto da Curatore';
+
+  @override
+  String get archetypeAlchemistTrait2 => 'Vibrazione Cinematografica';
+
+  @override
+  String get archetypeAlchemistTrait3 => 'Maestro d\'Atmosfera';
+
+  @override
+  String get percentileTop05 => 'Top 0.5% Ascoltatore Globale';
+
+  @override
+  String get percentileTop1 => 'Top 1% Ascoltatore Globale';
+
+  @override
+  String get percentileTop5 => 'Top 5% Ascoltatore Globale';
+
+  @override
+  String get percentileTop10 => 'Top 10% Ascoltatore Globale';
+
+  @override
+  String get percentileTopAficionado => 'Top Appassionato di Musica';
+
+  @override
+  String get superfanBadge01 => 'Top 0.1% Superfan';
+
+  @override
+  String get superfanBadge1 => 'Top 1% Fan';
+
+  @override
+  String get superfanBadge5 => 'Top 5% Fan';
 }

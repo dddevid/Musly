@@ -1928,7 +1928,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get muslyWrapped => 'Musly Wrapped';
 
   @override
-  String get wrappedSeasonal => 'Musly Wrapped is Seasonal';
+  String get wrappedSeasonal => 'Musly Playback is Seasonal';
 
   @override
   String get playYourTopSongs => 'Play Your Top Songs';
@@ -2141,18 +2141,18 @@ class AppLocalizationsFi extends AppLocalizations {
       'Replay the introductory onboarding experience';
 
   @override
-  String get muslyPlaybackDev => 'Musly Playback (Dev Preview)';
+  String get muslyPlaybackDev => 'Playback Preview (Test Mode)';
 
   @override
   String get muslyPlaybackDevSubtitle =>
-      'Developer test preview of Year-in-Review';
+      'Explore your Year-in-Review preview directly without waiting for November';
 
   @override
   String get muslyPlaybackAnnual => 'Musly Playback';
 
   @override
   String get muslyPlaybackAnnualSubtitle =>
-      'Your annual Year in Review and listening insights';
+      'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!';
 
   @override
   String get sectionAboutSupport => 'SUPPORT';
@@ -2795,4 +2795,187 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get dynamicColor => 'Material You (Dynamic Color)';
+
+  @override
+  String get muslyPlayback => 'Musly Playback';
+
+  @override
+  String get synthesizingUniverse => 'Synthesizing your listening universe';
+
+  @override
+  String get getReadyForBeatDrop => 'Get ready for the beat drop...';
+
+  @override
+  String yourYearInSound(int year) {
+    return 'Your $year\nin Sound';
+  }
+
+  @override
+  String get yourYearInSoundSubtitle =>
+      'You explored sonic depths, relived moments, and built memories through music.';
+
+  @override
+  String get yourMusicalChronotype => 'YOUR MUSICAL CHRONOTYPE';
+
+  @override
+  String get genreGalaxy => 'GENRE GALAXY';
+
+  @override
+  String get soundsThatGuidedYou => 'The sounds that guided you';
+
+  @override
+  String get yourMusicalAnchors => 'Your musical anchors';
+
+  @override
+  String get yourListeningPersonality => 'YOUR LISTENING PERSONALITY';
+
+  @override
+  String get yourYearInReviewIsReady => 'Your Year in Review is ready!';
+
+  @override
+  String get chronotypeMidnightWanderer => 'Midnight Wanderer 🌙';
+
+  @override
+  String get chronotypeMidnightWandererDesc =>
+      'Your deepest music moments unfold late at night when the world is quiet.';
+
+  @override
+  String get chronotypeSunriseHarmonizer => 'Sunrise Harmonizer ☀️';
+
+  @override
+  String get chronotypeSunriseHarmonizerDesc =>
+      'You kickstart every morning with rhythm, setting the soundtrack for the entire day.';
+
+  @override
+  String get chronotypeAfternoonFlow => 'Afternoon Flow ⚡';
+
+  @override
+  String get chronotypeAfternoonFlowDesc =>
+      'Midday is your prime listening peak, powering through your momentum with high-energy sound.';
+
+  @override
+  String get chronotypeTwilightLounger => 'Twilight Lounger 🌆';
+
+  @override
+  String get chronotypeTwilightLoungerDesc =>
+      'Evenings are made for unwinding and losing yourself in immersive album journeys.';
+
+  @override
+  String get archetypeLuminary => 'The Luminary';
+
+  @override
+  String get archetypeLuminaryBadge => 'SONIC EXPLORER';
+
+  @override
+  String get archetypeLuminaryDesc =>
+      'You shine light on diverse genres and constantly seek out fresh musical horizons.';
+
+  @override
+  String get archetypeLuminaryTrait1 => 'Eclectic Taste';
+
+  @override
+  String get archetypeLuminaryTrait2 => 'Genre Fluid';
+
+  @override
+  String get archetypeLuminaryTrait3 => 'High Discovery';
+
+  @override
+  String get archetypeDevotee => 'The Devotee';
+
+  @override
+  String get archetypeDevoteeBadge => 'SUPERFAN';
+
+  @override
+  String get archetypeDevoteeDesc =>
+      'When you love an artist or album, you listen on repeat with unmatched dedication.';
+
+  @override
+  String get archetypeDevoteeTrait1 => 'Deep Loyalty';
+
+  @override
+  String get archetypeDevoteeTrait2 => 'Album Listener';
+
+  @override
+  String get archetypeDevoteeTrait3 => 'Emotional Bond';
+
+  @override
+  String get archetypeNightOwl => 'The Night Owl';
+
+  @override
+  String get archetypeNightOwlBadge => 'NOCTURNAL VIBES';
+
+  @override
+  String get archetypeNightOwlDesc =>
+      'Your soul belongs to midnight soundscapes, atmospheric chords, and starry listening sessions.';
+
+  @override
+  String get archetypeNightOwlTrait1 => 'Atmospheric';
+
+  @override
+  String get archetypeNightOwlTrait2 => 'Introspective';
+
+  @override
+  String get archetypeNightOwlTrait3 => 'Late-Night Flow';
+
+  @override
+  String get archetypeSunrise => 'The Sunrise Harmonizer';
+
+  @override
+  String get archetypeSunriseBadge => 'ENERGY CATALYST';
+
+  @override
+  String get archetypeSunriseDesc =>
+      'You wake up the world with high vibrations and let optimistic melodies spark your day.';
+
+  @override
+  String get archetypeSunriseTrait1 => 'Uplifting';
+
+  @override
+  String get archetypeSunriseTrait2 => 'Morning Energy';
+
+  @override
+  String get archetypeSunriseTrait3 => 'Rhythmic Drive';
+
+  @override
+  String get archetypeAlchemist => 'The Sonic Alchemist';
+
+  @override
+  String get archetypeAlchemistBadge => 'VIBE CURATOR';
+
+  @override
+  String get archetypeAlchemistDesc =>
+      'You transmute everyday moments into cinematic experiences with perfectly curated soundtracks.';
+
+  @override
+  String get archetypeAlchemistTrait1 => 'Curator Instinct';
+
+  @override
+  String get archetypeAlchemistTrait2 => 'Cinematic Vibe';
+
+  @override
+  String get archetypeAlchemistTrait3 => 'Mood Master';
+
+  @override
+  String get percentileTop05 => 'Top 0.5% Global Listener';
+
+  @override
+  String get percentileTop1 => 'Top 1% Global Listener';
+
+  @override
+  String get percentileTop5 => 'Top 5% Global Listener';
+
+  @override
+  String get percentileTop10 => 'Top 10% Global Listener';
+
+  @override
+  String get percentileTopAficionado => 'Top Music Aficionado';
+
+  @override
+  String get superfanBadge01 => 'Top 0.1% Superfan';
+
+  @override
+  String get superfanBadge1 => 'Top 1% Fan';
+
+  @override
+  String get superfanBadge5 => 'Top 5% Fan';
 }

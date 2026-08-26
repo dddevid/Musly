@@ -22,6 +22,7 @@ class GenreStat {
 
 /// Listening Personality Archetype inspired by Spotify Wrapped MBTI/Archetypes.
 class PersonalityArchetype {
+  final String id;
   final String name;
   final String emoji;
   final String badge;
@@ -31,6 +32,7 @@ class PersonalityArchetype {
   final List<Color> gradientColors;
 
   const PersonalityArchetype({
+    required this.id,
     required this.name,
     required this.emoji,
     required this.badge,
@@ -55,6 +57,7 @@ class WrappedData {
   final String personalityDescription;
   final PersonalityArchetype archetype;
   final String percentileText;
+  final String chronotypeId;
   final String chronotypeName;
   final String chronotypeDescription;
   final int topArtistPlayCount;
@@ -73,6 +76,7 @@ class WrappedData {
     required this.personalityDescription,
     required this.archetype,
     required this.percentileText,
+    required this.chronotypeId,
     required this.chronotypeName,
     required this.chronotypeDescription,
     required this.topArtistPlayCount,
@@ -343,16 +347,20 @@ class WrappedService {
       }
     });
 
+    String chronotypeId = 'midnight_wanderer';
     String chronotypeName = 'Midnight Wanderer 🌙';
     String chronotypeDesc = 'Your deepest music moments unfold late at night when the world is quiet.';
 
     if (morningPlays >= nightPlays && morningPlays >= afternoonPlays && morningPlays >= eveningPlays && morningPlays > 0) {
+      chronotypeId = 'sunrise_harmonizer';
       chronotypeName = 'Sunrise Harmonizer ☀️';
       chronotypeDesc = 'You kickstart every morning with rhythm, setting the soundtrack for the entire day.';
     } else if (afternoonPlays >= nightPlays && afternoonPlays >= eveningPlays && afternoonPlays > 0) {
+      chronotypeId = 'afternoon_flow';
       chronotypeName = 'Afternoon Flow ⚡';
       chronotypeDesc = 'Midday is your prime listening peak, powering through your momentum with high-energy sound.';
     } else if (eveningPlays >= nightPlays && eveningPlays > 0) {
+      chronotypeId = 'twilight_lounger';
       chronotypeName = 'Twilight Lounger 🌆';
       chronotypeDesc = 'Evenings are made for unwinding and losing yourself in immersive album journeys.';
     }
@@ -365,6 +373,7 @@ class WrappedService {
     PersonalityArchetype archetype;
     if (totalArtists > 20 && sortedGenres.length >= 4) {
       archetype = const PersonalityArchetype(
+        id: 'luminary',
         name: 'The Luminary',
         emoji: '✨',
         badge: 'SONIC EXPLORER',
@@ -375,6 +384,7 @@ class WrappedService {
       );
     } else if (repeatRatio > 3.0 || (topArtists.isNotEmpty && topArtists.first.playCount > 25)) {
       archetype = const PersonalityArchetype(
+        id: 'devotee',
         name: 'The Devotee',
         emoji: '💎',
         badge: 'SUPERFAN',
@@ -385,6 +395,7 @@ class WrappedService {
       );
     } else if (nightPlays > (morningPlays + afternoonPlays) * 0.8) {
       archetype = const PersonalityArchetype(
+        id: 'night_owl',
         name: 'The Night Owl',
         emoji: '🌙',
         badge: 'NOCTURNAL VIBES',
@@ -395,6 +406,7 @@ class WrappedService {
       );
     } else if (morningPlays > afternoonPlays) {
       archetype = const PersonalityArchetype(
+        id: 'sunrise_harmonizer',
         name: 'The Sunrise Harmonizer',
         emoji: '☀️',
         badge: 'ENERGY CATALYST',
@@ -405,6 +417,7 @@ class WrappedService {
       );
     } else {
       archetype = const PersonalityArchetype(
+        id: 'alchemist',
         name: 'The Sonic Alchemist',
         emoji: '🔮',
         badge: 'VIBE CURATOR',
@@ -448,6 +461,7 @@ class WrappedService {
       personalityDescription: archetype.description,
       archetype: archetype,
       percentileText: percentileText,
+      chronotypeId: chronotypeId,
       chronotypeName: chronotypeName,
       chronotypeDescription: chronotypeDesc,
       topArtistPlayCount: topArtistPlays,

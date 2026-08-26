@@ -3387,5 +3387,335 @@
   "dynamicColor": "Material You (Dynamic Color)",
   "@dynamicColor": {
     "description": "Material You wallpaper dynamic color option"
+  },
+  "muslyPlayback": "Musly Playback",
+  "@muslyPlayback": {
+    "description": "Musly Playback / Wrapped title"
+  },
+  "wrappedSeasonal": "Musly Playback is Seasonal",
+  "@wrappedSeasonal": {
+    "description": "Musly Playback seasonal dialog header"
+  },
+  "muslyPlaybackAnnual": "Musly Playback",
+  "@muslyPlaybackAnnual": {
+    "description": "Musly Playback annual title in settings"
+  },
+  "muslyPlaybackAnnualSubtitle": "Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!",
+  "@muslyPlaybackAnnualSubtitle": {
+    "description": "Musly Playback annual subtitle in settings"
+  },
+  "muslyPlaybackDev": "Playback Preview (Test Mode)",
+  "@muslyPlaybackDev": {
+    "description": "Playback preview in debug mode"
+  },
+  "muslyPlaybackDevSubtitle": "Explore your Year-in-Review preview directly without waiting for November",
+  "@muslyPlaybackDevSubtitle": {
+    "description": "Playback preview subtitle"
+  },
+  "synthesizingUniverse": "Synthesizing your listening universe",
+  "@synthesizingUniverse": {
+    "description": "Wrapped loading subtitle"
+  },
+  "drumroll": "DRUMROLL...",
+  "@drumroll": {
+    "description": "Suspense countdown badge"
+  },
+  "readyToDiscoverTopSong": "Ready to discover\nyour #1 song?",
+  "@readyToDiscoverTopSong": {
+    "description": "Suspense countdown title"
+  },
+  "getReadyForBeatDrop": "Get ready for the beat drop...",
+  "@getReadyForBeatDrop": {
+    "description": "Suspense countdown subtitle"
+  },
+  "yourYearInSound": "Your {year}\nin Sound",
+  "@yourYearInSound": {
+    "description": "Wrapped intro slide title with year",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "yourYearInSoundSubtitle": "You explored sonic depths, relived moments, and built memories through music.",
+  "@yourYearInSoundSubtitle": {
+    "description": "Wrapped intro slide subtitle"
+  },
+  "tapToBegin": "Tap to begin",
+  "@tapToBegin": {
+    "description": "Wrapped intro tap to begin button"
+  },
+  "minutesListened": "MINUTES LISTENED",
+  "@minutesListened": {
+    "description": "Wrapped minutes slide header"
+  },
+  "totalHours": "Total hours",
+  "@totalHours": {
+    "description": "Wrapped total hours metric"
+  },
+  "uniqueTracks": "Unique tracks",
+  "@uniqueTracks": {
+    "description": "Wrapped unique tracks metric"
+  },
+  "artists": "Artists",
+  "@artists": {
+    "description": "Wrapped artists metric label"
+  },
+  "yourMusicalChronotype": "YOUR MUSICAL CHRONOTYPE",
+  "@yourMusicalChronotype": {
+    "description": "Wrapped chronotype slide header"
+  },
+  "genreGalaxy": "GENRE GALAXY",
+  "@genreGalaxy": {
+    "description": "Wrapped genre slide header"
+  },
+  "soundsThatGuidedYou": "The sounds that guided you",
+  "@soundsThatGuidedYou": {
+    "description": "Wrapped genre slide title"
+  },
+  "topSongsHeader": "TOP SONGS",
+  "@topSongsHeader": {
+    "description": "Wrapped top songs slide header"
+  },
+  "nowPlayingHeader": "NOW PLAYING",
+  "@nowPlayingHeader": {
+    "description": "Wrapped now playing badge"
+  },
+  "yourMostListenedSongs": "Your most listened songs",
+  "@yourMostListenedSongs": {
+    "description": "Wrapped top songs title"
+  },
+  "topArtistsHeader": "TOP ARTISTS",
+  "@topArtistsHeader": {
+    "description": "Wrapped top artists header"
+  },
+  "yourMusicalAnchors": "Your musical anchors",
+  "@yourMusicalAnchors": {
+    "description": "Wrapped top artists title"
+  },
+  "yourListeningPersonality": "YOUR LISTENING PERSONALITY",
+  "@yourListeningPersonality": {
+    "description": "Wrapped personality slide header"
+  },
+  "muslyPlaybackHeader": "MUSLY PLAYBACK",
+  "@muslyPlaybackHeader": {
+    "description": "Wrapped summary card header"
+  },
+  "topSongBadge": "Song #1",
+  "@topSongBadge": {
+    "description": "Wrapped top song badge in summary"
+  },
+  "minutes": "Minutes",
+  "@minutes": {
+    "description": "Minutes metric label"
+  },
+  "topArtistMetric": "Top Artist",
+  "@topArtistMetric": {
+    "description": "Top artist metric label"
+  },
+  "genreMetric": "Genre",
+  "@genreMetric": {
+    "description": "Genre metric label"
+  },
+  "playYourTopSongs": "Play Your Top Songs",
+  "@playYourTopSongs": {
+    "description": "Wrapped summary card play button"
+  },
+  "yourYearInReviewIsReady": "Your Year in Review is ready!",
+  "@yourYearInReviewIsReady": {
+    "description": "Wrapped home banner subtitle"
+  },
+  "playsCount": "{count, plural, =1{1 play} other{{count} plays}}",
+  "@playsCount": {
+    "description": "Song play count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chronotypeMidnightWanderer": "Midnight Wanderer 🌙",
+  "@chronotypeMidnightWanderer": {
+    "description": "Chronotype name for night listener"
+  },
+  "chronotypeMidnightWandererDesc": "Your deepest music moments unfold late at night when the world is quiet.",
+  "@chronotypeMidnightWandererDesc": {
+    "description": "Chronotype description for night listener"
+  },
+  "chronotypeSunriseHarmonizer": "Sunrise Harmonizer ☀️",
+  "@chronotypeSunriseHarmonizer": {
+    "description": "Chronotype name for morning listener"
+  },
+  "chronotypeSunriseHarmonizerDesc": "You kickstart every morning with rhythm, setting the soundtrack for the entire day.",
+  "@chronotypeSunriseHarmonizerDesc": {
+    "description": "Chronotype description for morning listener"
+  },
+  "chronotypeAfternoonFlow": "Afternoon Flow ⚡",
+  "@chronotypeAfternoonFlow": {
+    "description": "Chronotype name for afternoon listener"
+  },
+  "chronotypeAfternoonFlowDesc": "Midday is your prime listening peak, powering through your momentum with high-energy sound.",
+  "@chronotypeAfternoonFlowDesc": {
+    "description": "Chronotype description for afternoon listener"
+  },
+  "chronotypeTwilightLounger": "Twilight Lounger 🌆",
+  "@chronotypeTwilightLounger": {
+    "description": "Chronotype name for evening listener"
+  },
+  "chronotypeTwilightLoungerDesc": "Evenings are made for unwinding and losing yourself in immersive album journeys.",
+  "@chronotypeTwilightLoungerDesc": {
+    "description": "Chronotype description for evening listener"
+  },
+  "archetypeLuminary": "The Luminary",
+  "@archetypeLuminary": {
+    "description": "Archetype title for Luminary"
+  },
+  "archetypeLuminaryBadge": "SONIC EXPLORER",
+  "@archetypeLuminaryBadge": {
+    "description": "Archetype badge for Luminary"
+  },
+  "archetypeLuminaryDesc": "You shine light on diverse genres and constantly seek out fresh musical horizons.",
+  "@archetypeLuminaryDesc": {
+    "description": "Archetype description for Luminary"
+  },
+  "archetypeLuminaryTrait1": "Eclectic Taste",
+  "@archetypeLuminaryTrait1": {
+    "description": "Archetype trait"
+  },
+  "archetypeLuminaryTrait2": "Genre Fluid",
+  "@archetypeLuminaryTrait2": {
+    "description": "Archetype trait"
+  },
+  "archetypeLuminaryTrait3": "High Discovery",
+  "@archetypeLuminaryTrait3": {
+    "description": "Archetype trait"
+  },
+  "archetypeDevotee": "The Devotee",
+  "@archetypeDevotee": {
+    "description": "Archetype title for Devotee"
+  },
+  "archetypeDevoteeBadge": "SUPERFAN",
+  "@archetypeDevoteeBadge": {
+    "description": "Archetype badge for Devotee"
+  },
+  "archetypeDevoteeDesc": "When you love an artist or album, you listen on repeat with unmatched dedication.",
+  "@archetypeDevoteeDesc": {
+    "description": "Archetype description for Devotee"
+  },
+  "archetypeDevoteeTrait1": "Deep Loyalty",
+  "@archetypeDevoteeTrait1": {
+    "description": "Archetype trait"
+  },
+  "archetypeDevoteeTrait2": "Album Listener",
+  "@archetypeDevoteeTrait2": {
+    "description": "Archetype trait"
+  },
+  "archetypeDevoteeTrait3": "Emotional Bond",
+  "@archetypeDevoteeTrait3": {
+    "description": "Archetype trait"
+  },
+  "archetypeNightOwl": "The Night Owl",
+  "@archetypeNightOwl": {
+    "description": "Archetype title for Night Owl"
+  },
+  "archetypeNightOwlBadge": "NOCTURNAL VIBES",
+  "@archetypeNightOwlBadge": {
+    "description": "Archetype badge for Night Owl"
+  },
+  "archetypeNightOwlDesc": "Your soul belongs to midnight soundscapes, atmospheric chords, and starry listening sessions.",
+  "@archetypeNightOwlDesc": {
+    "description": "Archetype description for Night Owl"
+  },
+  "archetypeNightOwlTrait1": "Atmospheric",
+  "@archetypeNightOwlTrait1": {
+    "description": "Archetype trait"
+  },
+  "archetypeNightOwlTrait2": "Introspective",
+  "@archetypeNightOwlTrait2": {
+    "description": "Archetype trait"
+  },
+  "archetypeNightOwlTrait3": "Late-Night Flow",
+  "@archetypeNightOwlTrait3": {
+    "description": "Archetype trait"
+  },
+  "archetypeSunrise": "The Sunrise Harmonizer",
+  "@archetypeSunrise": {
+    "description": "Archetype title for Sunrise Harmonizer"
+  },
+  "archetypeSunriseBadge": "ENERGY CATALYST",
+  "@archetypeSunriseBadge": {
+    "description": "Archetype badge for Sunrise Harmonizer"
+  },
+  "archetypeSunriseDesc": "You wake up the world with high vibrations and let optimistic melodies spark your day.",
+  "@archetypeSunriseDesc": {
+    "description": "Archetype description for Sunrise Harmonizer"
+  },
+  "archetypeSunriseTrait1": "Uplifting",
+  "@archetypeSunriseTrait1": {
+    "description": "Archetype trait"
+  },
+  "archetypeSunriseTrait2": "Morning Energy",
+  "@archetypeSunriseTrait2": {
+    "description": "Archetype trait"
+  },
+  "archetypeSunriseTrait3": "Rhythmic Drive",
+  "@archetypeSunriseTrait3": {
+    "description": "Archetype trait"
+  },
+  "archetypeAlchemist": "The Sonic Alchemist",
+  "@archetypeAlchemist": {
+    "description": "Archetype title for Sonic Alchemist"
+  },
+  "archetypeAlchemistBadge": "VIBE CURATOR",
+  "@archetypeAlchemistBadge": {
+    "description": "Archetype badge for Sonic Alchemist"
+  },
+  "archetypeAlchemistDesc": "You transmute everyday moments into cinematic experiences with perfectly curated soundtracks.",
+  "@archetypeAlchemistDesc": {
+    "description": "Archetype description for Sonic Alchemist"
+  },
+  "archetypeAlchemistTrait1": "Curator Instinct",
+  "@archetypeAlchemistTrait1": {
+    "description": "Archetype trait"
+  },
+  "archetypeAlchemistTrait2": "Cinematic Vibe",
+  "@archetypeAlchemistTrait2": {
+    "description": "Archetype trait"
+  },
+  "archetypeAlchemistTrait3": "Mood Master",
+  "@archetypeAlchemistTrait3": {
+    "description": "Archetype trait"
+  },
+  "percentileTop05": "Top 0.5% Global Listener",
+  "@percentileTop05": {
+    "description": "Percentile badge"
+  },
+  "percentileTop1": "Top 1% Global Listener",
+  "@percentileTop1": {
+    "description": "Percentile badge"
+  },
+  "percentileTop5": "Top 5% Global Listener",
+  "@percentileTop5": {
+    "description": "Percentile badge"
+  },
+  "percentileTop10": "Top 10% Global Listener",
+  "@percentileTop10": {
+    "description": "Percentile badge"
+  },
+  "percentileTopAficionado": "Top Music Aficionado",
+  "@percentileTopAficionado": {
+    "description": "Percentile badge"
+  },
+  "superfanBadge01": "Top 0.1% Superfan",
+  "@superfanBadge01": {
+    "description": "Superfan badge"
+  },
+  "superfanBadge1": "Top 1% Fan",
+  "@superfanBadge1": {
+    "description": "Fan badge"
+  },
+  "superfanBadge5": "Top 5% Fan",
+  "@superfanBadge5": {
+    "description": "Fan badge"
   }
 }

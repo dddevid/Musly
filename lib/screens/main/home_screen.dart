@@ -684,10 +684,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           letterSpacing: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Your Year in Review is ready!',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.yourYearInReviewIsReady ??
+                            'Your Year in Review is ready!',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

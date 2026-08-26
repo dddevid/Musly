@@ -215,9 +215,106 @@ class _WrappedScreenState extends State<WrappedScreen>
     Navigator.of(context).pop();
   }
 
+  String _getChronotypeName(AppLocalizations? l10n, String id, String fallback) {
+    if (l10n == null) return fallback;
+    return switch (id) {
+      'midnight_wanderer' => l10n.chronotypeMidnightWanderer,
+      'sunrise_harmonizer' => l10n.chronotypeSunriseHarmonizer,
+      'afternoon_flow' => l10n.chronotypeAfternoonFlow,
+      'twilight_lounger' => l10n.chronotypeTwilightLounger,
+      _ => fallback,
+    };
+  }
+
+  String _getChronotypeDesc(AppLocalizations? l10n, String id, String fallback) {
+    if (l10n == null) return fallback;
+    return switch (id) {
+      'midnight_wanderer' => l10n.chronotypeMidnightWandererDesc,
+      'sunrise_harmonizer' => l10n.chronotypeSunriseHarmonizerDesc,
+      'afternoon_flow' => l10n.chronotypeAfternoonFlowDesc,
+      'twilight_lounger' => l10n.chronotypeTwilightLoungerDesc,
+      _ => fallback,
+    };
+  }
+
+  String _getArchetypeTitle(AppLocalizations? l10n, PersonalityArchetype arch) {
+    if (l10n == null) return arch.title;
+    return switch (arch.id) {
+      'luminary' => l10n.archetypeLuminary,
+      'devotee' => l10n.archetypeDevotee,
+      'night_owl' => l10n.archetypeNightOwl,
+      'sunrise_harmonizer' => l10n.archetypeSunrise,
+      'alchemist' => l10n.archetypeAlchemist,
+      _ => arch.title,
+    };
+  }
+
+  String _getArchetypeBadge(AppLocalizations? l10n, PersonalityArchetype arch) {
+    if (l10n == null) return arch.badge;
+    return switch (arch.id) {
+      'luminary' => l10n.archetypeLuminaryBadge,
+      'devotee' => l10n.archetypeDevoteeBadge,
+      'night_owl' => l10n.archetypeNightOwlBadge,
+      'sunrise_harmonizer' => l10n.archetypeSunriseBadge,
+      'alchemist' => l10n.archetypeAlchemistBadge,
+      _ => arch.badge,
+    };
+  }
+
+  String _getArchetypeDesc(AppLocalizations? l10n, PersonalityArchetype arch) {
+    if (l10n == null) return arch.description;
+    return switch (arch.id) {
+      'luminary' => l10n.archetypeLuminaryDesc,
+      'devotee' => l10n.archetypeDevoteeDesc,
+      'night_owl' => l10n.archetypeNightOwlDesc,
+      'sunrise_harmonizer' => l10n.archetypeSunriseDesc,
+      'alchemist' => l10n.archetypeAlchemistDesc,
+      _ => arch.description,
+    };
+  }
+
+  List<String> _getArchetypeTraits(AppLocalizations? l10n, PersonalityArchetype arch) {
+    if (l10n == null) return arch.traits;
+    return switch (arch.id) {
+      'luminary' => [l10n.archetypeLuminaryTrait1, l10n.archetypeLuminaryTrait2, l10n.archetypeLuminaryTrait3],
+      'devotee' => [l10n.archetypeDevoteeTrait1, l10n.archetypeDevoteeTrait2, l10n.archetypeDevoteeTrait3],
+      'night_owl' => [l10n.archetypeNightOwlTrait1, l10n.archetypeNightOwlTrait2, l10n.archetypeNightOwlTrait3],
+      'sunrise_harmonizer' => [l10n.archetypeSunriseTrait1, l10n.archetypeSunriseTrait2, l10n.archetypeSunriseTrait3],
+      'alchemist' => [l10n.archetypeAlchemistTrait1, l10n.archetypeAlchemistTrait2, l10n.archetypeAlchemistTrait3],
+      _ => arch.traits,
+    };
+  }
+
+  String _getSuperfanBadge(AppLocalizations? l10n, int topArtistPlays) {
+    if (l10n == null) {
+      return topArtistPlays >= 30
+          ? 'Top 0.1% Superfan'
+          : (topArtistPlays >= 15 ? 'Top 1% Fan' : 'Top 5% Fan');
+    }
+    return topArtistPlays >= 30
+        ? l10n.superfanBadge01
+        : (topArtistPlays >= 15 ? l10n.superfanBadge1 : l10n.superfanBadge5);
+  }
+
+  String _getPercentileText(AppLocalizations? l10n, int minutes) {
+    if (l10n == null) {
+      if (minutes >= 15000) return 'Top 0.5% Global Listener';
+      if (minutes >= 8000) return 'Top 1% Global Listener';
+      if (minutes >= 4000) return 'Top 5% Global Listener';
+      if (minutes >= 1500) return 'Top 10% Global Listener';
+      return 'Top Music Aficionado';
+    }
+    if (minutes >= 15000) return l10n.percentileTop05;
+    if (minutes >= 8000) return l10n.percentileTop1;
+    if (minutes >= 4000) return l10n.percentileTop5;
+    if (minutes >= 1500) return l10n.percentileTop10;
+    return l10n.percentileTopAficionado;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSeason = WrappedService.isWrappedSeason(devPreview: widget.devPreview);
+    final l10n = AppLocalizations.of(context);
 
     if (!isSeason) {
       return _buildOutOfSeasonScreen();
@@ -252,7 +349,7 @@ class _WrappedScreenState extends State<WrappedScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                'Musly Playback ${WrappedService.getWrappedYear()}',
+                '${l10n?.muslyPlayback ?? 'Musly Playback'} ${WrappedService.getWrappedYear()}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -261,9 +358,9 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Synthesizing your listening universe',
-                style: TextStyle(color: Colors.white60, fontSize: 13),
+              Text(
+                l10n?.synthesizingUniverse ?? 'Synthesizing your listening universe',
+                style: const TextStyle(color: Colors.white60, fontSize: 13),
               ),
             ],
           ),
@@ -543,6 +640,7 @@ class _WrappedScreenState extends State<WrappedScreen>
   }
 
   Widget _buildSuspenseCountdownSlide() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -568,7 +666,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                       const Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
                       const SizedBox(width: 7),
                       Text(
-                        AppLocalizations.of(context)?.drumroll ?? 'DRUMROLL...',
+                        l10n?.drumroll ?? 'DRUMROLL...',
                         style: const TextStyle(
                           color: Color(0xFFFF0844),
                           fontWeight: FontWeight.w900,
@@ -581,7 +679,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ),
                 const SizedBox(height: 36),
                 Text(
-                  AppLocalizations.of(context)?.readyToDiscoverTopSong ??
+                  l10n?.readyToDiscoverTopSong ??
                       'Ready to discover\nyour #1 song?',
                   style: const TextStyle(
                     fontSize: 34,
@@ -624,9 +722,9 @@ class _WrappedScreenState extends State<WrappedScreen>
                   ),
                 ),
                 const SizedBox(height: 48),
-                const Text(
-                  'Preparati al drop sonoro...',
-                  style: TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+                Text(
+                  l10n?.getReadyForBeatDrop ?? 'Get ready for the beat drop...',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
                 ),
               ],
             );
@@ -663,6 +761,7 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 0: Intro / Overture ─────────────────────────────────────────────
   Widget _buildIntroSlide() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('intro'),
       mainAxisAlignment: MainAxisAlignment.center,
@@ -698,7 +797,7 @@ class _WrappedScreenState extends State<WrappedScreen>
         ),
         const SizedBox(height: 36),
         Text(
-          'Your ${_data!.year}\nin Sound',
+          l10n?.yourYearInSound(_data!.year) ?? 'Your ${_data!.year}\nin Sound',
           style: const TextStyle(
             fontSize: 42,
             fontWeight: FontWeight.w900,
@@ -709,9 +808,10 @@ class _WrappedScreenState extends State<WrappedScreen>
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
-        const Text(
-          'You explored sonic depths, relived moments, and built memories through music.',
-          style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.45),
+        Text(
+          l10n?.yourYearInSoundSubtitle ??
+              'You explored sonic depths, relived moments, and built memories through music.',
+          style: const TextStyle(fontSize: 16, color: Colors.white70, height: 1.45),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
@@ -726,7 +826,7 @@ class _WrappedScreenState extends State<WrappedScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                AppLocalizations.of(context)?.tapToBegin ?? 'Tap to begin',
+                l10n?.tapToBegin ?? 'Tap to begin',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
               const SizedBox(width: 8),
@@ -756,7 +856,7 @@ class _WrappedScreenState extends State<WrappedScreen>
             border: Border.all(color: const Color(0xFF00C6FF).withValues(alpha: 0.4)),
           ),
           child: Text(
-            _data!.percentileText.toUpperCase(),
+            _getPercentileText(l10n, mins).toUpperCase(),
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w900,
@@ -811,13 +911,17 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 2: Musical Chronotype ───────────────────────────────────────────
   Widget _buildChronotypeSlide() {
+    final l10n = AppLocalizations.of(context);
+    final chronoName = _getChronotypeName(l10n, _data!.chronotypeId, _data!.chronotypeName);
+    final chronoDesc = _getChronotypeDesc(l10n, _data!.chronotypeId, _data!.chronotypeDescription);
+
     return Column(
       key: const ValueKey('chronotype'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'IL TUO CRONOTIPO MUSICALE',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF512F), letterSpacing: 1.5),
+        Text(
+          l10n?.yourMusicalChronotype ?? 'YOUR MUSICAL CHRONOTYPE',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF512F), letterSpacing: 1.5),
         ),
         const SizedBox(height: 24),
         Container(
@@ -843,13 +947,13 @@ class _WrappedScreenState extends State<WrappedScreen>
               const Icon(CupertinoIcons.clock_fill, color: Colors.white, size: 48),
               const SizedBox(height: 18),
               Text(
-                _data!.chronotypeName,
+                chronoName,
                 style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                _data!.chronotypeDescription,
+                chronoDesc,
                 style: const TextStyle(fontSize: 15, color: Colors.white, height: 1.45),
                 textAlign: TextAlign.center,
               ),
@@ -862,18 +966,19 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 3: Genre Galaxy ─────────────────────────────────────────────────
   Widget _buildGenreGalaxySlide() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('genres'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'GALASSIA DEI GENERI',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF8E2DE2), letterSpacing: 1.5),
+        Text(
+          l10n?.genreGalaxy ?? 'GENRE GALAXY',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF8E2DE2), letterSpacing: 1.5),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'I Suoni che ti hanno guidato',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+        Text(
+          l10n?.soundsThatGuidedYou ?? 'The sounds that guided you',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
         ),
         const SizedBox(height: 24),
         Expanded(
@@ -1065,16 +1170,16 @@ class _WrappedScreenState extends State<WrappedScreen>
                 border: Border.all(color: const Color(0xFF11998E).withValues(alpha: 0.4)),
               ),
               child: Text(
-                _data!.topArtistSuperfanBadge,
+                _getSuperfanBadge(l10n, _data!.topArtistPlayCount),
                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF38EF7D)),
               ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Your musical anchors',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+        Text(
+          l10n?.yourMusicalAnchors ?? 'Your musical anchors',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
         ),
         const SizedBox(height: 20),
         Expanded(
@@ -1143,15 +1248,20 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   // ── Slide 6: Listening Personality Archetype ──────────────────────────────
   Widget _buildPersonalitySlide() {
+    final l10n = AppLocalizations.of(context);
     final arch = _data!.archetype;
+    final archTitle = _getArchetypeTitle(l10n, arch);
+    final archBadge = _getArchetypeBadge(l10n, arch);
+    final archDesc = _getArchetypeDesc(l10n, arch);
+    final archTraits = _getArchetypeTraits(l10n, arch);
 
     return Column(
       key: const ValueKey('personality'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'YOUR LISTENING PERSONALITY',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.5),
+        Text(
+          l10n?.yourListeningPersonality ?? 'YOUR LISTENING PERSONALITY',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.5),
         ),
         const SizedBox(height: 24),
         Container(
@@ -1183,19 +1293,19 @@ class _WrappedScreenState extends State<WrappedScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  arch.badge,
+                  archBadge,
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
                 ),
               ),
               const SizedBox(height: 14),
               Text(
-                arch.title,
+                archTitle,
                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                arch.description,
+                archDesc,
                 style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.45),
                 textAlign: TextAlign.center,
               ),
@@ -1204,7 +1314,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                 spacing: 8,
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
-                children: arch.traits.map((t) {
+                children: archTraits.map((t) {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
