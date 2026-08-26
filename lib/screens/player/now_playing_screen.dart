@@ -201,6 +201,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         ? widget.topPadding
         : (viewPadding.top > 0 ? viewPadding.top : mediaQueryPadding.top);
         
+    final effectiveBottomPadding = viewPadding.bottom > 0 ? viewPadding.bottom : mediaQueryPadding.bottom;
     final effectiveLeftPadding = viewPadding.left > 0 ? viewPadding.left : mediaQueryPadding.left;
     final effectiveRightPadding = viewPadding.right > 0 ? viewPadding.right : mediaQueryPadding.right;
 
@@ -231,6 +232,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           accentColor,
                           isLandscape: isLandscape,
                           effectiveTopPadding: effectiveTopPadding,
+                          effectiveBottomPadding: effectiveBottomPadding,
                           effectiveLeftPadding: effectiveLeftPadding,
                           effectiveRightPadding: effectiveRightPadding,
                         ),
@@ -425,11 +427,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     bool isStarred, {
     required bool isSmall,
     bool isLandscape = false,
+    double? verticalPadding,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isLandscape ? 16.0 : 32.0,
-        vertical: isLandscape ? 2.0 : (isSmall ? 6.0 : 12.0),
+        vertical: isLandscape ? 2.0 : (verticalPadding ?? (isSmall ? 6.0 : 12.0)),
       ),
       child: Row(
         children: [
@@ -561,6 +564,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     Color accentColor, {
     bool isLandscape = false,
     required double effectiveTopPadding,
+    required double effectiveBottomPadding,
     required double effectiveLeftPadding,
     required double effectiveRightPadding,
   }) {
@@ -595,6 +599,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           isStarred,
           accentColor,
           effectiveTopPadding,
+          effectiveBottomPadding,
         );
       },
     );
@@ -777,139 +782,172 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     bool isStarred,
     Color accentColor,
     double effectiveTopPadding,
+    double effectiveBottomPadding,
   ) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final isSmall = screenHeight < 720;
-    final isVerySmall = screenHeight < 620;
-    final headerClearance = effectiveTopPadding > 0
-        ? effectiveTopPadding + (isSmall ? 60.0 : 70.0)
-        : (isSmall ? 48.0 : 64.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenHeight = constraints.maxHeight;
+        final screenWidth = constraints.maxWidth;
+        final isSmall = screenHeight < 720;
+        final isVerySmall = screenHeight < 620;
 
-    return SafeArea(
-      top: false,
-      child: Column(
-        children: [
-          SizedBox(height: headerClearance), // Space for header & status bar
-          
-          // Album Art with horizontal swipe navigation (Issue #201) and Live Lyric
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSmall ? 40.0 : 36.0,
-                  vertical: isVerySmall ? 2.0 : (isSmall ? 4.0 : 8.0),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onHorizontalDragEnd: (details) {
-                            final vel = details.primaryVelocity;
-                            if (vel != null) {
-                              if (vel < -250) {
-                                provider.skipNext();
-                              } else if (vel > 250) {
-                                provider.skipPrevious();
-                              }
-                            }
-                          },
-                          child: AlbumArtView(
-                            image: _currentImageProvider ?? widget.image,
-                            tag: currentSong?.id ?? widget.heroTag,
+        // Dynamic spacing scale factor between 0.0 (compact) and 1.0 (spacious)
+        final spacingScale = ((screenHeight - 620.0) / 280.0).clamp(0.0, 1.0);
+
+        // Header clearance calculated from real physical status bar + header icon height
+        final headerClearance = effectiveTopPadding > 0
+            ? effectiveTopPadding + (isSmall ? 46.0 : 52.0)
+            : (isSmall ? 48.0 : 56.0);
+
+        // Responsive horizontal padding for artwork (prevents oversized artwork on tablets/foldables)
+        final horizontalArtPadding = screenWidth > 480
+            ? ((screenWidth - 380.0) / 2.0).clamp(32.0, 120.0)
+            : (screenWidth < 360 ? 24.0 : 32.0);
+
+        final titleVerticalPadding = 4.0 + (6.0 * spacingScale);
+        final sliderBottomSpacing = isSmall ? 4.0 : (6.0 + 8.0 * spacingScale);
+        final controlsBottomSpacing = isVerySmall ? 4.0 : (isSmall ? 6.0 : (8.0 + 10.0 * spacingScale));
+        final bottomActionsSpacing = effectiveBottomPadding > 0
+            ? effectiveBottomPadding + 4.0
+            : (isSmall ? 6.0 : (10.0 + 6.0 * spacingScale));
+
+        return SafeArea(
+          top: false,
+          bottom: false,
+          child: Column(
+            children: [
+              SizedBox(height: headerClearance), // Space for header & status bar
+              
+              // Album Art with horizontal swipe navigation (Issue #201) and Live Lyric
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalArtPadding,
+                      vertical: isVerySmall ? 2.0 : (isSmall ? 4.0 : 8.0),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: AspectRatio(
+                            aspectRatio: 1.0,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onHorizontalDragEnd: (details) {
+                                final vel = details.primaryVelocity;
+                                if (vel != null) {
+                                  if (vel < -250) {
+                                    provider.skipNext();
+                                  } else if (vel > 250) {
+                                    provider.skipPrevious();
+                                  }
+                                }
+                              },
+                              child: AlbumArtView(
+                                image: _currentImageProvider ?? widget.image,
+                                tag: currentSong?.id ?? widget.heroTag,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
+                      ],
                     ),
-                    _buildLiveLyricPill(provider, accentColor, isSmall: isSmall),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-      
-          _buildTitleArtistRow(context, provider, currentSong, title, artist, isStarred, isSmall: isSmall),
-
-          _buildStarRatingRow(provider, currentSong, isSmall: isSmall),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: StreamBuilder<Duration>(
-              stream: provider.positionStream,
-              initialData: provider.position,
-              builder: (context, snapshot) {
-                return PlaybackProgressSlider(
-                  position: snapshot.data ?? Duration.zero,
-                  duration: provider.duration,
-                  accentColor: Colors.white,
-                  onChanged: (val) {
-                    provider.seek(val);
-                  },
-                );
-              },
-            ),
-          ),
-
-          SizedBox(height: isSmall ? 8 : 16),
-
-          // Controls
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: PlaybackControls(
-              isPlaying: provider.isPlaying,
-              isShuffleEnabled: provider.shuffleEnabled,
-              isRepeatEnabled: provider.repeatMode != RepeatMode.off,
-              accentColor: accentColor,
-              onPlayPause: () => provider.togglePlayPause(),
-              onNext: () => provider.skipNext(),
-              onPrevious: () => provider.skipPrevious(),
-              onShuffleToggle: () => provider.toggleShuffle(),
-              onRepeatToggle: () => provider.toggleRepeat(),
-            ),
-          ),
-
-          SizedBox(height: isVerySmall ? 4 : (isSmall ? 8 : 24)),
-
-          // Volume Slider (Issue #200)
-          ValueListenableBuilder<bool>(
-            valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
-            builder: (context, showVolume, _) {
-              if (!showVolume) return const SizedBox.shrink();
-              return const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32.0),
-                child: VolumeSlider(),
-              );
-            },
-          ),
-
-          // Bottom Actions
-          NowPlayingBottomActions(
-            isLyricsActive: _currentPage == 1,
-            isQueueActive: _currentPage == 2,
-            accentColor: accentColor,
-            onLyricsTap: () {
-              if (_currentPage == 1) {
-                _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-              } else {
-                _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-              }
-            },
-            onQueueTap: () {
-               if (_currentPage == 2) {
-                _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-              } else {
-                _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-              }
-            },
-          ),
           
-          SizedBox(height: isSmall ? 6 : 16),
-        ],
-      ),
+              _buildTitleArtistRow(
+                context,
+                provider,
+                currentSong,
+                title,
+                artist,
+                isStarred,
+                isSmall: isSmall,
+                verticalPadding: titleVerticalPadding,
+              ),
+
+              _buildStarRatingRow(provider, currentSong, isSmall: isSmall),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: StreamBuilder<Duration>(
+                  stream: provider.positionStream,
+                  initialData: provider.position,
+                  builder: (context, snapshot) {
+                    return PlaybackProgressSlider(
+                      position: snapshot.data ?? Duration.zero,
+                      duration: provider.duration,
+                      accentColor: Colors.white,
+                      onChanged: (val) {
+                        provider.seek(val);
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              SizedBox(height: sliderBottomSpacing),
+
+              // Controls
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: PlaybackControls(
+                  isPlaying: provider.isPlaying,
+                  isShuffleEnabled: provider.shuffleEnabled,
+                  isRepeatEnabled: provider.repeatMode != RepeatMode.off,
+                  accentColor: accentColor,
+                  onPlayPause: () => provider.togglePlayPause(),
+                  onNext: () => provider.skipNext(),
+                  onPrevious: () => provider.skipPrevious(),
+                  onShuffleToggle: () => provider.toggleShuffle(),
+                  onRepeatToggle: () => provider.toggleRepeat(),
+                ),
+              ),
+
+              SizedBox(height: controlsBottomSpacing),
+
+              // Volume Slider (Issue #200)
+              ValueListenableBuilder<bool>(
+                valueListenable: PlayerUiSettingsService().showVolumeSliderNotifier,
+                builder: (context, showVolume, _) {
+                  if (!showVolume) return const SizedBox.shrink();
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32.0),
+                    child: VolumeSlider(),
+                  );
+                },
+              ),
+
+              // Bottom Actions
+              NowPlayingBottomActions(
+                isLyricsActive: _currentPage == 1,
+                isQueueActive: _currentPage == 2,
+                accentColor: accentColor,
+                onLyricsTap: () {
+                  if (_currentPage == 1) {
+                    _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                  } else {
+                    _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                  }
+                },
+                onQueueTap: () {
+                   if (_currentPage == 2) {
+                    _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                  } else {
+                    _pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                  }
+                },
+              ),
+              
+              SizedBox(height: bottomActionsSpacing),
+            ],
+          ),
+        );
+      },
     );
   }
 }
