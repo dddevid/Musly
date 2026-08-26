@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +30,6 @@ class _WrappedScreenState extends State<WrappedScreen>
   bool _isLoading = true;
   int _currentSlide = 0;
   static const int _totalSlides = 8;
-  Timer? _autoAdvanceTimer;
   Timer? _suspenseTimer;
   bool _isPaused = false;
   bool _isSuspenseLocked = false;
@@ -76,7 +76,6 @@ class _WrappedScreenState extends State<WrappedScreen>
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    _autoAdvanceTimer?.cancel();
     _suspenseTimer?.cancel();
     _progressTicker?.cancel();
     _auraController.dispose();
@@ -108,7 +107,6 @@ class _WrappedScreenState extends State<WrappedScreen>
   }
 
   void _startSlideTimer() {
-    _autoAdvanceTimer?.cancel();
     _progressTicker?.cancel();
     if (_isPaused || _isSuspenseLocked) return;
 
@@ -142,7 +140,6 @@ class _WrappedScreenState extends State<WrappedScreen>
       _currentSlideProgress = 0.0;
     });
 
-    _autoAdvanceTimer?.cancel();
     _progressTicker?.cancel();
 
     // 3-second suspense countdown with haptics
@@ -311,6 +308,51 @@ class _WrappedScreenState extends State<WrappedScreen>
     return l10n.percentileTopAficionado;
   }
 
+  String _formatNumber(int number) {
+    return number.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
+  }
+
+  Widget _buildGlassCard({
+    required Widget child,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(22),
+    BorderRadius? borderRadius,
+    Color? backgroundColor,
+    Border? border,
+    List<BoxShadow>? boxShadow,
+  }) {
+    final radius = borderRadius ?? BorderRadius.circular(26);
+    return ClipRRect(
+      borderRadius: radius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.white.withValues(alpha: 0.08),
+            borderRadius: radius,
+            border: border ??
+                Border.all(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  width: 1.2,
+                ),
+            boxShadow: boxShadow ??
+                [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSeason = WrappedService.isWrappedSeason(devPreview: widget.devPreview);
@@ -322,14 +364,14 @@ class _WrappedScreenState extends State<WrappedScreen>
 
     if (_isLoading || _data == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF090A0F),
+        backgroundColor: const Color(0xFF07080C),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 72,
-                height: 72,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -337,9 +379,9 @@ class _WrappedScreenState extends State<WrappedScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFA243C).withValues(alpha: 0.4),
-                      blurRadius: 28,
-                      spreadRadius: 4,
+                      color: const Color(0xFFFA243C).withValues(alpha: 0.45),
+                      blurRadius: 32,
+                      spreadRadius: 6,
                     ),
                   ],
                 ),
@@ -347,20 +389,20 @@ class _WrappedScreenState extends State<WrappedScreen>
                   child: CupertinoActivityIndicator(color: Colors.white, radius: 16),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               Text(
                 '${l10n?.muslyPlayback ?? 'Musly Playback'} ${WrappedService.getWrappedYear()}',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 l10n?.synthesizingUniverse ?? 'Synthesizing your listening universe',
-                style: const TextStyle(color: Colors.white60, fontSize: 13),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
               ),
             ],
           ),
@@ -369,28 +411,27 @@ class _WrappedScreenState extends State<WrappedScreen>
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF07080C),
+      backgroundColor: const Color(0xFF05060A),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: (_) {
+        onLongPressStart: (_) {
           if (!_isSuspenseLocked) {
             setState(() => _isPaused = true);
           }
         },
-        onTapUp: (details) {
+        onLongPressEnd: (_) {
           if (!_isSuspenseLocked) {
             setState(() => _isPaused = false);
+          }
+        },
+        onTapUp: (details) {
+          if (!_isSuspenseLocked) {
             final width = MediaQuery.of(context).size.width;
             if (details.globalPosition.dx < width * 0.3) {
               _prevSlide();
             } else {
               _nextSlide();
             }
-          }
-        },
-        onTapCancel: () {
-          if (!_isSuspenseLocked) {
-            setState(() => _isPaused = false);
           }
         },
         child: Stack(
@@ -411,9 +452,9 @@ class _WrappedScreenState extends State<WrappedScreen>
                   // Slide Viewport
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 380),
                         switchInCurve: Curves.easeOutCubic,
                         switchOutCurve: Curves.easeInCubic,
                         child: _isSuspenseLocked && _currentSlide == 4
@@ -425,6 +466,42 @@ class _WrappedScreenState extends State<WrappedScreen>
                 ],
               ),
             ),
+
+            // Paused Indicator Overlay
+            if (_isPaused)
+              Positioned(
+                top: 50,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        color: Colors.black45,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(CupertinoIcons.pause_fill, color: Colors.white70, size: 12),
+                            SizedBox(width: 6),
+                            Text(
+                              'PAUSED',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -434,7 +511,7 @@ class _WrappedScreenState extends State<WrappedScreen>
   Widget _buildOutOfSeasonScreen() {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF090A0F),
+      backgroundColor: const Color(0xFF07080C),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -450,8 +527,8 @@ class _WrappedScreenState extends State<WrappedScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 88,
-                height: 88,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFA243C), Color(0xFFFF512F)],
@@ -460,26 +537,27 @@ class _WrappedScreenState extends State<WrappedScreen>
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFFA243C).withValues(alpha: 0.4),
-                      blurRadius: 30,
+                      blurRadius: 36,
+                      spreadRadius: 4,
                     ),
                   ],
                 ),
-                child: const Icon(CupertinoIcons.gift_fill, color: Colors.white, size: 44),
+                child: const Icon(CupertinoIcons.gift_fill, color: Colors.white, size: 48),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Text(
                 l10n?.wrappedSeasonal ?? 'Musly Playback is Seasonal',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
                 l10n?.muslyPlaybackAnnualSubtitle ??
                     'Your annual Year-in-Review unlocks automatically every year between late November and mid-January.\n\nKeep listening to music to expand your sonic universe!',
-                style: const TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
+                style: const TextStyle(fontSize: 14, color: Colors.white70, height: 1.55),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               FilledButton.icon(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
@@ -488,12 +566,14 @@ class _WrappedScreenState extends State<WrappedScreen>
                     ),
                   );
                 },
-                icon: const Icon(CupertinoIcons.sparkles),
+                icon: const Icon(CupertinoIcons.sparkles, size: 18),
                 label: Text(l10n?.muslyPlaybackDev ?? 'Playback Preview (Test Mode)'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFFA243C),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 8,
                 ),
               ),
             ],
@@ -505,14 +585,14 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   Widget _buildAnimatedBackground() {
     final palettes = [
-      [const Color(0xFFFA243C), const Color(0xFF7928CA), const Color(0xFF000000)], // 0. Intro
-      [const Color(0xFF00C6FF), const Color(0xFF0072FF), const Color(0xFF050B14)], // 1. Minutes
-      [const Color(0xFFFF512F), const Color(0xFFDD2476), const Color(0xFF14050E)], // 2. Chronotype
-      [const Color(0xFF8E2DE2), const Color(0xFF4A00E0), const Color(0xFF0E0514)], // 3. Genres
-      [const Color(0xFFFF0844), const Color(0xFFFFB199), const Color(0xFF140508)], // 4. Top Songs
-      [const Color(0xFF11998E), const Color(0xFF38EF7D), const Color(0xFF05140C)], // 5. Top Artists
-      [const Color(0xFFFF007A), const Color(0xFF7928CA), const Color(0xFF0A0514)], // 6. Personality
-      [const Color(0xFFFA243C), const Color(0xFFFF8C00), const Color(0xFF050505)], // 7. Bento Card
+      [const Color(0xFFFA243C), const Color(0xFF7928CA), const Color(0xFF030305)], // 0. Intro
+      [const Color(0xFF00C6FF), const Color(0xFF0072FF), const Color(0xFF020710)], // 1. Minutes
+      [const Color(0xFFFF512F), const Color(0xFFDD2476), const Color(0xFF0C0308)], // 2. Chronotype
+      [const Color(0xFF8E2DE2), const Color(0xFF4A00E0), const Color(0xFF080310)], // 3. Genres
+      [const Color(0xFFFF0844), const Color(0xFFFFB199), const Color(0xFF0C0305)], // 4. Top Songs
+      [const Color(0xFF11998E), const Color(0xFF38EF7D), const Color(0xFF030D08)], // 5. Top Artists
+      [const Color(0xFFFF007A), const Color(0xFF7928CA), const Color(0xFF080310)], // 6. Personality
+      [const Color(0xFFFA243C), const Color(0xFFFF8C00), const Color(0xFF040406)], // 7. Bento Card
     ];
 
     final currentColors = palettes[_currentSlide % palettes.length];
@@ -520,20 +600,20 @@ class _WrappedScreenState extends State<WrappedScreen>
     return AnimatedBuilder(
       animation: _auraController,
       builder: (context, _) {
-        final shiftX = 0.4 * (_auraController.value - 0.5);
-        final shiftY = -0.3 + 0.4 * (_auraController.value - 0.5);
+        final shiftX = 0.35 * (_auraController.value - 0.5);
+        final shiftY = -0.3 + 0.35 * (_auraController.value - 0.5);
 
         return Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
               center: Alignment(shiftX, shiftY),
-              radius: 1.5,
+              radius: 1.4,
               colors: [
-                currentColors[0].withValues(alpha: 0.45),
-                currentColors[1].withValues(alpha: 0.22),
+                currentColors[0].withValues(alpha: 0.42),
+                currentColors[1].withValues(alpha: 0.18),
                 currentColors[2],
               ],
-              stops: const [0.0, 0.55, 1.0],
+              stops: const [0.0, 0.6, 1.0],
             ),
           ),
         );
@@ -547,7 +627,7 @@ class _WrappedScreenState extends State<WrappedScreen>
         animation: _cardFloatController,
         builder: (context, _) {
           return Opacity(
-            opacity: 0.15 + (_cardFloatController.value * 0.1),
+            opacity: 0.14 + (_cardFloatController.value * 0.08),
             child: CustomPaint(
               size: Size.infinite,
               painter: _ParticlePainter(_cardFloatController.value),
@@ -560,7 +640,7 @@ class _WrappedScreenState extends State<WrappedScreen>
 
   Widget _buildHeaderProgress() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: Column(
         children: [
           Row(
@@ -575,9 +655,9 @@ class _WrappedScreenState extends State<WrappedScreen>
               return Expanded(
                 child: Container(
                   height: 3.5,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: 2.5),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(2),
                   ),
                   child: FractionallySizedBox(
@@ -587,6 +667,12 @@ class _WrappedScreenState extends State<WrappedScreen>
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -598,39 +684,49 @@ class _WrappedScreenState extends State<WrappedScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFA243C).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFA243C).withValues(alpha: 0.4)),
+                      color: const Color(0xFFFA243C).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFA243C).withValues(alpha: 0.35)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(CupertinoIcons.sparkles, color: Color(0xFFFA243C), size: 13),
-                        const SizedBox(width: 5),
+                        const Icon(CupertinoIcons.sparkles, color: Color(0xFFFA243C), size: 12),
+                        const SizedBox(width: 6),
                         Text(
                           'PLAYBACK ${_data!.year}',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 1.1,
+                            letterSpacing: 1.2,
                             color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-              IconButton(
-                icon: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.white60, size: 24),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () => Navigator.of(context).pop(),
+              ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    child: IconButton(
+                      icon: const Icon(CupertinoIcons.xmark, color: Colors.white70, size: 18),
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -647,34 +743,40 @@ class _WrappedScreenState extends State<WrappedScreen>
         child: AnimatedBuilder(
           animation: _suspenseController,
           builder: (context, _) {
-            final scale = 1.0 + (_suspenseController.value * 0.18);
+            final scale = 1.0 + (_suspenseController.value * 0.16);
 
             return Column(
               key: const ValueKey('suspense'),
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF0844).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 14),
-                      const SizedBox(width: 7),
-                      Text(
-                        l10n?.drumroll ?? 'DRUMROLL...',
-                        style: const TextStyle(
-                          color: Color(0xFFFF0844),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                          letterSpacing: 1.2,
-                        ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF0844).withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.6)),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(CupertinoIcons.lock_fill, color: Color(0xFFFF0844), size: 13),
+                          const SizedBox(width: 7),
+                          Text(
+                            l10n?.drumroll ?? 'DRUMROLL...',
+                            style: const TextStyle(
+                              color: Color(0xFFFF0844),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                              letterSpacing: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 36),
@@ -686,7 +788,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     height: 1.15,
-                    letterSpacing: -0.5,
+                    letterSpacing: -0.6,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -694,8 +796,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                 Transform.scale(
                   scale: scale,
                   child: Container(
-                    width: 120,
-                    height: 120,
+                    width: 124,
+                    height: 124,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const RadialGradient(
@@ -703,8 +805,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF0844).withValues(alpha: 0.6),
-                          blurRadius: 40 * scale,
+                          color: const Color(0xFFFF0844).withValues(alpha: 0.65),
+                          blurRadius: 44 * scale,
                           spreadRadius: 8 * scale,
                         ),
                       ],
@@ -713,7 +815,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                       child: Text(
                         '$_suspenseCountdown',
                         style: const TextStyle(
-                          fontSize: 58,
+                          fontSize: 60,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                         ),
@@ -724,7 +826,11 @@ class _WrappedScreenState extends State<WrappedScreen>
                 const SizedBox(height: 48),
                 Text(
                   l10n?.getReadyForBeatDrop ?? 'Get ready for the beat drop...',
-                  style: const TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ],
             );
@@ -770,66 +876,70 @@ class _WrappedScreenState extends State<WrappedScreen>
           animation: _cardFloatController,
           builder: (context, child) {
             return Transform.translate(
-              offset: Offset(0, -6 * _cardFloatController.value),
+              offset: Offset(0, -8 * _cardFloatController.value),
               child: child,
             );
           },
           child: Container(
-            width: 110,
-            height: 110,
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFFA243C), Color(0xFF7928CA)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(36),
+              borderRadius: BorderRadius.circular(40),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFA243C).withValues(alpha: 0.5),
-                  blurRadius: 40,
+                  color: const Color(0xFFFA243C).withValues(alpha: 0.55),
+                  blurRadius: 44,
                   spreadRadius: 4,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: const Icon(CupertinoIcons.music_albums_fill, color: Colors.white, size: 54),
+            child: const Icon(CupertinoIcons.music_albums_fill, color: Colors.white, size: 58),
           ),
         ),
-        const SizedBox(height: 36),
+        const SizedBox(height: 38),
         Text(
           l10n?.yourYearInSound(_data!.year) ?? 'Your ${_data!.year}\nin Sound',
           style: const TextStyle(
-            fontSize: 42,
+            fontSize: 44,
             fontWeight: FontWeight.w900,
             color: Colors.white,
-            height: 1.1,
-            letterSpacing: -0.8,
+            height: 1.08,
+            letterSpacing: -1.0,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 16),
-        Text(
-          l10n?.yourYearInSoundSubtitle ??
-              'You explored sonic depths, relived moments, and built memories through music.',
-          style: const TextStyle(fontSize: 16, color: Colors.white70, height: 1.45),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 40),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white24),
+        const SizedBox(height: 18),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            l10n?.yourYearInSoundSubtitle ??
+                'You explored sonic depths, relived moments, and built memories through music.',
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.white.withValues(alpha: 0.75),
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
           ),
+        ),
+        const SizedBox(height: 44),
+        _buildGlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
+          borderRadius: BorderRadius.circular(30),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 l10n?.tapToBegin ?? 'Tap to begin',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 15),
             ],
           ),
@@ -848,59 +958,57 @@ class _WrappedScreenState extends State<WrappedScreen>
       key: const ValueKey('minutes'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF00C6FF).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF00C6FF).withValues(alpha: 0.4)),
-          ),
+        _buildGlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          borderRadius: BorderRadius.circular(20),
+          backgroundColor: const Color(0xFF00C6FF).withValues(alpha: 0.16),
+          border: Border.all(color: const Color(0xFF00C6FF).withValues(alpha: 0.45)),
           child: Text(
             _getPercentileText(l10n, mins).toUpperCase(),
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w900,
               color: Color(0xFF00C6FF),
-              letterSpacing: 1.2,
+              letterSpacing: 1.3,
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
         TweenAnimationBuilder<int>(
           tween: IntTween(begin: 0, end: mins),
           duration: const Duration(milliseconds: 1600),
           curve: Curves.easeOutCubic,
           builder: (context, value, _) {
             return Text(
-              '$value',
+              _formatNumber(value),
               style: const TextStyle(
-                fontSize: 68,
+                fontSize: 66,
                 fontWeight: FontWeight.w900,
                 color: Colors.white,
-                letterSpacing: -1.5,
+                letterSpacing: -2.0,
               ),
             );
           },
         ),
         Text(
           l10n?.minutesListened ?? 'MINUTES LISTENED',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2.2),
-        ),
-        const SizedBox(height: 36),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white12),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white.withValues(alpha: 0.65),
+            letterSpacing: 2.4,
           ),
+        ),
+        const SizedBox(height: 38),
+        _buildGlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildMetric(l10n?.totalHours ?? 'Total hours', hours),
-              Container(width: 1, height: 40, color: Colors.white24),
-              _buildMetric(l10n?.uniqueTracks ?? 'Unique tracks', '${_data!.totalUniqueTracks}'),
-              Container(width: 1, height: 40, color: Colors.white24),
+              Container(width: 1, height: 42, color: Colors.white24),
+              _buildMetric(l10n?.uniqueTracks ?? 'Unique tracks', _formatNumber(_data!.totalUniqueTracks)),
+              Container(width: 1, height: 42, color: Colors.white24),
               _buildMetric(l10n?.artists ?? 'Artists', '${_data!.totalUniqueArtists}'),
             ],
           ),
@@ -921,31 +1029,38 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           l10n?.yourMusicalChronotype ?? 'YOUR MUSICAL CHRONOTYPE',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF512F), letterSpacing: 1.5),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFFFF512F),
+            letterSpacing: 1.6,
+          ),
         ),
         const SizedBox(height: 24),
-        Container(
-          width: double.infinity,
+        _buildGlassCard(
           padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF512F), Color(0xFFDD2476)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF512F).withValues(alpha: 0.4),
-                blurRadius: 36,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
+          backgroundColor: const Color(0xFFFF512F).withValues(alpha: 0.2),
+          border: Border.all(color: const Color(0xFFFF512F).withValues(alpha: 0.45)),
           child: Column(
             children: [
-              const Icon(CupertinoIcons.clock_fill, color: Colors.white, size: 48),
-              const SizedBox(height: 18),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF512F), Color(0xFFDD2476)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF512F).withValues(alpha: 0.45),
+                      blurRadius: 28,
+                    ),
+                  ],
+                ),
+                child: const Icon(CupertinoIcons.clock_fill, color: Colors.white, size: 36),
+              ),
+              const SizedBox(height: 22),
               Text(
                 chronoName,
                 style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white),
@@ -954,7 +1069,7 @@ class _WrappedScreenState extends State<WrappedScreen>
               const SizedBox(height: 12),
               Text(
                 chronoDesc,
-                style: const TextStyle(fontSize: 15, color: Colors.white, height: 1.45),
+                style: TextStyle(fontSize: 15, color: Colors.white.withValues(alpha: 0.85), height: 1.45),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -973,28 +1088,31 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           l10n?.genreGalaxy ?? 'GENRE GALAXY',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF8E2DE2), letterSpacing: 1.5),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF8E2DE2), letterSpacing: 1.6),
         ),
         const SizedBox(height: 6),
         Text(
           l10n?.soundsThatGuidedYou ?? 'The sounds that guided you',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 22),
         Expanded(
           child: ListView.separated(
+            physics: const BouncingScrollPhysics(),
             itemCount: _data!.topGenres.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, i) {
               final g = _data!.topGenres[i];
               final pct = (g.percentage * 100).round();
+              final isTop = i == 0;
 
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.07),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white12),
+              return _buildGlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                backgroundColor: isTop
+                    ? g.accentColor.withValues(alpha: 0.16)
+                    : Colors.white.withValues(alpha: 0.06),
+                border: Border.all(
+                  color: isTop ? g.accentColor.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1007,9 +1125,19 @@ class _WrappedScreenState extends State<WrappedScreen>
                             Container(
                               width: 10,
                               height: 10,
-                              decoration: BoxDecoration(color: g.accentColor, shape: BoxShape.circle),
+                              decoration: BoxDecoration(
+                                color: g.accentColor,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: g.accentColor.withValues(alpha: 0.8),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Text(
                               g.name,
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
@@ -1022,7 +1150,7 @@ class _WrappedScreenState extends State<WrappedScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
@@ -1045,6 +1173,9 @@ class _WrappedScreenState extends State<WrappedScreen>
   // ── Slide 4: Top Songs & Reveal ───────────────────────────────────────────
   Widget _buildTopSongsSlide() {
     final l10n = AppLocalizations.of(context);
+    final songs = _data!.topSongs;
+    final topSong = songs.isNotEmpty ? songs.first : null;
+
     return Column(
       key: const ValueKey('songs'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1054,19 +1185,17 @@ class _WrappedScreenState extends State<WrappedScreen>
           children: [
             Text(
               l10n?.topSongsHeader ?? 'TOP SONGS',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF0844), letterSpacing: 1.5),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF0844), letterSpacing: 1.6),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-              ),
+            _buildGlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+              borderRadius: BorderRadius.circular(12),
+              backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.2),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
               child: Row(
                 children: [
-                  const Icon(CupertinoIcons.speaker_2_fill, color: Color(0xFF10B981), size: 12),
-                  const SizedBox(width: 5),
+                  const _EqualizerBars(color: Color(0xFF10B981)),
+                  const SizedBox(width: 7),
                   Text(
                     l10n?.nowPlayingHeader ?? 'NOW PLAYING',
                     style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF10B981)),
@@ -1079,40 +1208,94 @@ class _WrappedScreenState extends State<WrappedScreen>
         const SizedBox(height: 6),
         Text(
           l10n?.yourMostListenedSongs ?? 'Your most listened songs',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
         ),
-        const SizedBox(height: 20),
-        Expanded(
-          child: ListView.separated(
-            itemCount: _data!.topSongs.length.clamp(0, 5),
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, i) {
-              final rank = _data!.topSongs[i];
-              final isTop = i == 0;
-
-              return Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isTop
-                      ? const Color(0xFFFF0844).withValues(alpha: 0.22)
-                      : Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isTop ? const Color(0xFFFF0844).withValues(alpha: 0.6) : Colors.white10,
+        const SizedBox(height: 18),
+        // Hero #1 Song Card
+        if (topSong != null) ...[
+          _buildGlassCard(
+            padding: const EdgeInsets.all(16),
+            backgroundColor: const Color(0xFFFF0844).withValues(alpha: 0.18),
+            border: Border.all(color: const Color(0xFFFF0844).withValues(alpha: 0.5)),
+            child: Row(
+              children: [
+                Stack(
+                  children: [
+                    AlbumArtwork(coverArt: topSong.song.coverArt, size: 70, borderRadius: 14),
+                    Positioned(
+                      top: 4,
+                      left: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF0844),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '#1',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        topSong.song.title,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        topSong.song.artist ?? (l10n?.unknownArtist ?? 'Unknown Artist'),
+                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n?.playsCount(topSong.playCount) ?? '${topSong.playCount} plays',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB199)),
+                      ),
+                    ],
                   ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+
+        // Runner-ups #2 to #5
+        Expanded(
+          child: ListView.separated(
+            physics: const BouncingScrollPhysics(),
+            itemCount: songs.length > 1 ? songs.skip(1).take(4).length : 0,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, i) {
+              final rank = songs[i + 1];
+
+              return _buildGlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                backgroundColor: Colors.white.withValues(alpha: 0.05),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 child: Row(
                   children: [
                     Text(
                       '#${rank.rank}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: isTop ? const Color(0xFFFF0844) : Colors.white60,
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    AlbumArtwork(coverArt: rank.song.coverArt, size: 48, borderRadius: 10),
+                    const SizedBox(width: 12),
+                    AlbumArtwork(coverArt: rank.song.coverArt, size: 40, borderRadius: 8),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -1120,14 +1303,13 @@ class _WrappedScreenState extends State<WrappedScreen>
                         children: [
                           Text(
                             rank.song.title,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
                           Text(
                             rank.song.artist ?? (l10n?.unknownArtist ?? 'Unknown Artist'),
-                            style: const TextStyle(fontSize: 12, color: Colors.white60),
+                            style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.6)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1135,8 +1317,8 @@ class _WrappedScreenState extends State<WrappedScreen>
                       ),
                     ),
                     Text(
-                      l10n?.playsCount(rank.playCount) ?? '${rank.playCount} plays',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
+                      '${rank.playCount}',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -1151,6 +1333,9 @@ class _WrappedScreenState extends State<WrappedScreen>
   // ── Slide 5: Top Artists ──────────────────────────────────────────────────
   Widget _buildTopArtistsSlide() {
     final l10n = AppLocalizations.of(context);
+    final artists = _data!.topArtists;
+    final topArtist = artists.isNotEmpty ? artists.first : null;
+
     return Column(
       key: const ValueKey('artists'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1160,15 +1345,13 @@ class _WrappedScreenState extends State<WrappedScreen>
           children: [
             Text(
               l10n?.topArtistsHeader ?? 'TOP ARTISTS',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF11998E), letterSpacing: 1.5),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF11998E), letterSpacing: 1.6),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF11998E).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF11998E).withValues(alpha: 0.4)),
-              ),
+            _buildGlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+              borderRadius: BorderRadius.circular(12),
+              backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.2),
+              border: Border.all(color: const Color(0xFF11998E).withValues(alpha: 0.4)),
               child: Text(
                 _getSuperfanBadge(l10n, _data!.topArtistPlayCount),
                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF38EF7D)),
@@ -1179,62 +1362,112 @@ class _WrappedScreenState extends State<WrappedScreen>
         const SizedBox(height: 6),
         Text(
           l10n?.yourMusicalAnchors ?? 'Your musical anchors',
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
         ),
-        const SizedBox(height: 20),
-        Expanded(
-          child: ListView.separated(
-            itemCount: _data!.topArtists.length.clamp(0, 5),
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, i) {
-              final rank = _data!.topArtists[i];
-              final isTop = i == 0;
-
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isTop
-                      ? const Color(0xFF11998E).withValues(alpha: 0.25)
-                      : Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isTop ? const Color(0xFF38EF7D).withValues(alpha: 0.5) : Colors.white10,
+        const SizedBox(height: 18),
+        // Hero #1 Artist
+        if (topArtist != null) ...[
+          _buildGlassCard(
+            padding: const EdgeInsets.all(18),
+            backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.2),
+            border: Border.all(color: const Color(0xFF38EF7D).withValues(alpha: 0.5)),
+            child: Row(
+              children: [
+                if (topArtist.coverArt != null && topArtist.coverArt!.isNotEmpty)
+                  AlbumArtwork(coverArt: topArtist.coverArt, size: 68, borderRadius: 34)
+                else
+                  CircleAvatar(
+                    radius: 34,
+                    backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.35),
+                    child: Text(
+                      topArtist.name.isNotEmpty ? topArtist.name[0].toUpperCase() : '?',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF38EF7D).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '#1 ARTIST',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF38EF7D)),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        topArtist.name,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n?.playsCount(topArtist.playCount) ?? '${topArtist.playCount} plays',
+                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.75), fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+
+        // Runner-ups #2 to #5
+        Expanded(
+          child: ListView.separated(
+            physics: const BouncingScrollPhysics(),
+            itemCount: artists.length > 1 ? artists.skip(1).take(4).length : 0,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, i) {
+              final rank = artists[i + 1];
+
+              return _buildGlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                backgroundColor: Colors.white.withValues(alpha: 0.05),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 child: Row(
                   children: [
                     Text(
                       '#${rank.rank}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: isTop ? const Color(0xFF38EF7D) : Colors.white60,
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     if (rank.coverArt != null && rank.coverArt!.isNotEmpty)
-                      AlbumArtwork(coverArt: rank.coverArt, size: 44, borderRadius: 22)
+                      AlbumArtwork(coverArt: rank.coverArt, size: 38, borderRadius: 19)
                     else
                       CircleAvatar(
-                        radius: 22,
+                        radius: 19,
                         backgroundColor: const Color(0xFF11998E).withValues(alpha: 0.3),
                         child: Text(
                           rank.name.isNotEmpty ? rank.name[0].toUpperCase() : '?',
                           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         rank.name,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
-                      l10n?.playsCount(rank.playCount) ?? '${rank.playCount} plays',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70),
+                      '${rank.playCount}',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -1261,67 +1494,74 @@ class _WrappedScreenState extends State<WrappedScreen>
       children: [
         Text(
           l10n?.yourListeningPersonality ?? 'YOUR LISTENING PERSONALITY',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.5),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFFF007A), letterSpacing: 1.6),
         ),
         const SizedBox(height: 24),
-        Container(
-          width: double.infinity,
+        _buildGlassCard(
           padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: arch.gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: arch.gradientColors.first.withValues(alpha: 0.4),
-                blurRadius: 40,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
+          backgroundColor: arch.gradientColors.first.withValues(alpha: 0.22),
+          border: Border.all(color: arch.gradientColors.first.withValues(alpha: 0.5)),
           child: Column(
             children: [
-              Text(arch.emoji, style: const TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(12),
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(colors: arch.gradientColors),
+                  boxShadow: [
+                    BoxShadow(
+                      color: arch.gradientColors.first.withValues(alpha: 0.45),
+                      blurRadius: 32,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(arch.emoji, style: const TextStyle(fontSize: 40)),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white24),
                 ),
                 child: Text(
                   archBadge,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.3),
                 ),
               ),
               const SizedBox(height: 14),
               Text(
                 archTitle,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.4),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 archDesc,
-                style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.45),
+                style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.85), height: 1.45),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
                 children: archTraits.map((t) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white12),
                     ),
-                    child: Text(t, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text(
+                      t,
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   );
                 }).toList(),
               ),
@@ -1339,66 +1579,87 @@ class _WrappedScreenState extends State<WrappedScreen>
       key: const ValueKey('summary'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
+        _buildGlassCard(
           padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: Colors.white24),
-          ),
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n?.muslyPlaybackHeader ?? 'MUSLY PLAYBACK',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.8, color: Color(0xFFFA243C)),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFA243C),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n?.muslyPlaybackHeader ?? 'MUSLY PLAYBACK',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.8,
+                          color: Color(0xFFFA243C),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text('${_data!.year}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70)),
+                  Text(
+                    '${_data!.year}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
               if (_data!.topSongs.isNotEmpty) ...[
-                Row(
-                  children: [
-                    AlbumArtwork(coverArt: _data!.topSongs.first.song.coverArt, size: 58, borderRadius: 12),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n?.topSongBadge ?? 'Song #1',
-                            style: const TextStyle(fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _data!.topSongs.first.song.title,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            _data!.topSongs.first.song.artist ?? '',
-                            style: const TextStyle(fontSize: 12, color: Colors.white70),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                _buildGlassCard(
+                  padding: const EdgeInsets.all(12),
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
+                  border: Border.all(color: Colors.white10),
+                  child: Row(
+                    children: [
+                      AlbumArtwork(coverArt: _data!.topSongs.first.song.coverArt, size: 54, borderRadius: 12),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n?.topSongBadge ?? 'Song #1',
+                              style: const TextStyle(fontSize: 11, color: Color(0xFFFF0844), fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _data!.topSongs.first.song.title,
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              _data!.topSongs.first.song.artist ?? '',
+                              style: const TextStyle(fontSize: 12, color: Colors.white70),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
               ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMetric(l10n?.minutes ?? 'Minutes', '${_data!.totalMinutesListened}'),
-                  Container(width: 1, height: 32, color: Colors.white24),
+                  _buildMetric(l10n?.minutes ?? 'Minutes', _formatNumber(_data!.totalMinutesListened)),
+                  Container(width: 1, height: 34, color: Colors.white24),
                   _buildMetric(l10n?.topArtistMetric ?? 'Top Artist', _data!.topArtists.isNotEmpty ? _data!.topArtists.first.name : 'N/A'),
-                  Container(width: 1, height: 32, color: Colors.white24),
+                  Container(width: 1, height: 34, color: Colors.white24),
                   _buildMetric(l10n?.genreMetric ?? 'Genre', _data!.topGenre),
                 ],
               ),
@@ -1419,7 +1680,8 @@ class _WrappedScreenState extends State<WrappedScreen>
               backgroundColor: const Color(0xFFFA243C),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 8,
             ),
           ),
         ),
@@ -1430,10 +1692,78 @@ class _WrappedScreenState extends State<WrappedScreen>
   Widget _buildMetric(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
+        ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.65), fontWeight: FontWeight.w600),
+        ),
       ],
+    );
+  }
+}
+
+class _EqualizerBars extends StatefulWidget {
+  final Color color;
+  final double size;
+  const _EqualizerBars({this.color = Colors.white, this.size = 14});
+
+  @override
+  State<_EqualizerBars> createState() => _EqualizerBarsState();
+}
+
+class _EqualizerBarsState extends State<_EqualizerBars> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final v = _controller.value;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _bar(4 + (v * 8)),
+            const SizedBox(width: 2),
+            _bar(12 - (v * 7)),
+            const SizedBox(width: 2),
+            _bar(6 + (v * 7)),
+            const SizedBox(width: 2),
+            _bar(14 - (v * 9)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _bar(double height) {
+    return Container(
+      width: 2.2,
+      height: height.clamp(3.0, widget.size),
+      decoration: BoxDecoration(
+        color: widget.color,
+        borderRadius: BorderRadius.circular(2),
+      ),
     );
   }
 }
