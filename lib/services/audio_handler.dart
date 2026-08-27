@@ -77,7 +77,10 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  /// Stop mirroring the local player into the media session (tests/teardown).
+  /// True while local player events are still being mirrored into the session.
+  bool get isMirroringLocalState => _localStateSub != null;
+
+  /// Stop mirroring the local player into the media session.
   Future<void> cancelLocalStateMirror() async {
     await _localStateSub?.cancel();
     _localStateSub = null;
@@ -521,6 +524,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'dispose') {
+      // Before _player.dispose(): AudioPlayer.dispose() does not cancel our
+      // own subscription to its event stream.
+      await cancelLocalStateMirror();
       for (final sub in _childrenSubjects.values) {
         await sub.close();
       }

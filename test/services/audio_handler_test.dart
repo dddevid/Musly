@@ -56,6 +56,22 @@ void main() {
         const Duration(seconds: 20));
   });
 
+  test('disposal cancels the local state mirror', () async {
+    expect(handler.isMirroringLocalState, isTrue);
+
+    await handler.customAction('dispose');
+
+    expect(handler.isMirroringLocalState, isFalse,
+        reason: 'AudioPlayer.dispose() does not cancel our own subscription '
+            'to its event stream, so the handler must do it');
+  });
+
+  test('cancelling the mirror twice is safe', () async {
+    await handler.cancelLocalStateMirror();
+    await handler.cancelLocalStateMirror();
+    expect(handler.isMirroringLocalState, isFalse);
+  });
+
   test('updateNowPlaying publishes media item metadata', () {
     handler.updateNowPlaying(
       id: 'song-1',

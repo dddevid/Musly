@@ -48,6 +48,29 @@ void main() {
     test('handles empty input', () {
       expect(UpnpService.decodeXmlEntities(''), '');
     });
+
+    test('decodes numeric character references, decimal and hex', () {
+      expect(UpnpService.decodeXmlEntities('a&#38;b'), 'a&b');
+      expect(UpnpService.decodeXmlEntities('a&#x26;b'), 'a&b');
+      expect(UpnpService.decodeXmlEntities('a&#X26;b'), 'a&b');
+      expect(UpnpService.decodeXmlEntities('a&#038;b'), 'a&b',
+          reason: 'leading zeros are valid in a numeric reference');
+      expect(UpnpService.decodeXmlEntities('&#60;tag&#62;'), '<tag>');
+    });
+
+    test('numeric ampersand refs are decoded last, like &amp;', () {
+      // Same single-pass rule: '&#38;lt;' means a literal '&lt;', so decoding
+      // the numeric reference early would wrongly collapse it to '<'.
+      expect(UpnpService.decodeXmlEntities('&#38;lt;'), '&lt;');
+      expect(UpnpService.decodeXmlEntities('&#x26;lt;'), '&lt;');
+    });
+
+    test('leaves malformed or out-of-range references alone', () {
+      expect(UpnpService.decodeXmlEntities('&#;'), '&#;');
+      expect(UpnpService.decodeXmlEntities('&#zz;'), '&#zz;');
+      expect(UpnpService.decodeXmlEntities('&#999999999;'), '&#999999999;');
+      expect(UpnpService.decodeXmlEntities('&#0;'), '&#0;');
+    });
   });
 
   group('UpnpService.canonicalUri', () {
@@ -69,6 +92,20 @@ void main() {
       const b = 'http://h/rest/stream?id=BBB&v=1';
       expect(UpnpService.canonicalUri(a) == UpnpService.canonicalUri(b),
           isFalse);
+    });
+
+    test('matches when the renderer uses numeric refs for &', () {
+      // Renderers are inconsistent about which escaping form they emit; a
+      // numeric one must still be recognised as the same track, or the gapless
+      // auto-advance silently stops being followed.
+      const sent = 'http://h/rest/stream?u=t&v=1.16.1&id=xyz';
+      const echoedDecimal = 'http://h/rest/stream?u=t&#38;v=1.16.1&#38;id=xyz';
+      const echoedHex = 'http://h/rest/stream?u=t&#x26;v=1.16.1&#x26;id=xyz';
+
+      expect(UpnpService.canonicalUri(echoedDecimal),
+          UpnpService.canonicalUri(sent));
+      expect(UpnpService.canonicalUri(echoedHex),
+          UpnpService.canonicalUri(sent));
     });
 
     test('trims renderer whitespace padding', () {

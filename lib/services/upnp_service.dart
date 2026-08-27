@@ -206,19 +206,40 @@ class UpnpService extends ChangeNotifier {
     return raw == null ? null : decodeXmlEntities(raw);
   }
 
-  /// Decode one layer of XML character entities.
+  /// Decode one layer of XML character entities, named or numeric.
   ///
-  /// `&amp;` is decoded last so `&amp;lt;` yields the literal `&lt;` the sender
-  /// meant, not `<`.
+  /// Everything denoting `&` is decoded last, together, so `&amp;lt;` yields
+  /// the literal `&lt;` the sender meant rather than collapsing to `<`.
+  /// Renderers are inconsistent about which form they emit, so `&#38;` and
+  /// `&#x26;` have to be understood as well as `&amp;`.
   static String decodeXmlEntities(String input) {
-    return input
+    var out = input
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>')
         .replaceAll('&quot;', '"')
-        .replaceAll('&apos;', "'")
-        .replaceAll('&#39;', "'")
-        .replaceAll('&#x27;', "'")
-        .replaceAll('&amp;', '&');
+        .replaceAll('&apos;', "'");
+
+    // Numeric references, except those denoting '&' — those wait for the final
+    // step below so they cannot re-form a named entity mid-pass.
+    out = out.replaceAllMapped(
+      RegExp(r'&#([xX][0-9a-fA-F]+|[0-9]+);'),
+      (m) {
+        final ref = m.group(1)!;
+        final isHex = ref.startsWith('x') || ref.startsWith('X');
+        final code = isHex
+            ? int.tryParse(ref.substring(1), radix: 16)
+            : int.tryParse(ref);
+        // Leave malformed, out-of-range and '&' references untouched.
+        if (code == null || code == 0x26 || code < 0x20 || code > 0x10FFFF) {
+          return m.group(0)!;
+        }
+        return String.fromCharCode(code);
+      },
+    );
+
+    return out
+        .replaceAll('&amp;', '&')
+        .replaceAllMapped(RegExp(r'&#(0*38|[xX]0*26);'), (_) => '&');
   }
 
   /// Canonical form for comparing two URIs, never for reconstructing one.
