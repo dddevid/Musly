@@ -57,12 +57,33 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   static const _remoteMaxVolume = 100;
   static const _remoteVolumeStep = 5;
 
+  StreamSubscription<PlaybackEvent>? _localStateSub;
+
   MuslyAudioHandler() {
-    _player.playbackEventStream.map(_buildPlaybackState).pipe(playbackState);
+    // listen()+add() rather than pipe(): pipe() is addStream() on the rxdart
+    // Subject, which makes every other playbackState.add() in this class throw
+    // "You cannot add items while items are being added from addStream". That
+    // silently broke updateRemotePlaybackState(), so the media session could
+    // never follow Cast/DLNA — notification, lock screen and head-unit controls
+    // stayed pinned to the idle local player and pause did nothing. The gate
+    // stops that idle player from overwriting remote state.
+    _localStateSub = _player.playbackEventStream.listen((event) {
+      if (_remotePlayback) return;
+      playbackState.add(_buildPlaybackState(event));
+    });
 
     if (!kIsWeb && Platform.isAndroid) {
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
     }
+  }
+
+  /// True while local player events are still being mirrored into the session.
+  bool get isMirroringLocalState => _localStateSub != null;
+
+  /// Stop mirroring the local player into the media session.
+  Future<void> cancelLocalStateMirror() async {
+    await _localStateSub?.cancel();
+    _localStateSub = null;
   }
 
   @override
@@ -503,6 +524,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'dispose') {
+      // Before _player.dispose(): AudioPlayer.dispose() does not cancel our
+      // own subscription to its event stream.
+      await cancelLocalStateMirror();
       for (final sub in _childrenSubjects.values) {
         await sub.close();
       }

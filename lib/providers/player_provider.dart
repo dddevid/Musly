@@ -68,7 +68,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   double _volume = 1.0;
   double _lastNonZeroVolume = 1.0;
 
-  bool _isRenderingRemotely = false;
+  /// True when audio renders on another device rather than this phone.
+  ///
+  /// Derived rather than stored. As a bool assigned from eight places, a single
+  /// stale write sent `skipNext()` down its local branch (UI advanced, renderer
+  /// kept playing) and made `_updateAndroidAuto()` skip the media-session
+  /// update (frozen notification, pause dead over DLNA). Radio is the one real
+  /// exception and reuses the existing [_isPlayingRadio] flag.
+  bool get _isRenderingRemotely =>
+      !_isPlayingRadio &&
+      (_castService.isConnected || _upnpService.isConnected);
 
   String? _resolvedArtworkUrl;
 
@@ -1851,7 +1860,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
         }
 
-        _isRenderingRemotely = true;
         _isPlaying = success;
         _isLoading = false;
         if (initialPosition != null && initialPosition > Duration.zero) {
@@ -1863,15 +1871,28 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _updateAndroidAuto();
         return;
       } else if (_upnpService.isConnected) {
+        // Claim this switch. Each await below lets another press start a
+        // second pipeline; without a token an older one's Stop can land after
+        // a newer one's Play, leaving the renderer on a track nobody asked for.
+        final switchGeneration = ++_remoteSwitchGeneration;
+        bool superseded() {
+          if (switchGeneration == _remoteSwitchGeneration) return false;
+          debugPrint('UPnP: switch #$switchGeneration superseded by '
+              '#$_remoteSwitchGeneration — abandoning "${song.title}"');
+          return true;
+        }
+
         _upnpWasPlaying = false;
         debugPrint(
           'UPnP: playSong() taking UPnP branch, isConnected=${_upnpService.isConnected}',
         );
         if (_audioPlayer.playing) await _audioPlayer.stop();
+        if (superseded()) return;
 
         final playUrl = song.isLocal == true && song.path != null
             ? Uri.file(song.path!).toString()
             : await _subsonicService.resolveStreamUrlAsync(song);
+        if (superseded()) return;
 
         try {
           final mimeType =
@@ -1887,6 +1908,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             durationSecs: song.duration,
             contentType: mimeType,
           );
+          if (superseded()) return;
           if (!success) {
             _upnpService.disconnect();
             debugPrint(
@@ -1894,12 +1916,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             return;
           }
         } catch (e) {
+          // A superseded switch must not tear down the connection a newer one
+          // is using.
+          if (superseded()) return;
           _upnpService.disconnect();
           debugPrint('UPnP playback failed, disconnected: $e');
           rethrow;
         }
-        _currentUpnpTrackUrl = playUrl;
-        _isRenderingRemotely = true;
+        _currentUpnpTrackUrl = UpnpService.canonicalUri(playUrl);
+        // Anything pre-queued belonged to the track we just replaced.
+        _nextUpnpTrackUrl = null;
         _isPlaying = true;
         _isLoading = false;
         if (initialPosition != null && initialPosition > Duration.zero) {
@@ -1916,7 +1942,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         }
         return;
       } else {
-        _isRenderingRemotely = false;
 
         final youtubeSource = song.isLocal != true
             ? await _subsonicService.getYoutubeAudioSource(song)
@@ -2057,7 +2082,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _queue = [];
       _currentIndex = -1;
       _isPlayingRadio = true;
-      _isRenderingRemotely = false;
       _currentRadioStation = station;
       _position = Duration.zero;
       _duration = Duration.zero;
@@ -3297,7 +3321,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (connected && !_castWasConnected) {
       _castWasConnected = true;
       _castWasPlaying = false;
-      _isRenderingRemotely = true;
       if (_audioPlayer.playing) _audioPlayer.pause();
       final vol = _castService.mediaState.volume;
       if (vol >= 0) {
@@ -3319,7 +3342,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (!connected && _castWasConnected) {
       _castWasConnected = false;
       _castWasPlaying = false;
-      _isRenderingRemotely = false;
       _isPlaying = false;
       _audioHandler.setRemotePlayback(isRemote: false);
       notifyListeners();
@@ -3380,7 +3402,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _upnpWasConnected = false;
   bool _upnpWasPlaying = false;
+  /// Canonical URIs of the track the renderer is playing and the one pre-queued
+  /// via SetNextAVTransportURI. Canonical because renderers echo URIs back with
+  /// different escaping than we sent — see [UpnpService.canonicalUri].
+  /// Identifies the most recent remote switch so slower in-flight ones can
+  /// detect they were overtaken.
+  int _remoteSwitchGeneration = 0;
+
   String? _currentUpnpTrackUrl;
+  String? _nextUpnpTrackUrl;
 
   final bool _isA2dpAudioActive = false;
 
@@ -3403,6 +3433,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         durationSecs: nextSong.duration,
         contentType: mimeType,
       );
+      // Lets the poll recognise a genuine gapless auto-advance.
+      _nextUpnpTrackUrl = UpnpService.canonicalUri(nextUrl);
     } catch (e) {
       debugPrint('UPnP: Failed to set next URI: $e');
     }
@@ -3434,7 +3466,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _upnpWasConnected = false;
       _upnpWasPlaying = false;
       _currentUpnpTrackUrl = null;
-      _isRenderingRemotely = false;
+      _nextUpnpTrackUrl = null;
       _isPlaying = false;
 
       _audioHandler.setRemotePlayback(isRemote: false);
@@ -3461,26 +3493,44 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    final currentTrackUri = _upnpService.currentTrackUri;
-    if (_currentUpnpTrackUrl != null &&
-        currentTrackUri != null &&
-        currentTrackUri.isNotEmpty &&
-        currentTrackUri != _currentUpnpTrackUrl &&
-        _currentIndex + 1 < _queue.length) {
-      debugPrint(
-          'UPnP: Renderer switched track to $currentTrackUri — advancing index');
-      _upnpWasPlaying = playing;
-      _currentIndex++;
-      _currentSong = _queue[_currentIndex];
-      _currentUpnpTrackUrl = currentTrackUri;
-      notifyListeners();
-      _updateAllServices();
-      _saveQueueState();
-      if (_currentIndex + 1 < _queue.length) {
-        _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+    // Follow a gapless auto-advance on the renderer.
+    //
+    // This used to compare a decoded URI against an undecoded one — never equal
+    // — and respond to any difference with a blind `_currentIndex++`, which
+    // walked the UI up the queue a track per second while the speaker stayed
+    // put. Now only the transition we actually queued via
+    // SetNextAVTransportURI is accepted; anything else is left alone.
+    final rendererUri = _upnpService.currentTrackUri;
+    if (rendererUri != null && rendererUri.isNotEmpty) {
+      final canonical = UpnpService.canonicalUri(rendererUri);
+      final isNext = _nextUpnpTrackUrl != null &&
+          canonical == _nextUpnpTrackUrl &&
+          _currentIndex + 1 < _queue.length;
+
+      if (isNext) {
+        debugPrint('UPnP: renderer auto-advanced to queued next track '
+            '— following to index ${_currentIndex + 1}');
+        _upnpWasPlaying = playing;
+        _currentIndex++;
+        _currentSong = _queue[_currentIndex];
+        _currentUpnpTrackUrl = canonical;
+        _nextUpnpTrackUrl = null;
+        _position = Duration.zero;
+        notifyListeners();
+        _updateAndroidAuto();
+        _saveQueueState();
+        if (_currentIndex + 1 < _queue.length) {
+          _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+        }
+        _checkAndRefillAutoQueue().catchError((_) {});
+        return;
       }
-      _checkAndRefillAutoQueue().catchError((_) {});
-      return;
+
+      if (_currentUpnpTrackUrl != null && canonical != _currentUpnpTrackUrl) {
+        // Another controller, or a switch of ours still in flight. Never guess.
+        debugPrint('UPnP: renderer on an unrecognised track — leaving queue '
+            'position alone (was index $_currentIndex)');
+      }
     }
 
     _upnpWasPlaying = playing;
