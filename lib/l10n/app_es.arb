@@ -1,5 +1,5 @@
 {
-  "@@locale": "es",
+  "@@locale": "es-ES",
   "@@last_modified": "2026-02-07T16:10:00Z",
   "appName": "Musly",
   "@appName": {
@@ -37,6 +37,10 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Listas Favoritas",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
   "madeForYou": "Hecho Para Ti",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -67,7 +71,7 @@
   },
   "errorLoadingAlbums": "Error al cargar álbumes",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Sin álbumes mejor valorados",
   "@noTopRatedAlbums": {
@@ -128,7 +132,7 @@
   },
   "artists": "Artistas",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Canciones",
   "@songs": {
@@ -141,6 +145,10 @@
   "genres": "Géneros",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "Años",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Favoritos",
   "@favorites": {
@@ -224,11 +232,11 @@
   },
   "save": "Guardar",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Cerrar",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "General",
   "@general": {
@@ -280,7 +288,7 @@
   },
   "unknownArtist": "Artista desconocido",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Álbum Desconocido",
   "@unknownAlbum": {
@@ -340,7 +348,7 @@
   },
   "retry": "Reintentar",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Sin resultados",
   "@noResults": {
@@ -453,6 +461,18 @@
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
+  "showMiniPlayerRepeat": "Mostrar Botón de Repetición",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Cambiar el modo de repetición desde el mini reproductor",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Mostrar botón de aleatorio",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
   "enableRecommendations": "Habilitar Recomendaciones",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"
@@ -513,10 +533,21 @@
   "@_LIBRARY": {},
   "yourLibrary": "Tu Biblioteca",
   "filterAll": "Todo",
+  "faves": "Favoritos",
   "filterPlaylists": "Listas",
   "filterAlbums": "Álbumes",
   "filterArtists": "Artistas",
   "likedSongs": "Canciones que te gustan",
+  "likedAlbums": "Albums que me gustan",
+  "noLikedAlbums": "No hay albums que te gustan aún",
+  "localMusicLibrary": "Biblioteca de Música Local",
+  "mergeLocalLibrary": "Combinar con librería del servidor",
+  "mergeLocalLibrarySubtitle": "Mostrar música local junto con tu librería del servidor",
+  "localMusicStats": "Archivos de música locales",
+  "addMusicFolder": "Agregar folder de música",
+  "libraryEmpty": "Tu biblioteca está vacía",
+  "libraryEmptySubtitle": "Añade algunas canciones para empezar.",
+  "scanForMusic": "Escanear Música",
   "radioStations": "Emisoras de radio",
   "playlist": "Lista",
   "internetRadio": "Radio de Internet",
@@ -585,6 +616,7 @@
   "tabStorage": "Almacenamiento",
   "tabServer": "Servidor",
   "tabDisplay": "Pantalla",
+  "tabSupport": "Soporte",
   "tabAbout": "Acerca de",
   "@_SETTINGS_PLAYBACK": {},
   "sectionAutoDj": "AUTO DJ",
@@ -633,6 +665,18 @@
   "sectionMusicFolders": "CARPETAS DE MÚSICA",
   "musicFolders": "Carpeta de Música",
   "noMusicFolders": "No se encontraron carpetas de música",
+  "sectionSavedProfiles": "PERFILES GUARDADOS",
+  "switchProfile": "Cambiar Perfil",
+  "switchServer": "Cambiar de Servidor",
+  "addProfile": "Añadir Perfil",
+  "switchProfileConfirmation": "¿Conectar a \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "CUENTA",
   "logoutConfirmation": "¿Seguro que quieres cerrar sesión? También se eliminarán todos los datos en caché.",
   "@_SETTINGS_STORAGE": {},
@@ -668,6 +712,16 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "Mantener la pantalla encendida",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "parallelDownloads": "Descargas paralelas",
+  "parallelDownloadsSubtitle": "Descargar varias canciones simultáneamente",
+  "downloadSingular": "descargar",
+  "downloadPlural": "descargas",
+  "slowerButStable": "Más lento, pero más estable",
+  "fasterButMoreData": "Más rápido pero utiliza más datos",
   "libraryDownloadStarted": "Descarga de la Biblioteca iniciada",
   "deleteDownloads": "Eliminar Todas las Descargas",
   "downloadsDeleted": "Todas las descargas eliminadas",
@@ -853,7 +907,7 @@
   },
   "playlistNameHint": "Nombre de la Lista",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "Lista creada \"{name}\" con esta canción",
   "@playlistCreatedWithSong": {
@@ -939,7 +993,7 @@
   },
   "noAlbumsFound": "No se encontraron álbumes",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "No hay URL de página de inicio disponible",
@@ -960,11 +1014,11 @@
   },
   "failedToLoadRadioStations": "Error al cargar las emisoras de radio",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
   "noRadioStations": "Sin Emisoras de Radio",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "Añade emisoras de radio en la configuración de tu servidor Navidrome para verlas aquí.",
   "@noRadioStationsHint": {
@@ -1066,7 +1120,7 @@
   },
   "storagePermissionRequired": "Permiso de almacenamiento necesario para escanear archivos locales",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "No se han encontrado archivos de música en tu dispositivo",
   "@noMusicFilesFound": {
@@ -1075,7 +1129,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "Eliminar",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "Error al establecer la valoración: {error}",
   "@failedToSetRating": {
@@ -1756,5 +1810,107 @@
   "aboutLinkDiscord": "Únete a la comunidad de Discord",
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "deviceId": "ID del dispositivo",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "ID anónimo: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Habilita la analítica para ver tu ID de dispositivo anónimo",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Acerca del ID del dispositivo",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "@_SUPPORT": {},
+  "supportGreeting": "¡Hola! 👋",
+  "supportParagraph2": "Musly es completamente gratis y de código abierto. Sin anuncios ni tarifas de suscripción. Trabajo en ello en mi tiempo libre porque realmente me gusta hacer algo útil para personas como tú.",
+  "supportDonationTitle": "Ayuda con una donación",
+  "supportWayBugs": "Reportar errores o sugerir características",
+  "supportWayEnjoy": "¡Disfrute de la música! 🎵",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "customDuration": "Duración personalizada",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Añadir a Lista",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Tus Listas",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "themeSaved": "Tema guardado",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Cambios sin guardar",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesBody": "Tiene cambios sin guardar, ¿Quiere guardarlos antes de salir?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Descartar",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "done": "Hecho",
+  "@done": {
+    "description": "Button to confirm a color picker dialog"
+  },
+  "pickColor": "Escoger {label}",
+  "@pickColor": {
+    "description": "Title of the color picker dialog",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStyle": "Estilo del Título",
+  "@titleStyle": {
+    "description": "Section heading for title text style in theme editor"
+  },
+  "artistStyle": "Estilo del Artista",
+  "@artistStyle": {
+    "description": "Section heading for artist text style in theme editor"
+  },
+  "themeActive": "ACTIVO",
+  "@themeActive": {
+    "description": "Badge shown on the active Now Playing theme card"
+  },
+  "themeSafeMode": "SEGURO",
+  "@themeSafeMode": {
+    "description": "Badge shown when a theme is in safe mode"
+  },
+  "themeCodeMode": "CÓDIGO",
+  "@themeCodeMode": {
+    "description": "Badge shown when a theme has custom Flutter code enabled"
+  },
+  "themeAuthor": "por {author}",
+  "@themeAuthor": {
+    "description": "Author attribution shown on theme preview card",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
   }
 }

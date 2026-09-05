@@ -67,7 +67,7 @@
   },
   "errorLoadingAlbums": "Eroare la încărcarea albumelor",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Niciun album evaluat de top",
   "@noTopRatedAlbums": {
@@ -128,7 +128,7 @@
   },
   "artists": "Artiști",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Melodii",
   "@songs": {
@@ -220,11 +220,11 @@
   },
   "save": "Salvați",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Închide",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "General",
   "@general": {
@@ -276,7 +276,7 @@
   },
   "unknownArtist": "Artist Necunoscut",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Album Necunoscut",
   "@unknownAlbum": {
@@ -336,7 +336,7 @@
   },
   "retry": "Reîncercați",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Nici un rezultat",
   "@noResults": {
@@ -404,5 +404,14 @@
   "@_GENRE_SCREEN": {},
   "@_JUKEBOX": {},
   "@_MUSIC_FOLDERS": {},
-  "audioFocusDenied": "Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio"
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "audioFocusDenied": "Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }

@@ -1,9 +1,17 @@
 {
-  "@@locale": "sv",
+  "@@locale": "sv-SE",
   "@@last_modified": "2026-02-07T16:10:00Z",
   "appName": "Musly",
   "@appName": {
     "description": "Application name"
+  },
+  "emulatorDetected": "Emulator upptäcktes",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "Den här appen kan inte köras på en emulator.\\nAnvänd en fysisk enhet.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
   },
   "goodMorning": "God morgon",
   "@goodMorning": {
@@ -21,7 +29,7 @@
   "@forYou": {
     "description": "For You section title"
   },
-  "quickPicks": "Snabba Val",
+  "quickPicks": "Quick Picks",
   "@quickPicks": {
     "description": "Quick Picks section title"
   },
@@ -37,11 +45,27 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Favoritspellistor",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Album",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "EP-skivor",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Singlar",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
   "madeForYou": "Skapat För Dig",
   "@madeForYou": {
     "description": "Made for you section title"
   },
-  "topRated": "Top Rated",
+  "topRated": "Högst betyg",
   "@topRated": {
     "description": "Top rated albums title"
   },
@@ -67,7 +91,7 @@
   },
   "errorLoadingAlbums": "Fel vid laddning av album",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Inga högst rankade album",
   "@noTopRatedAlbums": {
@@ -128,7 +152,7 @@
   },
   "artists": "Artister",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Låtar",
   "@songs": {
@@ -141,6 +165,10 @@
   "genres": "Genrer",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "År",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Favoriter",
   "@favorites": {
@@ -224,11 +252,11 @@
   },
   "save": "Spara",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Stäng",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "Allmän",
   "@general": {
@@ -280,7 +308,7 @@
   },
   "unknownArtist": "Okänd Artist",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Okänt Album",
   "@unknownAlbum": {
@@ -340,7 +368,7 @@
   },
   "retry": "Försök igen",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Inga resultat",
   "@noResults": {
@@ -445,13 +473,37 @@
   "@showVolumeSliderSubtitle": {
     "description": "Show Volume Slider toggle subtitle"
   },
-  "showStarRatings": "Visa Stjärnbetyg",
+  "showStarRatings": "Visa betyg",
   "@showStarRatings": {
     "description": "Show Star Ratings toggle label"
   },
   "showStarRatingsSubtitle": "Betygsätt låtar och visa betyg",
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
+  },
+  "showMiniPlayerHeart": "Visa hjärtknappen",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Lägg till i favoriter från minispelaren",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Visa upprepningsknappen",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Växla upprepningsläge från minispelare",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Visa Blanda-knappen",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "Växla blandning från minispelare",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
   },
   "enableRecommendations": "Aktivera Rekommendationer",
   "@enableRecommendations": {
@@ -513,10 +565,24 @@
   "@_LIBRARY": {},
   "yourLibrary": "Ditt Bibliotek",
   "filterAll": "Alla",
+  "faves": "Favs",
   "filterPlaylists": "Spellistor",
   "filterAlbums": "Album",
   "filterArtists": "Artister",
   "likedSongs": "Gillade Låtar",
+  "likedAlbums": "Gillade Album",
+  "noLikedAlbums": "Inga gillade album ännu",
+  "localMusicLibrary": "Lokalt musikbibliotek",
+  "mergeLocalLibrary": "Slå ihop med serverbibliotek",
+  "mergeLocalLibrarySubtitle": "Visa lokal musik tillsammans med ditt serverbibliotek",
+  "localMusicStats": "Lokala musikfiler",
+  "addMusicFolder": "Lägg till musikmapp",
+  "rescanLocalMusic": "Skanna om lokal musik",
+  "localLibraryEmpty": "Ditt bibliotek är tomt",
+  "localLibraryEmptySubtitle": "Inga lokala musikfiler hittades. Tryck på knappen nedan för att skanna igen.",
+  "libraryEmpty": "Ditt bibliotek är tomt",
+  "libraryEmptySubtitle": "Lägg till några låtar för att komma igång.",
+  "scanForMusic": "Skanna efter musik",
   "radioStations": "Radio Stationer",
   "playlist": "Spellista",
   "internetRadio": "Internet Radio",
@@ -584,7 +650,8 @@
   "tabPlayback": "Uppspelning",
   "tabStorage": "Lagring",
   "tabServer": "Server",
-  "tabDisplay": "Display",
+  "tabDisplay": "Utseende",
+  "tabSupport": "Stödja",
   "tabAbout": "Om",
   "@_SETTINGS_PLAYBACK": {},
   "sectionAutoDj": "AUTO DJ",
@@ -633,6 +700,18 @@
   "sectionMusicFolders": "MUSIK MAPPAR",
   "musicFolders": "Musik Mappar",
   "noMusicFolders": "Inga musik mappar hittades",
+  "sectionSavedProfiles": "SPARADE PROFILER",
+  "switchProfile": "Byt profil",
+  "switchServer": "Byt server",
+  "addProfile": "Lägg till profil",
+  "switchProfileConfirmation": "Anslut till \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "KONTO",
   "logoutConfirmation": "Är du säker på att du vill logga ut? Detta kommer även rensa all cachelagrad data.",
   "@_SETTINGS_STORAGE": {},
@@ -668,6 +747,20 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "Behåll skärmen på",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Förhindrar hämtning från att misslyckas när enheten låses",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "Parallella nedladdningar",
+  "parallelDownloadsSubtitle": "Ladda ner flera låtar samtidigt",
+  "downloadSingular": "ladda ner",
+  "downloadPlural": "nedladdningar",
+  "slowerButStable": "Långsammare men stabilare",
+  "fasterButMoreData": "Snabbare men använder mer data",
   "libraryDownloadStarted": "Nerladdning av bibliotek startad",
   "deleteDownloads": "Radera Alla Nedladdningar",
   "downloadsDeleted": "Alla nerladdningar raderades",
@@ -728,7 +821,7 @@
       }
     }
   },
-  "removeRating": "Ta bort Betyg",
+  "removeRating": "Ta bort betyg",
   "downloaded": "Nerladdad",
   "downloading": "Laddar ner... {percent}%",
   "@downloading": {
@@ -853,7 +946,7 @@
   },
   "playlistNameHint": "Spellista namn",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "Skapad spellista \"{name}\" med den här låten",
   "@playlistCreatedWithSong": {
@@ -939,7 +1032,7 @@
   },
   "noAlbumsFound": "Inget album hittades",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "Ingen hemsida URL tillgänglig",
@@ -960,11 +1053,11 @@
   },
   "failedToLoadRadioStations": "Misslyckades att ladda radiostationer",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
   "noRadioStations": "Inga Radiostationer",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "Lägg till radiostationer i dina Navidrome serverinställningar för att se dem här.",
   "@noRadioStationsHint": {
@@ -1066,7 +1159,7 @@
   },
   "storagePermissionRequired": "Lagringsbehörighet krävs för att skanna lokala filer",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "Inga musikfiler hittades på din enhet",
   "@noMusicFilesFound": {
@@ -1075,7 +1168,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "Ta bort",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "Misslyckades att ange betyg: {error}",
   "@failedToSetRating": {
@@ -1209,6 +1302,14 @@
   "artistDataNotFound": "Artist hittades inte",
   "@artistDataNotFound": {
     "description": "Error state on the artist screen when artist data fails to load"
+  },
+  "addedArtistToQueue": "Lade till artist i kö",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "Det gick inte att lägga till artist i kö",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
   },
   "@_CAST_DLNA": {},
   "casting": "Castar",
@@ -1551,6 +1652,27 @@
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
+  "sectionFadeInOut": "TONA IN/UT",
+  "@sectionFadeInOut": {
+    "description": "Playback settings section header for fade in/out audio"
+  },
+  "fadeInOutEnable": "Aktivera tona in/ut",
+  "@fadeInOutEnable": {
+    "description": "Toggle label to enable fade in/out audio effect"
+  },
+  "fadeInOutSubtitle": "Tona gradvis ljud när du spelar eller pausar",
+  "@fadeInOutSubtitle": {
+    "description": "Subtitle explaining fade in/out functionality"
+  },
+  "fadeDuration": "Tona Varaktighet: {duration}ms",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
   },
@@ -1748,5 +1870,371 @@
   "aboutLinkDiscord": "Gå med Discord-communityn",
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Statistik & Sekretess",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Anonym statistik",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Hjälp förbättra Musly med anonyma kraschrapporter och användningsstatistik",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "Enhets-ID",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "Anonym ID: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Aktivera statistik för att se ditt anonyma enhets-ID",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Om enhetens ID",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "Detta är en anonym identifierare som genererats av appen. Den kan inte kopplas till din personliga identitet och används endast för analyser.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  },
+  "@_SUPPORT": {},
+  "supportGreeting": "Hej där! 👋",
+  "supportParagraph1": "Jag är Devid, utvecklaren bakom Musly. Jag byggde denna app eftersom jag älskar musik och tycker all förtjänar en vacker, gratis musikspelare.",
+  "supportParagraph2": "Musly är helt gratis och har öppen källkod. Ingen reklam och inga abonnemang. Jag jobbar på den under min fritid eftersom jag genuint tycker om att skapa något användbart för personer som dig.",
+  "supportParagraph3": "Men servrar, utvecklingsverktyg och kaffe är inte gratis 😅 Om Musly har blivit en del av ditt dagliga liv och du vill säga \"tack\", så skulle en liten donation betyda världen för mig. Det hjälper mig täcka kostnader och håller mig motiverad att lägga till nya funktioner.",
+  "supportParagraph4": "Ingen press alls dock - din njutning av appen är redan den bästa belöningen! 💙",
+  "supportDonationTitle": "Stöd med en donation",
+  "supportDonationSubtitle": "via Revolut - valfri summa hjälper!",
+  "supportDiscordTitle": "Gå med i vår Discord",
+  "supportDiscordSubtitle": "Få hjälp, föreslå funktioner eller bara chatta",
+  "supportWaysTitle": "Andra sätt att stödja",
+  "supportWayRate": "Lämna ett omdöme i app store",
+  "supportWayShare": "Berätta om Musly för dina vänner",
+  "supportWayBugs": "Rapportera buggar eller föreslå funktioner",
+  "supportWayEnjoy": "Bara njut av musiken! 🎵",
+  "supportMadeWithLove": "Gjord med 💙 i Italien",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Uppspelningshastighet",
+  "@playbackSpeed": {
+    "description": "Title of the playback speed bottom sheet"
+  },
+  "normalSpeed": "Normal (1×)",
+  "@normalSpeed": {
+    "description": "Label for 1× (normal) playback speed option"
+  },
+  "preservePitch": "Bevara tonhöjd",
+  "@preservePitch": {
+    "description": "Toggle label to keep original pitch when changing speed"
+  },
+  "preservePitchSubtitle": "Behåll den ursprungliga tonhöjden när hastigheten ändras",
+  "@preservePitchSubtitle": {
+    "description": "Subtitle for the preserve-pitch toggle"
+  },
+  "pitch": "Tonhöjd",
+  "@pitch": {
+    "description": "Label for the pitch slider in the speed dialog"
+  },
+  "pitchPreserved": "tonhöjd bevarad",
+  "@pitchPreserved": {
+    "description": "Tooltip fragment shown when pitch correction is on"
+  },
+  "speedTooltipWithPitch": "Hastighet {speed} · tonhöjd {pitch}×",
+  "@speedTooltipWithPitch": {
+    "description": "Tooltip for the speed button showing speed and pitch values",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      },
+      "pitch": {
+        "type": "String"
+      }
+    }
+  },
+  "speedTooltipPitchPreserved": "Hastighet {speed} · tonhöjd bevarad",
+  "@speedTooltipPitchPreserved": {
+    "description": "Tooltip for the speed button when pitch is preserved",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimer": "Sovtimer",
+  "@sleepTimer": {
+    "description": "Title of the sleep timer bottom sheet"
+  },
+  "sleepTimerActive": "Sovtimer aktiv",
+  "@sleepTimerActive": {
+    "description": "Tooltip for the sleep timer button when a timer is running"
+  },
+  "fadeOut": "Tona ut",
+  "@fadeOut": {
+    "description": "Toggle label for the fade-out option in the sleep timer dialog"
+  },
+  "fadeOutSubtitle": "Sänk gradvis volymen under de sista {seconds} s",
+  "@fadeOutSubtitle": {
+    "description": "Subtitle for the fade-out toggle, showing fade duration in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "finishCurrentSong": "Slutför nuvarande låt",
+  "@finishCurrentSong": {
+    "description": "Toggle label to stop after the current track finishes"
+  },
+  "finishCurrentSongSubtitle": "Stoppa efter att det nuvarande spåret slutar",
+  "@finishCurrentSongSubtitle": {
+    "description": "Subtitle for the finish-current-song toggle"
+  },
+  "sleepTimerMinutes": "{count} minuter",
+  "@sleepTimerMinutes": {
+    "description": "Sleep timer option label for a duration in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerHours": "{count} timmar",
+  "@sleepTimerHours": {
+    "description": "Sleep timer option label for a duration in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerSetFor": "Sov-nedräkning inställd till {duration}",
+  "@sleepTimerSetFor": {
+    "description": "Snackbar shown after setting the sleep timer",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "customDuration": "Anpassad varaktighet…",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "cancelTimer": "Avbryt nedräkning",
+  "@cancelTimer": {
+    "description": "List tile label to cancel the active sleep timer"
+  },
+  "customSleepTimer": "Anpassad sovtimer",
+  "@customSleepTimer": {
+    "description": "Title of the custom sleep timer dialog"
+  },
+  "set": "Ange",
+  "@set": {
+    "description": "Confirm button label in the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Lägg till Spellista",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Dina Spellistor",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "enableLrcLibFallback": "Hämta låttexter från LRCLIB",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+  "lrcLibFallbackSubtitle": "Sök LRCLIB automatiskt efter låttexter när din server inte tillhandahåller dem",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  },
+  "themeSaved": "Tema sparat",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Osparade ändringar",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesTitle": "Osparade ändringar",
+  "@themeUnsavedChangesTitle": {
+    "description": "Title of the unsaved changes dialog"
+  },
+  "themeUnsavedChangesBody": "Du har osparade ändringar. Vill du spara innan du lämnar?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Ignorera",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "done": "Färdig",
+  "@done": {
+    "description": "Button to confirm a color picker dialog"
+  },
+  "pickColor": "Välj {label}",
+  "@pickColor": {
+    "description": "Title of the color picker dialog",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStyle": "Titelstil",
+  "@titleStyle": {
+    "description": "Section heading for title text style in theme editor"
+  },
+  "artistStyle": "Artiststil",
+  "@artistStyle": {
+    "description": "Section heading for artist text style in theme editor"
+  },
+  "themeActive": "AKTIV",
+  "@themeActive": {
+    "description": "Badge shown on the active Now Playing theme card"
+  },
+  "themeSafeMode": "SÄKER",
+  "@themeSafeMode": {
+    "description": "Badge shown when a theme is in safe mode"
+  },
+  "themeCodeMode": "KOD",
+  "@themeCodeMode": {
+    "description": "Badge shown when a theme has custom Flutter code enabled"
+  },
+  "themeAnimBadge": "ANIM",
+  "@themeAnimBadge": {
+    "description": "Badge shown on theme cards that have animations enabled"
+  },
+  "themeAuthor": "av {author}",
+  "@themeAuthor": {
+    "description": "Author attribution shown on theme preview card",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "audioFocusDenied": "Kunde inte starta uppspelning — en annan app har ljudfokus",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "addToLibrary": "Lägg till i Bibliotek",
+  "@addToLibrary": {
+    "description": "Add to library option in menu"
+  },
+  "alreadyInLibrary": "Låten finns redan i serverbiblioteket",
+  "@alreadyInLibrary": {
+    "description": "Snackbar message when trying to add a song to the library that is already there"
+  },
+  "selectPlaylist": "Välj spellista",
+  "@selectPlaylist": {
+    "description": "Title for playlist selection bottom sheet"
+  },
+  "endOfSong": "Låtens slut",
+  "@endOfSong": {
+    "description": "Sleep timer option to end at the end of the current song"
+  },
+  "muslyConnect": "Musly-anslutning",
+  "@muslyConnect": {
+    "description": "Title for Musly Connect feature"
+  },
+  "connectToDevice": "Anslut till en enhet",
+  "@connectToDevice": {
+    "description": "Title for Connect to a Device sheet"
+  },
+  "currentlyPlayingOn": "Spelar just nu på",
+  "@currentlyPlayingOn": {
+    "description": "Label for currently active playback device"
+  },
+  "noDevicesFound": "Inga andra Musly-enheter hittades på ditt Wi-Fi-nätverk.",
+  "@noDevicesFound": {
+    "description": "Empty state when no peer devices are discovered"
+  },
+  "transferPlaybackHere": "Överför uppspelning hit",
+  "@transferPlaybackHere": {
+    "description": "Tooltip for transferring playback to a device"
+  },
+  "playbackTransferredTo": "Uppspelning överförd till {device}",
+  "@playbackTransferredTo": {
+    "description": "Snackbar message when playback is transferred",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "muslyBeatSync": "Musly BeatSync",
+  "@muslyBeatSync": {
+    "description": "Title for BeatSync feature"
+  },
+  "beatSyncSubtitle": "Synkronisera flera telefoner och datorer över Wi-Fi som omger festhögtalare med millisekundsprecision.",
+  "@beatSyncSubtitle": {
+    "description": "Description of BeatSync party audio sync"
+  },
+  "hostParty": "Bli värd för en grupp",
+  "@hostParty": {
+    "description": "Button to host a party room"
+  },
+  "joinParty": "Gå med i en grupp",
+  "@joinParty": {
+    "description": "Button to join a party room"
+  },
+  "leaveParty": "Lämna grupp",
+  "@leaveParty": {
+    "description": "Button to leave a party room"
+  },
+  "audioPhaseCalibration": "Kalibrering av ljudfas",
+  "@audioPhaseCalibration": {
+    "description": "Title for phase sync calibration slider"
+  },
+  "phaseCalibrationSubtitle": "Justera om du använder Bluetooth-hörlurar eller extern högtalarfördröjning.",
+  "@phaseCalibrationSubtitle": {
+    "description": "Subtitle for phase calibration"
+  },
+  "partySpeakers": "Festhögtalare",
+  "@partySpeakers": {
+    "description": "List title for connected party devices"
+  },
+  "muslyWrapped": "Musly avslutat",
+  "@muslyWrapped": {
+    "description": "Title for Musly Wrapped retrospective"
+  },
+  "wrappedSeasonal": "Musly avslutat is säsongsbegränsat",
+  "@wrappedSeasonal": {
+    "description": "Musly Playback seasonal dialog header"
+  },
+  "playYourTopSongs": "Spela upp dina topplåtar",
+  "@playYourTopSongs": {
+    "description": "Wrapped summary card play button"
+  },
+  "milestone50SongsTitle": "Tack från våra hjärtan!",
+  "@milestone50SongsTitle": {
+    "description": "Title for 50-song milestone celebration"
+  },
+  "milestone50SongsBadge": "Milstolpe för 50 låtar",
+  "@milestone50SongsBadge": {
+    "description": "Badge for 50-song milestone"
+  },
+  "milestone50SongsMessage": "Du nådde just milstolpen för 50 låtar lyssnade på Musly! Tack för att du valde den här appen för din dagliga musikresa.",
+  "@milestone50SongsMessage": {
+    "description": "Message for 50-song milestone"
+  },
+  "continueListening": "Fortsätt lyssna",
+  "@continueListening": {
+    "description": "Button to continue listening after milestone celebration"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
   }
 }

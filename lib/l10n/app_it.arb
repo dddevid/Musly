@@ -5,6 +5,14 @@
   "@appName": {
     "description": "Application name"
   },
+  "emulatorDetected": "Emulatore Rilevato",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "Questa app non può essere eseguita su un emulatore.\\nSi prega di utilizzare un dispositivo fisico.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
   "goodMorning": "Buon giorno",
   "@goodMorning": {
     "description": "Morning greeting"
@@ -37,6 +45,22 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Playlist preferite",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Album",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "EPs",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Singoli",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
   "madeForYou": "Fatte Per Te",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -65,9 +89,9 @@
   "@noSongsInGenre": {
     "description": "Message when genre has no songs"
   },
-  "errorLoadingAlbums": "Errore nel caricamento degli album",
+  "errorLoadingAlbums": "Errore durante il caricamento album",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Nessun album classificato",
   "@noTopRatedAlbums": {
@@ -77,11 +101,11 @@
   "@login": {
     "description": "Login button label"
   },
-  "serverUrl": "URL del Server",
+  "serverUrl": "URL Del Server",
   "@serverUrl": {
     "description": "Server URL field label"
   },
-  "username": "Nome Utente",
+  "username": "Username",
   "@username": {
     "description": "Username field label"
   },
@@ -128,7 +152,7 @@
   },
   "artists": "Artisti",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Brani",
   "@songs": {
@@ -141,6 +165,10 @@
   "genres": "Generi",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "Anni",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Preferiti",
   "@favorites": {
@@ -224,11 +252,11 @@
   },
   "save": "Salva",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Chiudi",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "Generale",
   "@general": {
@@ -280,7 +308,7 @@
   },
   "unknownArtist": "Artista sconosciuto",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Album sconosciuto",
   "@unknownAlbum": {
@@ -340,7 +368,7 @@
   },
   "retry": "Riprova",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Nessun risultato",
   "@noResults": {
@@ -453,6 +481,30 @@
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
+  "showMiniPlayerHeart": "Mostra Pulsante Cuore",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Aggiungi ai preferiti dal mini player",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Mostra Pulsante Ripeti",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Attiva/Disattiva la modalità di ripetizione dal mini player",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Mostra pulsante Shuffle",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "Attiva riproduzione casuale dal mini player",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
+  },
   "enableRecommendations": "Attiva Raccomandazioni",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"
@@ -510,15 +562,15 @@
   "@communityTranslationsSubtitle": {
     "description": "Community translations credit subtitle"
   },
-  "checkTranslationUpdates": "Controlla aggiornamenti traduzioni",
+  "checkTranslationUpdates": "Verifica aggiornamenti di traduzione",
   "@checkTranslationUpdates": {
     "description": "Title for checking live OTA translation updates"
   },
-  "checkTranslationUpdatesSubtitle": "Sincronizza le ultime traduzioni della community in tempo reale (OTA)",
+  "checkTranslationUpdatesSubtitle": "Sincronizza le ultime traduzioni della community in diretta (OTA)",
   "@checkTranslationUpdatesSubtitle": {
     "description": "Subtitle for checking live OTA translation updates"
   },
-  "checkingTranslationUpdates": "Controllo aggiornamenti traduzioni in corso…",
+  "checkingTranslationUpdates": "Controllo aggiornamenti di traduzione…",
   "@checkingTranslationUpdates": {
     "description": "Snackbar message when checking for translation updates"
   },
@@ -533,10 +585,24 @@
   "@_LIBRARY": {},
   "yourLibrary": "La Tua Libreria",
   "filterAll": "Tutto",
+  "faves": "Preferiti",
   "filterPlaylists": "Playlist",
   "filterAlbums": "Album",
   "filterArtists": "Artisti",
   "likedSongs": "Brani preferiti",
+  "likedAlbums": "Album Piaciuti",
+  "noLikedAlbums": "Ancora nessun album apprezzato",
+  "localMusicLibrary": "Libreria Musica Locale",
+  "mergeLocalLibrary": "Unisci con la Libreria Server",
+  "mergeLocalLibrarySubtitle": "Mostra musica locale accanto alla libreria dei server",
+  "localMusicStats": "File Musica Locale",
+  "addMusicFolder": "Aggiungi Cartella Musicale",
+  "rescanLocalMusic": "Riscansiona Musica Locale",
+  "localLibraryEmpty": "La tua libreria è vuota",
+  "localLibraryEmptySubtitle": "Non sono stati trovati file musicali locali. Tocca il pulsante qui sotto per eseguire nuovamente la scansione.",
+  "libraryEmpty": "La tua libreria è vuota",
+  "libraryEmptySubtitle": "Aggiunge alcuni brani per iniziare.",
+  "scanForMusic": "Scansiona per la musica",
   "radioStations": "Stazioni radio",
   "playlist": "Playlist",
   "internetRadio": "Radio Internet",
@@ -659,6 +725,13 @@
   "switchServer": "Cambia Server",
   "addProfile": "Aggiungi Profilo",
   "switchProfileConfirmation": "Connetti a \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "ACCOUNT",
   "logoutConfirmation": "Sei sicuro di voler uscire? Questo cancellerà tutti i dati memorizzati nella cache.",
   "@_SETTINGS_STORAGE": {},
@@ -694,6 +767,20 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "Mantieni lo schermo acceso",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Impedisce il download di fallire quando il dispositivo si blocca",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "Download Parallelo",
+  "parallelDownloadsSubtitle": "Scarica più brani contemporaneamente",
+  "downloadSingular": "scarica",
+  "downloadPlural": "scaricate",
+  "slowerButStable": "Lento ma più stabile",
+  "fasterButMoreData": "Più veloce ma utilizza più dati",
   "libraryDownloadStarted": "Download della libreria avviato",
   "deleteDownloads": "Elimina tutti i download",
   "downloadsDeleted": "Tutti i download eliminati",
@@ -877,9 +964,9 @@
   "@createPlaylistTitle": {
     "description": "Title of the create-new-playlist dialog"
   },
-  "playlistNameHint": "Nome della playlist",
+  "playlistNameHint": "Nome playlist",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "Playlist creata \"{name}\" con questa canzone",
   "@playlistCreatedWithSong": {
@@ -965,7 +1052,7 @@
   },
   "noAlbumsFound": "Nessun album trovato",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "Nessun URL di homepage disponibile",
@@ -986,11 +1073,11 @@
   },
   "failedToLoadRadioStations": "Impossibile caricare le stazioni radio",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
-  "noRadioStations": "Nessuna stazione radio",
+  "noRadioStations": "Nessuna Stazione Radio",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "Aggiungi stazioni radio nelle impostazioni del tuo server Navidrome per vederle qui.",
   "@noRadioStationsHint": {
@@ -1092,7 +1179,7 @@
   },
   "storagePermissionRequired": "Permesso di archiviazione richiesto",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "Nessun file musicale trovato sul tuo dispositivo",
   "@noMusicFilesFound": {
@@ -1101,7 +1188,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "Rimuovi",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "Impossibile impostare la valutazione: {error}",
   "@failedToSetRating": {
@@ -1235,6 +1322,14 @@
   "artistDataNotFound": "Artista non trovato",
   "@artistDataNotFound": {
     "description": "Error state on the artist screen when artist data fails to load"
+  },
+  "addedArtistToQueue": "Artista aggiunto alla coda",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "Impossibile aggiungere l'artista alla coda",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
   },
   "@_CAST_DLNA": {},
   "casting": "In trasmissione",
@@ -1577,6 +1672,27 @@
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
+  "sectionFadeInOut": "DISSOLVENZA IN/USCITA",
+  "@sectionFadeInOut": {
+    "description": "Playback settings section header for fade in/out audio"
+  },
+  "fadeInOutEnable": "Abilita Dissolvenza In/Uscita",
+  "@fadeInOutEnable": {
+    "description": "Toggle label to enable fade in/out audio effect"
+  },
+  "fadeInOutSubtitle": "Dissolvenza dell'audio durante la riproduzione o la pausa",
+  "@fadeInOutSubtitle": {
+    "description": "Subtitle explaining fade in/out functionality"
+  },
+  "fadeDuration": "Durata dissolvenza: {duration}ms",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
   },
@@ -1775,6 +1891,44 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Analytics e Privacy",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Analitica anonima",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Aiuta a migliorare Musly con rapporti anonimi di crash e statistiche di utilizzo",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "ID dispositivo",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "ID Anonimo: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Abilita analytics per vedere il tuo ID anonimo del dispositivo",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Informazioni Sull'Id",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "È un identificatore anonimo generato dall'app. Non può essere collegato alla tua identità personale e viene utilizzato solo per l'analisi.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  },
   "@_SUPPORT": {},
   "supportGreeting": "Ciao!",
   "supportParagraph1": "Sono Devid, lo sviluppatore di Musly. Ho creato questa app perché amo la musica e credo che tutti meritino un lettore musicale bellissimo e gratuito.",
@@ -1790,353 +1944,666 @@
   "supportWayShare": "Parla di Musly ai tuoi amici",
   "supportWayBugs": "Segnala bug o suggerisci funzionalità",
   "supportWayEnjoy": "Semplicemente goditi la musica!",
+  "supportMadeWithLove": "Fatto con 💙 in Italia",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Velocità di Riproduzione",
+  "@playbackSpeed": {
+    "description": "Title of the playback speed bottom sheet"
+  },
+  "normalSpeed": "Normale (1×)",
+  "@normalSpeed": {
+    "description": "Label for 1× (normal) playback speed option"
+  },
+  "preservePitch": "Preserva la tonalità",
+  "@preservePitch": {
+    "description": "Toggle label to keep original pitch when changing speed"
+  },
+  "preservePitchSubtitle": "Mantieni la tonalità originale quando cambi velocità",
+  "@preservePitchSubtitle": {
+    "description": "Subtitle for the preserve-pitch toggle"
+  },
+  "pitch": "Tonalità",
+  "@pitch": {
+    "description": "Label for the pitch slider in the speed dialog"
+  },
+  "pitchPreserved": "Intonazione mantenuta",
+  "@pitchPreserved": {
+    "description": "Tooltip fragment shown when pitch correction is on"
+  },
+  "speedTooltipWithPitch": "Velocità {speed} · intonazione {pitch}×",
+  "@speedTooltipWithPitch": {
+    "description": "Tooltip for the speed button showing speed and pitch values",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      },
+      "pitch": {
+        "type": "String"
+      }
+    }
+  },
+  "speedTooltipPitchPreserved": "Velocità {speed} · intonazione mantenuta",
+  "@speedTooltipPitchPreserved": {
+    "description": "Tooltip for the speed button when pitch is preserved",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimer": "Timer di spegnimento",
+  "@sleepTimer": {
+    "description": "Title of the sleep timer bottom sheet"
+  },
+  "sleepTimerActive": "Timer di spegnimento attivo",
+  "@sleepTimerActive": {
+    "description": "Tooltip for the sleep timer button when a timer is running"
+  },
+  "fadeOut": "Dissolvenza in uscita",
+  "@fadeOut": {
+    "description": "Toggle label for the fade-out option in the sleep timer dialog"
+  },
+  "fadeOutSubtitle": "Abbassa gradualmente il volume negli ultimi {seconds} s",
+  "@fadeOutSubtitle": {
+    "description": "Subtitle for the fade-out toggle, showing fade duration in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "finishCurrentSong": "Termina il brano attuale",
+  "@finishCurrentSong": {
+    "description": "Toggle label to stop after the current track finishes"
+  },
+  "finishCurrentSongSubtitle": "Ferma dopo la fine della traccia corrente",
+  "@finishCurrentSongSubtitle": {
+    "description": "Subtitle for the finish-current-song toggle"
+  },
+  "sleepTimerMinutes": "{count} minuti",
+  "@sleepTimerMinutes": {
+    "description": "Sleep timer option label for a duration in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerHours": "{count} ore",
+  "@sleepTimerHours": {
+    "description": "Sleep timer option label for a duration in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerSetFor": "Timer di spegnimento impostato per {duration}",
+  "@sleepTimerSetFor": {
+    "description": "Snackbar shown after setting the sleep timer",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "customDuration": "Durata personalizzata...",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "cancelTimer": "Annulla timer",
+  "@cancelTimer": {
+    "description": "List tile label to cancel the active sleep timer"
+  },
+  "customSleepTimer": "Timer di spegnimento personalizzato",
+  "@customSleepTimer": {
+    "description": "Title of the custom sleep timer dialog"
+  },
+  "set": "Imposta",
+  "@set": {
+    "description": "Confirm button label in the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Aggiungi alla Playlist",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Le Tue Playlist",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "enableLrcLibFallback": "Recupera i testi da LRCLIB",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+  "lrcLibFallbackSubtitle": "Cerca automaticamente LRCLIB per i testi quando il server non li fornisce",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  },
+  "themeSaved": "Tema salvato",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Modifiche non salvate",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesTitle": "Modifiche non salvate",
+  "@themeUnsavedChangesTitle": {
+    "description": "Title of the unsaved changes dialog"
+  },
+  "themeUnsavedChangesBody": "Hai delle modifiche non salvate. Vuoi salvarle prima di uscire?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Annulla",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "audioFocusDenied": "Impossibile avviare la riproduzione — un'altra app ha il focus audio",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "addToLibrary": "Aggiungi alla libreria",
+  "@addToLibrary": {
+    "description": "Add to library option in menu"
+  },
+  "alreadyInLibrary": "Brano già presente nella libreria del server",
+  "@alreadyInLibrary": {
+    "description": "Snackbar message when trying to add a song to the library that is already there"
+  },
   "selectPlaylist": "Seleziona Playlist",
+  "@selectPlaylist": {
+    "description": "Title for playlist selection bottom sheet"
+  },
   "endOfSong": "Fine Brano",
-  "muslyConnect": "Musly Connect",
+  "@endOfSong": {
+    "description": "Sleep timer option to end at the end of the current song"
+  },
   "connectToDevice": "Connetti a un Dispositivo",
+  "@connectToDevice": {
+    "description": "Title for Connect to a Device sheet"
+  },
   "currentlyPlayingOn": "In Riproduzione Su",
+  "@currentlyPlayingOn": {
+    "description": "Label for currently active playback device"
+  },
   "noDevicesFound": "Nessun altro dispositivo Musly trovato sulla tua rete Wi-Fi.",
+  "@noDevicesFound": {
+    "description": "Empty state when no peer devices are discovered"
+  },
   "transferPlaybackHere": "Trasferisci la riproduzione qui",
+  "@transferPlaybackHere": {
+    "description": "Tooltip for transferring playback to a device"
+  },
   "playbackTransferredTo": "Riproduzione trasferita su {device}",
-  "muslyBeatSync": "Musly BeatSync",
+  "@playbackTransferredTo": {
+    "description": "Snackbar message when playback is transferred",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
   "beatSyncSubtitle": "Sincronizza più telefoni e computer su Wi-Fi come altoparlanti surround per le feste con precisione al millisecondo.",
+  "@beatSyncSubtitle": {
+    "description": "Description of BeatSync party audio sync"
+  },
   "hostParty": "Crea Party",
+  "@hostParty": {
+    "description": "Button to host a party room"
+  },
   "joinParty": "Unisciti al Party",
+  "@joinParty": {
+    "description": "Button to join a party room"
+  },
   "leaveParty": "Lascia il Party",
+  "@leaveParty": {
+    "description": "Button to leave a party room"
+  },
   "audioPhaseCalibration": "Calibrazione Fase Audio",
+  "@audioPhaseCalibration": {
+    "description": "Title for phase sync calibration slider"
+  },
   "phaseCalibrationSubtitle": "Regola per compensare la latenza di cuffie o altoparlanti Bluetooth.",
+  "@phaseCalibrationSubtitle": {
+    "description": "Subtitle for phase calibration"
+  },
   "partySpeakers": "Altoparlanti Party",
-  "muslyWrapped": "Musly Wrapped",
+  "@partySpeakers": {
+    "description": "List title for connected party devices"
+  },
   "wrappedSeasonal": "Musly Wrapped è Stagionale",
+  "@wrappedSeasonal": {
+    "description": "Musly Playback seasonal dialog header"
+  },
   "playYourTopSongs": "Riproduci i Tuoi Brani Preferiti",
+  "@playYourTopSongs": {
+    "description": "Wrapped summary card play button"
+  },
   "milestone50SongsTitle": "Grazie di cuore!",
+  "@milestone50SongsTitle": {
+    "description": "Title for 50-song milestone celebration"
+  },
   "milestone50SongsBadge": "50 BRANI ASCOLTATI",
+  "@milestone50SongsBadge": {
+    "description": "Badge for 50-song milestone"
+  },
   "milestone50SongsMessage": "Hai appena raggiunto il traguardo di 50 brani ascoltati su Musly! Grazie per aver scelto quest'app per accompagnare la tua passione musicale ogni giorno.",
+  "@milestone50SongsMessage": {
+    "description": "Message for 50-song milestone"
+  },
   "continueListening": "Continua ad ascoltare",
+  "@continueListening": {
+    "description": "Button to continue listening after milestone celebration"
+  },
   "lyricsUnderArtwork": "Testo sotto la copertina",
+  "@lyricsUnderArtwork": {
+    "description": "Toggle to show live lyrics under album artwork in player"
+  },
   "lyricsUnderArtworkSubtitle": "Mostra la riga sincronizzata corrente del testo sotto la copertina nel player a schermo intero",
+  "@lyricsUnderArtworkSubtitle": {
+    "description": "Subtitle for live lyrics under artwork toggle"
+  },
   "lyricsDisplaySection": "VISUALIZZAZIONE TESTO",
+  "@lyricsDisplaySection": {
+    "description": "Section header for lyrics display appearance settings"
+  },
   "lyricsBlurUnfocused": "Sfoca testo non attivo",
+  "@lyricsBlurUnfocused": {
+    "description": "Toggle to blur past and upcoming lyric lines"
+  },
   "lyricsBlurUnfocusedSubtitle": "Aggiunge un effetto di sfocatura alle righe del testo precedenti e successive",
+  "@lyricsBlurUnfocusedSubtitle": {
+    "description": "Subtitle for blur unfocused lyrics toggle"
+  },
   "lyricsAlignment": "Allineamento testo",
+  "@lyricsAlignment": {
+    "description": "Label for lyrics alignment setting"
+  },
   "lyricsAlignmentCentered": "Centrato",
+  "@lyricsAlignmentCentered": {
+    "description": "Centered lyrics alignment label"
+  },
   "lyricsAlignmentLeft": "Allineato a sinistra",
+  "@lyricsAlignmentLeft": {
+    "description": "Left aligned lyrics alignment label"
+  },
   "alignLeft": "Sinistra",
+  "@alignLeft": {
+    "description": "Left alignment button"
+  },
   "alignCenter": "Centro",
+  "@alignCenter": {
+    "description": "Center alignment button"
+  },
   "lyricsGlowEffect": "Bagliore riga attiva",
+  "@lyricsGlowEffect": {
+    "description": "Toggle for active lyric line glow effect"
+  },
   "lyricsGlowEffectSubtitle": "Effetto di bagliore sottile sulla riga del testo attualmente in riproduzione",
+  "@lyricsGlowEffectSubtitle": {
+    "description": "Subtitle for active lyric line glow effect toggle"
+  },
   "hideWindowTitlebar": "Nascondi barra del titolo / decorazioni della finestra",
+  "@hideWindowTitlebar": {
+    "description": "Toggle to hide native desktop window titlebar"
+  },
   "hideWindowTitlebarSubtitle": "Nasconde la barra del titolo nativa (utile per Linux Wayland e tiling window manager)",
-  "sectionSmartCrossfade": "SMART CROSSFADE",
+  "@hideWindowTitlebarSubtitle": {
+    "description": "Subtitle for hide window titlebar toggle"
+  },
   "trackCrossfade": "Dissolvenza incrociata tra i brani",
+  "@trackCrossfade": {
+    "description": "Title for track crossfade duration setting"
+  },
   "crossfadeOffSubtitle": "Disattivata (Transizione istantanea)",
+  "@crossfadeOffSubtitle": {
+    "description": "Subtitle when crossfade is disabled"
+  },
   "crossfadeDurationSubtitle": "{seconds} secondi di dissolvenza incrociata tra i brani",
-  "crossfadeDurationBadge": "{seconds}s",
+  "@crossfadeDurationSubtitle": {
+    "description": "Subtitle showing crossfade duration",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "sectionGaplessPlayback": "RIPRODUZIONE SENZA PAUSE",
+  "@sectionGaplessPlayback": {
+    "description": "Playback settings section header for gapless playback"
+  },
   "gaplessPlayback": "Riproduzione senza pause",
+  "@gaplessPlayback": {
+    "description": "Title for gapless playback toggle"
+  },
   "gaplessPlaybackSubtitle": "Elimina il silenzio tra i brani",
+  "@gaplessPlaybackSubtitle": {
+    "description": "Subtitle for gapless playback toggle"
+  },
   "sectionLyrics": "TESTI",
-  "networkWifi": "WiFi",
+  "@sectionLyrics": {
+    "description": "Playback settings section header for lyrics"
+  },
   "networkMobile": "Dati mobili",
+  "@networkMobile": {
+    "description": "Network badge for mobile data connection"
+  },
   "downloadFolder": "Cartella di download",
+  "@downloadFolder": {
+    "description": "Title for custom download folder setting"
+  },
   "downloadFolderDefault": "Predefinita (Memoria interna)",
+  "@downloadFolderDefault": {
+    "description": "Subtitle when default download folder is selected"
+  },
   "activeDownloads": "Download attivi",
+  "@activeDownloads": {
+    "description": "Title for active downloads row"
+  },
   "noDownloadsInProgress": "Nessun download in corso",
+  "@noDownloadsInProgress": {
+    "description": "Subtitle when no downloads are currently active"
+  },
   "playlistDownloads": "Download playlist",
+  "@playlistDownloads": {
+    "description": "Title for playlist downloads row"
+  },
   "playlistSongsDownloadedCount": "{count, plural, =1{1 brano scaricato} other{{count} brani scaricati}}",
+  "@playlistSongsDownloadedCount": {
+    "description": "Subtitle showing number of songs downloaded in playlist downloads",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "songsStreamCache": "Cache brani e streaming",
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  },
   "imageArtworkCache": "Cache copertine e immagini",
+  "@imageArtworkCache": {
+    "description": "Title for image/artwork cache row"
+  },
   "cacheDiskUsage": "{size} occupati su disco",
+  "@cacheDiskUsage": {
+    "description": "Subtitle showing cache disk usage",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "totalCacheDiskUsage": "Totale cache: {size}",
+  "@totalCacheDiskUsage": {
+    "description": "Subtitle showing total cache disk usage",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "clearAudioCacheTooltip": "Svuota cache brani",
+  "@clearAudioCacheTooltip": {
+    "description": "Tooltip for clear audio cache button"
+  },
   "clearImageCacheTooltip": "Svuota cache immagini",
+  "@clearImageCacheTooltip": {
+    "description": "Tooltip for clear image cache button"
+  },
   "audioCacheCleared": "Cache brani svuotata",
+  "@audioCacheCleared": {
+    "description": "Snackbar message when song cache is cleared"
+  },
   "imageCacheCleared": "Cache copertine svuotata",
+  "@imageCacheCleared": {
+    "description": "Snackbar message when artwork cache is cleared"
+  },
   "folderAdded": "Cartella aggiunta: {path}",
+  "@folderAdded": {
+    "description": "Snackbar message when a local folder is added",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "removeFolderTitle": "Rimuovi cartella",
+  "@removeFolderTitle": {
+    "description": "Title of dialog to remove local music folder"
+  },
   "removeFolderConfirm": "Rimuovere \"{path}\" dai percorsi di scansione?",
+  "@removeFolderConfirm": {
+    "description": "Confirmation message to remove folder from scan paths",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "folderRemoved": "Cartella rimossa",
+  "@folderRemoved": {
+    "description": "Snackbar message when a local folder is removed"
+  },
   "loadingLibrary": "Caricamento libreria in corso...",
+  "@loadingLibrary": {
+    "description": "Snackbar message when library is being loaded"
+  },
   "libraryEmptyError": "La libreria sembra vuota o non è stato possibile caricarla. Assicurati che il tuo server supporti la scansione completa della libreria.",
+  "@libraryEmptyError": {
+    "description": "Dialog message when library is empty for download"
+  },
   "serverStatusConnected": "CONNESSO",
+  "@serverStatusConnected": {
+    "description": "Server connection status badge: connected"
+  },
   "serverStatusConnecting": "CONNESSIONE",
-  "serverStatusOffline": "OFFLINE",
+  "@serverStatusConnecting": {
+    "description": "Server connection status badge: connecting"
+  },
   "serverStatusNotConnected": "Non connesso",
+  "@serverStatusNotConnected": {
+    "description": "Label when no server is connected"
+  },
   "switchServerButton": "Cambia",
+  "@switchServerButton": {
+    "description": "Button to switch server profile"
+  },
   "savedServersSection": "SERVER E SERVIZI SALVATI",
+  "@savedServersSection": {
+    "description": "Section header for saved server profiles"
+  },
   "manage": "Gestisci",
+  "@manage": {
+    "description": "Button to manage items"
+  },
   "serverActiveBadge": "ATTIVO",
+  "@serverActiveBadge": {
+    "description": "Badge showing active server profile"
+  },
   "addServerOrService": "Aggiungi server o servizio",
+  "@addServerOrService": {
+    "description": "Button to add a new server or streaming service"
+  },
   "welcomeTourTitle": "Tour di benvenuto",
+  "@welcomeTourTitle": {
+    "description": "Title for welcome tour tile in about tab"
+  },
   "welcomeTourSubtitle": "Rivedi l'esperienza introduttiva iniziale",
+  "@welcomeTourSubtitle": {
+    "description": "Subtitle for welcome tour tile"
+  },
   "muslyPlaybackDev": "Musly Playback (Anteprima sviluppatore)",
+  "@muslyPlaybackDev": {
+    "description": "Playback preview in debug mode"
+  },
   "muslyPlaybackDevSubtitle": "Anteprima di test per sviluppatori del riepilogo dell'anno",
-  "muslyPlaybackAnnual": "Musly Playback",
+  "@muslyPlaybackDevSubtitle": {
+    "description": "Playback preview subtitle"
+  },
   "muslyPlaybackAnnualSubtitle": "Il tuo riepilogo annuale e le tue statistiche di ascolto",
+  "@muslyPlaybackAnnualSubtitle": {
+    "description": "Musly Playback annual subtitle in settings"
+  },
   "sectionAboutSupport": "SUPPORTO",
+  "@sectionAboutSupport": {
+    "description": "Section header for support in about tab"
+  },
   "thanksForRating": "Grazie per la valutazione!",
+  "@thanksForRating": {
+    "description": "Title shown when user has already rated the app"
+  },
   "rateMusly": "Valuta Musly",
+  "@rateMusly": {
+    "description": "Title to rate the app"
+  },
   "alreadyRatedSubtitle": "Hai già valutato l'app",
+  "@alreadyRatedSubtitle": {
+    "description": "Subtitle when user has rated the app"
+  },
   "shareFeedbackSubtitle": "Condividi la tua opinione",
+  "@shareFeedbackSubtitle": {
+    "description": "Subtitle to share rating feedback"
+  },
   "supportMuslyTitle": "Supporta Musly",
+  "@supportMuslyTitle": {
+    "description": "Title for Musly support tile"
+  },
   "supportMuslySubtitle": "Unisciti a Discord o fai una donazione",
+  "@supportMuslySubtitle": {
+    "description": "Subtitle for Musly support tile"
+  },
   "rateMuslyDialogTitle": "Valuta Musly",
+  "@rateMuslyDialogTitle": {
+    "description": "Title of rating dialog"
+  },
   "rateMuslyDialogQuestion": "Come valuteresti la tua esperienza?",
+  "@rateMuslyDialogQuestion": {
+    "description": "Question in rating dialog"
+  },
   "optionalFeedbackHint": "Feedback opzionale...",
+  "@optionalFeedbackHint": {
+    "description": "Hint text for rating feedback text field"
+  },
   "submit": "Invia",
+  "@submit": {
+    "description": "Submit button label"
+  },
   "thankYouFeedback": "Grazie per il tuo feedback!",
+  "@thankYouFeedback": {
+    "description": "Snackbar message after submitting rating feedback"
+  },
   "devPlaybackTapsAway": "A {count} tocchi dall'anteprima sviluppatore di Playback",
+  "@devPlaybackTapsAway": {
+    "description": "Snackbar message counting down taps to unlock developer wrapped preview",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "devPlaybackUnlocked": "Anteprima sviluppatore di Playback sbloccata!",
+  "@devPlaybackUnlocked": {
+    "description": "Snackbar message when developer wrapped preview is unlocked"
+  },
   "craftedWith": "Creato con ",
+  "@craftedWith": {
+    "description": "Footer text prefix: Crafted with"
+  },
   "inItaly": " in Italia",
+  "@inItaly": {
+    "description": "Footer text suffix: in Italy"
+  },
   "switchServerTitle": "Cambia server",
+  "@switchServerTitle": {
+    "description": "Title of server switcher bottom sheet"
+  },
   "switchServerSubtitle": "Seleziona un server attivo o una sorgente di streaming",
+  "@switchServerSubtitle": {
+    "description": "Subtitle of server switcher bottom sheet"
+  },
   "addServerButton": "Aggiungi server",
+  "@addServerButton": {
+    "description": "Button to add a server in server switcher"
+  },
   "noServersSavedYet": "Nessun server salvato",
+  "@noServersSavedYet": {
+    "description": "Empty state message when no server profiles exist"
+  },
   "connectedTo": "Connesso a {name}",
+  "@connectedTo": {
+    "description": "Snackbar message when successfully switched to server",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "errorConnectingServer": "Errore durante la connessione al server: {error}",
+  "@errorConnectingServer": {
+    "description": "Snackbar error message when server switch fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "renameServerProfile": "Rinomina profilo server",
+  "@renameServerProfile": {
+    "description": "Title of rename server profile dialog"
+  },
   "profileNameLabel": "Nome profilo",
+  "@profileNameLabel": {
+    "description": "Label for profile name text field"
+  },
   "enterNewNameHint": "Inserisci nuovo nome",
+  "@enterNewNameHint": {
+    "description": "Hint text for entering new profile name"
+  },
   "removeServerTitle": "Rimuovi server",
+  "@removeServerTitle": {
+    "description": "Title of remove server confirmation dialog"
+  },
   "removeServerConfirm": "Sei sicuro di voler rimuovere \"{name}\" dai server salvati?",
+  "@removeServerConfirm": {
+    "description": "Confirmation message to remove a server profile",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "noPlaylistsFound": "Nessuna playlist trovata",
+  "@noPlaylistsFound": {
+    "description": "Empty state message in playlist downloads screen"
+  },
   "supportDialogDescription": "Musly è un progetto gratuito e open-source. Il tuo supporto aiuta a mantenerlo vivo!",
+  "@supportDialogDescription": {
+    "description": "Description in support startup dialog"
+  },
   "supportDialogJoinDiscord": "Unisciti al nostro Discord",
+  "@supportDialogJoinDiscord": {
+    "description": "Title of Discord button in support dialog"
+  },
   "supportDialogDiscordSubtitle": "Ottieni aiuto, suggerisci funzionalità, chatta con noi",
+  "@supportDialogDiscordSubtitle": {
+    "description": "Subtitle of Discord button in support dialog"
+  },
   "supportDialogDonateTitle": "Supporta con una donazione",
+  "@supportDialogDonateTitle": {
+    "description": "Title of donation button in support dialog"
+  },
   "supportDialogDonateSubtitle": "Aiuta a coprire i costi dei server e dello sviluppo",
+  "@supportDialogDonateSubtitle": {
+    "description": "Subtitle of donation button in support dialog"
+  },
   "dontShowAgain": "Non mostrare più",
+  "@dontShowAgain": {
+    "description": "Checkbox label to not show support dialog again"
+  },
   "maybeLater": "Più tardi",
-  "addAllToQueue": "Aggiungi tutti alla coda",
-  "songsAddedToQueue": "{count, plural, =1{1 brano aggiunto alla coda} other{{count} brani aggiunti alla coda}}",
-  "searchInAlbum": "Cerca nell'album",
-  "searchInPlaylist": "Cerca nella playlist",
-  "filterTracks": "Filtra tracce...",
-  "filterSongs": "Filtra brani...",
-  "noSongsInQueue": "Nessun brano in coda",
-  "moreOptions": "Altre opzioni",
-  "upNext": "In coda",
-  "removeSelected": "Rimuovi selezionati",
-  "reorderSongs": "Riordina brani",
-  "selectSongs": "Seleziona brani",
-  "doneReordering": "Fine riordinamento",
-  "downloadAlbum": "Scarica album",
-  "downloadPlaylist": "Scarica playlist",
-  "downloadedTapToRemove": "Scaricato — tocca per rimuovere",
-  "downloadingTapToCancel": "Download in corso — tocca per annullare",
-  "removeDownloadsTitle": "Rimuovere i download?",
-  "removeAlbumDownloadsConfirm": "Rimuovere tutti i {count} brani scaricati da \"{name}\"?",
-  "removePlaylistDownloadsConfirm": "Rimuovere tutti i {count} brani scaricati da \"{name}\"?",
-  "queuedSongsForDownload": "Messi in coda {count} brani per il download…",
-  "songRemovedFromPlaylist": "Brano rimosso dalla playlist",
-  "errorRemovingSong": "Errore durante la rimozione del brano: {error}",
-  "errorReorderingSong": "Errore durante il riordino del brano: {error}",
-  "removeSongsTitle": "Rimuovi brani",
-  "removePlaylistSongsConfirm": "Rimuovere {count} brani da \"{name}\"?",
-  "removedSongsFromPlaylist": "Rimossi {count} brani dalla playlist",
-  "alreadyInPlaylist": "Già nella playlist",
-  "alreadyInPlaylistConfirm": "\"{title}\" è già presente in \"{playlist}\". Vuoi aggiungerlo comunque?",
-  "addAnyway": "Aggiungi comunque",
-  "offlineModeQuestion": "Modalità offline?",
-  "drumroll": "RULLO DI TAMBURI...",
-  "readyToDiscoverTopSong": "Pronto a scoprire\nil tuo brano #1?",
-  "tapToBegin": "Tocca per iniziare",
-  "minutesListened": "MINUTI DI ASCOLTO",
-  "totalHours": "Ore totali",
-  "uniqueTracks": "Brani unici",
-  "topSongsHeader": "TOP BRANI",
-  "yourMostListenedSongs": "I tuoi brani più ascoltati",
-  "topArtistsHeader": "TOP ARTISTI",
-  "playsCount": "{count, plural, =1{1 ascolto} other{{count} ascolti}}",
-  "topSongBadge": "Brano #1",
-  "topArtistMetric": "Top Artista",
-  "genreMetric": "Genere",
-  "muslyPlaybackHeader": "MUSLY PLAYBACK",
-  "enableMuslyConnect": "Abilita Musly Connect",
-  "enableMuslyConnectSubtitle": "Rileva i dispositivi vicini tramite Wi-Fi per il controllo remoto e le sessioni di ascolto",
-  "availableDevices": "Dispositivi disponibili",
-  "lanDiscoveryActive": "Rilevamento LAN attivo • Nessun dispositivo nelle vicinanze",
-  "nearbyDevicesFound": "{count, plural, =1{1 dispositivo trovato nelle vicinanze} other{{count} dispositivi trovati nelle vicinanze}}",
-  "minutes": "Minuti",
-  "nowPlayingHeader": "IN RIPRODUZIONE",
-  "privacyFirstTitle": "La tua Privacy al Primo Posto",
-  "privacyFirstSubtitle": "I tuoi dati restano sempre con te.",
-  "noDataSellingTitle": "Nessuna Vendita di Dati",
-  "noDataSellingDescription": "Non vendiamo, condividiamo né cediamo mai i tuoi dati personali a terzi.",
-  "localFirstStorageTitle": "Salvataggio Locale sul Dispositivo",
-  "localFirstStorageDescription": "La tua libreria musicale e le credenziali rimangono sul tuo dispositivo.",
-  "privateOpenTitle": "100% Privata & Aperta",
-  "privateOpenDescription": "Musly non raccoglie alcuna telemetria. Nessun identificatore, dato di tracciamento o analytics.",
-  "readFullPrivacyPolicy": "Leggi la Privacy Policy Completa",
-  "viewCompleteDetailsWebsite": "Visualizza i dettagli completi sul nostro sito web",
-  "understandAndContinue": "Ho capito e continua",
-  "declineAndExit": "Rifiuta ed Esci",
-  "exitApp": "Esci dall'App",
-  "stop": "Stop",
-  "closeQueue": "Chiudi Coda",
-  "timerOff": "Disattivo",
-  "history": "Cronologia",
-  "searchInLibrary": "Cerca nella Libreria",
-  "add": "Aggiungi",
-  "clear": "Cancella",
-  "back": "Indietro",
-  "previousSlide": "Precedente",
-  "nextSlide": "Successivo",
-  "radios": "Radio",
-  "downloads": "Download",
-  "noDownloadedSongsYet": "Nessun brano scaricato",
-  "noDownloadedAlbumsYet": "Nessun album scaricato",
-  "connectedToWebStream": "Connesso a Web Stream",
-  "allowSelfSignedCertificatesSubtitle": "Utile per reti LAN locali o certificati SSL autofirmati",
-  "legacyAuthenticationSubtitle": "Richiesto per versioni legacy delle API Subsonic",
-  "certificateFileSubtitle": "File .crt, .pem o .cer",
-  "clientIdentityFileSubtitle": "File di identità client .p12 o .pfx",
-  "copyError": "Copia errore",
-  "errorCopiedToClipboard": "Errore copiato negli appunti",
-  "failedToUpdateFavorite": "Impossibile aggiornare lo stato preferito",
-  "queuedSongsFromAlbumsForDownload": "Messi in coda {songCount} brani da {albumCount} album per il download…",
-  "downloadAllAlbums": "Scarica tutti gli album",
-  "downloadAllFavorites": "Scarica tutti i preferiti",
-  "downloadAll": "Scarica tutto",
-  "createPlaylistSubtitle": "Crea una playlist personalizzata con i tuoi brani preferiti",
-  "addMusicSource": "Aggiungi Sorgente Musicale",
-  "addMusicSourceSubtitle": "Connetti Navidrome, Jellyfin o Web Stream",
-  "removeFromFavoritesTitle": "Rimuovere dai Preferiti?",
-  "removeFromFavoritesConfirm": "Vuoi rimuovere \"{title}\" dai preferiti?",
-  "failedToRemove": "Impossibile rimuovere: {error}",
-  "streamUrlLabel": "URL Stream: {url}",
-  "shuffleNewSelection": "Riproduci casualmente nuova selezione",
-  "sortDurationLongest": "Durata (Dal più lungo)",
-  "connectToServer": "Connettiti al Server",
-  "renameProfile": "Rinomina Profilo",
-  "addWebStream": "Aggiungi Web Stream",
-  "addWebStreamSubtitle": "Riproduzione istantanea senza login richiesto",
-  "recentSearches": "Ricerche recenti",
-  "createPlaylistToGetStarted": "Crea una playlist per iniziare",
-  "addRadioStationsHint": "Aggiungi stazioni radio nelle impostazioni del tuo server per vederle qui.",
-  "onboardingNext": "Avanti",
-  "onboardingGetStarted": "Inizia",
-  "previousSlideTooltip": "Precedente (Freccia Sinistra)",
-  "nextSlideTooltip": "Successivo (Freccia Destra / Spazio)",
-  "onboardingSlide1TitlePrefix": "La tua Libreria Musicale,\n",
-  "onboardingSlide1TitleHighlight": "Sempre con Te.",
-  "onboardingSlide1Description": "Connettiti a Navidrome, Subsonic, Jellyfin o riproduci file locali con qualità lossless bit-perfect.",
-  "onboardingSlide1Feature1Title": "Libertà Self-Hosted",
-  "onboardingSlide1Feature1Desc": "Piena compatibilità con le API di Subsonic, Navidrome e Jellyfin.",
-  "onboardingSlide1Feature2Title": "Supporto Musica Locale",
-  "onboardingSlide1Feature2Desc": "Riproduci la tua musica offline direttamente senza configurare un server.",
-  "onboardingSlide1Feature3Title": "Audio Hi-Res Lossless",
-  "onboardingSlide1Feature3Desc": "Riproduzione gapless e bit-perfect per FLAC, ALAC e Opus.",
-  "onboardingSlide2TitlePrefix": "Mix Intelligenti,\n",
-  "onboardingSlide2TitleHighlight": "Creati su Misura per Te.",
-  "onboardingSlide2Description": "Musly apprende le tue abitudini sul dispositivo per creare mix quotidiani e riscoprire i tuoi brani preferiti.",
-  "onboardingSlide2Feature1Title": "Profilazione Gusti Algoritmica",
-  "onboardingSlide2Feature1Desc": "Apprende frequenze d'ascolto, skip e valutazioni in locale.",
-  "onboardingSlide2Feature2Title": "Mix Giornalieri Personalizzati",
-  "onboardingSlide2Feature2Desc": "Playlist automatiche come Per Te, Ascolta di Nuovo e Top Hits.",
-  "onboardingSlide2Feature3Title": "Elaborazione 100% sul Dispositivo",
-  "onboardingSlide2Feature3Desc": "Il tuo profilo di ascolto resta rigorosamente sul tuo dispositivo.",
-  "onboardingSlide3TitlePrefix": "Completamente Privata.\n",
-  "onboardingSlide3TitleHighlight": "Zero Pubblicità, Zero Tracciamento.",
-  "onboardingSlide3Description": "Zero telemetria e zero analytics. Testi sincronizzati, download offline e sincronizzazione in totale privacy.",
-  "onboardingSlide3Feature1Title": "Zero Telemetria & Tracciamento",
-  "onboardingSlide3Feature1Desc": "Nessun SDK di terze parti, niente tracker o pubblicità, 100% open source.",
-  "onboardingSlide3Feature2Title": "Testi Sincronizzati nel Tempo",
-  "onboardingSlide3Feature2Desc": "Testi sincronizzati in tempo reale con supporto a LRCLIB.",
-  "onboardingSlide3Feature3Title": "Gestore Download Offline",
-  "onboardingSlide3Feature3Desc": "Salva intere playlist e album in locale con download multipli.",
-  "finishTour": "Termina Tour",
-  "skip": "Salta",
-  "profileNameOptional": "Nome Profilo (Opzionale)",
-  "serverUrlRequired": "URL del Server *",
-  "lanServerUrlOptional": "URL Server LAN (Opzionale)",
-  "usernameRequired": "Nome Utente *",
-  "passwordRequired": "Password *",
-  "playingInSync": "In riproduzione sincronizzata",
-  "switchedBackToThisDevice": "Tornato su questo dispositivo",
-  "connectedToDeviceName": "Connesso a {device}",
-  "whatDoYouWantToPlay": "Cosa vuoi ascoltare?",
-  "noLyricsFound": "Nessun testo disponibile",
-  "dynamicColor": "Material You (Colore dinamico)",
-  "muslyPlayback": "Musly Playback",
-  "wrappedSeasonal": "Musly Playback è Stagionale",
-  "muslyPlaybackAnnual": "Musly Playback",
-  "muslyPlaybackAnnualSubtitle": "Il tuo Year-in-Review annuale si sblocca automaticamente ogni anno tra fine novembre e metà gennaio.\n\nContinua ad ascoltare musica per espandere il tuo universo sonoro!",
-  "muslyPlaybackDev": "Anteprima Playback (Modalità Test)",
-  "muslyPlaybackDevSubtitle": "Esplora direttamente l'anteprima del tuo Year-in-Review senza attendere novembre",
-  "synthesizingUniverse": "Sintetizzando il tuo universo sonoro",
-  "drumroll": "RULLO DI TAMBURI...",
-  "readyToDiscoverTopSong": "Pronto a scoprire\nla tua canzone #1?",
-  "getReadyForBeatDrop": "Preparati al drop sonoro...",
-  "yourYearInSound": "Il tuo {year}\nin Musica",
-  "yourYearInSoundSubtitle": "Hai esplorato profondità sonore, rivissuto momenti e creato ricordi attraverso la musica.",
-  "tapToBegin": "Tocca per iniziare",
-  "minutesListened": "MINUTI ASCOLTATI",
-  "totalHours": "Ore totali",
-  "uniqueTracks": "Brani unici",
-  "artists": "Artisti",
-  "yourMusicalChronotype": "IL TUO CRONOTIPO MUSICALE",
-  "genreGalaxy": "GALASSIA DEI GENERI",
-  "soundsThatGuidedYou": "I suoni che ti hanno guidato",
-  "topSongsHeader": "BRANI PREFERITI",
-  "nowPlayingHeader": "IN RIPRODUZIONE",
-  "yourMostListenedSongs": "I tuoi brani più ascoltati",
-  "topArtistsHeader": "I TUOI ARTISTI TOP",
-  "yourMusicalAnchors": "I tuoi pilastri musicali",
-  "yourListeningPersonality": "LA TUA PERSONALITÀ MUSICALE",
-  "muslyPlaybackHeader": "MUSLY PLAYBACK",
-  "topSongBadge": "Brano #1",
-  "minutes": "Minuti",
-  "topArtistMetric": "Top Artista",
-  "genreMetric": "Genere",
-  "playYourTopSongs": "Riproduci i tuoi brani top",
-  "yourYearInReviewIsReady": "Il tuo Year in Review è pronto!",
-  "playsCount": "{count, plural, =1{1 ascolto} other{{count} ascolti}}",
-  "chronotypeMidnightWanderer": "Esploratore Notturno 🌙",
-  "chronotypeMidnightWandererDesc": "I tuoi momenti musicali più profondi avvengono a tarda notte, quando il mondo tace.",
-  "chronotypeSunriseHarmonizer": "Armonizzatore dell'Alba ☀️",
-  "chronotypeSunriseHarmonizerDesc": "Inizi ogni mattina con ritmo, impostando la colonna sonora per l'intera giornata.",
-  "chronotypeAfternoonFlow": "Flusso del Pomeriggio ⚡",
-  "chronotypeAfternoonFlowDesc": "Il pomeriggio è il tuo momento clou per l'ascolto, alimentando la tua energia con suoni carichi di ritmo.",
-  "chronotypeTwilightLounger": "Sognatore del Crepuscolo 🌆",
-  "chronotypeTwilightLoungerDesc": "Le serate sono fatte per rilassarsi e perdersi in viaggi immersivi tra gli album.",
-  "archetypeLuminary": "Il Luminare",
-  "archetypeLuminaryBadge": "ESPLORATORE SONORO",
-  "archetypeLuminaryDesc": "Porti alla luce generi diversi e cerchi costantemente nuovi orizzonti musicali.",
-  "archetypeLuminaryTrait1": "Gusto Eclettico",
-  "archetypeLuminaryTrait2": "Fluido tra Generi",
-  "archetypeLuminaryTrait3": "Alta Scoperta",
-  "archetypeDevotee": "Il Devoto",
-  "archetypeDevoteeBadge": "SUPERFAN",
-  "archetypeDevoteeDesc": "Quando ami un artista o un album, lo ascolti a ripetizione con dedizione senza pari.",
-  "archetypeDevoteeTrait1": "Profonda Fedeltà",
-  "archetypeDevoteeTrait2": "Ascoltatore di Album",
-  "archetypeDevoteeTrait3": "Legame Emotivo",
-  "archetypeNightOwl": "Il Gufo Notturno",
-  "archetypeNightOwlBadge": "VIBRAZIONI NOTTURNE",
-  "archetypeNightOwlDesc": "La tua anima appartiene ai paesaggi sonori di mezzanotte, accordi d'atmosfera e sessioni sotto le stelle.",
-  "archetypeNightOwlTrait1": "Atmosferico",
-  "archetypeNightOwlTrait2": "Introspettivo",
-  "archetypeNightOwlTrait3": "Flusso Notturno",
-  "archetypeSunrise": "L'Armonizzatore dell'Alba",
-  "archetypeSunriseBadge": "CATALIZZATORE D'ENERGIA",
-  "archetypeSunriseDesc": "Svegli il mondo con vibrazioni positive e lasci che melodie ottimiste accendano la tua giornata.",
-  "archetypeSunriseTrait1": "Coinvolgente",
-  "archetypeSunriseTrait2": "Energia Mattutina",
-  "archetypeSunriseTrait3": "Carica Ritmica",
-  "archetypeAlchemist": "L'Alchimista Sonoro",
-  "archetypeAlchemistBadge": "CURATORE DI VIBRAZIONI",
-  "archetypeAlchemistDesc": "Trasformi i momenti quotidiani in esperienze cinematografiche con colonne sonore perfettamente curate.",
-  "archetypeAlchemistTrait1": "Istinto da Curatore",
-  "archetypeAlchemistTrait2": "Vibrazione Cinematografica",
-  "archetypeAlchemistTrait3": "Maestro d'Atmosfera",
-  "percentileTop05": "Top 0.5% Ascoltatore Globale",
-  "percentileTop1": "Top 1% Ascoltatore Globale",
-  "percentileTop5": "Top 5% Ascoltatore Globale",
-  "percentileTop10": "Top 10% Ascoltatore Globale",
-  "percentileTopAficionado": "Top Appassionato di Musica",
-  "superfanBadge01": "Top 0.1% Superfan",
-  "superfanBadge1": "Top 1% Fan",
-  "superfanBadge5": "Top 5% Fan"
+  "@maybeLater": {
+    "description": "Button label to dismiss support dialog"
+  }
 }

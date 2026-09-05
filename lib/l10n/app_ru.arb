@@ -5,6 +5,14 @@
   "@appName": {
     "description": "Application name"
   },
+  "emulatorDetected": "Обнаружен эмулятор",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "Приложение не работает в эмуляторе.\\nЗапустите его на реальном устройстве.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
   "goodMorning": "Доброе утро",
   "@goodMorning": {
     "description": "Morning greeting"
@@ -37,6 +45,22 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Любимые плейлисты",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Альбомы",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "Мини-альбомы",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Синглы",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
   "madeForYou": "Сделано для вас",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -67,7 +91,7 @@
   },
   "errorLoadingAlbums": "Ошибка при загрузке альбомов",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Нет высоко оценённых альбомов",
   "@noTopRatedAlbums": {
@@ -128,7 +152,7 @@
   },
   "artists": "Исполнители",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Песни",
   "@songs": {
@@ -141,6 +165,10 @@
   "genres": "Жанры",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "Лет",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Избранное",
   "@favorites": {
@@ -186,7 +214,7 @@
   "@repeatOne": {
     "description": "Repeat one button label"
   },
-  "repeatOff": "Повтор выкл.",
+  "repeatOff": "Повтор выкл",
   "@repeatOff": {
     "description": "Repeat off button label"
   },
@@ -224,11 +252,11 @@
   },
   "save": "Сохранить",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Закрыть",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "Общее",
   "@general": {
@@ -280,7 +308,7 @@
   },
   "unknownArtist": "Неизвестный исполнитель",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Неизвестный альбом",
   "@unknownAlbum": {
@@ -340,7 +368,7 @@
   },
   "retry": "Повторить",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Ничего не найдено",
   "@noResults": {
@@ -453,6 +481,30 @@
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
+  "showMiniPlayerHeart": "Показывать кнопку Сердце",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Добавлять в избранное из мини-плеера",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Показывать кнопку повтора",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Переключение режима повтора из мини-плеера",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Показывать кнопку Перемешать",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "Переключение режима перемешивания из мини-плеера",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
+  },
   "enableRecommendations": "Включить рекомендации",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"
@@ -465,7 +517,7 @@
   "@listeningData": {
     "description": "Listening Data section label"
   },
-  "totalPlays": "Всего прослушиваний: {count} ",
+  "totalPlays": "Всего прослушиваний: {count}",
   "@totalPlays": {
     "description": "Total plays count",
     "placeholders": {
@@ -513,10 +565,24 @@
   "@_LIBRARY": {},
   "yourLibrary": "Ваша библиотека",
   "filterAll": "Все",
+  "faves": "Избранное",
   "filterPlaylists": "Плейлисты",
   "filterAlbums": "Альбомы",
   "filterArtists": "Исполнители",
-  "likedSongs": "Понравившиеся песни",
+  "likedSongs": "Любимые треки",
+  "likedAlbums": "Любимые альбомы",
+  "noLikedAlbums": "Пока нет понравившихся альбомов",
+  "localMusicLibrary": "Музыка на устройстве",
+  "mergeLocalLibrary": "Объединить с библиотекой на сервере",
+  "mergeLocalLibrarySubtitle": "Показывать локальные треки вместе с серверной библиотекой",
+  "localMusicStats": "Музыкальные файлы на устройстве",
+  "addMusicFolder": "Добавить папку с музыкой",
+  "rescanLocalMusic": "Сканировать локальную музыку заново",
+  "localLibraryEmpty": "Библиотека пуста",
+  "localLibraryEmptySubtitle": "Локальные музыкальные файлы не найдены. Нажмите кнопку ниже, чтобы выполнить повторное сканирование.",
+  "libraryEmpty": "Библиотека пуста",
+  "libraryEmptySubtitle": "Добавьте музыку для начала работы.",
+  "scanForMusic": "Поиск музыки",
   "radioStations": "Радиостанции",
   "playlist": "Плейлист",
   "internetRadio": "Интернет-радио",
@@ -585,6 +651,7 @@
   "tabStorage": "Хранилище",
   "tabServer": "Сервер",
   "tabDisplay": "Дисплей",
+  "tabSupport": "Техподдержка",
   "tabAbout": "Информация",
   "@_SETTINGS_PLAYBACK": {},
   "sectionAutoDj": "Авто-диджей",
@@ -633,6 +700,18 @@
   "sectionMusicFolders": "КАТАЛОГИ МУЗЫКИ",
   "musicFolders": "Папки с музыкой",
   "noMusicFolders": "Папки с музыкой не найдены",
+  "sectionSavedProfiles": "СОХРАНЕННЫЕ ПРОФИЛИ",
+  "switchProfile": "Переключить профиль",
+  "switchServer": "Переключить сервер",
+  "addProfile": "Добавить профиль",
+  "switchProfileConfirmation": "Подключиться к \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "АККАУНТ",
   "logoutConfirmation": "Вы уверены, что хотите выйти? Это также удалит все кэшированные данные.",
   "@_SETTINGS_STORAGE": {},
@@ -668,6 +747,20 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "Не выключать подсветку экрана",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Предотвращает остановку загрузки при блокировке устройства",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "Одновременные загрузки",
+  "parallelDownloadsSubtitle": "Загрузка нескольких треков одновременно",
+  "downloadSingular": "скачать",
+  "downloadPlural": "скачать",
+  "slowerButStable": "Медленнее, но надёжнее",
+  "fasterButMoreData": "Быстрее, но потребляет больше трафика",
   "libraryDownloadStarted": "Загрузка библиотеки началась",
   "deleteDownloads": "Удалить все загрузки",
   "downloadsDeleted": "Все загрузки удалены",
@@ -853,7 +946,7 @@
   },
   "playlistNameHint": "Название плейлиста",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "Создан плейлист «{name}» с этой песней",
   "@playlistCreatedWithSong": {
@@ -939,7 +1032,7 @@
   },
   "noAlbumsFound": "Альбомы не найдены",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "URL-адрес главной страницы не найден",
@@ -960,11 +1053,11 @@
   },
   "failedToLoadRadioStations": "Не удалось загрузить радиостанции",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
   "noRadioStations": "Нет радиостанций",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "Добавьте радиостанции в настройках сервера Navidrome, чтобы они появились здесь.",
   "@noRadioStationsHint": {
@@ -1066,7 +1159,7 @@
   },
   "storagePermissionRequired": "Для сканирования локальных файлов требуется разрешение на доступ к памяти",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "На вашем устройстве не найдено музыкальных файлов",
   "@noMusicFilesFound": {
@@ -1075,7 +1168,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "Удалить",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "Не удалось задать оценку: {error}",
   "@failedToSetRating": {
@@ -1559,6 +1652,27 @@
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
+  "sectionFadeInOut": "НАРАСТАНИЕ/ЗАТУХАНИЕ",
+  "@sectionFadeInOut": {
+    "description": "Playback settings section header for fade in/out audio"
+  },
+  "fadeInOutEnable": "Включить Нарастание/Затухание",
+  "@fadeInOutEnable": {
+    "description": "Toggle label to enable fade in/out audio effect"
+  },
+  "fadeInOutSubtitle": "Плавное затухание звука при воспроизведении или паузе",
+  "@fadeInOutSubtitle": {
+    "description": "Subtitle explaining fade in/out functionality"
+  },
+  "fadeDuration": "Длительность затухания: {duration}мс",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
   },
@@ -1757,5 +1871,265 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
-  "audioFocusDenied": "Не удалось начать воспроизведение — аудиофокус занят другим приложением"
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Аналитика и Конфиденциальность",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Анонимная статистика",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Помогите улучшить Musly, отправляя анонимные отчёты о сбоях и статистику использования",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "ID устройства",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "Анонимный ID: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Включите сбор аналитики для отображения анонимного ID устройства",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Об идентификаторе устройства",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "Это анонимный идентификатор, создаваемый приложением. Он не связан с вашей личностью и используется только для аналитики.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  },
+  "@_SUPPORT": {},
+  "supportGreeting": "Привет! 👋",
+  "supportParagraph1": "Я Devid, разработчик Musly. Я сделал это приложение, потому что люблю музыку и верю, что у каждого должен быть красивый и бесплатный музыкальный плеер.",
+  "supportParagraph2": "Musly полностью бесплатен и с открытым исходным кодом, без рекламы и подписок. Я работаю над ним в свободное время, потому что мне нравится создавать полезные продукты.",
+  "supportParagraph3": "Но серверы, инструменты разработки и кофе не бесплатны 😅 Если Musly стал частью вашей повседневной жизни и вы хотите сказать \"спасибо\", даже небольшая поддержка будет для меня очень важна. Она помогает покрывать расходы и добавлять новые функции.",
+  "supportParagraph4": "И без давления - если вам нравится приложение, это уже лучшая награда! 💙",
+  "supportDonationTitle": "Поддержать разработку",
+  "supportDonationSubtitle": "через Revolut — любая поддержка важна!",
+  "supportDiscordTitle": "Вступайте в наш Discord",
+  "supportDiscordSubtitle": "Задавайте вопросы, предлагайте идеи или просто общайтесь",
+  "supportWaysTitle": "Как ещё можно поддержать проект",
+  "supportWayRate": "Оставить оценку в магазине приложений",
+  "supportWayShare": "Расскажите друзьям о Musly",
+  "supportWayBugs": "Сообщить о баге или предложить идею",
+  "supportWayEnjoy": "Просто наслаждайтесь музыкой! 🎵",
+  "supportMadeWithLove": "Сделано в Италии с 💙",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Скорость воспроизведения",
+  "@playbackSpeed": {
+    "description": "Title of the playback speed bottom sheet"
+  },
+  "normalSpeed": "Нормально (1×)",
+  "@normalSpeed": {
+    "description": "Label for 1× (normal) playback speed option"
+  },
+  "preservePitch": "Сохранять тональность",
+  "@preservePitch": {
+    "description": "Toggle label to keep original pitch when changing speed"
+  },
+  "preservePitchSubtitle": "Не изменять тональность при изменении скорости",
+  "@preservePitchSubtitle": {
+    "description": "Subtitle for the preserve-pitch toggle"
+  },
+  "pitch": "Тональность",
+  "@pitch": {
+    "description": "Label for the pitch slider in the speed dialog"
+  },
+  "pitchPreserved": "тональность сохранена",
+  "@pitchPreserved": {
+    "description": "Tooltip fragment shown when pitch correction is on"
+  },
+  "speedTooltipWithPitch": "Скорость {speed} · тональность {pitch}×",
+  "@speedTooltipWithPitch": {
+    "description": "Tooltip for the speed button showing speed and pitch values",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      },
+      "pitch": {
+        "type": "String"
+      }
+    }
+  },
+  "speedTooltipPitchPreserved": "Скорость {speed} · тональность сохранена",
+  "@speedTooltipPitchPreserved": {
+    "description": "Tooltip for the speed button when pitch is preserved",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimer": "Таймер сна",
+  "@sleepTimer": {
+    "description": "Title of the sleep timer bottom sheet"
+  },
+  "sleepTimerActive": "Таймер сна активирован",
+  "@sleepTimerActive": {
+    "description": "Tooltip for the sleep timer button when a timer is running"
+  },
+  "fadeOut": "Плавное затухание",
+  "@fadeOut": {
+    "description": "Toggle label for the fade-out option in the sleep timer dialog"
+  },
+  "fadeOutSubtitle": "Постепенное затухание громкости в последние {seconds} с",
+  "@fadeOutSubtitle": {
+    "description": "Subtitle for the fade-out toggle, showing fade duration in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "finishCurrentSong": "Завершить текущую песню",
+  "@finishCurrentSong": {
+    "description": "Toggle label to stop after the current track finishes"
+  },
+  "finishCurrentSongSubtitle": "Остановить воспроизведение после окончания текущего трека",
+  "@finishCurrentSongSubtitle": {
+    "description": "Subtitle for the finish-current-song toggle"
+  },
+  "sleepTimerMinutes": "{count} мин",
+  "@sleepTimerMinutes": {
+    "description": "Sleep timer option label for a duration in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerHours": "{count} час",
+  "@sleepTimerHours": {
+    "description": "Sleep timer option label for a duration in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerSetFor": "Таймер сна установлен на {duration}",
+  "@sleepTimerSetFor": {
+    "description": "Snackbar shown after setting the sleep timer",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "customDuration": "Задать длительность…",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "cancelTimer": "Сбросить таймер",
+  "@cancelTimer": {
+    "description": "List tile label to cancel the active sleep timer"
+  },
+  "customSleepTimer": "Настраиваемый таймер сна",
+  "@customSleepTimer": {
+    "description": "Title of the custom sleep timer dialog"
+  },
+  "set": "Установить",
+  "@set": {
+    "description": "Confirm button label in the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Добавить в плейлист",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Ваши плейлисты",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "enableLrcLibFallback": "Получить текст песни из LRCLIB",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+  "lrcLibFallbackSubtitle": "Автоматический поиск текста песни в LRCLIB при отсутствии на сервере",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  },
+  "themeSaved": "Тема сохранена",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Изменения не сохранены",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesTitle": "Изменения не сохранены",
+  "@themeUnsavedChangesTitle": {
+    "description": "Title of the unsaved changes dialog"
+  },
+  "themeUnsavedChangesBody": "Есть несохранённые изменения. Сохранить перед выходом?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Не сохранять",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "done": "Готово",
+  "@done": {
+    "description": "Button to confirm a color picker dialog"
+  },
+  "pickColor": "Выбрать {label}",
+  "@pickColor": {
+    "description": "Title of the color picker dialog",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStyle": "Оформление заголовка",
+  "@titleStyle": {
+    "description": "Section heading for title text style in theme editor"
+  },
+  "artistStyle": "Стиль исполнителя",
+  "@artistStyle": {
+    "description": "Section heading for artist text style in theme editor"
+  },
+  "themeActive": "АКТИВНА",
+  "@themeActive": {
+    "description": "Badge shown on the active Now Playing theme card"
+  },
+  "themeSafeMode": "БЕЗОПАСНО",
+  "@themeSafeMode": {
+    "description": "Badge shown when a theme is in safe mode"
+  },
+  "themeCodeMode": "КОД",
+  "@themeCodeMode": {
+    "description": "Badge shown when a theme has custom Flutter code enabled"
+  },
+  "themeAnimBadge": "АНИМАЦИИ",
+  "@themeAnimBadge": {
+    "description": "Badge shown on theme cards that have animations enabled"
+  },
+  "themeAuthor": "от {author}",
+  "@themeAuthor": {
+    "description": "Author attribution shown on theme preview card",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "audioFocusDenied": "Не удалось начать воспроизведение — аудиофокус занят другим приложением",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }
