@@ -31,5 +31,14 @@
   "@_GENRE_SCREEN": {},
   "@_JUKEBOX": {},
   "@_MUSIC_FOLDERS": {},
-  "audioFocusDenied": "प्लेबैक शुरू नहीं हो सका — किसी अन्य ऐप के पास ऑडियो फ़ोकस है"
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "audioFocusDenied": "प्लेबैक शुरू नहीं हो सका — किसी अन्य ऐप के पास ऑडियो फ़ोकस है",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }
