@@ -38,6 +38,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   String _lyricsAlignment = 'left';
   bool _lyricsGlowEffect = true;
   bool _hideWindowTitlebar = false;
+  String _artworkResolution = 'normal';
 
   ThemeMode _themeMode = ThemeMode.system;
   AccentColor _accentColor = AccentColor.red;
@@ -72,6 +73,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _lyricsBlurUnfocused = _playerUiSettings.getLyricsBlurUnfocused();
       _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
       _lyricsGlowEffect = _playerUiSettings.getLyricsGlowEffect();
+      _artworkResolution = _playerUiSettings.getArtworkResolution();
       _themeMode = themeService.themeMode;
       _accentColor = themeService.accentColor;
       _liquidGlass = themeService.liquidGlass;
@@ -138,6 +140,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           title: AppLocalizations.of(context)!.liveSearchSection.toUpperCase(),
           children: [
             _buildLiveSearchToggle(),
+          ],
+        ),
+        const SizedBox(height: 24),
+        SettingsSectionCard(
+          title: 'ARTWORK',
+          children: [
+            _buildArtworkResolutionSelector(),
           ],
         ),
         const SizedBox(height: 24),
@@ -1027,6 +1036,35 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         await _playerUiSettings.setLyricsBlurUnfocused(val);
         setState(() => _lyricsBlurUnfocused = val);
       },
+    );
+  }
+
+  Widget _buildArtworkResolutionSelector() {
+    final options = {
+      'low': 'Low (300px)',
+      'normal': 'Normal (600px)',
+      'high': 'High (Original)',
+    };
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: const Text('Artwork Resolution'),
+      trailing: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _artworkResolution,
+          items: options.entries.map((e) {
+            return DropdownMenuItem(
+              value: e.key,
+              child: Text(e.value),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => _artworkResolution = val);
+              _playerUiSettings.setArtworkResolution(val);
+            }
+          },
+        ),
+      ),
     );
   }
 

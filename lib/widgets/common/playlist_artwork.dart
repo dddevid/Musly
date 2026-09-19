@@ -34,6 +34,16 @@ class PlaylistArtwork extends StatelessWidget {
       builder: (context, _, __) {
         final playlistId = playlist?.id ?? '';
 
+        final effectiveCoverArt = coverArt ?? playlist?.coverArt;
+        if (effectiveCoverArt != null && effectiveCoverArt.isNotEmpty) {
+          return AlbumArtwork(
+            coverArt: effectiveCoverArt,
+            size: validSize,
+            borderRadius: borderRadius,
+            shadow: shadow,
+          );
+        }
+
         if (playlistId.isNotEmpty) {
           final cachedMosaicPath =
               PlaylistCoverService().getCoverPath(playlistId);

@@ -18,6 +18,8 @@ class PlayerUiSettingsService {
   static const String _keyShowLiveLyricUnderArtwork =
       'player_show_live_lyric_under_artwork';
 
+  static const String _keyArtworkResolution = 'artwork_resolution';
+
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
   factory PlayerUiSettingsService() => _instance;
@@ -35,12 +37,10 @@ class PlayerUiSettingsService {
   final ValueNotifier<double> albumArtCornerRadiusNotifier = ValueNotifier(8.0);
 
   final ValueNotifier<String> artworkShapeNotifier = ValueNotifier('rounded');
-
   final ValueNotifier<String> artworkShadowNotifier = ValueNotifier('soft');
-
-  final ValueNotifier<String> artworkShadowColorNotifier = ValueNotifier(
-    'black',
-  );
+  final ValueNotifier<String> artworkShadowColorNotifier = ValueNotifier('black');
+  final ValueNotifier<String> artworkResolutionNotifier = ValueNotifier('normal');
+  
   final ValueNotifier<bool> lyricsBlurUnfocusedNotifier = ValueNotifier(false);
   final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
   final ValueNotifier<bool> lyricsGlowEffectNotifier = ValueNotifier(true);
@@ -58,6 +58,7 @@ class PlayerUiSettingsService {
     artworkShapeNotifier.value = getArtworkShape();
     artworkShadowNotifier.value = getArtworkShadow();
     artworkShadowColorNotifier.value = getArtworkShadowColor();
+    artworkResolutionNotifier.value = getArtworkResolution();
     liveSearchNotifier.value = getLiveSearch();
     lyricsBlurUnfocusedNotifier.value = getLyricsBlurUnfocused();
     lyricsAlignmentNotifier.value = getLyricsAlignment();
@@ -165,6 +166,16 @@ class PlayerUiSettingsService {
     return _prefs?.getString(_keyArtworkShadowColor) ?? 'black';
   }
 
+  Future<void> setArtworkResolution(String resolution) async {
+    await initialize();
+    await _prefs!.setString(_keyArtworkResolution, resolution);
+    artworkResolutionNotifier.value = resolution;
+  }
+
+  String getArtworkResolution() {
+    return _prefs?.getString(_keyArtworkResolution) ?? 'normal';
+  }
+
   Future<void> setLiveSearch(bool enabled) async {
     await initialize();
     await _prefs!.setBool(_keyLiveSearch, enabled);
@@ -215,6 +226,7 @@ class PlayerUiSettingsService {
     artworkShapeNotifier.dispose();
     artworkShadowNotifier.dispose();
     artworkShadowColorNotifier.dispose();
+    artworkResolutionNotifier.dispose();
     lyricsBlurUnfocusedNotifier.dispose();
     lyricsAlignmentNotifier.dispose();
     lyricsGlowEffectNotifier.dispose();

@@ -142,7 +142,18 @@ class AlbumArtwork extends StatelessWidget {
     final validSize = size.isFinite && !size.isNaN ? size : 150.0;
 
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheSize = (validSize * dpr).toInt().clamp(100, 600);
+    final baseSize = (validSize * dpr).toInt();
+
+    final resolutionSetting = PlayerUiSettingsService().getArtworkResolution();
+    
+    final int cacheSize;
+    if (resolutionSetting == 'high') {
+      cacheSize = 0; // Use original or maximum available size
+    } else if (resolutionSetting == 'low') {
+      cacheSize = baseSize.clamp(100, 300);
+    } else {
+      cacheSize = baseSize.clamp(100, 600); // normal
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final resolvedShadow = _resolvedShadow(
