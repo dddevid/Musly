@@ -5,11 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/models.dart';
 import '../services/audio_handler.dart';
+import '../services/android_auto_service.dart';
 import '../services/local_music_service.dart';
 import '../services/services.dart';
 import '../widgets/common/album_artwork.dart';
 
-class LibraryProvider extends ChangeNotifier {
+class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelegate {
   final SubsonicService _subsonicService;
   final MuslyAudioHandler _audioHandler;
 
@@ -43,13 +44,7 @@ class LibraryProvider extends ChangeNotifier {
   static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
 
-  LibraryProvider(this._subsonicService, this._audioHandler) {
-    _audioHandler.onGetRecentSongs = _recentSongsForAuto;
-    _audioHandler.onGetLibraryAlbums = _albumsForAuto;
-    _audioHandler.onGetLibraryArtists = _artistsForAuto;
-    _audioHandler.onGetLibraryPlaylists = _playlistsForAuto;
-    _audioHandler.onIsYoutubeMode = () => _subsonicService.isYoutube;
-  }
+  LibraryProvider(this._subsonicService, this._audioHandler);
 
   SubsonicService get subsonicService => _subsonicService;
   bool get isLocalOnlyMode => _localOnlyMode;
@@ -443,132 +438,6 @@ class LibraryProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> _ensureInitializedForAuto() async {
-    if (_isInitialized) return;
-    if (!_isLoading) {
-      try {
-        await initialize();
-      } catch (_) {}
-      return;
-    }
-
-    for (var i = 0; i < 40 && _isLoading && !_isInitialized; i++) {
-      await Future.delayed(const Duration(milliseconds: 200));
-    }
-  }
-
-  Future<Set<String>> _downloadedSongIdsForAuto() async {
-    final offlineService = OfflineService();
-    await offlineService.initialize();
-    return offlineService.getDownloadedSongIds().toSet();
-  }
-
-  Future<List<Map<String, dynamic>>> _recentSongsForAuto() async {
-    await _ensureInitializedForAuto();
-    var songs = _subsonicService.isYoutube
-        ? (_cachedAllSongs.isNotEmpty ? _cachedAllSongs : _randomSongs)
-        : _randomSongs;
-    if (_serverOfflineMode) {
-      final downloadedIds = await _downloadedSongIdsForAuto();
-      songs = _cachedAllSongs
-          .where((song) => downloadedIds.contains(song.id))
-          .toList();
-    }
-    return songs
-        .take(50)
-        .map(
-          (song) => <String, dynamic>{
-            'id': song.id,
-            'title': song.title,
-            'artist': song.artist ?? '',
-            'album': song.album ?? '',
-            'artworkUrl': getCoverArtUrl(song.coverArt),
-            'duration': song.duration ?? 0,
-          },
-        )
-        .toList();
-  }
-
-  Future<List<Map<String, dynamic>>> _albumsForAuto() async {
-    await _ensureInitializedForAuto();
-    var albums = _recentAlbums;
-    if (_serverOfflineMode) {
-      final downloadedIds = await _downloadedSongIdsForAuto();
-      final albumIdsWithDownloads = _cachedAllSongs
-          .where((song) => downloadedIds.contains(song.id))
-          .map((song) => song.albumId)
-          .whereType<String>()
-          .toSet();
-      albums = _cachedAllAlbums
-          .where((album) => albumIdsWithDownloads.contains(album.id))
-          .toList();
-    }
-    return albums
-        .take(100)
-        .map(
-          (album) => <String, dynamic>{
-            'id': album.id,
-            'name': album.name,
-            'artist': album.artist ?? '',
-            'artworkUrl': getCoverArtUrl(album.coverArt),
-          },
-        )
-        .toList();
-  }
-
-  Future<List<Map<String, dynamic>>> _artistsForAuto() async {
-    await _ensureInitializedForAuto();
-    var artists = _artists;
-    if (_serverOfflineMode) {
-      final downloadedIds = await _downloadedSongIdsForAuto();
-      final artistIdsWithDownloads = _cachedAllSongs
-          .where((song) => downloadedIds.contains(song.id))
-          .map((song) => song.artistId)
-          .whereType<String>()
-          .toSet();
-      artists = _artists
-          .where((artist) => artistIdsWithDownloads.contains(artist.id))
-          .toList();
-    }
-    return artists
-        .take(100)
-        .map(
-          (artist) => <String, dynamic>{
-            'id': artist.id,
-            'name': artist.name,
-            'albumCount': artist.albumCount,
-          },
-        )
-        .toList();
-  }
-
-  Future<List<Map<String, dynamic>>> _playlistsForAuto() async {
-    await _ensureInitializedForAuto();
-    var playlists = _playlists;
-    if (_serverOfflineMode) {
-      final downloadedIds = await _downloadedSongIdsForAuto();
-      playlists = _playlists
-          .where(
-            (playlist) =>
-                playlist.songs
-                    ?.any((song) => downloadedIds.contains(song.id)) ??
-                false,
-          )
-          .toList();
-    }
-    return playlists
-        .take(50)
-        .map(
-          (playlist) => <String, dynamic>{
-            'id': playlist.id,
-            'name': playlist.name,
-            'songCount': playlist.songCount,
-            'artworkUrl': getCoverArtUrl(playlist.coverArt),
-          },
-        )
-        .toList();
-  }
-
   void _preloadCoverArt() {
     Future.microtask(() async {
       final allAlbums = [..._recentAlbums, ..._randomAlbums];
@@ -781,6 +650,7 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
+  @override
   Future<Playlist> getPlaylist(String playlistId) async {
     if (_serverOfflineMode) {
       final cached = _playlists.firstWhere(
@@ -837,6 +707,7 @@ class LibraryProvider extends ChangeNotifier {
     );
   }
 
+  @override
   Future<SearchResult> search(String query) async {
     if (_localOnlyMode) {
       return _searchLocal(query);
@@ -907,6 +778,7 @@ class LibraryProvider extends ChangeNotifier {
     await loadStarred();
   }
 
+  @override
   Future<List<Song>> getSongsByGenre(String genre) async {
     try {
       return await _subsonicService.getSongsByGenre(genre);

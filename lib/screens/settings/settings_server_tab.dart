@@ -14,7 +14,8 @@ import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/media/jukebox_screen.dart';
 import 'package:musly/screens/auth/add_server_screen.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
-import 'package:musly/widgets/settings/settings_icon_badge.dart';
+import 'package:musly/widgets/settings/settings_switch_tile.dart';
+import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/widgets/modals/server_switcher_sheet.dart';
 import 'package:musly/utils/context_extensions.dart';
 
@@ -318,17 +319,22 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n.savedServersSection,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? AppTheme.darkSecondaryText
-                          : AppTheme.lightSecondaryText,
-                      letterSpacing: 0.5,
+                  Expanded(
+                    child: Text(
+                      l10n.savedServersSection,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppTheme.darkSecondaryText
+                            : AppTheme.lightSecondaryText,
+                        letterSpacing: 0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   InkWell(
                     onTap: () => ServerSwitcherSheet.show(context),
                     borderRadius: BorderRadius.circular(6),
@@ -348,21 +354,22 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 ],
               ),
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Material(
                 color: isDark ? AppTheme.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white10
-                      : Colors.black.withValues(alpha: 0.05),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Column(
-                  children: [
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Column(
+                    children: [
                     ...profiles.map((profile) {
                       final isActive = (profile.isYoutube &&
                               currentConfig?.isYoutube == true) ||
@@ -498,6 +505,7 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
                 ),
               ),
             ),
+            ),
           ],
         );
       },
@@ -505,23 +513,10 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
   }
 
   Widget _buildMusicFoldersButton() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5856D6), Color(0xFF7B68EE)],
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(CupertinoIcons.folder, color: Colors.white, size: 18),
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.musicFolders,
-        style: const TextStyle(fontSize: 16),
-      ),
+    return SettingsListTile(
+      gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+      icon: CupertinoIcons.folder,
+      title: AppLocalizations.of(context)!.musicFolders,
       trailing: Icon(
         CupertinoIcons.chevron_right,
         size: 16,
@@ -565,27 +560,12 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
       builder: (context, jukebox, _) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 4,
-            ),
-            secondary: SettingsIconBadge(
-              gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6000)],
-              icon: CupertinoIcons.speaker_2,
-            ),
-            title: Text(l10n.jukeboxMode, style: const TextStyle(fontSize: 16)),
-            subtitle: Text(
-              l10n.jukeboxModeSubtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: context.isDark
-                    ? AppTheme.darkSecondaryText
-                    : AppTheme.lightSecondaryText,
-              ),
-            ),
+          SettingsSwitchTile(
+            gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6000)],
+            icon: CupertinoIcons.speaker_2,
+            title: l10n.jukeboxMode,
+            subtitle: l10n.jukeboxModeSubtitle,
             value: jukebox.enabled,
-            activeThumbColor: Theme.of(context).colorScheme.primary,
             onChanged: (v) => jukebox.setEnabled(v),
           ),
           if (jukebox.enabled) ...[
@@ -625,16 +605,11 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
   }
 
   Widget _buildLogoutButton() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
-        icon: CupertinoIcons.square_arrow_right,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.logout,
-        style: const TextStyle(fontSize: 16, color: Color(0xFFFF3B30)),
-      ),
+    return SettingsListTile(
+      gradientColors: const [Color(0xFFFF3B30), Color(0xFFFF453A)],
+      icon: CupertinoIcons.square_arrow_right,
+      title: AppLocalizations.of(context)!.logout,
+      titleColor: const Color(0xFFFF3B30),
       onTap: () {
         final playerProvider =
             Provider.of<PlayerProvider>(context, listen: false);

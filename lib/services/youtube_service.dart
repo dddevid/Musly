@@ -682,11 +682,11 @@ class YoutubeService {
     }
   }
 
-  Future<List<Song>> getRandomSongs({int size = 20, String? genre}) async {
+  Future<List<Song>> getRandomSongs({int size = 50, String? genre}) async {
     try {
-      String query;
+      final List<String> queries = [];
       if (genre != null && genre.isNotEmpty) {
-        query = '$genre music hits';
+        queries.add('$genre music hits');
       } else {
         final allDbSongs = await _db.getAllSongs();
         if (allDbSongs.isNotEmpty) {
@@ -695,8 +695,8 @@ class YoutubeService {
             if (s.artist != null &&
                 s.artist!.isNotEmpty &&
                 s.artist != 'Unknown') {
-              artistCounts[s.artist!] =
-                  (artistCounts[s.artist!] ?? 0) + (s.userRating ?? 1);
+              final score = (s.userRating ?? 1) + (s.starred == true ? 20 : 0);
+              artistCounts[s.artist!] = (artistCounts[s.artist!] ?? 0) + score;
             }
           }
           if (artistCounts.isNotEmpty) {
@@ -704,23 +704,47 @@ class YoutubeService {
               ..sort((a, b) =>
                   (artistCounts[b] ?? 0).compareTo(artistCounts[a] ?? 0));
 
-            final topPool = sortedArtists.take(4).toList();
-            final pickedArtist = topPool[Random().nextInt(topPool.length)];
-            query = '$pickedArtist songs hits';
-          } else {
-            query = 'top music hits 2026';
+            // Pick up to 4 top artists to search concurrently
+            final topPool = sortedArtists.take(8).toList();
+            topPool.shuffle();
+            final selectedArtists = topPool.take(4).toList();
+            for (final artist in selectedArtists) {
+              queries.add('$artist songs hits');
+            }
           }
-        } else {
-          query = 'top music hits 2026';
         }
       }
 
-      final rawResults = await _ytdlp.search(query, limit: size);
-      final songs = rawResults.map(_mapDictToSong).toList();
-      for (final song in songs) {
+      if (queries.isEmpty) {
+        queries.add('top music hits 2026');
+        queries.add('trending pop songs 2026');
+      }
+
+      final limitPerQuery = (size / queries.length).ceil();
+      final List<Song> allSongs = [];
+
+      final searchFutures = queries.map((query) async {
+        try {
+          final rawResults = await _ytdlp.search(query, limit: limitPerQuery);
+          return rawResults.map(_mapDictToSong).toList();
+        } catch (e) {
+          debugPrint('[YouTube] search error for query "$query": $e');
+          return <Song>[];
+        }
+      });
+
+      final results = await Future.wait(searchFutures);
+      for (final res in results) {
+        allSongs.addAll(res);
+      }
+
+      allSongs.shuffle();
+      final finalSongs = allSongs.take(size).toList();
+
+      for (final song in finalSongs) {
         await _db.insertOrUpdateSong(song);
       }
-      return songs;
+      return finalSongs;
     } catch (e) {
       debugPrint('[YouTube] getRandomSongs error: $e');
       return [];

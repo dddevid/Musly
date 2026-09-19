@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -2979,4 +2978,109 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get superfanBadge5 => 'Top 5% Fan';
+
+  @override
+  String get tabAndroidAuto => 'Android Auto';
+
+  @override
+  String get androidAutoNotSupported =>
+      'Android Auto is not supported on this device.';
+
+  @override
+  String get androidAutoCategories => 'Categories';
+
+  @override
+  String get androidAutoPerformance => 'Performance';
+
+  @override
+  String get androidAutoShowRecent => 'Show Recent';
+
+  @override
+  String get androidAutoShowFavorites => 'Show Favorites';
+
+  @override
+  String get androidAutoShowAlbums => 'Show Albums';
+
+  @override
+  String get androidAutoShowArtists => 'Show Artists';
+
+  @override
+  String get androidAutoShowPlaylists => 'Show Playlists';
+
+  @override
+  String get androidAutoShowGenres => 'Show Genres';
+
+  @override
+  String get androidAutoShowRadio => 'Show Radio';
+
+  @override
+  String get androidAutoShowDownloads => 'Show Downloads';
+
+  @override
+  String get androidAutoMaxItems => 'Item Limit';
+
+  @override
+  String get androidAutoMaxItemsDesc =>
+      'Maximum number of items to load per category';
+
+  @override
+  String get androidAutoNowPlaying => 'Now Playing';
+
+  @override
+  String get androidAutoRecent => 'Recent';
+
+  @override
+  String get androidAutoFavorites => 'Favorites';
+
+  @override
+  String get androidAutoAlbums => 'Albums';
+
+  @override
+  String get androidAutoArtists => 'Artists';
+
+  @override
+  String get androidAutoPlaylists => 'Playlists';
+
+  @override
+  String get androidAutoGenres => 'Genres';
+
+  @override
+  String get androidAutoRadio => 'Radio';
+
+  @override
+  String get androidAutoDownloads => 'Downloads';
+
+  @override
+  String get androidAutoShuffle => 'Shuffle';
+
+  @override
+  String get androidAutoQueue => 'Queue';
+
+  @override
+  String get androidAutoEmptyFavorites => 'No favorite songs';
+
+  @override
+  String get androidAutoEmptyRadio => 'No radio stations configured';
+
+  @override
+  String get androidAutoEmptyDownloads => 'No downloaded songs';
+
+  @override
+  String get androidAutoLoading => 'Loading…';
+
+  @override
+  String get androidAutoOnlineStream => 'Online Stream';
+
+  @override
+  String get androidAutoServerSection => 'Server';
+
+  @override
+  String get androidAutoDefaultServer => 'Default Server';
+
+  @override
+  String get androidAutoDefaultServerDesc =>
+      'Select which server to use when you start Android Auto';
+
+  @override
+  String get androidAutoUseActiveServer => 'Use app\'s active server';
 }

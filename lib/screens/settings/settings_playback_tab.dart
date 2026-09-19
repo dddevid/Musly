@@ -11,6 +11,8 @@ import 'package:musly/services/fade_settings_service.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
+import 'package:musly/widgets/settings/settings_switch_tile.dart';
+import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 
@@ -116,16 +118,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   }
 
   Widget _buildAutoDjModeSelector() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-        icon: CupertinoIcons.wand_stars,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.autoDjMode,
-        style: const TextStyle(fontSize: 16),
-      ),
+    return SettingsListTile(
+      gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+      icon: CupertinoIcons.wand_stars,
+      title: AppLocalizations.of(context)!.autoDjMode,
       trailing: DropdownButton<AutoDjMode>(
         value: _autoDjMode,
         underline: const SizedBox(),
@@ -183,14 +179,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   }
 
   Widget _buildReplayGainModeSelector() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
-        icon: CupertinoIcons.speaker_2,
-      ),
-      title: Text(AppLocalizations.of(context)!.replayGainMode,
-          style: const TextStyle(fontSize: 16)),
+    return SettingsListTile(
+      gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+      icon: CupertinoIcons.speaker_2,
+      title: AppLocalizations.of(context)!.replayGainMode,
       trailing: DropdownButton<ReplayGainMode>(
         value: _replayGainMode,
         underline: const SizedBox(),
@@ -244,17 +236,13 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
   }
 
   Widget _buildReplayGainClippingToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(AppLocalizations.of(context)!.replayGainPreventClipping),
-      trailing: CupertinoSwitch(
-        value: _replayGainPreventClipping,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
-          await _replayGainService.setPreventClipping(value);
-          setState(() => _replayGainPreventClipping = value);
-        },
-      ),
+    return SettingsSwitchTile(
+      title: AppLocalizations.of(context)!.replayGainPreventClipping,
+      value: _replayGainPreventClipping,
+      onChanged: (value) async {
+        await _replayGainService.setPreventClipping(value);
+        setState(() => _replayGainPreventClipping = value);
+      },
     );
   }
 
@@ -285,48 +273,17 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return SettingsSectionCard(
       title: l10n.sectionLyrics,
       children: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [accent, accent.withValues(alpha: 0.6)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.text_quote,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-          title: Text(
-            AppLocalizations.of(context)!.enableLrcLibFallback,
-            style: const TextStyle(fontSize: 16),
-          ),
-          subtitle: Text(
-            AppLocalizations.of(context)!.lrcLibFallbackSubtitle,
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.5)
-                  : Colors.black.withValues(alpha: 0.5),
-            ),
-          ),
-          trailing: CupertinoSwitch(
-            value: _lrcLibFallback,
-            activeTrackColor: accent,
-            onChanged: (v) async {
-              final storage = StorageService();
-              await storage.saveLrcLibFallback(v);
-              setState(() => _lrcLibFallback = v);
-            },
-          ),
+        SettingsSwitchTile(
+          gradientColors: [accent, accent.withValues(alpha: 0.6)],
+          icon: CupertinoIcons.text_quote,
+          title: AppLocalizations.of(context)!.enableLrcLibFallback,
+          subtitle: AppLocalizations.of(context)!.lrcLibFallbackSubtitle,
+          value: _lrcLibFallback,
+          onChanged: (v) async {
+            final storage = StorageService();
+            await storage.saveLrcLibFallback(v);
+            setState(() => _lrcLibFallback = v);
+          },
         ),
       ],
     );
@@ -341,33 +298,13 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return SettingsSectionCard(
       title: l10n.sectionSmartCrossfade,
       children: [
-        ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [accent, accent.withValues(alpha: 0.6)]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(CupertinoIcons.slider_horizontal_below_rectangle,
-                color: Colors.white, size: 18),
-          ),
-          title:
-              Text(l10n.trackCrossfade, style: const TextStyle(fontSize: 16)),
-          subtitle: Text(
-            crossfadeSec == 0
-                ? l10n.crossfadeOffSubtitle
-                : l10n.crossfadeDurationSubtitle(crossfadeSec),
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.5)
-                  : Colors.black.withValues(alpha: 0.5),
-            ),
-          ),
+        SettingsListTile(
+          gradientColors: [accent, accent.withValues(alpha: 0.6)],
+          icon: CupertinoIcons.slider_horizontal_below_rectangle,
+          title: l10n.trackCrossfade,
+          subtitle: crossfadeSec == 0
+              ? l10n.crossfadeOffSubtitle
+              : l10n.crossfadeDurationSubtitle(crossfadeSec),
           trailing: Text(
             crossfadeSec == 0
                 ? l10n.replayGainModeOff
@@ -425,44 +362,13 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         return SettingsSectionCard(
           title: l10n.sectionGaplessPlayback,
           children: [
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-              leading: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [accent, accent.withValues(alpha: 0.6)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  CupertinoIcons.link,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              title: Text(
-                l10n.gaplessPlayback,
-                style: const TextStyle(fontSize: 16),
-              ),
-              subtitle: Text(
-                l10n.gaplessPlaybackSubtitle,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withValues(alpha: 0.5)
-                      : Colors.black.withValues(alpha: 0.5),
-                ),
-              ),
-              trailing: CupertinoSwitch(
-                value: player.gaplessEnabled,
-                activeTrackColor: accent,
-                onChanged: (_) => player.toggleGaplessPlayback(),
-              ),
+            SettingsSwitchTile(
+              gradientColors: [accent, accent.withValues(alpha: 0.6)],
+              icon: CupertinoIcons.link,
+              title: l10n.gaplessPlayback,
+              subtitle: l10n.gaplessPlaybackSubtitle,
+              value: player.gaplessEnabled,
+              onChanged: (_) => player.toggleGaplessPlayback(),
             ),
           ],
         );
@@ -475,50 +381,19 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return SettingsSectionCard(
       title: l10n.sectionFadeInOut,
       children: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              CupertinoIcons.waveform,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-          title: Text(
-            l10n.fadeInOutEnable,
-            style: const TextStyle(fontSize: 16),
-          ),
-          subtitle: Text(
-            l10n.fadeInOutSubtitle,
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.5)
-                  : Colors.black.withValues(alpha: 0.5),
-            ),
-          ),
-          trailing: CupertinoSwitch(
-            value: _fadeEnabled,
-            activeTrackColor: Theme.of(context).colorScheme.primary,
-            onChanged: (v) async {
-              await _fadeSettingsService.setFadeEnabled(v);
-              setState(() => _fadeEnabled = v);
-            },
-          ),
+        SettingsSwitchTile(
+          gradientColors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+          ],
+          icon: CupertinoIcons.waveform,
+          title: l10n.fadeInOutEnable,
+          subtitle: l10n.fadeInOutSubtitle,
+          value: _fadeEnabled,
+          onChanged: (v) async {
+            await _fadeSettingsService.setFadeEnabled(v);
+            setState(() => _fadeEnabled = v);
+          },
         ),
         if (_fadeEnabled) ...[
           const SettingsDivider(),
@@ -592,64 +467,23 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
         return SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionStreamingQuality,
           children: [
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-              leading: SettingsIconBadge(
-                gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
-                icon: CupertinoIcons.waveform,
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.transcodingEnable,
-                style: const TextStyle(fontSize: 16),
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context)!.transcodingEnableSubtitle,
-                style: TextStyle(fontSize: 13, color: secondaryText),
-              ),
-              trailing: CupertinoSwitch(
-                value: ts.enabled,
-                activeTrackColor: accent,
-                onChanged: (v) => ts.setEnabled(v),
-              ),
+            SettingsSwitchTile(
+              gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
+              icon: CupertinoIcons.waveform,
+              title: AppLocalizations.of(context)!.transcodingEnable,
+              subtitle: AppLocalizations.of(context)!.transcodingEnableSubtitle,
+              value: ts.enabled,
+              onChanged: (v) => ts.setEnabled(v),
             ),
             if (ts.enabled) ...[
               const SettingsDivider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                leading: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [accent, accent.withValues(alpha: 0.6)],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.auto_fix_high_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-                title: Text(
-                  AppLocalizations.of(context)!.smartTranscoding,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                subtitle: Text(
-                  AppLocalizations.of(context)!.smartTranscodingSubtitle,
-                  style: TextStyle(fontSize: 13, color: secondaryText),
-                ),
-                trailing: CupertinoSwitch(
-                  value: ts.smartEnabled,
-                  activeTrackColor: accent,
-                  onChanged: (v) => ts.setSmartEnabled(v),
-                ),
+              SettingsSwitchTile(
+                gradientColors: [accent, accent.withValues(alpha: 0.6)],
+                icon: Icons.auto_fix_high_rounded,
+                title: AppLocalizations.of(context)!.smartTranscoding,
+                subtitle: AppLocalizations.of(context)!.smartTranscodingSubtitle,
+                value: ts.smartEnabled,
+                onChanged: (v) => ts.setSmartEnabled(v),
               ),
               if (ts.smartEnabled)
                 Padding(
@@ -688,22 +522,14 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                   ),
                 ),
               const SettingsDivider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
+              SettingsListTile(
                 leading: const Icon(Icons.wifi_rounded, size: 20),
-                title:
-                    Text(AppLocalizations.of(context)!.transcodingWifiQuality),
-                subtitle: Text(
-                  ts.smartEnabled
-                      ? AppLocalizations.of(context)!
-                          .transcodingWifiQualitySubtitleSmart
-                      : AppLocalizations.of(context)!
-                          .transcodingWifiQualitySubtitle,
-                  style: TextStyle(fontSize: 12, color: secondaryText),
-                ),
+                title: AppLocalizations.of(context)!.transcodingWifiQuality,
+                subtitle: ts.smartEnabled
+                    ? AppLocalizations.of(context)!
+                        .transcodingWifiQualitySubtitleSmart
+                    : AppLocalizations.of(context)!
+                        .transcodingWifiQualitySubtitle,
                 trailing: DropdownButton<int>(
                   value: ts.wifiBitrate,
                   underline: const SizedBox(),
@@ -720,25 +546,17 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 ),
               ),
               const SettingsDivider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
+              SettingsListTile(
                 leading: const Icon(
                   Icons.signal_cellular_alt_rounded,
                   size: 20,
                 ),
-                title: Text(
-                    AppLocalizations.of(context)!.transcodingMobileQuality),
-                subtitle: Text(
-                  ts.smartEnabled
-                      ? AppLocalizations.of(context)!
-                          .transcodingMobileQualitySubtitleSmart
-                      : AppLocalizations.of(context)!
-                          .transcodingMobileQualitySubtitle,
-                  style: TextStyle(fontSize: 12, color: secondaryText),
-                ),
+                title: AppLocalizations.of(context)!.transcodingMobileQuality,
+                subtitle: ts.smartEnabled
+                    ? AppLocalizations.of(context)!
+                        .transcodingMobileQualitySubtitleSmart
+                    : AppLocalizations.of(context)!
+                        .transcodingMobileQualitySubtitle,
                 trailing: DropdownButton<int>(
                   value: ts.mobileBitrate,
                   underline: const SizedBox(),
@@ -755,17 +573,10 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
                 ),
               ),
               const SettingsDivider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
+              SettingsListTile(
                 leading: const Icon(Icons.audio_file_rounded, size: 20),
-                title: Text(AppLocalizations.of(context)!.transcodingFormat),
-                subtitle: Text(
-                  AppLocalizations.of(context)!.transcodingFormatSubtitle,
-                  style: TextStyle(fontSize: 12, color: secondaryText),
-                ),
+                title: AppLocalizations.of(context)!.transcodingFormat,
+                subtitle: AppLocalizations.of(context)!.transcodingFormatSubtitle,
                 trailing: DropdownButton<String>(
                   value: ts.format,
                   underline: const SizedBox(),

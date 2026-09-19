@@ -8,6 +8,8 @@ import 'package:musly/services/analytics_service.dart';
 import 'package:musly/widgets/dialogs/support_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
+import 'package:musly/widgets/settings/settings_switch_tile.dart';
+import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/utils/context_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -199,8 +201,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     required String subtitle,
     VoidCallback? onTap,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return SettingsListTile(
       leading: Container(
         width: 32,
         height: 32,
@@ -210,7 +211,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ),
         child: Icon(icon, color: iconColor, size: 18),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
+      title: title,
       trailing: Text(
         subtitle,
         style: TextStyle(
@@ -269,8 +270,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   }
 
   Widget _buildDeveloperInfo(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return SettingsListTile(
       leading: Container(
         width: 32,
         height: 32,
@@ -282,14 +282,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ),
         child: const Icon(Icons.code_rounded, color: Colors.white, size: 18),
       ),
-      title: Text(
-        AppLocalizations.of(context)!.aboutMadeBy,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.aboutGitHub,
-        style: const TextStyle(fontSize: 13),
-      ),
+      title: AppLocalizations.of(context)!.aboutMadeBy,
+      subtitle: AppLocalizations.of(context)!.aboutGitHub,
       trailing: const Icon(Icons.open_in_new_rounded, size: 18),
       onTap: () => _openUrl('https://github.com/dddevid'),
     );
@@ -301,8 +295,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     required String title,
     required String url,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return SettingsListTile(
       leading: Container(
         width: 32,
         height: 32,
@@ -316,7 +309,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
           size: 18,
         ),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
+      title: title,
       trailing: Icon(
         Icons.open_in_new_rounded,
         size: 18,
@@ -431,8 +424,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
     required String subtitle,
     VoidCallback? onTap,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return SettingsListTile(
       leading: Container(
         width: 32,
         height: 32,
@@ -444,16 +436,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         ),
         child: Icon(icon, color: Colors.white, size: 18),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
+      title: title,
+      subtitle: subtitle,
       trailing: onTap != null
           ? Icon(
               CupertinoIcons.chevron_forward,

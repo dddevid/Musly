@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:math' show Random;
 
 import 'package:audio_session/audio_session.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,9 +35,11 @@ import '../services/transcoding_service.dart';
 
 import '../providers/library_provider.dart';
 
+import '../services/android_auto_service.dart';
+
 enum RepeatMode { off, all, one }
 
-class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
+class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implements AndroidAutoDelegate {
   final SubsonicService _subsonicService;
   late final StorageService _storageService;
   final MuslyAudioHandler _audioHandler;
@@ -166,9 +169,6 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _initializePlayer();
     _onJukeboxEnabledChanged();
     try {
-      _initializeAndroidAuto();
-    } catch (_) {}
-    try {
       _initializeSystemServices();
     } catch (_) {}
     _initializeAutoDj();
@@ -207,6 +207,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _audioHandler.onSkipPrevious = skipPrevious;
     _audioHandler.onSeekTo = seek;
     _audioHandler.onTogglePlayPause = togglePlayPause;
+    _audioHandler.onSetRemoteVolume = _onRemoteVolumeChange;
   }
 
   void _saveQueueState() {
@@ -386,448 +387,39 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _windowsService.onSeekTo = seek;
   }
 
-  void _initializeAndroidAuto() {
-    _audioHandler.onGetAlbumSongs = _getAlbumSongsForAndroidAuto;
-    _audioHandler.onGetArtistAlbums = _getArtistAlbumsForAndroidAuto;
-    _audioHandler.onGetPlaylistSongs = _getPlaylistSongsForAndroidAuto;
-    _audioHandler.onSearch = _searchForAndroidAuto;
-    _audioHandler.onPlayFromMediaId = _playFromMediaId;
-    _audioHandler.onPlayFromSearch = _playFromSearchForAndroidAuto;
-    _audioHandler.onSetRemoteVolume = _onRemoteVolumeChange;
+  @override
+  List<Song> get randomSongs => _libraryProvider?.randomSongs ?? [];
+
+  @override
+  Future<void> shuffleLibrary() async {
+    final songs = _libraryProvider?.cachedAllSongs ?? [];
+    if (songs.isEmpty) {
+      final randomSongList = _libraryProvider?.randomSongs ?? [];
+      if (randomSongList.isNotEmpty) {
+        final shuffled = List<Song>.from(randomSongList)..shuffle();
+        await playSong(shuffled.first, playlist: shuffled, startIndex: 0);
+      }
+      return;
+    }
+    final shuffled = List<Song>.from(songs)..shuffle();
+    await playSong(shuffled.first, playlist: shuffled, startIndex: 0);
   }
 
-  Future<List<Map<String, String>>> _getAlbumSongsForAndroidAuto(
-    String albumId,
-  ) async {
-    if (_offlineService.isOfflineMode && _libraryProvider != null) {
-      await _offlineService.initialize();
-      final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
-      final offlineSongs = _libraryProvider!.cachedAllSongs
-          .where((s) => s.albumId == albumId && downloadedIds.contains(s.id))
-          .toList();
-      if (offlineSongs.isNotEmpty) {
-        return offlineSongs
-            .map(
-              (song) => {
-                'id': song.id,
-                'title': song.title,
-                'artist': song.artist ?? '',
-                'album': song.album ?? '',
-                'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
-                        null
-                    ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
-                        .toString()
-                    : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
-                'duration': (song.duration ?? 0).toString(),
-              },
-            )
-            .toList();
-      }
-    }
+  @override
+  Future<void> toggleStar(Song song) async {
+    final lib = _libraryProvider;
+    if (lib == null) return;
     try {
-      final songs = await _subsonicService.getAlbumSongs(albumId);
-      return songs
-          .map(
-            (song) => {
-              'id': song.id,
-              'title': song.title,
-              'artist': song.artist ?? '',
-              'album': song.album ?? '',
-              'artworkUrl': _subsonicService.getCoverArtUrl(
-                song.coverArt,
-                size: 300,
-              ),
-              'duration': (song.duration ?? 0).toString(),
-            },
-          )
-          .toList();
-    } catch (e) {
-      debugPrint('Error getting album songs for Android Auto: $e');
-      return [];
-    }
-  }
-
-  Future<List<Map<String, String>>> _getArtistAlbumsForAndroidAuto(
-    String artistId,
-  ) async {
-    if (_offlineService.isOfflineMode && _libraryProvider != null) {
-      await _offlineService.initialize();
-      final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
-      final albumIdsWithDownloads = _libraryProvider!.cachedAllSongs
-          .where((s) => s.artistId == artistId && downloadedIds.contains(s.id))
-          .map((s) => s.albumId)
-          .whereType<String>()
-          .toSet();
-      final offlineAlbums = _libraryProvider!.cachedAllAlbums
-          .where((a) => albumIdsWithDownloads.contains(a.id))
-          .toList();
-      if (offlineAlbums.isNotEmpty) {
-        return offlineAlbums
-            .map(
-              (album) => {
-                'id': album.id,
-                'name': album.name,
-                'artist': album.artist ?? '',
-                'artworkUrl': _subsonicService.getCoverArtUrl(
-                  album.coverArt,
-                  size: 300,
-                ),
-              },
-            )
-            .toList();
-      }
-    }
-    try {
-      final albums = await _subsonicService.getArtistAlbums(artistId);
-      return albums
-          .map(
-            (album) => {
-              'id': album.id,
-              'name': album.name,
-              'artist': album.artist ?? '',
-              'artworkUrl': _subsonicService.getCoverArtUrl(
-                album.coverArt,
-                size: 300,
-              ),
-            },
-          )
-          .toList();
-    } catch (e) {
-      debugPrint('Error getting artist albums for Android Auto: $e');
-      return [];
-    }
-  }
-
-  Future<List<Map<String, String>>> _getPlaylistSongsForAndroidAuto(
-    String playlistId,
-  ) async {
-    if (_offlineService.isOfflineMode && _libraryProvider != null) {
-      await _offlineService.initialize();
-      final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
-      final cachedPlaylist = _libraryProvider!.playlists
-          .where((p) => p.id == playlistId)
-          .firstOrNull;
-      if (cachedPlaylist?.songs != null && cachedPlaylist!.songs!.isNotEmpty) {
-        final offlineSongs = cachedPlaylist.songs!
-            .where((s) => downloadedIds.contains(s.id))
-            .toList();
-        if (offlineSongs.isNotEmpty) {
-          return offlineSongs
-              .map(
-                (song) => {
-                  'id': song.id,
-                  'title': song.title,
-                  'artist': song.artist ?? '',
-                  'album': song.album ?? '',
-                  'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
-                          null
-                      ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
-                          .toString()
-                      : _subsonicService.getCoverArtUrl(song.coverArt,
-                          size: 300),
-                  'duration': (song.duration ?? 0).toString(),
-                },
-              )
-              .toList();
-        }
-      }
-    }
-    try {
-      final playlist = await _subsonicService.getPlaylist(playlistId);
-      final songs = playlist.songs ?? [];
-      return songs
-          .map(
-            (song) => {
-              'id': song.id,
-              'title': song.title,
-              'artist': song.artist ?? '',
-              'album': song.album ?? '',
-              'artworkUrl': _subsonicService.getCoverArtUrl(
-                song.coverArt,
-                size: 300,
-              ),
-              'duration': (song.duration ?? 0).toString(),
-            },
-          )
-          .toList();
-    } catch (e) {
-      debugPrint('Error getting playlist songs for Android Auto: $e');
-      return [];
-    }
-  }
-
-  Future<List<Map<String, String>>> _searchForAndroidAuto(
-    String query,
-  ) async {
-    debugPrint(
-        'PlayerProvider: _searchForAndroidAuto called with query="$query"');
-    debugPrint(
-        'PlayerProvider: isOfflineMode=${_offlineService.isOfflineMode}, libraryProvider=$_libraryProvider');
-
-    if (_offlineService.isOfflineMode && _libraryProvider != null) {
-      await _offlineService.initialize();
-      final downloadedIds = _offlineService.getDownloadedSongIds().toSet();
-      final lowerQuery = query.toLowerCase();
-      final offlineResults = _libraryProvider!.cachedAllSongs
-          .where(
-            (s) =>
-                downloadedIds.contains(s.id) &&
-                (s.title.toLowerCase().contains(lowerQuery) ||
-                    (s.artist?.toLowerCase().contains(lowerQuery) ?? false) ||
-                    (s.album?.toLowerCase().contains(lowerQuery) ?? false)),
-          )
-          .take(20)
-          .toList();
-      return offlineResults
-          .map(
-            (song) => {
-              'id': song.id,
-              'title': song.title,
-              'artist': song.artist ?? '',
-              'album': song.album ?? '',
-              'artworkUrl': _offlineService.getLocalCoverArtPath(song.id) !=
-                      null
-                  ? Uri.file(_offlineService.getLocalCoverArtPath(song.id)!)
-                      .toString()
-                  : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
-              'duration': (song.duration ?? 0).toString(),
-            },
-          )
-          .toList();
-    }
-
-    if (_subsonicService.isYoutube && _libraryProvider != null) {
-      final lowerQuery = query.toLowerCase();
-      final localHits = _libraryProvider!.cachedAllSongs
-          .where(
-            (s) =>
-                s.title.toLowerCase().contains(lowerQuery) ||
-                (s.artist?.toLowerCase().contains(lowerQuery) ?? false),
-          )
-          .take(20)
-          .toList();
-      if (localHits.isNotEmpty) {
-        return localHits
-            .map(
-              (song) => {
-                'id': song.id,
-                'title': song.title,
-                'artist': song.artist ?? '',
-                'album': song.album ?? '',
-                'artworkUrl': song.coverArt ?? '',
-                'duration': (song.duration ?? 0).toString(),
-              },
-            )
-            .toList();
-      }
-    }
-
-    try {
-      debugPrint(
-          'PlayerProvider: Calling subsonicService.search with query="$query"');
-      final results = await _subsonicService.search(
-        query,
-        songCount: 20,
-        albumCount: 0,
-        artistCount: 0,
-      );
-      debugPrint(
-          'PlayerProvider: Search returned ${results.songs.length} songs');
-      return results.songs
-          .map(
-            (song) => {
-              'id': song.id,
-              'title': song.title,
-              'artist': song.artist ?? '',
-              'album': song.album ?? '',
-              'artworkUrl': _subsonicService.isYoutube
-                  ? (song.coverArt ?? '')
-                  : _subsonicService.getCoverArtUrl(song.coverArt, size: 300),
-              'duration': (song.duration ?? 0).toString(),
-            },
-          )
-          .toList();
-    } catch (e, stackTrace) {
-      debugPrint('PlayerProvider: Android Auto search error: $e');
-      debugPrint('PlayerProvider: Stack trace: $stackTrace');
-      return [];
-    }
-  }
-
-  Future<void> _playFromSearchForAndroidAuto(String query) async {
-    debugPrint('Android Auto: playFromSearch called with query: "$query"');
-    try {
-      if (query.trim().isEmpty) {
-        if (_currentSong != null) {
-          await play();
-          return;
-        }
-
-        if (_subsonicService.isYoutube &&
-            _libraryProvider != null &&
-            _libraryProvider!.cachedAllSongs.isNotEmpty) {
-          final songs = _libraryProvider!.cachedAllSongs;
-          await playSong(songs.first, playlist: songs, startIndex: 0);
-          return;
-        }
-        if (_libraryProvider != null &&
-            _libraryProvider!.randomSongs.isNotEmpty) {
-          final songs = _libraryProvider!.randomSongs;
-          await playSong(songs.first, playlist: songs, startIndex: 0);
-        }
-        return;
-      }
-
-      if (_subsonicService.isYoutube) {
-        final ytResults = await _searchForAndroidAuto(query);
-        if (ytResults.isNotEmpty) {
-          final first = ytResults.first;
-          final song = Song(
-            id: first['id'] ?? '',
-            title: first['title'] ?? query,
-            artist: first['artist'],
-            album: first['album'],
-            coverArt: first['artworkUrl'],
-            duration: int.tryParse(first['duration'] ?? '') ?? 0,
-          );
-          final allSongs = ytResults
-              .map((r) => Song(
-                    id: r['id'] ?? '',
-                    title: r['title'] ?? '',
-                    artist: r['artist'],
-                    coverArt: r['artworkUrl'],
-                    duration: int.tryParse(r['duration'] ?? '') ?? 0,
-                  ))
-              .where((s) => s.id.isNotEmpty)
-              .toList();
-          await playSong(song, playlist: allSongs, startIndex: 0);
-        } else {
-          debugPrint('Android Auto: no YT search results for "$query"');
-        }
-        return;
-      }
-
-      final results = await _subsonicService.search(
-        query,
-        songCount: 20,
-        albumCount: 0,
-        artistCount: 0,
-      );
-      if (results.songs.isNotEmpty) {
-        await playSong(
-          results.songs.first,
-          playlist: results.songs,
-          startIndex: 0,
-        );
+      if (song.starred == true) {
+        await lib.unstar(songId: song.id);
       } else {
-        debugPrint('Android Auto: no search results for "$query"');
+        await lib.star(songId: song.id);
       }
     } catch (e) {
-      debugPrint('Android Auto: playFromSearch error: $e');
+      debugPrint('[Player] toggleStar error: $e');
     }
   }
 
-  Future<void> _playFromMediaId(String mediaId) async {
-    debugPrint('Android Auto: playFromMediaId called with: $mediaId');
-
-    final queueIndex = _queue.indexWhere((song) => song.id == mediaId);
-    if (queueIndex != -1) {
-      await skipToIndex(queueIndex);
-      return;
-    }
-
-    if (_libraryProvider != null) {
-      final allSongs = _subsonicService.isYoutube
-          ? _libraryProvider!.cachedAllSongs
-          : _libraryProvider!.randomSongs;
-      final songIndex = allSongs.indexWhere((song) => song.id == mediaId);
-      if (songIndex != -1) {
-        await playSong(
-          allSongs[songIndex],
-          playlist: allSongs,
-          startIndex: songIndex,
-        );
-        return;
-      }
-    }
-
-    if (_subsonicService.isYoutube) {
-      _audioHandler.updateNowPlaying(
-        id: mediaId,
-        title: 'Loading…',
-        artist: 'YouTube',
-      );
-
-      final tempSong = Song(
-        id: mediaId,
-        title: 'Loading…',
-        artist: 'YouTube',
-        duration: 0,
-      );
-
-      try {
-        await playSong(tempSong);
-      } catch (e) {
-        debugPrint('Android Auto: Web Stream playFromMediaId error: $e');
-        return;
-      }
-
-      _resolveAndUpdateYoutubeMetadata(mediaId);
-      return;
-    }
-
-    try {
-      final searchResults = await _subsonicService.search(
-        mediaId,
-        songCount: 5,
-      );
-      if (searchResults.songs.isNotEmpty) {
-        final song = searchResults.songs.firstWhere(
-          (s) => s.id == mediaId,
-          orElse: () => searchResults.songs.first,
-        );
-        await playSong(song);
-        return;
-      }
-
-      debugPrint('Android Auto: Could not find song with id: $mediaId');
-    } catch (e) {
-      debugPrint('Android Auto: Error fetching song: $e');
-    }
-  }
-
-  void _resolveAndUpdateYoutubeMetadata(String videoId) {
-    final ytDlp = YtDlpService();
-    ytDlp.getVideoInfo(videoId).then((info) {
-      if (info == null) return;
-
-      if (_currentSong?.id != videoId) return;
-
-      final title = info['title'] as String? ?? videoId;
-      final artist = info['artist'] as String? ??
-          info['uploader'] as String? ??
-          info['channel'] as String? ??
-          'YouTube';
-      final thumbUrl = info['thumbnailUrl'] as String? ??
-          info['thumbnail'] as String? ??
-          info['coverArt'] as String?;
-
-      final updatedSong = Song(
-        id: videoId,
-        title: title,
-        artist: artist,
-        coverArt: thumbUrl,
-        duration: _currentSong?.duration ?? 0,
-      );
-      _currentSong = updatedSong;
-      _resolvedArtworkUrl = thumbUrl;
-      notifyListeners();
-      _updateAndroidAuto();
-      debugPrint('Android Auto: YT metadata resolved — "$title" by $artist');
-    }).catchError((e) {
-      debugPrint('Android Auto: YT metadata resolution failed (harmless): $e');
-    });
-  }
 
   String? _resolveInitialArtworkUrl(Song? song) {
     if (song == null) return null;
@@ -962,6 +554,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     _updateDiscordRpc();
     _updateAllServices();
+    _audioHandler.notifyAutoChildrenChanged([
+      MuslyAudioHandler.mediaIdQueue,
+      AudioService.browsableRootId,
+    ]);
   }
 
   void _updateAllServices() {
@@ -983,8 +579,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _updateDiscordRpc();
   }
 
+  @override
   List<Song> get queue => _queue;
+  @override
   int get currentIndex => _currentIndex;
+  @override
   bool get isPlaying => _isPlaying;
   bool get isLoading => _isLoading;
 
@@ -994,6 +593,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   RepeatMode get repeatMode => _repeatMode;
   Duration get position => _position;
   Duration get duration => _duration;
+  @override
   Song? get currentSong => _currentSong;
   bool get hasNext =>
       _queue.isNotEmpty &&
@@ -1070,7 +670,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _preloadSong(Song nextSong) async {
     debugPrint(
-      '[Player Preload] ⚡ Pre-buffering next song: "${nextSong.title}" (${nextSong.id})',
+      '[Player Preload] âš¡ Pre-buffering next song: "${nextSong.title}" (${nextSong.id})',
     );
 
     if (nextSong.isLocal != true) {
@@ -1315,7 +915,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
           debugPrint(
-              '[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
+              '[Player] ${_isPlaying ? 'â–¶ Playing' : 'â¸ Paused'} â€” "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
 
           if (_isPlaying && (Platform.isWindows || Platform.isLinux || Platform.isMacOS) && !_isRenderingRemotely) {
             _windowsPositionTimer?.cancel();
@@ -1344,14 +944,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
         if (state.processingState == ProcessingState.completed) {
           debugPrint(
-              '[Player] ✓ Song completed: "${_currentSong?.title ?? 'unknown'}"');
+              '[Player] âœ“ Song completed: "${_currentSong?.title ?? 'unknown'}"');
           _onSongComplete().catchError(
               (e) => debugPrint('[Player] _onSongComplete error: $e'));
         }
 
         if (state.processingState == ProcessingState.buffering && !wasPlaying) {
           debugPrint(
-              '[Player] ⟳ Buffering: "${_currentSong?.title ?? 'unknown'}"');
+              '[Player] âŸ³ Buffering: "${_currentSong?.title ?? 'unknown'}"');
         }
 
         if (wasPlaying != _isPlaying && !_reactivatingSession) {
@@ -1719,6 +1319,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  @override
   Future<void> playSong(
     Song song, {
     List<Song>? playlist,
@@ -1758,7 +1359,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     debugPrint(
-        '[Player] ▶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
+        '[Player] â–¶ playSong: "${song.title}" by ${song.artist ?? 'unknown'} (id=${song.id} local=${song.isLocal})');
     _isLoading = true;
     notifyListeners();
 
@@ -1878,7 +1479,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         bool superseded() {
           if (switchGeneration == _remoteSwitchGeneration) return false;
           debugPrint('UPnP: switch #$switchGeneration superseded by '
-              '#$_remoteSwitchGeneration — abandoning "${song.title}"');
+              '#$_remoteSwitchGeneration â€” abandoning "${song.title}"');
           return true;
         }
 
@@ -2058,7 +1659,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       _updateAndroidAuto();
     } catch (e) {
-      debugPrint('[Player] ✗ Error playing song "${song.title}": $e');
+      debugPrint('[Player] âœ— Error playing song "${song.title}": $e');
       _isPlaying = false;
       _position = Duration.zero;
       _updateAndroidAuto();
@@ -2138,6 +1739,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
   }
 
+  @override
   Future<void> play() async {
     _isManuallyPaused = false;
     _wasPlayingBeforeInterruption = false;
@@ -2529,6 +2131,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  @override
   Future<void> skipToIndex(int index) async {
     if (index >= 0 && index < _queue.length) {
       if (_concatenatingSource != null && !_isRenderingRemotely) {
@@ -2941,7 +2544,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (newIndex == _currentIndex) return;
 
     debugPrint(
-        '[Player] ⏭ Track changed by index: $newIndex "${_queue[newIndex].title}"');
+        '[Player] â­ Track changed by index: $newIndex "${_queue[newIndex].title}"');
 
     if (_sleepTimerEndCurrentSong) {
       _doSleepTimerStop();
@@ -3355,7 +2958,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     if (_castWasPlaying && isIdleFinished) {
       debugPrint(
-        'Cast: Track ended naturally (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) — advancing',
+        'Cast: Track ended naturally (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s) â€” advancing',
       );
       _castWasPlaying = false;
       _onSongComplete()
@@ -3398,7 +3001,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool _upnpWasPlaying = false;
   /// Canonical URIs of the track the renderer is playing and the one pre-queued
   /// via SetNextAVTransportURI. Canonical because renderers echo URIs back with
-  /// different escaping than we sent — see [UpnpService.canonicalUri].
+  /// different escaping than we sent â€” see [UpnpService.canonicalUri].
   /// Identifies the most recent remote switch so slower in-flight ones can
   /// detect they were overtaken.
   int _remoteSwitchGeneration = 0;
@@ -3480,7 +3083,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         rendererState == 'STOPPED' || rendererState == 'NO_MEDIA_PRESENT';
     if (_upnpWasPlaying && isStoppedOrNoMedia) {
       debugPrint(
-          'UPnP: Track ended/stopped on renderer (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s, state=$rendererState) — advancing');
+          'UPnP: Track ended/stopped on renderer (pos=${pos.inSeconds}s, dur=${dur.inSeconds}s, state=$rendererState) â€” advancing');
       _upnpWasPlaying = false;
       _onSongComplete()
           .catchError((e) => debugPrint('[Player] _onSongComplete error: $e'));
@@ -3489,8 +3092,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     // Follow a gapless auto-advance on the renderer.
     //
-    // This used to compare a decoded URI against an undecoded one — never equal
-    // — and respond to any difference with a blind `_currentIndex++`, which
+    // This used to compare a decoded URI against an undecoded one â€” never equal
+    // â€” and respond to any difference with a blind `_currentIndex++`, which
     // walked the UI up the queue a track per second while the speaker stayed
     // put. Now only the transition we actually queued via
     // SetNextAVTransportURI is accepted; anything else is left alone.
@@ -3503,7 +3106,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       if (isNext) {
         debugPrint('UPnP: renderer auto-advanced to queued next track '
-            '— following to index ${_currentIndex + 1}');
+            'â€” following to index ${_currentIndex + 1}');
         _upnpWasPlaying = playing;
         _currentIndex++;
         _currentSong = _queue[_currentIndex];
@@ -3522,7 +3125,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       if (_currentUpnpTrackUrl != null && canonical != _currentUpnpTrackUrl) {
         // Another controller, or a switch of ours still in flight. Never guess.
-        debugPrint('UPnP: renderer on an unrecognised track — leaving queue '
+        debugPrint('UPnP: renderer on an unrecognised track â€” leaving queue '
             'position alone (was index $_currentIndex)');
       }
     }
@@ -3566,7 +3169,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     final lastSong = _currentSong;
 
     debugPrint(
-      'UPnP: renderer lost — A2DP audio active: $_isA2dpAudioActive, '
+      'UPnP: renderer lost â€” A2DP audio active: $_isA2dpAudioActive, '
       'last position: ${lastPosition.inSeconds}s, song: "${lastSong?.title}"',
     );
 

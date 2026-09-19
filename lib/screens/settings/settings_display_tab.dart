@@ -13,6 +13,8 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/widgets/settings/settings_section_card.dart';
+import 'package:musly/widgets/settings/settings_switch_tile.dart';
+import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/widgets/settings/settings_icon_badge.dart';
 import 'package:musly/utils/context_extensions.dart';
 import 'package:musly/services/storage_service.dart';
@@ -258,220 +260,101 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   }
 
   Widget _buildVolumeSliderToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
-        icon: CupertinoIcons.speaker_2,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.showVolumeSlider,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.showVolumeSliderSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showVolumeSlider,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+      icon: CupertinoIcons.speaker_2,
+      title: AppLocalizations.of(context)!.showVolumeSlider,
+      subtitle: AppLocalizations.of(context)!.showVolumeSliderSubtitle,
+      value: _showVolumeSlider,
+      onChanged: (value) async {
           setState(() => _showVolumeSlider = value);
           await _playerUiSettings.setShowVolumeSlider(value);
         },
-      ),
     );
   }
 
   Widget _buildStarRatingsToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFFD700), Color(0xFFFFA500)],
-        icon: CupertinoIcons.star_fill,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.showStarRatings,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.showStarRatingsSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showStarRatings,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFFFFD700), Color(0xFFFFA500)],
+      icon: CupertinoIcons.star_fill,
+      title: AppLocalizations.of(context)!.showStarRatings,
+      subtitle: AppLocalizations.of(context)!.showStarRatingsSubtitle,
+      value: _showStarRatings,
+      onChanged: (value) async {
           setState(() => _showStarRatings = value);
           await _playerUiSettings.setShowStarRatings(value);
         },
-      ),
     );
   }
 
   Widget _buildMiniPlayerHeartToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-        icon: CupertinoIcons.heart_fill,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.showMiniPlayerHeart,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.showMiniPlayerHeartSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showMiniPlayerHeart,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+      icon: CupertinoIcons.heart_fill,
+      title: AppLocalizations.of(context)!.showMiniPlayerHeart,
+      subtitle: AppLocalizations.of(context)!.showMiniPlayerHeartSubtitle,
+      value: _showMiniPlayerHeart,
+      onChanged: (value) async {
           setState(() => _showMiniPlayerHeart = value);
           await _playerUiSettings.setShowMiniPlayerHeart(value);
         },
-      ),
     );
   }
 
   Widget _buildMiniPlayerRepeatToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
-        icon: CupertinoIcons.repeat,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.showMiniPlayerRepeat,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.showMiniPlayerRepeatSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showMiniPlayerRepeat,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+      icon: CupertinoIcons.repeat,
+      title: AppLocalizations.of(context)!.showMiniPlayerRepeat,
+      subtitle: AppLocalizations.of(context)!.showMiniPlayerRepeatSubtitle,
+      value: _showMiniPlayerRepeat,
+      onChanged: (value) async {
           setState(() => _showMiniPlayerRepeat = value);
           await _playerUiSettings.setShowMiniPlayerRepeat(value);
         },
-      ),
     );
   }
 
   Widget _buildMiniPlayerShuffleToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
-        icon: CupertinoIcons.shuffle,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.showMiniPlayerShuffle,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.showMiniPlayerShuffleSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showMiniPlayerShuffle,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+      icon: CupertinoIcons.shuffle,
+      title: AppLocalizations.of(context)!.showMiniPlayerShuffle,
+      subtitle: AppLocalizations.of(context)!.showMiniPlayerShuffleSubtitle,
+      value: _showMiniPlayerShuffle,
+      onChanged: (value) async {
           setState(() => _showMiniPlayerShuffle = value);
           await _playerUiSettings.setShowMiniPlayerShuffle(value);
         },
-      ),
     );
   }
 
   Widget _buildLiveLyricUnderArtworkToggle() {
     final l10n = AppLocalizations.of(context)!;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFF5856D6), Color(0xFFAF52DE)],
-        icon: CupertinoIcons.quote_bubble_fill,
-      ),
-      title: Text(
-        l10n.lyricsUnderArtwork,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        l10n.lyricsUnderArtworkSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _showLiveLyricUnderArtwork,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFF5856D6), Color(0xFFAF52DE)],
+      icon: CupertinoIcons.quote_bubble_fill,
+      title: l10n.lyricsUnderArtwork,
+      subtitle: l10n.lyricsUnderArtworkSubtitle,
+      value: _showLiveLyricUnderArtwork,
+      onChanged: (value) async {
           setState(() => _showLiveLyricUnderArtwork = value);
           await _playerUiSettings.setShowLiveLyricUnderArtwork(value);
         },
-      ),
     );
   }
 
   Widget _buildLiveSearchToggle() {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: SettingsIconBadge(
-        gradientColors: const [Color(0xFFFF9500), Color(0xFFFFCC00)],
-        icon: CupertinoIcons.search,
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.liveSearch,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: Text(
-        AppLocalizations.of(context)!.liveSearchSubtitle,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.isDark
-              ? AppTheme.darkSecondaryText
-              : AppTheme.lightSecondaryText,
-        ),
-      ),
-      trailing: CupertinoSwitch(
-        value: _liveSearch,
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        onChanged: (value) async {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFFFF9500), Color(0xFFFFCC00)],
+      icon: CupertinoIcons.search,
+      title: AppLocalizations.of(context)!.liveSearch,
+      subtitle: AppLocalizations.of(context)!.liveSearchSubtitle,
+      value: _liveSearch,
+      onChanged: (value) async {
           setState(() => _liveSearch = value);
           await _playerUiSettings.setLiveSearch(value);
         },
-      ),
     );
   }
 
@@ -518,34 +401,14 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   Widget _buildRecommendationsToggle() {
     return Consumer<RecommendationService>(
       builder: (context, service, _) {
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: SettingsIconBadge(
-            gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
-            icon: CupertinoIcons.sparkles,
-          ),
-          title: Text(
-            AppLocalizations.of(context)!.enableRecommendations,
-            style: const TextStyle(fontSize: 16),
-          ),
-          subtitle: Text(
-            AppLocalizations.of(context)!.enableRecommendationsSubtitle,
-            style: TextStyle(
-              fontSize: 13,
-              color: context.isDark
-                  ? AppTheme.darkSecondaryText
-                  : AppTheme.lightSecondaryText,
-            ),
-          ),
-          trailing: CupertinoSwitch(
-            value: service.enabled,
-            activeTrackColor: Theme.of(context).colorScheme.primary,
-            onChanged: (value) => service.setEnabled(value),
-          ),
-        );
+        return SettingsSwitchTile(
+      gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+      icon: CupertinoIcons.sparkles,
+      title: AppLocalizations.of(context)!.enableRecommendations,
+      subtitle: AppLocalizations.of(context)!.enableRecommendationsSubtitle,
+      value: service.enabled,
+      onChanged: (value) => service.setEnabled(value),
+    );
       },
     );
   }

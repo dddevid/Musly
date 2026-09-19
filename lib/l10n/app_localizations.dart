@@ -88,7 +88,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -111,11 +111,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -145,7 +145,7 @@ abstract class AppLocalizations {
     Locale('tr'),
     Locale('uk'),
     Locale('vi'),
-    Locale('zh'),
+    Locale('zh')
   ];
 
   /// Application name
@@ -5499,6 +5499,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Top 5% Fan'**
   String get superfanBadge5;
+
+  /// No description provided for @tabAndroidAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Android Auto'**
+  String get tabAndroidAuto;
+
+  /// No description provided for @androidAutoNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Android Auto is not supported on this device.'**
+  String get androidAutoNotSupported;
+
+  /// No description provided for @androidAutoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get androidAutoCategories;
+
+  /// No description provided for @androidAutoPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get androidAutoPerformance;
+
+  /// No description provided for @androidAutoShowRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Recent'**
+  String get androidAutoShowRecent;
+
+  /// No description provided for @androidAutoShowFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Favorites'**
+  String get androidAutoShowFavorites;
+
+  /// No description provided for @androidAutoShowAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Albums'**
+  String get androidAutoShowAlbums;
+
+  /// No description provided for @androidAutoShowArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Artists'**
+  String get androidAutoShowArtists;
+
+  /// No description provided for @androidAutoShowPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Playlists'**
+  String get androidAutoShowPlaylists;
+
+  /// No description provided for @androidAutoShowGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Genres'**
+  String get androidAutoShowGenres;
+
+  /// No description provided for @androidAutoShowRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Radio'**
+  String get androidAutoShowRadio;
+
+  /// No description provided for @androidAutoShowDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Downloads'**
+  String get androidAutoShowDownloads;
+
+  /// No description provided for @androidAutoMaxItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Limit'**
+  String get androidAutoMaxItems;
+
+  /// No description provided for @androidAutoMaxItemsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum number of items to load per category'**
+  String get androidAutoMaxItemsDesc;
+
+  /// No description provided for @androidAutoNowPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Now Playing'**
+  String get androidAutoNowPlaying;
+
+  /// No description provided for @androidAutoRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get androidAutoRecent;
+
+  /// No description provided for @androidAutoFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get androidAutoFavorites;
+
+  /// No description provided for @androidAutoAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get androidAutoAlbums;
+
+  /// No description provided for @androidAutoArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get androidAutoArtists;
+
+  /// No description provided for @androidAutoPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get androidAutoPlaylists;
+
+  /// No description provided for @androidAutoGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get androidAutoGenres;
+
+  /// No description provided for @androidAutoRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'Radio'**
+  String get androidAutoRadio;
+
+  /// No description provided for @androidAutoDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get androidAutoDownloads;
+
+  /// No description provided for @androidAutoShuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get androidAutoShuffle;
+
+  /// No description provided for @androidAutoQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get androidAutoQueue;
+
+  /// No description provided for @androidAutoEmptyFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite songs'**
+  String get androidAutoEmptyFavorites;
+
+  /// No description provided for @androidAutoEmptyRadio.
+  ///
+  /// In en, this message translates to:
+  /// **'No radio stations configured'**
+  String get androidAutoEmptyRadio;
+
+  /// No description provided for @androidAutoEmptyDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded songs'**
+  String get androidAutoEmptyDownloads;
+
+  /// No description provided for @androidAutoLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get androidAutoLoading;
+
+  /// No description provided for @androidAutoOnlineStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Stream'**
+  String get androidAutoOnlineStream;
+
+  /// No description provided for @androidAutoServerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get androidAutoServerSection;
+
+  /// No description provided for @androidAutoDefaultServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Server'**
+  String get androidAutoDefaultServer;
+
+  /// No description provided for @androidAutoDefaultServerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select which server to use when you start Android Auto'**
+  String get androidAutoDefaultServerDesc;
+
+  /// No description provided for @androidAutoUseActiveServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Use app\'s active server'**
+  String get androidAutoUseActiveServer;
 }
 
 class _AppLocalizationsDelegate
@@ -5512,34 +5716,34 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-    'ar',
-    'az',
-    'bn',
-    'da',
-    'de',
-    'el',
-    'en',
-    'es',
-    'fi',
-    'fr',
-    'ga',
-    'hi',
-    'id',
-    'it',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'ro',
-    'ru',
-    'sq',
-    'sv',
-    'te',
-    'tr',
-    'uk',
-    'vi',
-    'zh',
-  ].contains(locale.languageCode);
+        'ar',
+        'az',
+        'bn',
+        'da',
+        'de',
+        'el',
+        'en',
+        'es',
+        'fi',
+        'fr',
+        'ga',
+        'hi',
+        'id',
+        'it',
+        'nl',
+        'no',
+        'pl',
+        'pt',
+        'ro',
+        'ru',
+        'sq',
+        'sv',
+        'te',
+        'tr',
+        'uk',
+        'vi',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5605,9 +5809,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

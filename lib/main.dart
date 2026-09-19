@@ -14,6 +14,7 @@ import 'l10n/app_localizations.dart';
 import 'models/server_config.dart';
 import 'services/services.dart';
 import 'services/audio_handler.dart';
+import 'services/android_auto_service.dart';
 import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
@@ -254,6 +255,16 @@ void main() async {
   );
   final libraryProvider = LibraryProvider(subsonicService, audioHandler);
   playerProvider.setLibraryProvider(libraryProvider);
+
+  final offlineServiceForAuto = OfflineService();
+  final androidAutoService = AndroidAutoService(
+    subsonicService: subsonicService,
+    offlineService: offlineServiceForAuto,
+  );
+  androidAutoService.setPlayerDelegate(playerProvider);
+  androidAutoService.setLibraryDelegate(libraryProvider);
+  androidAutoService.setAuthProvider(authProvider);
+  audioHandler.setAutoService(androidAutoService);
 
   playerProvider.onMilestone50Triggered = () {
     final ctx = navigatorKey.currentContext;

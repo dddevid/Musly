@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'android_auto_service.dart';
+
 class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer(
     handleAudioSessionActivation: false,
@@ -14,15 +16,19 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
 
-  static const mediaIdRecent = 'RECENT';
-  static const mediaIdAlbums = 'ALBUMS';
-  static const mediaIdArtists = 'ARTISTS';
-  static const mediaIdPlaylists = 'PLAYLISTS';
-  static const _albumPrefix = 'album_';
-  static const _artistPrefix = 'artist_';
-  static const _playlistPrefix = 'playlist_';
+  static const mediaIdRecent = 'AUTO_RECENT';
+  static const mediaIdAlbums = 'AUTO_ALBUMS';
+  static const mediaIdArtists = 'AUTO_ARTISTS';
+  static const mediaIdPlaylists = 'AUTO_PLAYLISTS';
+  static const mediaIdFavorites = 'AUTO_FAVORITES';
+  static const mediaIdGenres = 'AUTO_GENRES';
+  static const mediaIdRadio = 'AUTO_RADIO';
+  static const mediaIdDownloads = 'AUTO_DOWNLOADS';
+  static const mediaIdQueue = 'AUTO_QUEUE';
 
   AudioPlayer get player => _player;
+
+  AndroidAutoService? _autoService;
 
   Future<void> Function()? onPlay;
   Future<void> Function()? onPause;
@@ -31,26 +37,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> Function()? onSkipPrevious;
   Future<void> Function(Duration)? onSeekTo;
   Future<void> Function()? onTogglePlayPause;
-
-  Future<List<Map<String, dynamic>>> Function()? onGetRecentSongs;
-  Future<List<Map<String, dynamic>>> Function()? onGetLibraryAlbums;
-  Future<List<Map<String, dynamic>>> Function()? onGetLibraryArtists;
-  Future<List<Map<String, dynamic>>> Function()? onGetLibraryPlaylists;
-  Future<List<Map<String, String>>> Function(String albumId)? onGetAlbumSongs;
-  Future<List<Map<String, String>>> Function(String artistId)?
-      onGetArtistAlbums;
-  Future<List<Map<String, String>>> Function(String playlistId)?
-      onGetPlaylistSongs;
-  Future<List<Map<String, String>>> Function(String query)? onSearch;
-  Future<void> Function(String mediaId)? onPlayFromMediaId;
-  Future<void> Function(String query)? onPlayFromSearch;
-
   void Function(int volumePercent)? onSetRemoteVolume;
 
-  bool Function()? onIsYoutubeMode;
-
-  final Map<String, BehaviorSubject<Map<String, dynamic>>> _childrenSubjects =
-      {};
+  final Map<String, BehaviorSubject<Map<String, dynamic>>> _childrenSubjects = {};
 
   bool _remotePlayback = false;
   int _remoteVolume = 50;
@@ -60,13 +49,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   StreamSubscription<PlaybackEvent>? _localStateSub;
 
   MuslyAudioHandler() {
-    // listen()+add() rather than pipe(): pipe() is addStream() on the rxdart
-    // Subject, which makes every other playbackState.add() in this class throw
-    // "You cannot add items while items are being added from addStream". That
-    // silently broke updateRemotePlaybackState(), so the media session could
-    // never follow Cast/DLNA — notification, lock screen and head-unit controls
-    // stayed pinned to the idle local player and pause did nothing. The gate
-    // stops that idle player from overwriting remote state.
     _localStateSub = _player.playbackEventStream.listen((event) {
       if (_remotePlayback) return;
       playbackState.add(_buildPlaybackState(event));
@@ -77,10 +59,12 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  /// True while local player events are still being mirrored into the session.
+  void setAutoService(AndroidAutoService service) {
+    _autoService = service;
+  }
+
   bool get isMirroringLocalState => _localStateSub != null;
 
-  /// Stop mirroring the local player into the media session.
   Future<void> cancelLocalStateMirror() async {
     await _localStateSub?.cancel();
     _localStateSub = null;
@@ -132,42 +116,14 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String parentMediaId, [
     Map<String, dynamic>? options,
   ]) async {
+    final service = _autoService;
+    if (service == null) return const [];
     try {
-      switch (parentMediaId) {
-        case AudioService.browsableRootId:
-          return _rootItems();
-        case AudioService.recentRootId:
-        case mediaIdRecent:
-          return _songItems(await onGetRecentSongs?.call() ?? const []);
-        case mediaIdAlbums:
-          return _albumItems(await onGetLibraryAlbums?.call() ?? const []);
-        case mediaIdArtists:
-          return _artistItems(await onGetLibraryArtists?.call() ?? const []);
-        case mediaIdPlaylists:
-          return _playlistItems(
-            await onGetLibraryPlaylists?.call() ?? const [],
-          );
-      }
-      if (parentMediaId.startsWith(_albumPrefix)) {
-        final albumId = parentMediaId.substring(_albumPrefix.length);
-        return _songItems(await onGetAlbumSongs?.call(albumId) ?? const []);
-      }
-      if (parentMediaId.startsWith(_artistPrefix)) {
-        final artistId = parentMediaId.substring(_artistPrefix.length);
-        return _albumItems(
-          await onGetArtistAlbums?.call(artistId) ?? const [],
-        );
-      }
-      if (parentMediaId.startsWith(_playlistPrefix)) {
-        final playlistId = parentMediaId.substring(_playlistPrefix.length);
-        return _songItems(
-          await onGetPlaylistSongs?.call(playlistId) ?? const [],
-        );
-      }
+      return await service.getChildren(parentMediaId, options);
     } catch (e, st) {
-      debugPrint('AudioHandler: getChildren($parentMediaId) failed: $e\n$st');
+      debugPrint('[AudioHandler] getChildren($parentMediaId) error: $e\n$st');
+      return const [];
     }
-    return const [];
   }
 
   @override
@@ -180,10 +136,21 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   void notifyAutoChildrenChanged([List<String>? parents]) {
     final targets = parents ??
-        const [mediaIdRecent, mediaIdAlbums, mediaIdArtists, mediaIdPlaylists];
+        [
+          mediaIdRecent,
+          mediaIdAlbums,
+          mediaIdArtists,
+          mediaIdPlaylists,
+          mediaIdFavorites,
+          mediaIdGenres,
+          mediaIdRadio,
+          mediaIdDownloads,
+          mediaIdQueue,
+        ];
     for (final parent in targets) {
       _childrenSubjects[parent]?.add(<String, dynamic>{});
     }
+    _childrenSubjects[AudioService.browsableRootId]?.add(<String, dynamic>{});
   }
 
   @override
@@ -191,11 +158,12 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String query, [
     Map<String, dynamic>? extras,
   ]) async {
+    final service = _autoService;
+    if (service == null) return const [];
     try {
-      final results = await onSearch?.call(query) ?? const [];
-      return _songItems(results);
+      return await service.search(query);
     } catch (e, st) {
-      debugPrint('AudioHandler: search("$query") failed: $e\n$st');
+      debugPrint('[AudioHandler] search("$query") error: $e\n$st');
       return const [];
     }
   }
@@ -207,10 +175,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   ]) async {
     _pushLoadingState();
     try {
-      await onPlayFromMediaId?.call(mediaId);
+      await _autoService?.playFromMediaId(mediaId);
     } catch (e, st) {
-      debugPrint('AudioHandler: playFromMediaId($mediaId) failed: $e\n$st');
-
+      debugPrint('[AudioHandler] playFromMediaId($mediaId) error: $e\n$st');
       _pushIdleState();
     }
   }
@@ -222,9 +189,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   ]) async {
     _pushLoadingState();
     try {
-      await onPlayFromSearch?.call(query.trim());
+      await _autoService?.playFromSearch(query.trim());
     } catch (e, st) {
-      debugPrint('AudioHandler: playFromSearch("$query") failed: $e\n$st');
+      debugPrint('[AudioHandler] playFromSearch("$query") error: $e\n$st');
       _pushIdleState();
     }
   }
@@ -240,8 +207,13 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaControl.skipToNext,
         ],
         systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
           MediaAction.playFromMediaId,
           MediaAction.playFromSearch,
+          MediaAction.setShuffleMode,
+          MediaAction.setRepeatMode,
         },
         androidCompactActionIndices: const [0, 1, 2],
       ),
@@ -255,123 +227,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
         playing: false,
       ),
     );
-  }
-
-  List<MediaItem> _rootItems() {
-    final isYoutube = onIsYoutubeMode?.call() ?? false;
-
-    if (isYoutube) {
-      return const [
-        MediaItem(
-          id: mediaIdRecent,
-          title: 'Recent',
-          playable: false,
-        ),
-        MediaItem(
-          id: mediaIdPlaylists,
-          title: 'Playlists',
-          playable: false,
-        ),
-      ];
-    }
-    return const [
-      MediaItem(
-        id: mediaIdRecent,
-        title: 'Recent',
-        playable: false,
-      ),
-      MediaItem(
-        id: mediaIdAlbums,
-        title: 'Albums',
-        playable: false,
-      ),
-      MediaItem(
-        id: mediaIdArtists,
-        title: 'Artists',
-        playable: false,
-      ),
-      MediaItem(
-        id: mediaIdPlaylists,
-        title: 'Playlists',
-        playable: false,
-      ),
-    ];
-  }
-
-  List<MediaItem> _songItems(List<Map<String, dynamic>> songs) {
-    return songs
-        .map(
-          (song) => MediaItem(
-            id: (song['id'] as String?) ?? '',
-            title: (song['title'] as String?) ?? '',
-            artist: song['artist'] as String?,
-            album: song['album'] as String?,
-            artUri: _tryParseUri(song['artworkUrl'] as String?),
-            duration: _parseDurationSeconds(song['duration']),
-          ),
-        )
-        .where((item) => item.id.isNotEmpty)
-        .toList();
-  }
-
-  List<MediaItem> _albumItems(List<Map<String, dynamic>> albums) {
-    return albums
-        .map(
-          (album) => MediaItem(
-            id: '$_albumPrefix${album['id']}',
-            title: (album['name'] as String?) ?? '',
-            artist: album['artist'] as String?,
-            artUri: _tryParseUri(album['artworkUrl'] as String?),
-            playable: false,
-          ),
-        )
-        .toList();
-  }
-
-  List<MediaItem> _artistItems(List<Map<String, dynamic>> artists) {
-    return artists
-        .map(
-          (artist) => MediaItem(
-            id: '$_artistPrefix${artist['id']}',
-            title: (artist['name'] as String?) ?? '',
-            displaySubtitle: '${artist['albumCount'] ?? 0} albums',
-            playable: false,
-          ),
-        )
-        .toList();
-  }
-
-  List<MediaItem> _playlistItems(List<Map<String, dynamic>> playlists) {
-    return playlists
-        .map(
-          (playlist) => MediaItem(
-            id: '$_playlistPrefix${playlist['id']}',
-            title: (playlist['name'] as String?) ?? '',
-            displaySubtitle: '${playlist['songCount'] ?? 0} songs',
-            artUri: _tryParseUri(playlist['artworkUrl'] as String?),
-            playable: false,
-          ),
-        )
-        .toList();
-  }
-
-  static Uri? _tryParseUri(String? url) {
-    if (url == null || url.isEmpty) return null;
-    if (url.startsWith('file://')) return Uri.parse(url);
-    if (url.startsWith('/') || (url.length > 2 && url[1] == ':')) {
-      return Uri.file(url);
-    }
-    return Uri.tryParse(url);
-  }
-
-  static Duration? _parseDurationSeconds(dynamic value) {
-    final seconds = switch (value) {
-      int v => v,
-      String v => int.tryParse(v),
-      _ => null,
-    };
-    if (seconds == null || seconds <= 0) return null;
-    return Duration(seconds: seconds);
   }
 
   void setRemotePlayback({required bool isRemote, int volume = 50}) {
@@ -388,7 +243,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
       );
     } else {
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
-
       playbackState.add(_buildPlaybackState(_player.playbackEvent));
     }
   }
@@ -413,12 +267,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<void> androidAdjustRemoteVolume(
-    AndroidVolumeDirection direction,
-  ) async {
+  Future<void> androidAdjustRemoteVolume(AndroidVolumeDirection direction) async {
     if (!_remotePlayback || direction.index == 0) return;
-    _remoteVolume = (_remoteVolume + direction.index * _remoteVolumeStep)
-        .clamp(0, _remoteMaxVolume);
+    _remoteVolume = (_remoteVolume + direction.index * _remoteVolumeStep).clamp(0, _remoteMaxVolume);
     updateRemoteVolume(_remoteVolume);
     onSetRemoteVolume?.call(_remoteVolume);
   }
@@ -431,7 +282,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     String? artworkUrl,
     Duration? duration,
   }) {
-    final artUri = _tryParseUri(artworkUrl);
+    final artUri = artworkUrl != null && artworkUrl.isNotEmpty ? Uri.tryParse(artworkUrl) : null;
     mediaItem.add(
       MediaItem(
         id: id,
@@ -465,6 +316,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaAction.seekBackward,
           MediaAction.playFromMediaId,
           MediaAction.playFromSearch,
+          MediaAction.setShuffleMode,
+          MediaAction.setRepeatMode,
         },
         androidCompactActionIndices: const [0, 1, 2],
         processingState: AudioProcessingState.ready,
@@ -495,10 +348,12 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
         MediaAction.seekBackward,
         MediaAction.playFromMediaId,
         MediaAction.playFromSearch,
+        MediaAction.setShuffleMode,
+        MediaAction.setRepeatMode,
       },
       androidCompactActionIndices: const [0, 1, 2],
-      processingState: processingStateMap[_player.processingState] ??
-          AudioProcessingState.idle,
+      processingState:
+          processingStateMap[_player.processingState] ?? AudioProcessingState.idle,
       playing: _player.playing,
       updatePosition: _player.position,
       bufferedPosition: _player.bufferedPosition,
@@ -516,7 +371,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
       final success = (result?['success'] as bool?) ?? false;
       return success;
     } catch (e) {
-      debugPrint('PitchPlugin error: $e');
+      debugPrint('[AudioHandler] PitchPlugin error: $e');
       return false;
     }
   }
@@ -524,8 +379,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'dispose') {
-      // Before _player.dispose(): AudioPlayer.dispose() does not cancel our
-      // own subscription to its event stream.
       await cancelLocalStateMirror();
       for (final sub in _childrenSubjects.values) {
         await sub.close();
@@ -550,6 +403,9 @@ Future<MuslyAudioHandler> initAudioService() async {
         preloadArtwork: true,
         androidBrowsableRootExtras: {
           'android.media.browse.SEARCH_SUPPORTED': true,
+          'android.media.browse.CONTENT_STYLE_SUPPORTED': true,
+          'android.media.browse.CONTENT_STYLE_BROWSABLE_HINT': 1,
+          'android.media.browse.CONTENT_STYLE_PLAYABLE_HINT': 1,
         },
       ),
     );
