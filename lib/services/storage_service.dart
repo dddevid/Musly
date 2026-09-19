@@ -37,12 +37,13 @@ class StorageService {
     try {
       return await _secureStorage.read(key: key);
     } on PlatformException catch (e) {
-      if (kDebugMode &&
-          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
-        final prefs = await _prefs;
-        return prefs.getString('fallback_secure_$key');
-      }
-      return null;
+      debugPrint('Secure storage read failed for $key: ${e.message}');
+      final prefs = await _prefs;
+      return prefs.getString('fallback_secure_$key');
+    } catch (e) {
+      debugPrint('Unknown secure storage read error: $e');
+      final prefs = await _prefs;
+      return prefs.getString('fallback_secure_$key');
     }
   }
 
@@ -50,11 +51,13 @@ class StorageService {
     try {
       await _secureStorage.write(key: key, value: value);
     } on PlatformException catch (e) {
-      if (kDebugMode &&
-          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
-        final prefs = await _prefs;
-        await prefs.setString('fallback_secure_$key', value);
-      }
+      debugPrint('Secure storage write failed for $key: ${e.message}');
+      final prefs = await _prefs;
+      await prefs.setString('fallback_secure_$key', value);
+    } catch (e) {
+      debugPrint('Unknown secure storage write error: $e');
+      final prefs = await _prefs;
+      await prefs.setString('fallback_secure_$key', value);
     }
   }
 
@@ -62,11 +65,13 @@ class StorageService {
     try {
       await _secureStorage.delete(key: key);
     } on PlatformException catch (e) {
-      if (kDebugMode &&
-          (e.code == '-34018' || e.message?.contains('entitlement') == true)) {
-        final prefs = await _prefs;
-        await prefs.remove('fallback_secure_$key');
-      }
+      debugPrint('Secure storage delete failed for $key: ${e.message}');
+      final prefs = await _prefs;
+      await prefs.remove('fallback_secure_$key');
+    } catch (e) {
+      debugPrint('Unknown secure storage delete error: $e');
+      final prefs = await _prefs;
+      await prefs.remove('fallback_secure_$key');
     }
   }
 
