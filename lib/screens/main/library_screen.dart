@@ -323,14 +323,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     if ((_selectedFilter == null && !isYoutube) ||
         _selectedFilter == 'Albums') {
-      var albums = libraryProvider.recentAlbums;
+      var albums = _selectedFilter == 'Albums'
+          ? libraryProvider.cachedAllAlbums
+          : libraryProvider.recentAlbums;
       albums = _sortList(albums, (a) => a.name);
       for (final a in albums) {
         items.add(
           _LibraryItem(
             type: _LibraryItemType.album,
             title: a.name,
-            subtitle: 'Album • ${a.artist}',
+            subtitle: 'Album \u2022 ${a.artist}',
             data: a,
             onTap: () => _navigate(context, AlbumScreen(albumId: a.id)),
           ),
