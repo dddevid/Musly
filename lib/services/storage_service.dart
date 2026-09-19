@@ -33,17 +33,43 @@ class StorageService {
     return md5.convert(utf8.encode(raw)).toString();
   }
 
+  String _obfuscate(String plain) {
+    final key = utf8.encode('MuslyFallbackSecretKey2026!');
+    final bytes = utf8.encode(plain);
+    final obfuscated = <int>[];
+    for (int i = 0; i < bytes.length; i++) {
+      obfuscated.add(bytes[i] ^ key[i % key.length]);
+    }
+    return base64Encode(obfuscated);
+  }
+
+  String _deobfuscate(String obfuscated) {
+    try {
+      final key = utf8.encode('MuslyFallbackSecretKey2026!');
+      final bytes = base64Decode(obfuscated);
+      final plain = <int>[];
+      for (int i = 0; i < bytes.length; i++) {
+        plain.add(bytes[i] ^ key[i % key.length]);
+      }
+      return utf8.decode(plain);
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<String?> _safeSecureRead(String key) async {
     try {
       return await _secureStorage.read(key: key);
     } on PlatformException catch (e) {
       debugPrint('Secure storage read failed for $key: ${e.message}');
       final prefs = await _prefs;
-      return prefs.getString('fallback_secure_$key');
+      final val = prefs.getString('fallback_secure_$key');
+      return val != null ? _deobfuscate(val) : null;
     } catch (e) {
       debugPrint('Unknown secure storage read error: $e');
       final prefs = await _prefs;
-      return prefs.getString('fallback_secure_$key');
+      final val = prefs.getString('fallback_secure_$key');
+      return val != null ? _deobfuscate(val) : null;
     }
   }
 
@@ -53,11 +79,11 @@ class StorageService {
     } on PlatformException catch (e) {
       debugPrint('Secure storage write failed for $key: ${e.message}');
       final prefs = await _prefs;
-      await prefs.setString('fallback_secure_$key', value);
+      await prefs.setString('fallback_secure_$key', _obfuscate(value));
     } catch (e) {
       debugPrint('Unknown secure storage write error: $e');
       final prefs = await _prefs;
-      await prefs.setString('fallback_secure_$key', value);
+      await prefs.setString('fallback_secure_$key', _obfuscate(value));
     }
   }
 
