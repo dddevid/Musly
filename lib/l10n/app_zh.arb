@@ -1,6 +1,14 @@
 {
-  "@@locale": "zh",
+  "@@locale": "zh-CN",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "emulatorDetected": "检测到模拟器",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "本应用无法在模拟器上运行。\\n请使用一台真实的设备。",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
   "goodMorning": "早上好",
   "@goodMorning": {
     "description": "Morning greeting"
@@ -33,6 +41,18 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "我的收藏歌单",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "专辑",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionSingles": "单曲",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
   "madeForYou": "为你制作",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -63,7 +83,7 @@
   },
   "errorLoadingAlbums": "加载专辑出错",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "暂无评分最高的专辑",
   "@noTopRatedAlbums": {
@@ -124,7 +144,7 @@
   },
   "artists": "艺术家",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "歌曲",
   "@songs": {
@@ -137,6 +157,10 @@
   "genres": "分类",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "发行年份",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "收藏",
   "@favorites": {
@@ -220,11 +244,11 @@
   },
   "save": "保存",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "关闭",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "通用",
   "@general": {
@@ -276,7 +300,7 @@
   },
   "unknownArtist": "未知艺术家",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "未知专辑",
   "@unknownAlbum": {
@@ -336,7 +360,7 @@
   },
   "retry": "重试",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "无结果",
   "@noResults": {
@@ -449,6 +473,30 @@
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
+  "showMiniPlayerHeart": "显示喜爱按钮",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "从迷你播放器添加喜爱的歌曲",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "显示循环播放按钮",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "从迷你播放器开关循环播放",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "显示随机播放按钮",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "从迷你播放器开关随机播放",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
+  },
   "enableRecommendations": "启用推荐",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"
@@ -509,10 +557,24 @@
   "@_LIBRARY": {},
   "yourLibrary": "你的音乐库",
   "filterAll": "全部",
+  "faves": "最爱",
   "filterPlaylists": "歌单",
   "filterAlbums": "专辑",
   "filterArtists": "艺术家",
   "likedSongs": "喜欢的歌曲",
+  "likedAlbums": "喜欢的专辑",
+  "noLikedAlbums": "还没有喜欢的专辑",
+  "localMusicLibrary": "本地曲库",
+  "mergeLocalLibrary": "合并远程曲库",
+  "mergeLocalLibrarySubtitle": "同时显示本地音乐与服务器库",
+  "localMusicStats": "添加音乐文件",
+  "addMusicFolder": "添加音乐文件夹",
+  "rescanLocalMusic": "重新扫描本地音乐",
+  "localLibraryEmpty": "你的曲库是空的",
+  "localLibraryEmptySubtitle": "未发现本地音乐文件。点击下方按钮再扫描一次。",
+  "libraryEmpty": "你的曲库是空的",
+  "libraryEmptySubtitle": "添加歌曲开始聆听。",
+  "scanForMusic": "扫描音乐",
   "radioStations": "电台",
   "playlist": "歌单",
   "internetRadio": "网络电台",
@@ -566,6 +628,8 @@
   "tryDifferentSearch": "尝试不同的搜索",
   "noSuggestions": "无建议",
   "browseCategories": "浏览分类",
+  "liveSearchSection": "搜索",
+  "liveSearch": "在线搜索",
   "categoryMadeForYou": "为你制作",
   "categoryNewReleases": "新歌首发",
   "categoryTopRated": "评分最高",
@@ -578,6 +642,7 @@
   "tabStorage": "存储",
   "tabServer": "服务器",
   "tabDisplay": "显示",
+  "tabSupport": "支持",
   "tabAbout": "关于",
   "@_SETTINGS_PLAYBACK": {},
   "sectionAutoDj": "自动播放",
@@ -626,6 +691,18 @@
   "sectionMusicFolders": "音乐文件夹",
   "musicFolders": "音乐文件夹",
   "noMusicFolders": "未找到音乐文件夹",
+  "sectionSavedProfiles": "已有配置",
+  "switchProfile": "切换配置",
+  "switchServer": "切换服务器",
+  "addProfile": "新增配置",
+  "switchProfileConfirmation": "连接到“{profile}”？",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "账户",
   "logoutConfirmation": "确定要退出登录吗？这也将清除所有缓存数据。",
   "@_SETTINGS_STORAGE": {},
@@ -661,6 +738,20 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "保持屏幕常亮",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "锁屏时避免下载失败",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "并行下载",
+  "parallelDownloadsSubtitle": "同时下载多首曲目",
+  "downloadSingular": "下载",
+  "downloadPlural": "下载",
+  "slowerButStable": "更慢但更稳定",
+  "fasterButMoreData": "更快但会使用更多流量",
   "libraryDownloadStarted": "音乐库下载已开始",
   "deleteDownloads": "删除所有下载",
   "downloadsDeleted": "所有下载已删除",
@@ -846,7 +937,7 @@
   },
   "playlistNameHint": "歌单名称",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "已创建歌单「{name}」并添加了这首歌曲",
   "@playlistCreatedWithSong": {
@@ -932,7 +1023,7 @@
   },
   "noAlbumsFound": "未找到专辑",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "没有可用的首页链接",
@@ -953,11 +1044,11 @@
   },
   "failedToLoadRadioStations": "加载电台失败",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
   "noRadioStations": "没有电台",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "在您的 Navidrome 服务器设置中添加电台以在此处查看。",
   "@noRadioStationsHint": {
@@ -1059,7 +1150,7 @@
   },
   "storagePermissionRequired": "需要存储权限才能扫描本地文件",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "在您的设备上未找到音乐文件",
   "@noMusicFilesFound": {
@@ -1068,7 +1159,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "移除",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "设置评分失败：{error}",
   "@failedToSetRating": {
@@ -1202,6 +1293,14 @@
   "artistDataNotFound": "未找到艺术家",
   "@artistDataNotFound": {
     "description": "Error state on the artist screen when artist data fails to load"
+  },
+  "addedArtistToQueue": "添加艺术家到待播列表",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "添加艺术家到待播列表失败",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
   },
   "@_CAST_DLNA": {},
   "casting": "投射中",
@@ -1463,6 +1562,10 @@
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
   },
+  "transcodingEnableSubtitle": "使用较低音质，减少流量消耗",
+  "@transcodingEnableSubtitle": {
+    "description": "Subtitle for the enable transcoding toggle"
+  },
   "transcodingMobileQualitySubtitleSmart": "在移动数据上自动使用",
   "@transcodingMobileQualitySubtitleSmart": {
     "description": "Mobile quality subtitle when smart mode is on"
@@ -1478,6 +1581,10 @@
   },
   "@sectionBpmAnalysis": {
     "description": "Storage settings section header for BPM analysis"
+  },
+  "imageCacheTitle": "图片缓存",
+  "@imageCacheTitle": {
+    "description": "Toggle title for image (album art) cache"
   },
   "musicCacheTitle": "音乐缓存",
   "@musicCacheTitle": {
@@ -1501,5 +1608,19 @@
   "sectionAboutDeveloper": "开发者",
   "@sectionAboutDeveloper": {
     "description": "About screen developer section header"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "enableLrcLibFallback": "从 LRCLIB 获取歌词",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+  "lrcLibFallbackSubtitle": "当服务器未提供歌词时，自动从 LRCLIB 搜索",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
   }
 }
