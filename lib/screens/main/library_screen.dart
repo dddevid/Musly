@@ -15,6 +15,7 @@ import 'library_search_delegate.dart';
 import 'package:musly/screens/detail/artist_screen.dart';
 import 'package:musly/screens/media/radio_screen.dart';
 import 'package:musly/screens/media/downloads_screen.dart';
+import 'package:musly/screens/media/song_collection_screen.dart';
 import 'package:musly/screens/auth/add_server_screen.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/services/offline_service.dart';
@@ -42,6 +43,7 @@ enum _SortOption {
 enum _LibraryItemType {
   likedSongs,
   downloadedSongs,
+  allSongs,
   radioStations,
   likedAlbums,
   playlist,
@@ -354,6 +356,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
 
     if (_selectedFilter == null && !isYoutube) {
+      items.add(
+        _LibraryItem(
+          type: _LibraryItemType.allSongs,
+          title: l10n?.songs ?? 'All Songs',
+          subtitle: '${libraryProvider.cachedAllSongs.length} ${l10n?.songs?.toLowerCase() ?? 'songs'}',
+          onTap: () => _navigate(context, const AllSongsScreen()),
+        ),
+      );
       items.add(
         _LibraryItem(
           type: _LibraryItemType.radioStations,
@@ -802,6 +812,35 @@ class _LibraryScreenState extends State<LibraryScreen> {
           onTap: item.onTap,
         );
 
+      case _LibraryItemType.allSongs:
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              CupertinoIcons.music_note_list,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
+            ),
+          ),
+          title: Text(
+            item.title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            item.subtitle,
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          onTap: item.onTap,
+        );
+
       case _LibraryItemType.radioStations:
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -1019,6 +1058,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
             child: const Center(
               child: Icon(CupertinoIcons.arrow_down_circle_fill,
                   color: Colors.white, size: 36),
+            ),
+          ),
+          onTap: item.onTap,
+        );
+
+      case _LibraryItemType.allSongs:
+        return _buildGridItemCard(
+          title: item.title,
+          subtitle: item.subtitle,
+          customArtwork: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Icon(CupertinoIcons.music_note_list,
+                  color: Theme.of(context).colorScheme.primary, size: 36),
             ),
           ),
           onTap: item.onTap,

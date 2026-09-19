@@ -208,6 +208,11 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
           result.sort((a, b) => (b.duration ?? 0).compareTo(a.duration ?? 0));
           break;
         case SongSortOption.recentlyAdded:
+          result.sort((a, b) {
+            final dateA = a.created ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final dateB = b.created ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return dateB.compareTo(dateA);
+          });
           break;
       }
     }
@@ -310,6 +315,10 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
                         PopupMenuItem(
                           value: SongSortOption.albumAsc,
                           child: Text(l10n.sortByAlbumAZ),
+                        ),
+                        PopupMenuItem(
+                          value: SongSortOption.recentlyAdded,
+                          child: Text(l10n.recentlyAdded),
                         ),
                         PopupMenuItem(
                           value: SongSortOption.duration,
