@@ -2199,41 +2199,26 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _isManuallyPaused = true;
     _wasPlayingBeforeInterruption = false;
 
+    _isPlaying = false;
+    notifyListeners();
+    _updateAndroidAuto();
+
     if (_jukeboxService.enabled) {
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
       await _jukeboxService.pause(_subsonicService);
-      return;
     }
     if (_castService.isConnected) {
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
       await _castService.pause();
-      return;
-    } else if (_upnpService.isConnected) {
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
+    }
+    if (_upnpService.isConnected) {
       await _upnpService.pause();
-      return;
-    } else {
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
+    }
 
-      try {
-        await _fadeOut(onComplete: () async {
-          await _audioPlayer.pause();
-        });
-      } catch (e) {
+    try {
+      await _fadeOut(onComplete: () async {
         await _audioPlayer.pause();
-      }
-
-      _isPlaying = false;
-      notifyListeners();
-      _updateAndroidAuto();
+      });
+    } catch (e) {
+      await _audioPlayer.pause();
     }
   }
 
