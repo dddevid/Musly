@@ -53,15 +53,26 @@ class _ArtistScreenState extends State<ArtistScreen> {
             .where((s) => s.artistId == widget.artistId)
             .toList();
       } else {
-        try {
-          artist = await subsonicService.getArtist(widget.artistId);
-        } catch (e) {
+        final artistFuture = subsonicService.getArtist(widget.artistId).catchError((e) {
           debugPrint('[ArtistScreen] getArtist failed: $e – trying fallbacks');
-        }
+          throw e;
+        }).then((val) => val).catchError((_) => null);
 
-        try {
-          _artistInfo = await subsonicService.getArtistInfo(widget.artistId);
-        } catch (_) {}
+        final infoFuture = subsonicService.getArtistInfo(widget.artistId).catchError((_) => null);
+        final topSongsFuture = subsonicService.getArtistTopSongs(widget.artistId).catchError((_) => <Song>[]);
+        final albumsFuture = subsonicService.getArtistAlbums(widget.artistId).catchError((_) => <Album>[]);
+
+        final results = await Future.wait([
+          artistFuture,
+          infoFuture,
+          topSongsFuture,
+          albumsFuture,
+        ]);
+
+        artist = results[0] as Artist?;
+        _artistInfo = results[1] as ArtistInfo?;
+        topSongs = results[2] as List<Song>? ?? [];
+        albums = results[3] as List<Album>? ?? [];
 
         if (artist == null) {
           final cached = libraryProvider.artists.where(
@@ -82,34 +93,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
           }
         }
 
-        try {
-          topSongs = await subsonicService.getArtistTopSongs(widget.artistId);
-        } catch (_) {}
-        try {
-          albums = await subsonicService.getArtistAlbums(widget.artistId);
-        } catch (_) {}
-
         if (albums.isNotEmpty) {
           artist ??= Artist(
             id: widget.artistId,
             name: albums.first.artist ?? 'Unknown Artist',
           );
-          final topSongIds = topSongs.map((s) => s.id).toSet();
-          final seenIds = {...topSongIds};
-          const chunkSize = 5;
-          final allAlbumSongs = <Song>[];
-          for (var i = 0; i < albums.length; i += chunkSize) {
-            final chunk =
-                albums.sublist(i, (i + chunkSize).clamp(0, albums.length));
-            try {
-              final results = await Future.wait(
-                  chunk.map((a) => subsonicService.getAlbumSongs(a.id)));
-              allAlbumSongs.addAll(results
-                  .expand((songs) => songs)
-                  .where((s) => seenIds.add(s.id)));
-            } catch (_) {}
-          }
-          topSongs = [...topSongs, ...allAlbumSongs];
         }
       }
 
