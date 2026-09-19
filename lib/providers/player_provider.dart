@@ -2839,7 +2839,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         _transcodingService.enabled ? _transcodingService.format : null;
     final url = _subsonicService.getStreamUrl(song.id,
         maxBitRate: maxBitRate, format: format);
-    if (_transcodingService.enabled) {
+    if (_transcodingService.enabled && !_gaplessEnabled) {
       final cacheDir = await getTemporaryDirectory();
       final cacheFile = File(
         '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
@@ -2980,6 +2980,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _currentSong = _queue[_currentIndex];
     _lastPreloadedSongId = null;
     _position = Duration.zero;
+    if (_currentSong?.duration != null) {
+      _duration = Duration(seconds: _currentSong!.duration!);
+    } else {
+      _duration = Duration.zero;
+    }
     _resolvedArtworkUrl = null;
 
     _resetScrobbleTracking(_currentSong!);
