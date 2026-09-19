@@ -1317,7 +1317,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           debugPrint(
               '[Player] ${_isPlaying ? '▶ Playing' : '⏸ Paused'} — "${_currentSong?.title ?? 'unknown'}" (${state.processingState.name})');
 
-          if (_isPlaying && Platform.isWindows && !_isRenderingRemotely) {
+          if (_isPlaying && (Platform.isWindows || Platform.isLinux || Platform.isMacOS) && !_isRenderingRemotely) {
             _windowsPositionTimer?.cancel();
             _lastPolledPosition = null;
             _windowsPositionTimer = Timer.periodic(
