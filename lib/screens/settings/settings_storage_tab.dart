@@ -41,6 +41,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   String _totalCacheSize = '0 B';
   int _parallelDownloads = 3;
   bool _keepScreenOn = true;
+  bool _autoDownloadFavorites = false;
 
   @override
   void initState() {
@@ -79,6 +80,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       _bpmCacheEnabled = _cacheSettings.getBpmCacheEnabled();
       _parallelDownloads = _offlineService.getParallelDownloadsCount();
       _keepScreenOn = _offlineService.getKeepScreenOn();
+      _autoDownloadFavorites = _offlineService.getAutoDownloadFavorites();
     });
   }
 
@@ -165,6 +167,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
             _buildParallelDownloadsTile(),
             const SettingsDivider(),
             _buildKeepScreenOnTile(),
+            const SettingsDivider(),
+            _buildAutoDownloadFavoritesTile(),
             const SettingsDivider(),
             _buildOfflineInfo(),
             const SettingsDivider(),
@@ -500,6 +504,39 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
     );
   }
 
+  Widget _buildAutoDownloadFavoritesTile() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFE91E63), Color(0xFFF06292)],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(CupertinoIcons.heart_solid, color: Colors.white, size: 18),
+      ),
+      title: const Text('Auto Download Favorites',
+          style: TextStyle(fontSize: 16)),
+      subtitle: Text(
+        'Automatically download songs when added to favorites',
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _autoDownloadFavorites,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
+        onChanged: _toggleAutoDownloadFavorites,
+      ),
+    );
+  }
+
   Widget _buildParallelDownloadsTile() {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
@@ -795,6 +832,11 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         SnackBar(content: Text(l10n.audioCacheCleared)),
       );
     }
+  }
+
+  void _toggleAutoDownloadFavorites(bool value) async {
+    setState(() => _autoDownloadFavorites = value);
+    await _offlineService.setAutoDownloadFavorites(value);
   }
 
   void _clearImageCache() async {

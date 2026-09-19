@@ -513,6 +513,12 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
         }
       } else {
         await subsonicService.star(id: widget.song.id);
+        try {
+          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          await OfflineService().autoDownloadIfEnabled(widget.song, subsonicService, libraryProvider);
+        } catch (e) {
+          await OfflineService().autoDownloadIfEnabled(widget.song, subsonicService, null);
+        }
         setState(() {
           _isStarred = true;
         });

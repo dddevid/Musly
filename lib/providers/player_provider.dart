@@ -3085,6 +3085,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         await _subsonicService.unstar(id: newSong.id);
       } else {
         await _subsonicService.star(id: newSong.id);
+        await _offlineService.autoDownloadIfEnabled(
+            newSong, _subsonicService, _libraryProvider);
       }
       _libraryProvider?.loadStarred();
     } catch (e) {
@@ -3101,6 +3103,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         await _subsonicService.unstar(id: song.id);
       } else {
         await _subsonicService.star(id: song.id);
+        await _offlineService.autoDownloadIfEnabled(
+            song, _subsonicService, _libraryProvider);
       }
       _libraryProvider?.loadStarred();
 

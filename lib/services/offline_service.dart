@@ -87,6 +87,7 @@ class OfflineService {
   static const String _keyParallelDownloads = 'parallel_downloads_count';
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
   static const String _keyCustomDownloadPath = 'offline_custom_download_path';
+  static const String _keyAutoDownloadFavorites = 'offline_auto_download_favorites';
 
   static const int _defaultParallelDownloads = 3;
   static const int _maxParallelDownloads = 5;
@@ -529,6 +530,24 @@ class OfflineService {
 
   bool getKeepScreenOn() {
     return _prefs?.getBool(_keyKeepScreenOn) ?? true;
+  }
+
+  bool getAutoDownloadFavorites() {
+    return _prefs?.getBool(_keyAutoDownloadFavorites) ?? false;
+  }
+
+  Future<void> setAutoDownloadFavorites(bool value) async {
+    if (_prefs == null) await initialize();
+    await _prefs?.setBool(_keyAutoDownloadFavorites, value);
+  }
+
+  Future<void> autoDownloadIfEnabled(Song song, SubsonicService subsonicService, dynamic libraryProvider) async {
+    if (getAutoDownloadFavorites()) {
+      if (libraryProvider != null) {
+        libraryProvider.cacheSongLocally(song);
+      }
+      await downloadSong(song, subsonicService);
+    }
   }
 
   Future<void> startBackgroundDownload(

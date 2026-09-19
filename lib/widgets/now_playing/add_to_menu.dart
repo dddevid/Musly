@@ -5,6 +5,8 @@ import '../../models/song.dart';
 import '../../models/playlist.dart';
 import '../../services/subsonic_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/offline_service.dart' as musly_offline_service;
+import '../../providers/library_provider.dart' as musly_library_provider;
 
 class AddToMenu extends StatelessWidget {
   final Song song;
@@ -124,6 +126,16 @@ class AddToMenu extends StatelessWidget {
                   await subsonic.unstar(id: song.id);
                 } else {
                   await subsonic.star(id: song.id);
+                  // Import LibraryProvider and OfflineService dynamically or manually
+                  try {
+                    final libraryProvider =
+                        Provider.of<musly_library_provider.LibraryProvider>(context, listen: false);
+                    await musly_offline_service.OfflineService().autoDownloadIfEnabled(
+                        song, subsonic, libraryProvider);
+                  } catch (e) {
+                    await musly_offline_service.OfflineService().autoDownloadIfEnabled(
+                        song, subsonic, null);
+                  }
                 }
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
