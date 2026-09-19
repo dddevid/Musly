@@ -332,6 +332,7 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
     });
 
     try {
+      Provider.of<LibraryProvider>(context, listen: false).cacheSongLocally(widget.song);
       final success = await _offlineService.downloadSong(
         widget.song,
         subsonicService,

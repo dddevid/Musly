@@ -341,6 +341,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     final offlineService = OfflineService();
     final subsonicService =
         Provider.of<SubsonicService>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+    libraryProvider.cacheSongsLocally(songs);
     await offlineService.initialize();
     offlineService.queuePlaylistDownload(
         widget.playlistId, songs, subsonicService);

@@ -844,6 +844,21 @@ class LibraryProvider extends ChangeNotifier {
     return await _subsonicService.search(query);
   }
 
+  Future<void> cacheSongLocally(Song song) async {
+    await cacheSongsLocally([song]);
+  }
+
+  Future<void> cacheSongsLocally(List<Song> songs) async {
+    final newSongs = songs.where((s) => !_cachedAllSongs.any((c) => c.id == s.id)).toList();
+    if (newSongs.isNotEmpty) {
+      _cachedAllSongs.addAll(newSongs);
+      if (!_subsonicService.isYoutube) {
+        await _db.insertSongsBatch(newSongs);
+      }
+      notifyListeners();
+    }
+  }
+
   SearchResult _searchLocal(String query) {
     final lowerQuery = query.toLowerCase();
     final songs = _cachedAllSongs

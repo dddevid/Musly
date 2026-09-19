@@ -115,6 +115,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
     final offlineService = OfflineService();
     final subsonicService =
         Provider.of<SubsonicService>(context, listen: false);
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+
+    libraryProvider.cacheSongsLocally(_songs);
+
     await offlineService.initialize();
     offlineService.queuePlaylistDownload(_album!.id, _songs, subsonicService);
     if (mounted) {

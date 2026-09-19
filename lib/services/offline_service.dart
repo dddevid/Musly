@@ -436,7 +436,7 @@ class OfflineService {
         },
       );
 
-      if (!isSongDownloaded(song.id)) {
+      if (!_isFileValid(song.id, File(filePath))) {
         throw Exception('Downloaded file for ${song.id} failed size check');
       }
       final downloadedIds = getDownloadedSongIds();
