@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/services/audio_handler.dart';
+import 'package:audio_service/audio_service.dart';
 
 import '../bootstrap.dart';
 
@@ -41,6 +42,8 @@ void main() {
       position: const Duration(seconds: 10),
     );
     expect(handler.playbackState.value.playing, isFalse);
+    expect(handler.playbackState.value.systemActions, contains(MediaAction.setShuffleMode));
+    expect(handler.playbackState.value.systemActions, contains(MediaAction.setRepeatMode));
   });
 
   test('repeated remote updates keep working', () {
