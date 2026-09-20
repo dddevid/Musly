@@ -344,7 +344,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   bool _isLargeScreen(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 650;
+    final size = MediaQuery.of(context).size;
+    return size.width >= 650 || size.shortestSide >= 600;
   }
 
   @override

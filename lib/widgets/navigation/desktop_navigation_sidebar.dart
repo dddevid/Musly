@@ -30,10 +30,16 @@ class DesktopNavigationSidebar extends StatefulWidget {
 }
 
 class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
-  bool _isCollapsed = false;
+  bool? _userCollapsed;
   bool _isPushing = false;
 
-  void _toggleCollapse() => setState(() => _isCollapsed = !_isCollapsed);
+  bool get _isCollapsed {
+    if (_userCollapsed != null) return _userCollapsed!;
+    // Se la larghezza è minore di 900, collassa automaticamente
+    return MediaQuery.of(context).size.width < 900;
+  }
+
+  void _toggleCollapse() => setState(() => _userCollapsed = !_isCollapsed);
 
   void _navigateToPlaylist(Playlist playlist) {
     final route = MaterialPageRoute(
