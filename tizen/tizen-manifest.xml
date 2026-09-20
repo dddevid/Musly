@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.devid.musly" version="1.0.0" api-version="6.0" xmlns="http://tizen.org/ns/packages">
+    <profile name="common"/>
+    <ui-application appid="com.devid.musly" exec="Runner.dll" type="dotnet" multiple="false" nodisplay="false" taskmanage="true">
+        <label>musly</label>
+        <icon>ic_launcher.png</icon>
+        <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true"/>
+        <metadata key="http://tizen.org/metadata/prefer_nuget_cache" value="true"/>
+    </ui-application>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+</manifest>
