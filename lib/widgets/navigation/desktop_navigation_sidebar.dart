@@ -110,23 +110,27 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final width = _isCollapsed ? 72.0 : 240.0;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       width: width,
-      decoration: const BoxDecoration(
-        color: Color(0xFF000000),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF000000) : theme.scaffoldBackgroundColor,
         border: Border(
-          right: BorderSide(color: Color(0xFF1A1A1A), width: 1),
+          right: BorderSide(color: isDark ? const Color(0xFF1A1A1A) : theme.dividerColor, width: 1),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _LogoRow(isCollapsed: _isCollapsed),
-          const SizedBox(height: 6),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _LogoRow(isCollapsed: _isCollapsed),
+            const SizedBox(height: 6),
           _NavItem(
             icon: Icons.home_outlined,
             activeIcon: Icons.home_rounded,
@@ -198,7 +202,7 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -229,13 +233,13 @@ class _LogoRow extends StatelessWidget {
                   child: Image.asset('assets/logo.png', width: 32, height: 32),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Musly',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                       letterSpacing: -0.3,
                     ),
                     maxLines: 1,
@@ -274,13 +278,15 @@ class _NavItemState extends State<_NavItem> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? Colors.white : Colors.black;
     final textColor = widget.isSelected
-        ? Colors.white
-        : (_isHovered ? Colors.white : const Color(0xFF9CA3AF));
+        ? activeColor
+        : (_isHovered ? activeColor : const Color(0xFF9CA3AF));
     final bgColor = widget.isSelected
-        ? Colors.white.withValues(alpha: 0.10)
+        ? activeColor.withValues(alpha: 0.10)
         : (_isHovered
-            ? Colors.white.withValues(alpha: 0.05)
+            ? activeColor.withValues(alpha: 0.05)
             : Colors.transparent);
 
     return MouseRegion(
@@ -599,8 +605,9 @@ class _PlaylistTileState extends State<_PlaylistTile> {
                     Text(
                       widget.playlist.name,
                       style: TextStyle(
-                        color:
-                            _isHovered ? Colors.white : const Color(0xFFE5E7EB),
+                        color: _isHovered 
+                            ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black) 
+                            : (Theme.of(context).brightness == Brightness.dark ? const Color(0xFFE5E7EB) : Colors.black87),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -643,6 +650,10 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hoverColor = isDark ? Colors.white : Colors.black;
+    final defaultColor = const Color(0xFF9CA3AF);
+    
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -651,7 +662,7 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
         child: InkWell(
           onTap: widget.onTap,
           borderRadius: BorderRadius.circular(8),
-          hoverColor: Colors.white.withValues(alpha: 0.05),
+          hoverColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
           child: Container(
             height: 40,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -663,23 +674,20 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
                 ? Icon(
                     Icons.logout_rounded,
                     size: 20,
-                    color: _isHovered ? Colors.white : const Color(0xFF9CA3AF),
+                    color: _isHovered ? hoverColor : defaultColor,
                   )
                 : Row(
                     children: [
                       Icon(
                         Icons.logout_rounded,
                         size: 20,
-                        color:
-                            _isHovered ? Colors.white : const Color(0xFF9CA3AF),
+                        color: _isHovered ? hoverColor : defaultColor,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'Disconnect',
                         style: TextStyle(
-                          color: _isHovered
-                              ? Colors.white
-                              : const Color(0xFF9CA3AF),
+                          color: _isHovered ? hoverColor : defaultColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),

@@ -167,11 +167,11 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF181818),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF181818) : Colors.white,
         border: Border(
           top: BorderSide(
-            color: Color(0xFF282828),
+            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF282828) : const Color(0xFFE5E5EA),
             width: 1,
           ),
         ),
@@ -195,10 +195,10 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                     children: [
                       Text(
                         currentSong.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

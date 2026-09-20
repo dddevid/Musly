@@ -10,9 +10,7 @@ import '../screens/media/album_collection_screen.dart';
 import '../screens/media/song_collection_screen.dart';
 
 class NavigationHelper {
-  static final GlobalKey<NavigatorState> mobileNavigatorKey =
-      GlobalKey<NavigatorState>();
-  static final GlobalKey<NavigatorState> desktopNavigatorKey =
+  static final GlobalKey<NavigatorState> appNavigatorKey =
       GlobalKey<NavigatorState>();
 
   static final ValueNotifier<bool> isDesktopQueueOpen =
@@ -39,8 +37,7 @@ class NavigationHelper {
     return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   }
 
-  static GlobalKey<NavigatorState> get navigatorKey =>
-      isDesktop ? desktopNavigatorKey : mobileNavigatorKey;
+  static GlobalKey<NavigatorState> get navigatorKey => appNavigatorKey;
 
   static Widget? _currentTopWidget;
   static int _lastPushTimestamp = 0;

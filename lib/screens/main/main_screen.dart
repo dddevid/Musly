@@ -343,9 +343,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  bool get _isDesktop {
-    if (kIsWeb) return false;
-    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  bool _isLargeScreen(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 650;
   }
 
   @override
@@ -353,7 +352,7 @@ class _MainScreenState extends State<MainScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isLocalMode = authProvider.isLocalOnlyMode;
 
-    if (_isDesktop) {
+    if (_isLargeScreen(context)) {
       final content = Scaffold(
         body: Column(
           children: [
@@ -364,14 +363,14 @@ class _MainScreenState extends State<MainScreen> {
                     selectedIndex: _currentIndex,
                     onDestinationSelected: (index) {
                       setState(() => _currentIndex = index);
-                      NavigationHelper.desktopNavigatorKey.currentState
+                      NavigationHelper.appNavigatorKey.currentState
                           ?.popUntil((route) => route.isFirst);
                     },
-                    navigatorKey: NavigationHelper.desktopNavigatorKey,
+                    navigatorKey: NavigationHelper.appNavigatorKey,
                   ),
                   Expanded(
                     child: Navigator(
-                      key: NavigationHelper.desktopNavigatorKey,
+                      key: NavigationHelper.appNavigatorKey,
                       onGenerateRoute: (settings) {
                         return PageRouteBuilder(
                           pageBuilder: (ctx, anim, _) => LazyIndexedStack(
@@ -431,8 +430,11 @@ class _MainScreenState extends State<MainScreen> {
               selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
               builder: (context, hasCurrentSong, _) {
                 return hasCurrentSong
-                    ? DesktopPlayerBar(
-                        navigatorKey: NavigationHelper.desktopNavigatorKey,
+                    ? SafeArea(
+                        top: false,
+                        child: DesktopPlayerBar(
+                          navigatorKey: NavigationHelper.appNavigatorKey,
+                        ),
                       )
                     : const SizedBox.shrink();
               },
@@ -569,7 +571,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 Expanded(
                   child: Navigator(
-                    key: NavigationHelper.mobileNavigatorKey,
+                    key: NavigationHelper.appNavigatorKey,
                     onGenerateRoute: (settings) {
                       return MaterialPageRoute(
                         builder: (_) => LazyIndexedStack(
@@ -599,7 +601,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _handleBackButton() {
-    final navigatorState = NavigationHelper.mobileNavigatorKey.currentState;
+    final navigatorState = NavigationHelper.appNavigatorKey.currentState;
     if (navigatorState != null && navigatorState.canPop()) {
       navigatorState.pop();
       return;
@@ -668,7 +670,7 @@ class _MainScreenState extends State<MainScreen> {
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   final navigatorState =
-                      NavigationHelper.mobileNavigatorKey.currentState;
+                      NavigationHelper.appNavigatorKey.currentState;
                   navigatorState?.popUntil((route) => route.isFirst);
 
                   if (idx == 2) {
@@ -750,7 +752,7 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex,
           onTap: (index) {
             final navigatorState =
-                NavigationHelper.mobileNavigatorKey.currentState;
+                NavigationHelper.appNavigatorKey.currentState;
             navigatorState?.popUntil((route) => route.isFirst);
 
             if (index == 2) {
