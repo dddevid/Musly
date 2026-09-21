@@ -337,9 +337,49 @@ jobs:
           if-no-files-found: error
 
   # Create Release with all artifacts
+  # Tizen Build
+  build-tizen:
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Setup Tizen Studio CLI
+        run: |
+          wget http://download.tizen.org/sdk/Installer/tizen-studio_5.1/web-cli_Tizen_Studio_5.1_ubuntu-64.bin -O tizen_installer.bin
+          chmod +x tizen_installer.bin
+          ./tizen_installer.bin --accept-license ~/tizen-studio
+          echo "~/tizen-studio/tools/ide/bin" >> $GITHUB_PATH
+          
+      - name: Setup Flutter Tizen
+        run: |
+          dart pub global activate flutter_tizen
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          
+      - name: Build Tizen Native (TPK)
+        run: |
+          export TIZEN_SDK=$HOME/tizen-studio
+          flutter-tizen build tpk --release
+          
+      - name: Upload Tizen Native Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: tizen-native-build
+          path: build/tizen/tpk/*.tpk
+          if-no-files-found: ignore
+
   release:
     runs-on: ubuntu-latest
-    needs: [build-android, build-ios, build-windows, build-linux, build-macos]
+    needs: [build-android, build-ios, build-windows, build-linux, build-macos, build-tizen]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -387,6 +427,13 @@ jobs:
           name: macos-dmg
           path: artifacts/macos-dmg/
 
+      - name: Download Tizen Native Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: tizen-native-build
+          path: artifacts/tizen-native/
+        continue-on-error: true
+
       - name: Package Windows
         run: |
           if [ ! -f "artifacts/windows/musly-setup.exe" ]; then
@@ -433,6 +480,9 @@ jobs:
             **Linux:**
             - `musly-linux-x64.tar.gz` (extract and run musly)
 
+            **Tizen Smart TV:**
+            - `*.tpk` (Native version for Tizen 4.0+ / 2018 or newer TVs)
+
             ### 📝 Changelog
             See [CHANGELOG.md](https://github.com/dddevid/Musly/blob/master/CHANGELOG.md)
 
@@ -445,5 +495,6 @@ jobs:
             musly-windows.zip
             musly-linux-x64.tar.gz
             musly-macos.dmg
+            artifacts/tizen-native/*.tpk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
