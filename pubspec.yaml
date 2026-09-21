@@ -59,6 +59,21 @@ dependencies:
   sqflite: ^2.3.0
   wakelock_plus: ^1.4.0
   flutter_secure_storage: ^10.3.1
+  shared_preferences_tizen: any
+  path_provider_tizen: any
+  sqflite_tizen: any
+  url_launcher_tizen: any
+  wakelock_plus_tizen: any
+  flutter_secure_storage_tizen: any
+  connectivity_plus_tizen: any
+  permission_handler_tizen: any
+  package_info_plus_tizen: any
+  audioplayers_tizen:
+    git:
+      url: https://github.com/flutter-tizen/plugins.git
+      path: packages/audioplayers
+  video_player_tizen: ^2.5.15
+  audioplayers: 6.1.1
 dependency_overrides:
   ffi: ^2.1.4
 dev_dependencies:

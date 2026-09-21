@@ -549,6 +549,26 @@ class StorageService {
     await prefs.setBool('milestone_50_songs_pending', pending);
   }
 
+  Future<String?> getClientId() async {
+    final prefs = await _prefs;
+    return prefs.getString('spotify_client_id');
+  }
+
+  Future<void> setClientId(String id) async {
+    final prefs = await _prefs;
+    await prefs.setString('spotify_client_id', id);
+  }
+
+  Future<String?> getClientSecret() async {
+    final prefs = await _prefs;
+    return prefs.getString('spotify_client_secret');
+  }
+
+  Future<void> setClientSecret(String secret) async {
+    final prefs = await _prefs;
+    await prefs.setString('spotify_client_secret', secret);
+  }
+
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();

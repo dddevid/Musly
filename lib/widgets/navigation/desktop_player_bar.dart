@@ -8,6 +8,11 @@ import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/connect/connect_devices_modal.dart';
+import 'package:musly/services/subsonic_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:musly/screens/player/now_playing_screen.dart';
+import 'package:musly/services/tv_detection_service.dart';
+import 'tv_remote_scope.dart';
 
 class DesktopPlayerBar extends StatefulWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -50,74 +55,84 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
         children: [
           Expanded(
             flex: 3,
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+            child: TvFocusableCard(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                      final isTv = Provider.of<TvDetectionService>(context, listen: false).isTvMode;
+                      if (isTv) {
+                        // Radio doesn't use NowPlayingScreen on Mobile in exactly the same way, but we could adapt it.
+                        // For now we just make it focusable to navigate left/right.
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Icon(Icons.radio_rounded,
+                              color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                station.name,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFA243C),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFFA243C)
+                                              .withValues(alpha: 0.5),
+                                          blurRadius: 4,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'LIVE',
+                                    style: TextStyle(
+                                      color: Color(0xFFB3B3B3),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Icon(Icons.radio_rounded,
-                      color: Colors.white, size: 28),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        station.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFA243C),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFA243C)
-                                      .withValues(alpha: 0.5),
-                                  blurRadius: 4,
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Color(0xFFB3B3B3),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             flex: 4,
             child: Selector<PlayerProvider, bool>(
@@ -132,14 +147,15 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
                       onTap: provider.togglePlayPause,
                     ),
                     const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(
+                    TvFocusableCard(
+                      onTap: provider.stop,
+                      borderRadius: BorderRadius.circular(20),
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
                         Icons.stop_rounded,
                         size: 22,
                         color: Color(0xFFB3B3B3),
                       ),
-                      onPressed: provider.stop,
-                      tooltip: 'Stop',
                     ),
                   ],
                 );
@@ -182,40 +198,82 @@ class _DesktopPlayerBarState extends State<DesktopPlayerBar> {
             flex: 3,
             child: Row(
               children: [
-                AlbumArtwork(
-                  coverArt: currentSong.coverArt,
-                  size: 56,
-                  borderRadius: 8,
-                ),
-                const SizedBox(width: 14),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentSong.title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                  child: TvFocusableCard(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      final isTv = Provider.of<TvDetectionService>(context, listen: false).isTvMode;
+                      if (isTv) {
+                        final subsonic = Provider.of<SubsonicService>(context, listen: false);
+                        final coverUrl = currentSong.coverArt != null
+                            ? subsonic.getCoverArtUrl(currentSong.coverArt, size: 600)
+                            : null;
+                        final imageProvider = (coverUrl != null && coverUrl.isNotEmpty)
+                            ? CachedNetworkImageProvider(coverUrl) as ImageProvider
+                            : const AssetImage('assets/logo.png') as ImageProvider;
+                        
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useRootNavigator: true,
+                          backgroundColor: Colors.transparent,
+                          constraints: const BoxConstraints(maxWidth: double.infinity),
+                          builder: (ctx) => NowPlayingScreen(
+                            topPadding: MediaQuery.of(context).padding.top,
+                            image: imageProvider,
+                            title: currentSong.title,
+                            artist: (currentSong.artistParticipants?.isNotEmpty == true
+                                    ? currentSong.artistParticipants!
+                                        .map((a) => a.name)
+                                        .join(', ')
+                                    : currentSong.artist) ??
+                                '',
+                            heroTag: 'cover_${currentSong.id}',
+                            song: currentSong,
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        AlbumArtwork(
+                          coverArt: currentSong.coverArt,
+                          size: 56,
+                          borderRadius: 8,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      if (currentSong.artist != null ||
-                          currentSong.artistParticipants != null)
-                        MultiArtistWidget(
-                          artists: currentSong.artistParticipants,
-                          artistFallback: currentSong.artist,
-                          artistIdFallback: currentSong.artistId,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFFB3B3B3),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                currentSong.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              if (currentSong.artist != null ||
+                                  currentSong.artistParticipants != null)
+                                MultiArtistWidget(
+                                  artists: currentSong.artistParticipants,
+                                  artistFallback: currentSong.artist,
+                                  artistIdFallback: currentSong.artistId,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFFB3B3B3),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 Selector<PlayerProvider, bool>(
@@ -347,11 +405,12 @@ class _PlayPauseCircleState extends State<_PlayPauseCircle> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
+    return TvFocusableCard(
+      onTap: widget.onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedScale(
           scale: _isHovered ? 1.05 : 1.0,
           duration: const Duration(milliseconds: 150),
@@ -395,29 +454,30 @@ class _PlayerControls extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
-              icon: Icon(
+            TvFocusableCard(
+              onTap: provider.toggleShuffle,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.all(8),
+              child: Icon(
                 Icons.shuffle_rounded,
                 size: 18,
                 color: shuffleEnabled
                     ? const Color(0xFFFA243C)
                     : const Color(0xFFB3B3B3),
               ),
-              onPressed: provider.toggleShuffle,
-              tooltip: AppLocalizations.of(context)!.enableShuffle,
-              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
+            TvFocusableCard(
+              onTap: hasPrevious ? provider.skipPrevious : null,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.all(8),
+              child: Icon(
                 Icons.skip_previous_rounded,
                 size: 22,
                 color: hasPrevious
                     ? Colors.white.withValues(alpha: 0.6)
                     : Colors.white.withValues(alpha: 0.2),
               ),
-              onPressed: hasPrevious ? provider.skipPrevious : null,
-              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 12),
             _PlayPauseCircle(
@@ -425,20 +485,24 @@ class _PlayerControls extends StatelessWidget {
               onTap: provider.togglePlayPause,
             ),
             const SizedBox(width: 12),
-            IconButton(
-              icon: Icon(
+            TvFocusableCard(
+              onTap: hasNext ? provider.skipNext : null,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.all(8),
+              child: Icon(
                 Icons.skip_next_rounded,
                 size: 22,
                 color: hasNext
                     ? Colors.white.withValues(alpha: 0.6)
                     : Colors.white.withValues(alpha: 0.2),
               ),
-              onPressed: hasNext ? provider.skipNext : null,
-              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
+            TvFocusableCard(
+              onTap: provider.toggleRepeat,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.all(8),
+              child: Icon(
                 repeatMode == RepeatMode.one
                     ? Icons.repeat_one_rounded
                     : Icons.repeat_rounded,
@@ -447,9 +511,6 @@ class _PlayerControls extends StatelessWidget {
                     ? const Color(0xFFFA243C)
                     : const Color(0xFFB3B3B3),
               ),
-              onPressed: provider.toggleRepeat,
-              tooltip: AppLocalizations.of(context)!.enableRepeat,
-              hoverColor: Colors.white.withValues(alpha: 0.1),
             ),
           ],
         );

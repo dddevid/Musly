@@ -22,6 +22,8 @@ import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:musly/services/tv_detection_service.dart';
+import 'tv_now_playing_screen.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final ImageProvider image;
@@ -194,6 +196,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
+    if (isTv) {
+      return TvNowPlayingScreen(
+        image: _currentImageProvider ?? widget.image,
+        title: _lastSong?.title ?? widget.title,
+        artist: _lastSong?.artist ?? widget.artist,
+        song: _lastSong ?? widget.song,
+        bgColors: _bgColors,
+      );
+    }
+
     final accentColor = _bgColors.isNotEmpty ? _bgColors.first : Colors.white;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;

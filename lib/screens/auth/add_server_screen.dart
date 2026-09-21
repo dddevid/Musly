@@ -10,6 +10,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/local_music_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/services/tv_detection_service.dart';
 
 class AddServerScreen extends StatefulWidget {
   final String? initialFamily;
@@ -272,6 +273,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isTv = Provider.of<TvDetectionService>(context, listen: false).isTvMode;
 
     return Scaffold(
       backgroundColor:
@@ -343,7 +345,7 @@ class _AddServerScreenState extends State<AddServerScreen> {
                   isSelected: _selectedFamily == 'jellyfin',
                   isDisabled: false,
                 ),
-                if (!kIsWeb && !Platform.isIOS) ...[
+                if (!kIsWeb && !Platform.isIOS && !isTv) ...[
                   const SizedBox(height: 10),
                   _buildProviderCard(
                     family: 'youtube',
@@ -358,17 +360,19 @@ class _AddServerScreenState extends State<AddServerScreen> {
                     isDisabled: hasYtStream,
                   ),
                 ],
-                const SizedBox(height: 10),
-                _buildProviderCard(
-                  family: 'local',
-                  title: 'Local Files',
-                  subtitle: 'Play audio files stored directly on this device',
-                  icon: CupertinoIcons.folder_fill,
-                  gradient: const [Color(0xFF34C759), Color(0xFF30B0C7)],
-                  badge: 'Offline',
-                  isSelected: _selectedFamily == 'local',
-                  isDisabled: false,
-                ),
+                if (!isTv) ...[
+                  const SizedBox(height: 10),
+                  _buildProviderCard(
+                    family: 'local',
+                    title: 'Local Files',
+                    subtitle: 'Play audio files stored directly on this device',
+                    icon: CupertinoIcons.folder_fill,
+                    gradient: const [Color(0xFF34C759), Color(0xFF30B0C7)],
+                    badge: 'Offline',
+                    isSelected: _selectedFamily == 'local',
+                    isDisabled: false,
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (_errorMessage != null) ...[
                   _buildErrorBanner(isDark),

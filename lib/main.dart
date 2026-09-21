@@ -7,6 +7,8 @@ import 'dart:io';
 import 'dart:async';
 import 'package:window_manager/window_manager.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:safe_device/safe_device.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
@@ -19,7 +21,7 @@ import 'services/transcoding_service.dart';
 import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
-
+import 'services/tizen_just_audio_backend.dart';
 import 'services/tv_detection_service.dart';
 
 import 'package:musly/widgets/dialogs/privacy_policy_dialog.dart';
@@ -155,27 +157,41 @@ void main() async {
     }
   }
 
-  JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
+  try {
+    final isTizen = Platform.operatingSystem == 'tizen' || 
+                    Platform.operatingSystem == 'webos' || 
+                    Platform.environment.containsKey('TIZEN_API_VERSION');
+    if (isTizen) {
+      JustAudioPlatform.instance = TizenJustAudioPlatform();
+    } else {
+      JustAudioMediaKit.ensureInitialized(linux: true, windows: false);
+    }
+  } catch (e) {
+    debugPrint('MediaKit init failed: $e');
+  }
 
   final storageService = StorageService();
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await windowManager.ensureInitialized();
-    final hideTitlebar = await storageService.getHideWindowTitlebar();
-    const windowOptions = WindowOptions(
-      size: Size(1100, 750),
-      minimumSize: Size(800, 560),
-      center: true,
-      titleBarStyle: TitleBarStyle.normal,
-    );
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setMinimumSize(const Size(800, 560));
-      if (hideTitlebar) {
-        await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-      }
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    try {
+      await windowManager.ensureInitialized();
+      final hideTitlebar = await storageService.getHideWindowTitlebar();
+      const windowOptions = WindowOptions(
+        size: Size(1100, 750),
+        minimumSize: Size(800, 560),
+        center: true,
+        titleBarStyle: TitleBarStyle.normal,
+      );
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+        if (hideTitlebar) {
+          await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+        }
+      });
+    } catch (e) {
+      debugPrint('windowManager init failed: $e');
+    }
   }
 
   ImageCacheConfig.configure();
@@ -314,6 +330,7 @@ class MuslyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeService = Provider.of<LocaleService>(context);
     final themeService = Provider.of<ThemeService>(context);
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
@@ -353,7 +370,7 @@ class MuslyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: light,
           darkTheme: dark,
-          themeMode: themeService.themeMode,
+          themeMode: isTv ? ThemeMode.dark : themeService.themeMode,
           scrollBehavior: AppScrollBehavior(),
           navigatorKey: navigatorKey,
           locale: localeService.currentLocale,

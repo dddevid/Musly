@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musly/l10n/app_localizations.dart';
@@ -174,7 +175,18 @@ class LocaleService extends ChangeNotifier {
       _currentLocale = Locale(localeCode);
     }
 
-    await _otaService.init(_currentLocale?.languageCode ?? 'en');
+    // Attempt to detect system locale if none is explicitly saved
+    String fallbackCode = 'en';
+    if (_currentLocale == null) {
+      try {
+        final systemLocale = Platform.localeName.split('_')[0];
+        if (supportedLanguages.containsKey(systemLocale)) {
+          fallbackCode = systemLocale;
+        }
+      } catch (_) {}
+    }
+
+    await _otaService.init(_currentLocale?.languageCode ?? fallbackCode);
     notifyListeners();
 
     syncOtaTranslations(force: false);

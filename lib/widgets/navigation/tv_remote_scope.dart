@@ -61,7 +61,9 @@ class TvFocusableCard extends StatefulWidget {
   final VoidCallback? onLongPress;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final bool autoFocus;
+  final FocusNode? focusNode;
 
   const TvFocusableCard({
     super.key,
@@ -70,7 +72,9 @@ class TvFocusableCard extends StatefulWidget {
     this.onLongPress,
     this.borderRadius,
     this.padding,
+    this.margin,
     this.autoFocus = false,
+    this.focusNode,
   });
 
   @override
@@ -89,6 +93,7 @@ class _TvFocusableCardState extends State<TvFocusableCard> {
 
     return FocusableActionDetector(
       autofocus: widget.autoFocus,
+      focusNode: widget.focusNode,
       onShowFocusHighlight: (focused) => setState(() => _isFocused = focused),
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
@@ -105,6 +110,7 @@ class _TvFocusableCardState extends State<TvFocusableCard> {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           padding: widget.padding,
+          margin: widget.margin,
           transform: isTv && _isFocused
               ? Matrix4.diagonal3Values(1.03, 1.03, 1.0)
               : Matrix4.identity(),
@@ -113,14 +119,14 @@ class _TvFocusableCardState extends State<TvFocusableCard> {
             borderRadius: radius,
             border: _isFocused
                 ? Border.all(
-                    color: isTv ? const Color(0xFFFFD700) : primary,
-                    width: isTv ? 2.5 : 2.0,
+                    color: isTv ? Colors.white : primary,
+                    width: isTv ? 3.0 : 2.0,
                   )
                 : Border.all(color: Colors.transparent, width: 2.0),
             boxShadow: _isFocused && isTv
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      color: Colors.white.withValues(alpha: 0.25),
                       blurRadius: 18,
                       spreadRadius: 2,
                     ),

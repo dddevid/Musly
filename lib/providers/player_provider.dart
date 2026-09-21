@@ -62,7 +62,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   bool _isPlaying = false;
   bool _isLoading = false;
   bool _shuffleEnabled = false;
-  bool _gaplessEnabled = true;
+  bool _gaplessEnabled = Platform.operatingSystem != 'tizen' && Platform.environment['TIZEN_API_VERSION'] == null;
   final List<String> _shuffleHistory = [];
   RepeatMode _repeatMode = RepeatMode.off;
   Duration _position = Duration.zero;

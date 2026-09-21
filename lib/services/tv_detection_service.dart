@@ -32,6 +32,16 @@ class TvDetectionService with ChangeNotifier {
     }
 
     try {
+      final isTizenEnv = Platform.environment.containsKey('TIZEN_API_VERSION') || Platform.environment.containsKey('TIZEN_VERSION');
+      if (Platform.operatingSystem == 'tizen' || Platform.operatingSystem == 'webos' || isTizenEnv) {
+        _isTvMode = true;
+        _initialized = true;
+        debugPrint(
+            '[TvDetectionService] 📺 Tizen/WebOS TV detected natively');
+        notifyListeners();
+        return true;
+      }
+
       if (Platform.isAndroid) {
         final bool? nativeTv = await _channel.invokeMethod<bool>('isTvDevice');
         if (nativeTv == true) {

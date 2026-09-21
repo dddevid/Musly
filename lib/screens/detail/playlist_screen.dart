@@ -5,6 +5,7 @@ import 'package:musly/models/models.dart';
 import 'package:musly/providers/providers.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/services/offline_service.dart';
+import 'package:musly/services/tv_detection_service.dart';
 import 'package:musly/services/favorite_playlists_service.dart';
 import 'package:musly/services/playlist_cover_service.dart';
 import 'package:musly/theme/app_theme.dart';
@@ -781,6 +782,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         child: _PlayButton(
                           icon: CupertinoIcons.play_fill,
                           label: AppLocalizations.of(context)!.play,
+                          autofocus: Provider.of<TvDetectionService>(context, listen: false).isTvMode,
                           onTap: () => _playAll(),
                         ),
                       ),
@@ -928,11 +930,13 @@ class _PlayButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool autofocus;
 
   const _PlayButton({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.autofocus = false,
   });
 
   @override
@@ -944,6 +948,7 @@ class _PlayButton extends StatelessWidget {
       color: accent.withValues(alpha: isDark ? 0.15 : 0.1),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
+        autofocus: autofocus,
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
         child: Padding(

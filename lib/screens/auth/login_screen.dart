@@ -12,6 +12,8 @@ import 'package:musly/services/local_music_service.dart';
 import 'package:musly/services/storage_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/screen_helper.dart';
+import 'package:musly/services/tv_detection_service.dart';
+import 'package:musly/widgets/navigation/tv_remote_scope.dart';
 
 enum _LoginErrorType {
   ssl,
@@ -38,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _serverFocusNode = FocusNode();
   final _usernameFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  final _scrollController = ScrollController();
+  
   bool _useLegacyAuth = false;
   bool _allowSelfSignedCertificates = false;
   bool _obscurePassword = true;
@@ -65,7 +69,35 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.addListener(_clearError);
     _passwordController.addListener(_clearError);
     _profileNameController.addListener(_clearError);
+    
+    _serverFocusNode.addListener(_onTvFocusChange);
+    _usernameFocusNode.addListener(_onTvFocusChange);
+    _passwordFocusNode.addListener(_onTvFocusChange);
+    
     _loadSavedServerFamily();
+  }
+
+  void _onTvFocusChange() {
+    if (!mounted) return;
+    
+    final isTv = Provider.of<TvDetectionService>(context, listen: false).isTvMode;
+    if (isTv) {
+      // Rebuild to apply the extra bottom padding
+      setState(() {});
+      
+      // A small delay lets the TV keyboard animation start, and then we force scroll
+      // the focused field to the top 20% of the screen so it's not covered by the keyboard overlay.
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (!mounted) return;
+        if (_serverFocusNode.hasFocus) {
+          Scrollable.ensureVisible(_serverFocusNode.context!, alignment: 0.15, duration: const Duration(milliseconds: 300));
+        } else if (_usernameFocusNode.hasFocus) {
+          Scrollable.ensureVisible(_usernameFocusNode.context!, alignment: 0.15, duration: const Duration(milliseconds: 300));
+        } else if (_passwordFocusNode.hasFocus) {
+          Scrollable.ensureVisible(_passwordFocusNode.context!, alignment: 0.15, duration: const Duration(milliseconds: 300));
+        }
+      });
+    }
   }
 
   Future<void> _loadSavedServerFamily() async {
@@ -501,14 +533,26 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final isBusy = isLoading || _isScanning;
 
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
+    final bool anyFieldFocused = _serverFocusNode.hasFocus || _usernameFocusNode.hasFocus || _passwordFocusNode.hasFocus;
+    
+    // Add extra padding at the bottom when a field is focused on TV so there's enough room to scroll it up
+    final bottomPadding = (isTv && anyFieldFocused) ? 400.0 : ScreenHelper.loginPadding(context);
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(ScreenHelper.loginPadding(context)),
+            controller: _scrollController,
+            padding: EdgeInsets.fromLTRB(
+              ScreenHelper.loginPadding(context),
+              ScreenHelper.loginPadding(context),
+              ScreenHelper.loginPadding(context),
+              bottomPadding,
+            ),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
+                constraints: BoxConstraints(maxWidth: isTv ? 600 : 480),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -1178,39 +1222,38 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(
                           width: double.infinity,
                           height: 50,
-                          child: ElevatedButton(
-                            onPressed: isLoading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primary,
-                              foregroundColor:
-                                  ThemeData.estimateBrightnessForColor(
-                                              theme.colorScheme.primary) ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black,
-                              shape: RoundedRectangleBorder(
+                          child: TvFocusableCard(
+                            onTap: isLoading ? null : _login,
+                            borderRadius: BorderRadius.circular(12),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isLoading ? theme.colorScheme.primary.withValues(alpha: 0.5) : theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              elevation: 0,
-                            ),
-                            child: isLoading
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                              child: isLoading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Connect',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w600,
+                                        color: ThemeData.estimateBrightnessForColor(theme.colorScheme.primary) == Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
                                       ),
                                     ),
-                                  )
-                                : const Text(
-                                    'Connect',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                            ),
                           ),
                         ),
                       ],
@@ -1339,6 +1382,7 @@ class _ServerFamilyToggle extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelColor = isDark ? Colors.white70 : Colors.black87;
 
+    final isTv = Provider.of<TvDetectionService>(context, listen: false).isTvMode;
     final chips = [
       (
         label: 'Subsonic',
@@ -1352,19 +1396,20 @@ class _ServerFamilyToggle extends StatelessWidget {
         icon: CupertinoIcons.tv_fill,
         activeColor: const Color(0xFF00A4DC),
       ),
-      if (!kIsWeb && !Platform.isIOS)
+      if (!kIsWeb && !Platform.isIOS && !isTv)
         (
           label: 'Web Stream',
           family: 'youtube',
           icon: CupertinoIcons.play_rectangle_fill,
           activeColor: const Color(0xFFFF3B30),
         ),
-      (
-        label: 'Local Files',
-        family: 'local',
-        icon: CupertinoIcons.folder_fill,
-        activeColor: const Color(0xFF34C759),
-      ),
+      if (!isTv)
+        (
+          label: 'Local Files',
+          family: 'local',
+          icon: CupertinoIcons.folder_fill,
+          activeColor: const Color(0xFF34C759),
+        ),
     ];
 
     return Column(
@@ -1392,8 +1437,9 @@ class _ServerFamilyToggle extends StatelessWidget {
           itemBuilder: (context, index) {
             final c = chips[index];
             final selected = serverFamily == c.family;
-            return GestureDetector(
+            return TvFocusableCard(
               onTap: () => onChanged(c.family),
+              borderRadius: BorderRadius.circular(10),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(horizontal: 10),

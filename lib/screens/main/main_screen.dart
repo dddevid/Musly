@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:musly/providers/providers.dart';
 import 'package:musly/services/local_music_service.dart';
+import '../../widgets/navigation/tv_remote_scope.dart';
+import '../../services/tv_detection_service.dart';
 import 'package:musly/services/recommendation_service.dart';
 import 'package:musly/services/theme_service.dart';
 import 'package:musly/services/update_service.dart';
@@ -18,6 +20,7 @@ import 'package:musly/l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
+import 'tv_main_screen.dart';
 import 'package:musly/screens/media/fantasy_screen.dart';
 
 class PlayPauseIntent extends Intent {
@@ -352,6 +355,11 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isLocalMode = authProvider.isLocalOnlyMode;
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
+
+    if (isTv) {
+      return TvMainScreen(isOfflineMode: widget.isOfflineMode);
+    }
 
     if (_isLargeScreen(context)) {
       final content = Scaffold(
@@ -453,9 +461,11 @@ class _MainScreenState extends State<MainScreen> {
           actions: <Type, Action<Intent>>{
             PlayPauseIntent: _PlayPauseAction(context),
           },
-          child: Focus(
-            autofocus: true,
-            child: content,
+          child: TvRemoteScope(
+            child: Focus(
+              autofocus: true,
+              child: content,
+            ),
           ),
         ),
       );
@@ -471,7 +481,8 @@ class _MainScreenState extends State<MainScreen> {
             if (didPop) return;
             _handleBackButton();
           },
-          child: Scaffold(
+          child: TvRemoteScope(
+            child: Scaffold(
             backgroundColor: Theme.of(context).brightness == Brightness.dark
                 ? AppTheme.darkBackground
                 : AppTheme.lightBackground,
@@ -595,6 +606,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
               ],
             ),
+          ),
           ),
         );
       },

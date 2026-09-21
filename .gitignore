@@ -58,3 +58,5 @@ app.*.map.json
 **/fastlane/README.md
 .bundle/
 vendor/bundle/
+# Widget Preview related
+.widget_preview/

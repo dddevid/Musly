@@ -11,6 +11,8 @@ import 'package:musly/screens/media/playlists_screen.dart';
 import 'package:musly/screens/media/radio_screen.dart';
 import 'package:musly/screens/settings/settings_screen.dart';
 import 'package:musly/widgets/common/playlist_artwork.dart';
+import 'tv_remote_scope.dart';
+import '../../services/tv_detection_service.dart';
 
 class DesktopNavigationSidebar extends StatefulWidget {
   final int selectedIndex;
@@ -295,60 +297,52 @@ class _NavItemState extends State<_NavItem> {
             ? activeColor.withValues(alpha: 0.05)
             : Colors.transparent);
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: Tooltip(
-        message: widget.isCollapsed ? widget.label : '',
-        waitDuration: const Duration(milliseconds: 400),
-        child: InkWell(
-          onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(8),
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          child: Container(
-            height: 40,
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-            padding:
-                EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            alignment:
-                widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
-            child: widget.isCollapsed
-                ? Icon(
-                    widget.isSelected ? widget.activeIcon : widget.icon,
-                    color: textColor,
-                    size: 20,
-                  )
-                : Row(
-                    children: [
-                      Icon(
-                        widget.isSelected ? widget.activeIcon : widget.icon,
-                        color: textColor,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          widget.label,
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: widget.isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+    return Tooltip(
+      message: widget.isCollapsed ? widget.label : '',
+      waitDuration: const Duration(milliseconds: 400),
+      child: TvFocusableCard(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        padding: EdgeInsets.symmetric(horizontal: widget.isCollapsed ? 0 : 12),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8),
           ),
+          alignment:
+              widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
+          child: widget.isCollapsed
+              ? Icon(
+                  widget.isSelected ? widget.activeIcon : widget.icon,
+                  color: textColor,
+                  size: 20,
+                )
+              : Row(
+                  children: [
+                    Icon(
+                      widget.isSelected ? widget.activeIcon : widget.icon,
+                      color: textColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.label,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight: widget.isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

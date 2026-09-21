@@ -8,6 +8,8 @@ import 'album_artwork.dart';
 import 'animated_equalizer.dart';
 import '../modals/song_options_modal.dart';
 
+import 'package:musly/services/tv_detection_service.dart';
+import 'package:musly/widgets/navigation/tv_remote_scope.dart';
 import 'swipeable_song_tile.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -46,9 +48,14 @@ class SongTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
+
     return Consumer<PlayerProvider>(
       builder: (context, playerProvider, child) {
         final isPlaying = playerProvider.currentSong?.id == song.id;
+
+        final actualOnTap = onTap ?? () => _playSong(context);
+        final actualOnLongPress = onLongPress ?? () => _showOptions(context);
 
         final tile = ListTile(
           dense: true,
@@ -68,41 +75,54 @@ class SongTile extends StatelessWidget {
           ),
           subtitle: _buildSubtitle(context),
           trailing: trailing ?? _buildTrailing(context),
-          onTap: onTap ?? () => _playSong(context),
-          onLongPress: onLongPress ?? () => _showOptions(context),
+          onTap: isTv ? null : actualOnTap,
+          onLongPress: isTv ? null : actualOnLongPress,
         );
 
-        if (!enableSwipeToQueue) return tile;
-
-        return SwipeableSongTile(
-          onSwipeToQueue: () {
-            playerProvider.addToQueue(song);
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    const Icon(CupertinoIcons.text_badge_plus,
-                        color: Colors.white, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '"${song.title}" added to queue',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+        Widget finalTile = tile;
+        if (enableSwipeToQueue) {
+          finalTile = SwipeableSongTile(
+            onSwipeToQueue: () {
+              playerProvider.addToQueue(song);
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(CupertinoIcons.text_badge_plus,
+                          color: Colors.white, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '"${song.title}" added to queue',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
-                duration: const Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-            );
-          },
-          child: tile,
-        );
+              );
+            },
+            child: tile,
+          );
+        }
+
+        if (isTv) {
+          return TvFocusableCard(
+            onTap: actualOnTap,
+            onLongPress: actualOnLongPress,
+            borderRadius: BorderRadius.circular(8),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: finalTile,
+          );
+        }
+
+        return finalTile;
       },
     );
   }

@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "flutter-tizen: Attach",
+            "request": "attach",
+            "type": "dart",
+            "cwd": "${workspaceFolder}",
+            "vmServiceUri": "http://127.0.0.1:58005/USkFvDPSJy0=/"
+        }
+    ]
+}

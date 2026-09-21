@@ -8,6 +8,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
+import 'package:musly/services/tv_detection_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/widgets/widgets.dart';
@@ -125,6 +126,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
     final hPad = _isDesktop ? 32.0 : 16.0;
     final query = _searchController.text.trim();
     final hasResults = _searchResult != null && query.isNotEmpty;
@@ -176,8 +178,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _focusNode,
+                    autofocus: isTv,
+                    textInputAction: TextInputAction.search,
+                    onEditingComplete: () {
+                      _focusNode.unfocus();
+                    },
                     onChanged: _onSearchChanged,
-                    onSubmitted: (v) => _performSearch(v.trim()),
+                    onSubmitted: (v) {
+                      _performSearch(v.trim());
+                      _focusNode.unfocus();
+                    },
                     style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 15,

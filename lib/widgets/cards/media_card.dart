@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musly/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:musly/services/tv_detection_service.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 
 class MediaCard extends StatefulWidget {
@@ -28,31 +30,56 @@ class MediaCard extends StatefulWidget {
 
 class _MediaCardState extends State<MediaCard> {
   bool _isHovered = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isTv = Provider.of<TvDetectionService>(context).isTvMode;
 
     return RepaintBoundary(
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: Container(
-            width: widget.size,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
-              borderRadius: BorderRadius.circular(8),
-            ),
+      child: FocusableActionDetector(
+        onShowFocusHighlight: (focused) {
+          setState(() => _isFocused = focused);
+          if (focused && isTv) {
+            Scrollable.ensureVisible(context, alignment: 0.5, duration: const Duration(milliseconds: 300));
+          }
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              if (widget.onTap != null) {
+                widget.onTap!();
+              } else if (widget.onPlayPressed != null) {
+                widget.onPlayPressed!();
+              }
+              return null;
+            },
+          ),
+        },
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: widget.size,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
+                borderRadius: BorderRadius.circular(8),
+                border: isTv && _isFocused
+                    ? Border.all(color: Colors.white, width: 3.0)
+                    : Border.all(color: Colors.transparent, width: 3.0),
+              ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AnimatedScale(
-                  scale: _isHovered ? 1.04 : 1.0,
+                  scale: (_isHovered || _isFocused) ? 1.04 : 1.0,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
                   child: AnimatedContainer(
@@ -60,12 +87,14 @@ class _MediaCardState extends State<MediaCard> {
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(widget.isRound ? 999 : 4),
-                      boxShadow: _isHovered
+                        boxShadow: (_isHovered || _isFocused)
                           ? [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 16,
-                                offset: const Offset(0, 8),
+                                color: isTv 
+                                  ? Colors.white.withValues(alpha: 0.25)
+                                  : Colors.black.withValues(alpha: 0.3),
+                                blurRadius: isTv ? 24 : 16,
+                                offset: Offset(0, isTv ? 0 : 8),
                               ),
                             ]
                           : [],
@@ -116,6 +145,7 @@ class _MediaCardState extends State<MediaCard> {
                   ),
                 ],
               ],
+            ),
             ),
           ),
         ),

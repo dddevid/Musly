@@ -1,0 +1,131 @@
+{
+  "projectDir": "c:\\Users\\petri\\Downloads\\Musly\\tizen",
+  "deploys": {
+    "next": [
+      {
+        "path": "bin/Debug/tizen80/tpkroot/bin/Runner.dll",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/bin/Tizen.Flutter.Embedding.dll",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/bin/Tizen.Flutter.Embedding.xml",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/lib/libflutter_engine.so",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/lib/libflutter_tizen.so",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/.app.deps.json",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/AssetManifest.bin",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/assets/fanta-sy.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/assets/logo.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/FontManifest.json",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/NativeAssetsManifest.json",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/NOTICES.Z",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/Runner.deps.json",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/assets/logobig.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/fonts/MaterialIcons-Regular.otf",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/isolate_snapshot_data",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/kernel_blob.bin",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/media_kit/assets/web/hls1.4.10.js",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/wakelock_plus/assets/no_sleep.js",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/window_manager/images/ic_chrome_close.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/window_manager/images/ic_chrome_maximize.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/window_manager/images/ic_chrome_minimize.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/packages/window_manager/images/ic_chrome_unmaximize.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/shaders/ink_sparkle.frag",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/shaders/stretch_effect.frag",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/flutter_assets/vm_snapshot_data",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/res/icudtl.dat",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/shared/res/ic_launcher.png",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/tizen-manifest.xml",
+        "type": "add"
+      },
+      {
+        "path": "bin/Debug/tizen80/tpkroot/lib/libflutter_plugins.so",
+        "type": "add"
+      }
+    ]
+  }
+}
