@@ -458,9 +458,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       return;
     }
     if (song.isLocal) {
-      _resolvedArtworkUrl =
-          Uri.file(song.coverArt ?? song.path ?? '').toString();
+      // Guard the cache write, not just the notify. Every other branch below
+      // checks the song is still current before writing _resolvedArtworkUrl;
+      // this one did not, so a slow call that resolved after the track had
+      // already changed could stamp the outgoing song's cover over the
+      // incoming one's. That is reachable now that the UPnP auto-advance path
+      // no longer awaits the transition.
       if (_currentSong?.id == song.id) {
+        _resolvedArtworkUrl =
+            Uri.file(song.coverArt ?? song.path ?? '').toString();
         _updateAndroidAuto();
         _updateAllServices();
       }
@@ -1118,25 +1124,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   }
 
   Future<void> _onSongComplete() async {
-    if (_currentSong != null && _currentSong!.isLocal != true) {
-      if (_canScrobble(_currentSong!)) {
-        _subsonicService
-            .scrobble(_currentSong!.id, submission: true)
-            .catchError((
-          e,
-        ) {
-          _offlineService.queueScrobble(_currentSong!.id, submission: true);
-        });
-      }
-    }
-
-    if (_currentSong != null && _recommendationService != null) {
-      _recommendationService!.trackSongPlay(
-        _currentSong!,
-        durationPlayed: _duration.inSeconds,
-        completed: true,
-      );
-    }
+    retireCurrentTrack();
 
     _check50SongsMilestone()
         .catchError((e) => debugPrint('[Player] Milestone check error: $e'));
@@ -2551,33 +2539,59 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       return;
     }
 
-    if (_currentSong != null) {
-      if (_currentSong!.isLocal != true) {
-        if (_canScrobble(_currentSong!)) {
-          _subsonicService
-              .scrobble(_currentSong!.id, submission: true)
-              .catchError(
-            (e) {
-              _offlineService.queueScrobble(_currentSong!.id, submission: true);
-            },
-          );
-        } else {
-          debugPrint('[Player] Skipped scrobble for "${_currentSong!.title}" '
-              '(not played long enough)');
-        }
-      }
-      if (_recommendationService != null) {
-        _recommendationService!.trackSongPlay(
-          _currentSong!,
-          durationPlayed: _duration.inSeconds,
-          completed: true,
-        );
-      }
-    }
+    retireCurrentTrack();
 
     if (_autoDjService.shouldAddSongs(newIndex, _queue.length)) {
       await _addAutoDjSongs();
     }
+
+    await adoptTrackAt(newIndex);
+  }
+
+  /// Retire the outgoing track: submit its completion scrobble and record the
+  /// play against recommendations.
+  ///
+  /// Split out of [_onCurrentIndexChanged] so the UPnP renderer's own
+  /// auto-advance can run it too. That path used to skip this entirely, so a
+  /// DLNA session scrobbled only its very first track.
+  @visibleForTesting
+  void retireCurrentTrack() {
+    final outgoing = _currentSong;
+    if (outgoing == null) return;
+
+    if (outgoing.isLocal != true) {
+      if (_canScrobble(outgoing)) {
+        _subsonicService.scrobble(outgoing.id, submission: true).catchError(
+          (e) {
+            _offlineService.queueScrobble(outgoing.id, submission: true);
+          },
+        );
+      } else {
+        debugPrint('[Player] Skipped scrobble for "${outgoing.title}" '
+            '(not played long enough)');
+      }
+    }
+    if (_recommendationService != null) {
+      _recommendationService!.trackSongPlay(
+        outgoing,
+        durationPlayed: _duration.inSeconds,
+        completed: true,
+      );
+    }
+  }
+
+  /// Adopt [newIndex] as the current track and run every side effect a track
+  /// change owes, whichever transport drove it: artwork invalidation and
+  /// re-resolution, scrobble tracking, the "now playing" scrobble, ReplayGain,
+  /// and the service / media-session updates.
+  ///
+  /// Local playback reaches this through [_onCurrentIndexChanged]; the UPnP
+  /// renderer reaches it when it gaplessly auto-advances. Keeping one
+  /// implementation is the point — the UPnP path previously reimplemented the
+  /// transition and performed only the media-session update.
+  @visibleForTesting
+  Future<void> adoptTrackAt(int newIndex) async {
+    if (newIndex < 0 || newIndex >= _queue.length) return;
 
     _currentIndex = newIndex;
     _currentSong = _queue[_currentIndex];
@@ -2624,6 +2638,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       trackPeak: song?.replayGainTrackPeak,
       albumPeak: song?.replayGainAlbumPeak,
     );
+
+    // initialize() above is awaited, so two rapid transitions can reach this
+    // line out of order and leave an outgoing track's gain as the last write.
+    // The gain belongs to [song]; if something else is playing by now, the
+    // transition that overtook us has already applied its own.
+    if (song != null && _currentSong?.id != song.id) return;
 
     final effectiveVolume = _volume * replayGainMultiplier;
     await _audioPlayer.setVolume(effectiveVolume);
@@ -3107,17 +3127,25 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       if (isNext) {
         debugPrint('UPnP: renderer auto-advanced to queued next track '
             'â€” following to index ${_currentIndex + 1}');
+        final nextIndex = _currentIndex + 1;
         _upnpWasPlaying = playing;
-        _currentIndex++;
-        _currentSong = _queue[_currentIndex];
+        // Renderer-side bookkeeping stays here; everything the transition owes
+        // (scrobbles, artwork, ReplayGain, services) is shared with local
+        // playback via retireCurrentTrack/adoptTrackAt so the two cannot drift.
         _currentUpnpTrackUrl = canonical;
         _nextUpnpTrackUrl = null;
-        _position = Duration.zero;
-        notifyListeners();
-        _updateAndroidAuto();
-        _saveQueueState();
-        if (_currentIndex + 1 < _queue.length) {
-          _queueNextSongForUpnp(_queue[_currentIndex + 1]).catchError((_) {});
+        retireCurrentTrack();
+        // adoptTrackAt assigns the new index and song synchronously, then
+        // awaits artwork and ReplayGain — which can take seconds on a cold
+        // cache. Pre-queueing the *following* track must not wait behind that:
+        // gapless playback depends on the renderer receiving
+        // SetNextAVTransportURI well before the current track ends. Queue it
+        // here, off the synchronous prefix, and let the rest settle after.
+        adoptTrackAt(nextIndex).catchError((e) {
+          debugPrint('[Player] UPnP adoptTrackAt error: $e');
+        });
+        if (nextIndex + 1 < _queue.length) {
+          _queueNextSongForUpnp(_queue[nextIndex + 1]).catchError((_) {});
         }
         _checkAndRefillAutoQueue().catchError((_) {});
         return;
