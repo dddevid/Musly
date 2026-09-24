@@ -355,6 +355,11 @@ class UpnpService extends ChangeNotifier {
   int _pollCount = 0;
   int _consecutivePollErrors = 0;
 
+  /// Bumped when a [loadAndPlay] starts and again when it finishes, so a poll
+  /// can tell whether a load overlapped its request.
+  int _loadEpoch = 0;
+  int _loadsInFlight = 0;
+
   Future<void> _poll() async {
     if (_isPolling) return;
     final device = _connectedDevice;
@@ -363,7 +368,15 @@ class UpnpService extends ChangeNotifier {
     _pollCount++;
 
     try {
+      final epoch = _loadEpoch;
       final state = await getPlaybackState();
+
+      // loadAndPlay sends Stop and SetAVTransportURI before Play, so a poll
+      // whose request overlapped it can read STOPPED and deliver it after Play
+      // has succeeded. Listeners take "was playing, now STOPPED" as the end of
+      // the track and advance again, skipping the track that was just loaded.
+      // Drop such a result; the next tick reads the renderer afresh.
+      if (_loadsInFlight > 0 || epoch != _loadEpoch) return;
 
       // Low-rate heartbeat: a healthy poll was previously silent, so a
       // renderer drifting out of sync left no trace in the logs at all.
@@ -478,6 +491,33 @@ class UpnpService extends ChangeNotifier {
   }
 
   Future<bool> loadAndPlay({
+    required String url,
+    required String title,
+    required String artist,
+    String? album,
+    String? albumArtUrl,
+    int? durationSecs,
+    String? contentType,
+  }) async {
+    _loadEpoch++;
+    _loadsInFlight++;
+    try {
+      return await _loadAndPlay(
+        url: url,
+        title: title,
+        artist: artist,
+        album: album,
+        albumArtUrl: albumArtUrl,
+        durationSecs: durationSecs,
+        contentType: contentType,
+      );
+    } finally {
+      _loadsInFlight--;
+      _loadEpoch++;
+    }
+  }
+
+  Future<bool> _loadAndPlay({
     required String url,
     required String title,
     required String artist,
