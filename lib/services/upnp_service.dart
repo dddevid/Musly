@@ -74,7 +74,26 @@ class UpnpService extends ChangeNotifier {
 
   static const String _ssdpAddress = '239.255.255.250';
   static const int _ssdpPort = 1900;
-  static const Duration _discoveryTimeout = Duration(seconds: 4);
+
+  /// MX is the window, in seconds, that renderers randomise their reply over
+  /// so they do not all answer at once. Replies therefore arrive up to this
+  /// late, and each one still needs an HTTP description fetch afterwards.
+  static const int _ssdpMx = 3;
+
+  /// Must comfortably exceed MX plus one description fetch. At the previous
+  /// 4 seconds a renderer replying near the end of the MX window had barely a
+  /// second to be fetched before the socket closed underneath it.
+  static const Duration _discoveryTimeout = Duration(seconds: 8);
+
+  /// Gaps to wait *between* successive M-SEARCH sends, since UDP multicast
+  /// drops are routine. These are deltas, not offsets from the start of the
+  /// scan: the three below send at roughly t=0, t=0.5s and t=2.0s, all
+  /// comfortably inside [_discoveryTimeout].
+  static const List<Duration> _mSearchGaps = [
+    Duration.zero,
+    Duration(milliseconds: 500),
+    Duration(milliseconds: 1500),
+  ];
 
   final _dio = Dio(
     BaseOptions(
@@ -102,12 +121,14 @@ class UpnpService extends ChangeNotifier {
   Future<List<UpnpDevice>> discover() async {
     if (_isDiscovering) return _devices;
     _isDiscovering = true;
-    _devices.clear();
     _safeNotifyListeners();
 
+    final seen = <String>{};
+    final resolving = <Future<void>>[];
+    RawDatagramSocket? boundSocket;
+
     try {
-      final seen = <String>{};
-      final socket = await RawDatagramSocket.bind(
+      final socket = boundSocket = await RawDatagramSocket.bind(
         InternetAddress.anyIPv4,
         0,
         reuseAddress: true,
@@ -119,46 +140,56 @@ class UpnpService extends ChangeNotifier {
       const mSearch = 'M-SEARCH * HTTP/1.1\r\n'
           'HOST: 239.255.255.250:1900\r\n'
           'MAN: "ssdp:discover"\r\n'
-          'MX: 3\r\n'
+          'MX: $_ssdpMx\r\n'
           'ST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n'
           '\r\n';
 
       final packet = mSearch.codeUnits;
-      socket.send(packet, InternetAddress(_ssdpAddress), _ssdpPort);
 
       final completer = Completer<void>();
       final timer = Timer(_discoveryTimeout, () {
         if (!completer.isCompleted) completer.complete();
       });
 
-      socket.listen((event) async {
+      socket.listen((event) {
         if (event != RawSocketEvent.read) return;
         final dg = socket.receive();
         if (dg == null) return;
 
         final response = String.fromCharCodes(dg.data);
-        final location = _headerValue(response, 'LOCATION');
-        if (location == null || seen.contains(location)) return;
-        seen.add(location);
+        final location = headerValue(response, 'LOCATION');
+        if (location == null || !seen.add(location)) return;
 
-        try {
-          final device = await _fetchDeviceDescription(location);
-          if (device != null) {
-            _devices.add(device);
-            _safeNotifyListeners();
-            debugPrint('UPnP: Found ${device.friendlyName}');
-          }
-        } catch (e) {
-          debugPrint('UPnP: Error fetching device at $location: $e');
-        }
+        // Keep the future so the scan can wait for it. These used to be
+        // fire-and-forget, and the socket was closed the moment the timer
+        // fired, so a renderer that answered late lost its description fetch
+        // and never appeared.
+        resolving.add(_resolveDevice(location));
       });
+
+      // SSDP is UDP multicast: unreliable by design, and routinely dropped by
+      // APs and switches. UPnP UDA 1.1 §1.3.2 has control points repeat the
+      // search for exactly this reason. A single datagram meant whichever
+      // renderers lost it were simply never discovered — in practice one scan
+      // would list one of four speakers, and a second scan would find the rest.
+      for (final delay in _mSearchGaps) {
+        if (delay > Duration.zero) await Future<void>.delayed(delay);
+        socket.send(packet, InternetAddress(_ssdpAddress), _ssdpPort);
+      }
 
       await completer.future;
       timer.cancel();
-      socket.close();
+      await Future.wait(resolving);
+
+      // Drop renderers that went away, but only once the scan has run to
+      // completion: a scan that failed part-way has not heard from everyone.
+      // Clearing up front made every scan flash empty and, when a reply was
+      // lost, permanently drop a renderer that was already on screen.
+      pruneDevicesNotIn(seen);
     } catch (e) {
       debugPrint('UPnP: Discovery error: $e');
     } finally {
+      boundSocket?.close();
       _isDiscovering = false;
       _safeNotifyListeners();
     }
@@ -166,7 +197,61 @@ class UpnpService extends ChangeNotifier {
     return _devices;
   }
 
-  static String? _headerValue(String response, String header) {
+  /// Fetch a device description and merge it into [_devices]. Devices are
+  /// published as they resolve so the picker fills in progressively rather
+  /// than all at once when the scan ends.
+  Future<void> _resolveDevice(String location) async {
+    try {
+      final device = await _fetchDeviceDescription(location);
+      if (device == null) return;
+      mergeResolvedDevice(device);
+    } catch (e) {
+      debugPrint('UPnP: Error fetching device at $location: $e');
+    }
+  }
+
+  /// Add [device] to the known list, or replace the existing entry with the
+  /// same LOCATION.
+  ///
+  /// Keyed by LOCATION so the repeated M-SEARCH sends — which make the same
+  /// renderer answer more than once — collapse to a single entry instead of
+  /// listing a speaker three times.
+  @visibleForTesting
+  void mergeResolvedDevice(UpnpDevice device) {
+    final existing = _devices.indexWhere((d) => d.location == device.location);
+    if (existing >= 0) {
+      _devices[existing] = device;
+    } else {
+      _devices.add(device);
+      debugPrint('UPnP: Found ${device.friendlyName}');
+    }
+    _safeNotifyListeners();
+  }
+
+  /// Drop renderers that did not answer this scan, where [seen] is the set of
+  /// LOCATIONs that replied.
+  ///
+  /// Only safe once the scan has finished. Clearing up front — which is what
+  /// the old code did — made every scan flash empty, and a scan that lost a
+  /// reply to UDP permanently dropped a renderer that was already on screen.
+  /// An empty [seen] means the scan found nothing at all, which is far more
+  /// likely to be a failed scan than every renderer vanishing at once, so the
+  /// list is left alone.
+  ///
+  /// The connected renderer is never dropped: a speaker busy streaming can miss
+  /// every M-SEARCH in a scan, and removing it would hide the device the user
+  /// is playing to. Losing it for real is handled by the poll, which
+  /// disconnects after repeated failures.
+  @visibleForTesting
+  void pruneDevicesNotIn(Set<String> seen) {
+    if (seen.isEmpty) return;
+    final connected = _connectedDevice?.location;
+    _devices.removeWhere(
+        (d) => !seen.contains(d.location) && d.location != connected);
+  }
+
+  @visibleForTesting
+  static String? headerValue(String response, String header) {
     final pattern = RegExp(
       '${RegExp.escape(header)}: *([^\r\n]+)',
       caseSensitive: false,
