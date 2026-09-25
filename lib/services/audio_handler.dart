@@ -42,9 +42,47 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   final Map<String, BehaviorSubject<Map<String, dynamic>>> _childrenSubjects = {};
 
   bool _remotePlayback = false;
+
+  /// Remote volume in percent, matching the UPnP RenderingControl range and
+  /// everything this class exposes to callers.
   int _remoteVolume = 50;
   static const _remoteMaxVolume = 100;
   static const _remoteVolumeStep = 5;
+
+  /// Scale the Android VolumeProvider is published on: one unit per 5%.
+  ///
+  /// Android's MediaSessionRecord answers a hardware volume key by setting
+  /// mOptimisticVolume to currentVolume ± 1 and showing that for a second
+  /// before the real value arrives. Publishing maxVolume 100 while stepping by
+  /// 5 meant the optimistic value advanced by 1 and ours by 5, so the system
+  /// volume overlay visibly jumped a second after every press. Matching the
+  /// provider scale to the step size makes ±1 exactly one step, so there is
+  /// nothing to correct and no jump.
+  @visibleForTesting
+  static const remoteProviderMax = _remoteMaxVolume ~/ _remoteVolumeStep;
+
+  /// Convert a remote volume percentage to provider units.
+  @visibleForTesting
+  static int providerUnitsFromPercent(int percent) =>
+      (percent / _remoteVolumeStep).round().clamp(0, remoteProviderMax);
+
+  /// Convert provider units back to a remote volume percentage.
+  @visibleForTesting
+  static int percentFromProviderUnits(int units) =>
+      (units * _remoteVolumeStep).clamp(0, _remoteMaxVolume);
+
+  /// Where one hardware key press in [direction] (-1 or +1) takes [percent].
+  ///
+  /// Steps in provider units rather than adding 5 to the percentage. A renderer
+  /// that reports an off-step value such as 33% is shown by the system slider
+  /// as 35%; adding 5 would keep it 2% away from what the slider shows on every
+  /// later press, whereas this lands it back on the slider's scale.
+  @visibleForTesting
+  static int adjustedPercent(int percent, int direction) =>
+      percentFromProviderUnits(providerUnitsFromPercent(percent) + direction);
+
+  /// [_remoteVolume] expressed in provider units.
+  int get _remoteProviderVolume => providerUnitsFromPercent(_remoteVolume);
 
   StreamSubscription<PlaybackEvent>? _localStateSub;
 
@@ -237,8 +275,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
       androidPlaybackInfo.add(
         RemoteAndroidPlaybackInfo(
           volumeControlType: AndroidVolumeControlType.absolute,
-          maxVolume: _remoteMaxVolume,
-          volume: _remoteVolume,
+          maxVolume: remoteProviderMax,
+          volume: _remoteProviderVolume,
         ),
       );
     } else {
@@ -253,8 +291,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     androidPlaybackInfo.add(
       RemoteAndroidPlaybackInfo(
         volumeControlType: AndroidVolumeControlType.absolute,
-        maxVolume: _remoteMaxVolume,
-        volume: _remoteVolume,
+        maxVolume: remoteProviderMax,
+        volume: _remoteProviderVolume,
       ),
     );
   }
@@ -262,14 +300,17 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> androidSetRemoteVolume(int volumeIndex) async {
     if (!_remotePlayback) return;
-    _remoteVolume = volumeIndex.clamp(0, _remoteMaxVolume);
+    // volumeIndex arrives in provider units; callers downstream want percent.
+    _remoteVolume = percentFromProviderUnits(volumeIndex);
     onSetRemoteVolume?.call(_remoteVolume);
   }
 
   @override
   Future<void> androidAdjustRemoteVolume(AndroidVolumeDirection direction) async {
+    // direction is -1, 0 or +1. Zero is the ADJUST_SAME that Android sends on
+    // key-up; acting on it would issue a redundant SetVolume for no change.
     if (!_remotePlayback || direction.index == 0) return;
-    _remoteVolume = (_remoteVolume + direction.index * _remoteVolumeStep).clamp(0, _remoteMaxVolume);
+    _remoteVolume = adjustedPercent(_remoteVolume, direction.index);
     updateRemoteVolume(_remoteVolume);
     onSetRemoteVolume?.call(_remoteVolume);
   }
