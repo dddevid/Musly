@@ -587,6 +587,16 @@ class AppLocalizationsZh extends AppLocalizations {
       'Update results as you type instead of showing a dropdown';
 
   @override
+  String get homeSection => 'Home';
+
+  @override
+  String get showFavoritePlaylistsOnHome => 'Favorite playlists on Home';
+
+  @override
+  String get showFavoritePlaylistsOnHomeSubtitle =>
+      'Show each favorite playlist as its own row at the top of the Home screen';
+
+  @override
   String get categoryMadeForYou => '为你制作';
 
   @override

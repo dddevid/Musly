@@ -1222,6 +1222,24 @@ abstract class AppLocalizations {
   /// **'Update results as you type instead of showing a dropdown'**
   String get liveSearchSubtitle;
 
+  /// No description provided for @homeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeSection;
+
+  /// No description provided for @showFavoritePlaylistsOnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite playlists on Home'**
+  String get showFavoritePlaylistsOnHome;
+
+  /// No description provided for @showFavoritePlaylistsOnHomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show each favorite playlist as its own row at the top of the Home screen'**
+  String get showFavoritePlaylistsOnHomeSubtitle;
+
   /// No description provided for @categoryMadeForYou.
   ///
   /// In en, this message translates to:

@@ -592,6 +592,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'Uppdatera resultat medan du skriver istället för att visa en lista';
 
   @override
+  String get homeSection => 'Home';
+
+  @override
+  String get showFavoritePlaylistsOnHome => 'Favorite playlists on Home';
+
+  @override
+  String get showFavoritePlaylistsOnHomeSubtitle =>
+      'Show each favorite playlist as its own row at the top of the Home screen';
+
+  @override
   String get categoryMadeForYou => 'Skapad För Dig';
 
   @override

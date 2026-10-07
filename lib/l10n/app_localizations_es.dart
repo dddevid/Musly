@@ -594,6 +594,16 @@ class AppLocalizationsEs extends AppLocalizations {
       'Actualizar los resultados mientras escribes en lugar de mostrar un desplegable';
 
   @override
+  String get homeSection => 'Home';
+
+  @override
+  String get showFavoritePlaylistsOnHome => 'Favorite playlists on Home';
+
+  @override
+  String get showFavoritePlaylistsOnHomeSubtitle =>
+      'Show each favorite playlist as its own row at the top of the Home screen';
+
+  @override
   String get categoryMadeForYou => 'Hecho para ti';
 
   @override

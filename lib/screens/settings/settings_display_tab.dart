@@ -36,6 +36,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _showMiniPlayerShuffle = false;
   bool _showLiveLyricUnderArtwork = false;
   bool _liveSearch = true;
+  bool _showFavoritePlaylistsOnHome = false;
   bool _lyricsBlurUnfocused = false;
   String _lyricsAlignment = 'left';
   bool _lyricsGlowEffect = true;
@@ -72,6 +73,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _showLiveLyricUnderArtwork =
           _playerUiSettings.getShowLiveLyricUnderArtwork();
       _liveSearch = _playerUiSettings.getLiveSearch();
+      _showFavoritePlaylistsOnHome =
+          _playerUiSettings.getShowFavoritePlaylistsOnHome();
       _lyricsBlurUnfocused = _playerUiSettings.getLyricsBlurUnfocused();
       _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
       _lyricsGlowEffect = _playerUiSettings.getLyricsGlowEffect();
@@ -135,6 +138,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
               const SettingsDivider(),
               _buildWindowTitlebarToggle(),
             ],
+          ],
+        ),
+        const SizedBox(height: 24),
+        SettingsSectionCard(
+          title: AppLocalizations.of(context)!.homeSection.toUpperCase(),
+          children: [
+            _buildFavoritePlaylistsOnHomeToggle(),
           ],
         ),
         const SizedBox(height: 24),
@@ -355,6 +365,20 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           setState(() => _liveSearch = value);
           await _playerUiSettings.setLiveSearch(value);
         },
+    );
+  }
+
+  Widget _buildFavoritePlaylistsOnHomeToggle() {
+    return SettingsSwitchTile(
+      gradientColors: const [Color(0xFFFA243C), Color(0xFFFF2D55)],
+      icon: CupertinoIcons.heart_fill,
+      title: AppLocalizations.of(context)!.showFavoritePlaylistsOnHome,
+      subtitle: AppLocalizations.of(context)!.showFavoritePlaylistsOnHomeSubtitle,
+      value: _showFavoritePlaylistsOnHome,
+      onChanged: (value) async {
+        setState(() => _showFavoritePlaylistsOnHome = value);
+        await _playerUiSettings.setShowFavoritePlaylistsOnHome(value);
+      },
     );
   }
 

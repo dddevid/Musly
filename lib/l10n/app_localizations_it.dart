@@ -595,6 +595,16 @@ class AppLocalizationsIt extends AppLocalizations {
       'Aggiorna i risultati mentre digiti invece di mostrare un menu a tendina';
 
   @override
+  String get homeSection => 'Home';
+
+  @override
+  String get showFavoritePlaylistsOnHome => 'Favorite playlists on Home';
+
+  @override
+  String get showFavoritePlaylistsOnHomeSubtitle =>
+      'Show each favorite playlist as its own row at the top of the Home screen';
+
+  @override
   String get categoryMadeForYou => 'Fatte Per Te';
 
   @override

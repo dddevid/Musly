@@ -594,6 +594,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Mettre à jour les résultats lorsque vous écrivez au lieu d\'afficher une liste déroulante';
 
   @override
+  String get homeSection => 'Accueil';
+
+  @override
+  String get showFavoritePlaylistsOnHome =>
+      'Playlists favorites sur l\'accueil';
+
+  @override
+  String get showFavoritePlaylistsOnHomeSubtitle =>
+      'Afficher chaque playlist favorite sur sa propre ligne en haut de l\'écran d\'accueil';
+
+  @override
   String get categoryMadeForYou => 'Fait pour vous';
 
   @override

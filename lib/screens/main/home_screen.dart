@@ -9,6 +9,8 @@ import 'package:musly/providers/auth_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/services/recommendation_service.dart';
 import 'package:musly/services/offline_service.dart';
+import 'package:musly/services/favorite_playlists_service.dart';
+import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/widgets/widgets.dart';
@@ -295,6 +297,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 24),
                         ],
+                        if (_selectedCategory == 'All' ||
+                            _selectedCategory == 'Playlists')
+                          _buildFavoritePlaylistRows(
+                            context,
+                            playlists: playlists,
+                            isDesktop: isDesktop,
+                            hPad: hPad,
+                          ),
                         if ((_selectedCategory == 'All' ||
                                 _selectedCategory == 'Music') &&
                             recentAlbums.isNotEmpty) ...[
@@ -583,6 +593,52 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildFavoritePlaylistRows(
+    BuildContext context, {
+    required List<Playlist> playlists,
+    required bool isDesktop,
+    required double hPad,
+  }) {
+    final enabledNotifier =
+        PlayerUiSettingsService().showFavoritePlaylistsOnHomeNotifier;
+    final favoritesService = FavoritePlaylistsService();
+
+    return ListenableBuilder(
+      listenable: Listenable.merge([enabledNotifier, favoritesService]),
+      builder: (context, _) {
+        if (!enabledNotifier.value || !favoritesService.hasFavorites) {
+          return const SizedBox.shrink();
+        }
+
+        final favoriteIds = favoritesService.getFavoriteIds().toSet();
+        final favorites =
+            playlists.where((p) => favoriteIds.contains(p.id)).toList()
+              // Most recently updated playlists first.
+              ..sort((a, b) => _lastUpdate(b).compareTo(_lastUpdate(a)));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final playlist in favorites)
+              _FavoritePlaylistRow(
+                key: ValueKey('favorite_playlist_${playlist.id}'),
+                playlist: playlist,
+                isDesktop: isDesktop,
+                hPad: hPad,
+                onOpen: () => _openPlaylist(context, playlist),
+                onPlaySong: (song, songs) => _playSong(context, song, songs),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  static final DateTime _epoch = DateTime.fromMillisecondsSinceEpoch(0);
+
+  static DateTime _lastUpdate(Playlist playlist) =>
+      playlist.changed ?? playlist.created ?? _epoch;
+
   Future<void> _playSong(
       BuildContext context, Song song, List<Song> queue) async {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
@@ -739,6 +795,115 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FavoritePlaylistRow extends StatefulWidget {
+  final Playlist playlist;
+  final bool isDesktop;
+  final double hPad;
+  final VoidCallback onOpen;
+  final void Function(Song song, List<Song> songs) onPlaySong;
+
+  const _FavoritePlaylistRow({
+    super.key,
+    required this.playlist,
+    required this.isDesktop,
+    required this.hPad,
+    required this.onOpen,
+    required this.onPlaySong,
+  });
+
+  @override
+  State<_FavoritePlaylistRow> createState() => _FavoritePlaylistRowState();
+}
+
+class _FavoritePlaylistRowState extends State<_FavoritePlaylistRow> {
+  /// Last successfully fetched version of each playlist, shared across rows
+  /// so a playlist is fetched once per app session and again only when the
+  /// server reports a newer `changed` timestamp.
+  static final Map<String, Playlist> _fetched = {};
+  static final Set<String> _inFlight = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshSongsIfStale();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FavoritePlaylistRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _refreshSongsIfStale();
+  }
+
+  void _refreshSongsIfStale() {
+    final playlist = widget.playlist;
+    final fetched = _fetched[playlist.id];
+    if (_inFlight.contains(playlist.id) ||
+        (fetched != null && fetched.changed == playlist.changed)) {
+      return;
+    }
+    _inFlight.add(playlist.id);
+
+    // Playlists from getPlaylists() carry no entries, and cached entries may
+    // be outdated. Fetching stores the songs in the LibraryProvider, which
+    // rebuilds this row with them. A failed fetch is retried on next rebuild.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (!mounted) return;
+        final fetched =
+            await Provider.of<LibraryProvider>(context, listen: false)
+                .getPlaylist(playlist.id);
+        _fetched[playlist.id] = fetched;
+        if (mounted) setState(() {});
+      } catch (e) {
+        debugPrint('Error loading favorite playlist: $e');
+      } finally {
+        _inFlight.remove(playlist.id);
+      }
+    });
+  }
+
+  /// The provider may hand back a summary without entries (e.g. right after a
+  /// library refresh); fall back to the fetched songs of the same version.
+  List<Song> _songs() {
+    final playlist = widget.playlist;
+    final songs = playlist.songs;
+    if (songs != null && songs.isNotEmpty) return songs;
+    final fetched = _fetched[playlist.id];
+    if (fetched != null && fetched.changed == playlist.changed) {
+      return fetched.songs ?? const <Song>[];
+    }
+    return const <Song>[];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final songs = _songs();
+    if (songs.isEmpty) return const SizedBox.shrink();
+
+    final cardSize = widget.isDesktop ? 180.0 : 155.0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: HorizontalScrollSection(
+        title: widget.playlist.name,
+        padding: EdgeInsets.symmetric(horizontal: widget.hPad),
+        cardSize: cardSize,
+        onSeeAllTap: widget.onOpen,
+        children: songs.take(12).map((song) {
+          return MediaCard(
+            title: song.title,
+            subtitle: song.artist,
+            coverArt: song.coverArt,
+            size: cardSize,
+            onTap: () => widget.onPlaySong(song, songs),
+            onPlayPressed: () => widget.onPlaySong(song, songs),
+          );
+        }).toList(),
       ),
     );
   }
