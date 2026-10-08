@@ -6,8 +6,64 @@ import '../../services/subsonic_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../modals/song_options_modal.dart';
 
-class QueueView extends StatelessWidget {
+class QueueView extends StatefulWidget {
   const QueueView({super.key});
+
+  @override
+  State<QueueView> createState() => _QueueViewState();
+}
+
+class _QueueViewState extends State<QueueView> {
+  final ScrollController _scrollController = ScrollController();
+
+  /// Only attached to the current song until the initial scroll is done: the
+  /// reorder drag proxy rebuilds its item, which would duplicate the key.
+  final GlobalKey _currentItemKey = GlobalKey();
+  bool _initialScrollDone = false;
+  double _headerClearance = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCurrent([int attempt = 0]) {
+    if (!mounted) return;
+    final provider = Provider.of<PlayerProvider>(context, listen: false);
+    if (provider.currentIndex <= 0 ||
+        attempt > 3 ||
+        !_scrollController.hasClients) {
+      setState(() => _initialScrollDone = true);
+      return;
+    }
+
+    final position = _scrollController.position;
+    final itemContext = _currentItemKey.currentContext;
+    if (itemContext == null) {
+      // The list is lazy: jump close to the current song, using the list's
+      // own estimate of its tile extent, so that its tile gets built.
+      final extent = (position.maxScrollExtent + position.viewportDimension) /
+          provider.queue.length;
+      _scrollController.jumpTo((provider.currentIndex * extent)
+          .clamp(0.0, position.maxScrollExtent));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _scrollToCurrent(attempt + 1));
+      return;
+    }
+
+    // Align the current song right below the header overlay.
+    Scrollable.ensureVisible(itemContext);
+    _scrollController.jumpTo((position.pixels - _headerClearance)
+        .clamp(0.0, position.maxScrollExtent));
+    setState(() => _initialScrollDone = true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +93,12 @@ class QueueView extends StatelessWidget {
         final headerClearance = topPadding > 0
             ? topPadding + (isLandscape ? 44.0 : 64.0)
             : (isLandscape ? 48.0 : 56.0);
+        _headerClearance = headerClearance;
 
         return SafeArea(
           top: false,
           child: ReorderableListView.builder(
+            scrollController: _scrollController,
             buildDefaultDragHandles: false,
             padding: EdgeInsets.only(
               top: headerClearance,
@@ -77,6 +135,9 @@ class QueueView extends StatelessWidget {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 leading: ClipRRect(
+                  key: isPlaying && !_initialScrollDone
+                      ? _currentItemKey
+                      : null,
                   borderRadius: BorderRadius.circular(8),
                   child: coverUrl != null
                       ? CachedNetworkImage(
