@@ -1,35 +1,2135 @@
 {
   "@@locale": "tr",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "emulatorDetected": "Emülatör Tespit Edildi",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "Bu uygulama bir emülatörde çalışamaz. \\n Lütfen fiziksel bir cihaz kullanın.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
+  "goodMorning": "Günaydın",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "İyi günler",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "İyi akşamlar",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Senin için",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Hızlı Seçimler",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Keşif Mixi",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Son Çalınanlar",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Çalma Listelerin",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "favoritePlaylists": "Favori Listeler",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Albümler",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "EP'ler",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Tekliler",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
+  "madeForYou": "Sana Özel",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "En Beğenilenler",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "İçerik yok",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Yenilemeyi deneyin veya sunucu bağlantınızı kontrol edin",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Yenile",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Şarkılar yüklenemedi",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Bu türde şarkı bulunamadı",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Şarkılar yüklenemedi",
+  "@errorLoadingAlbums": {
+    "description": "Error loading albums message"
+  },
+  "noTopRatedAlbums": "En beğenilen albüm bulunamadı",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Giriş",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "Sunucu Adresi",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Kullanıcı Adı",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Şifre",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "TLS/SSL Sertifikası Seç",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Sertifika seçilemedi: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "Sunucu adresi http:// yada https:// ile başlamalı",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Bağlanılamadı",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Kütüphane",
+  "@library": {
+    "description": "Library tab label"
+  },
+  "search": "Arama",
+  "@search": {
+    "description": "Search tab label"
+  },
+  "settings": "Ayarlar",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "albums": "Albümler",
+  "@albums": {
+    "description": "Albums section label"
+  },
+  "artists": "Sanatçılar",
+  "@artists": {
+    "description": "Wrapped artists metric label"
+  },
+  "songs": "Şarkılar",
+  "@songs": {
+    "description": "Songs section label"
+  },
+  "playlists": "Çalma Listeleri",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+  "genres": "Türler",
+  "@genres": {
+    "description": "Genres section label"
+  },
+  "years": "Yıllar",
+  "@years": {
+    "description": "Years filter tab label"
+  },
+  "favorites": "Favoriler",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+  "nowPlaying": "Şimdi Çalıyor",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+  "queue": "Sıradaki",
+  "@queue": {
+    "description": "Queue section label"
+  },
+  "lyrics": "Şarkı Sözleri",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+  "play": "Oynat",
+  "@play": {
+    "description": "Play button label"
+  },
+  "pause": "Duraklat",
+  "@pause": {
+    "description": "Pause button label"
+  },
+  "next": "Sıradaki",
+  "@next": {
+    "description": "Next button label"
+  },
+  "previous": "Önceki",
+  "@previous": {
+    "description": "Previous button label"
+  },
+  "shuffle": "Karıştır",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+  "repeat": "Tekrar",
+  "@repeat": {
+    "description": "Repeat button label"
+  },
+  "repeatOne": "Tek Şarkıyı Tekrarla",
+  "@repeatOne": {
+    "description": "Repeat one button label"
+  },
+  "repeatOff": "Tekrar Kapalı",
+  "@repeatOff": {
+    "description": "Repeat off button label"
+  },
+  "addToPlaylist": "Listeye Ekle",
+  "@addToPlaylist": {
+    "description": "Add to playlist option"
+  },
+  "removeFromPlaylist": "Listeden Kaldır",
+  "@removeFromPlaylist": {
+    "description": "Remove from playlist option"
+  },
+  "addToFavorites": "Favorilere Ekle",
+  "@addToFavorites": {
+    "description": "Add to favorites option"
+  },
+  "removeFromFavorites": "Favorilerden Kaldır",
+  "@removeFromFavorites": {
+    "description": "Remove from favorites option"
+  },
+  "download": "İndirme",
+  "@download": {
+    "description": "Download button label"
+  },
+  "delete": "Sil",
+  "@delete": {
+    "description": "Delete button label"
+  },
+  "cancel": "İptal",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "ok": "Tamam",
+  "@ok": {
+    "description": "OK button label"
+  },
+  "save": "Kaydet",
+  "@save": {
+    "description": "Button to save changes"
+  },
+  "close": "Kapat",
+  "@close": {
+    "description": "Close button"
+  },
+  "general": "Genel",
+  "@general": {
+    "description": "General settings section"
+  },
+  "appearance": "Görünüm",
+  "@appearance": {
+    "description": "Appearance settings section"
+  },
+  "playback": "Oynatma",
+  "@playback": {
+    "description": "Playback settings section"
+  },
+  "storage": "Depolama",
+  "@storage": {
+    "description": "Storage settings section"
+  },
+  "about": "Hakkında",
+  "@about": {
+    "description": "About settings section"
+  },
+  "darkMode": "Karanlık Mod",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+  "language": "Dil",
+  "@language": {
+    "description": "Language setting"
+  },
+  "version": "Sürüm",
+  "@version": {
+    "description": "Version info label"
+  },
+  "madeBy": "Dddevid tarafından geliştirildi",
+  "@madeBy": {
+    "description": "Developer credit"
+  },
+  "githubRepository": "Github Deposu",
+  "@githubRepository": {
+    "description": "GitHub repository link label"
+  },
+  "reportIssue": "Sorun Bildir",
+  "@reportIssue": {
+    "description": "Report issue link label"
+  },
+  "joinDiscord": "Discord Topluluğuna Katıl",
+  "@joinDiscord": {
+    "description": "Discord community link label"
+  },
+  "unknownArtist": "Bilinmeyen Sanatçı",
+  "@unknownArtist": {
+    "description": "Fallback displayed when a song has no artist"
+  },
+  "unknownAlbum": "Bilinmeyen Albüm",
+  "@unknownAlbum": {
+    "description": "Placeholder for unknown album"
+  },
+  "playAll": "Tümünü Oynat",
+  "@playAll": {
+    "description": "Play all button label"
+  },
+  "shuffleAll": "Tümünü Karıştır",
+  "@shuffleAll": {
+    "description": "Shuffle all button label"
+  },
+  "sortBy": "Sırala",
+  "@sortBy": {
+    "description": "Sort by label"
+  },
+  "sortByName": "İsim",
+  "@sortByName": {
+    "description": "Sort by name option"
+  },
+  "sortByArtist": "Sanatçı",
+  "@sortByArtist": {
+    "description": "Sort by artist option"
+  },
+  "sortByAlbum": "Albüm",
+  "@sortByAlbum": {
+    "description": "Sort by album option"
+  },
+  "sortByDate": "Tarih",
+  "@sortByDate": {
+    "description": "Sort by date option"
+  },
+  "sortByDuration": "Süre",
+  "@sortByDuration": {
+    "description": "Sort by duration option"
+  },
+  "ascending": "Artan",
+  "@ascending": {
+    "description": "Ascending sort order"
+  },
+  "descending": "Azalan",
+  "@descending": {
+    "description": "Descending sort order"
+  },
+  "noLyricsAvailable": "Şarkı sözü bulunamadı",
+  "@noLyricsAvailable": {
+    "description": "Message when lyrics are not available"
+  },
+  "loading": "Yükleniyor...",
+  "@loading": {
+    "description": "Loading message"
+  },
+  "error": "Hata",
+  "@error": {
+    "description": "Generic error label"
+  },
+  "retry": "Tekrar Dene",
+  "@retry": {
+    "description": "Retry button label"
+  },
+  "noResults": "Sonuç bulunamadı",
+  "@noResults": {
+    "description": "No search results message"
+  },
+  "searchHint": "Şarkı, albüm veya sanatçı ara...",
+  "@searchHint": {
+    "description": "Search field hint text"
+  },
+  "allSongs": "Tüm Şarkılar",
+  "@allSongs": {
+    "description": "All songs title"
+  },
+  "allAlbums": "Tüm Albümler",
+  "@allAlbums": {
+    "description": "All albums title"
+  },
+  "allArtists": "Tüm Sanatçılar",
+  "@allArtists": {
+    "description": "All artists title"
+  },
+  "trackNumber": "Parça {number}",
+  "@trackNumber": {
+    "description": "Track number label",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "songsCount": "{count, plural, =0{Şarkı yok} =1{1 şarkı} other{{count} şarkı}}",
+  "@songsCount": {
+    "description": "Songs count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumsCount": "{count, plural, =0{Albüm yok} =1{1 albüm} other{{count} albümler}}",
+  "@albumsCount": {
+    "description": "Albums count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logout": "Çıkış yap",
+  "@logout": {
+    "description": "Logout button label"
+  },
+  "confirmLogout": "Çıkış yapmak istediğine emin misiniz?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+  "yes": "Evet",
+  "@yes": {
+    "description": "Yes button label"
+  },
+  "no": "Hayır",
+  "@no": {
+    "description": "No button label"
+  },
+  "offlineMode": "Çevrimdışı Mod",
+  "@offlineMode": {
+    "description": "Offline mode label"
+  },
+  "radio": "Radyo",
+  "@radio": {
+    "description": "Radio section label"
+  },
+  "changelog": "Değişiklik Günlüğü",
+  "@changelog": {
+    "description": "Changelog link label"
+  },
+  "platform": "Platform",
+  "@platform": {
+    "description": "Platform info label"
+  },
+  "server": "Sunucu",
+  "@server": {
+    "description": "Server settings section"
+  },
+  "display": "Görünüm",
+  "@display": {
+    "description": "Display settings section"
+  },
+  "playerInterface": "Oynatıcı Arayüzü",
+  "@playerInterface": {
+    "description": "Player Interface settings section"
+  },
+  "smartRecommendations": "Akıllı Öneriler",
+  "@smartRecommendations": {
+    "description": "Smart Recommendations settings section title"
+  },
+  "showVolumeSlider": "Ses Kaydırıcısını Göster",
+  "@showVolumeSlider": {
+    "description": "Show Volume Slider toggle label"
+  },
+  "showVolumeSliderSubtitle": "Ses kontrolünü Şimdi Çalıyor ekranında göster",
+  "@showVolumeSliderSubtitle": {
+    "description": "Show Volume Slider toggle subtitle"
+  },
+  "showStarRatings": "Yıldız Puanlarını Göster",
+  "@showStarRatings": {
+    "description": "Show Star Ratings toggle label"
+  },
+  "showStarRatingsSubtitle": "Şarkıları puanla ve puanları görüntüle",
+  "@showStarRatingsSubtitle": {
+    "description": "Show Star Ratings toggle subtitle"
+  },
+  "showMiniPlayerHeart": "Kalp Butonunu Göster",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Mini oynatıcıdan favorilere ekle",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Tekrar Butonunu Göster",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Tekrar modunu mini oynatıcıdan değiştir",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Karıştır Butonunu Göster",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "Karıştırmayı mini oynatıcıdan değiştir",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
+  },
+  "enableRecommendations": "Önerileri Etkinleştir",
+  "@enableRecommendations": {
+    "description": "Enable Recommendations toggle label"
+  },
+  "enableRecommendationsSubtitle": "Kişiselleştirilmiş müzik önerileri al",
+  "@enableRecommendationsSubtitle": {
+    "description": "Enable Recommendations toggle subtitle"
+  },
+  "listeningData": "Dinleme Verileri",
+  "@listeningData": {
+    "description": "Listening Data section label"
+  },
+  "totalPlays": "Toplam {count} oynatma",
+  "@totalPlays": {
+    "description": "Total plays count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearListeningHistory": "Dinleme Geçmişini Temizle",
+  "@clearListeningHistory": {
+    "description": "Clear Listening History button label"
+  },
+  "confirmClearHistory": "Bu işlem tüm dinleme verilerinizi ve önerilerinizi sıfırlayacak. Emin misiniz?",
+  "@confirmClearHistory": {
+    "description": "Confirmation dialog for clearing history"
+  },
+  "historyCleared": "Dinleme geçmişi temizlendi",
+  "@historyCleared": {
+    "description": "SnackBar message when history is cleared"
+  },
+  "discordStatus": "Discord Durumu",
+  "@discordStatus": {
+    "description": "Discord RPC toggle label"
+  },
+  "discordStatusSubtitle": "Çalan şarkıyı Discord profilinde göster",
+  "@discordStatusSubtitle": {
+    "description": "Discord RPC toggle subtitle"
+  },
+  "selectLanguage": "Dil Seç",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "systemDefault": "Sistem Varsayılanı",
+  "@systemDefault": {
+    "description": "System default language option"
+  },
+  "communityTranslations": "Topluluk Çevirileri",
+  "@communityTranslations": {
+    "description": "Community translations credit label"
+  },
+  "communityTranslationsSubtitle": "Musly’nin çevirisine Crowdin üzerinden katkıda bulun",
+  "@communityTranslationsSubtitle": {
+    "description": "Community translations credit subtitle"
+  },
   "@_LIBRARY": {},
+  "yourLibrary": "Kütüphanen",
+  "filterAll": "Tümü",
+  "faves": "Favoriler",
+  "filterPlaylists": "Çalma Listeleri",
+  "filterAlbums": "Albümler",
+  "filterArtists": "Sanatçılar",
+  "likedSongs": "Beğenilen Şarkılar",
+  "likedAlbums": "Beğenilen Albümler",
+  "noLikedAlbums": "Henüz beğenilen albüm yok",
+  "localMusicLibrary": "Yerel Müzik Kütüphanesi",
+  "mergeLocalLibrary": "Sunucu Kütüphanesiyle Birleştir",
+  "mergeLocalLibrarySubtitle": "Yerel müzikleri sunucu kütüphanesiyle birlikte göster",
+  "localMusicStats": "Yerel Müzik Dosyaları",
+  "addMusicFolder": "Müzik Klasörü Ekle",
+  "rescanLocalMusic": "Yerel Müziği Yeniden Tara",
+  "localLibraryEmpty": "Kütüphanen boş",
+  "localLibraryEmptySubtitle": "Yerel müzik dosyası bulunamadı. Tekrar taramak için aşağıdaki düğmeye dokunun.",
+  "libraryEmpty": "Kütüphanen boş",
+  "libraryEmptySubtitle": "Başlamak için birkaç şarkı ekle.",
+  "scanForMusic": "Müzik Tara",
+  "radioStations": "Radyo İstasyonları",
+  "playlist": "Çalma Listesi",
+  "internetRadio": "İnternet Radyosu",
+  "newPlaylist": "Yeni Çalma Listesi",
+  "playlistName": "Çalma Listesi Adı",
+  "create": "Oluştur",
+  "deletePlaylist": "Çalma Listesini Sil",
+  "deletePlaylistConfirmation": "\"{name}\" çalma listesini silmek istediğinize emin misiniz?",
+  "@deletePlaylistConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDeleted": "\"{name}\" çalma listesi silindi",
+  "@playlistDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCreatingPlaylist": "Çalma listesi oluşturulamadı: {error}",
+  "@errorCreatingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "errorDeletingPlaylist": "Çalma listesi silinemedi: {error}",
+  "@errorDeletingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "playlistCreated": "\"{name}\" çalma listesi oluşturuldu",
+  "@playlistCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_SEARCH": {},
+  "searchTitle": "Ara",
+  "searchPlaceholder": "Sanatçılar, Şarkılar, Albümler",
+  "tryDifferentSearch": "Farklı bir arama deneyin",
+  "noSuggestions": "Öneri yok",
+  "browseCategories": "Kategorilere Göz At",
+  "liveSearchSection": "Arama",
+  "liveSearch": "Canlı Arama",
+  "liveSearchSubtitle": "Yazarken sonuçları anında güncelle",
+  "categoryMadeForYou": "Senin İçin",
+  "categoryNewReleases": "Yeni Çıkanlar",
+  "categoryTopRated": "En Beğenilenler",
+  "categoryGenres": "Türler",
+  "categoryFavorites": "Favoriler",
+  "categoryRadio": "Radyo",
   "@_SETTINGS_GENERAL": {},
+  "settingsTitle": "Ayarlar",
+  "tabPlayback": "Oynatma",
+  "tabStorage": "Depolama",
+  "tabServer": "Sunucu",
+  "tabDisplay": "Görünüm",
+  "tabSupport": "Destek",
+  "tabAbout": "Hakkında",
   "@_SETTINGS_PLAYBACK": {},
+  "sectionAutoDj": "OTOMATİK DJ",
+  "autoDjMode": "Otomatik DJ Modu",
+  "songsToAdd": "Eklenecek Şarkı: {count}",
+  "@songsToAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionReplayGain": "SES NORMALİZASYONU (REPLAYGAIN)",
+  "replayGainMode": "Mod",
+  "preamp": "Ön Kazanç: {value} dB",
+  "@preamp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "preventClipping": "Kırpılmayı Önle",
+  "fallbackGain": "Varsayılan Kazanç: {value} dB",
+  "@fallbackGain": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionStreamingQuality": "YAYIN KALİTESİ",
+  "enableTranscoding": "Dönüştürmeyi Etkinleştir",
+  "qualityWifi": "Wi-Fi Kalitesi",
+  "qualityMobile": "Mobil Veri Kalitesi",
+  "format": "Format",
+  "transcodingSubtitle": "Daha düşük kaliteyle veri kullanımını azalt",
+  "modeOff": "Kapalı",
+  "modeTrack": "Parça",
+  "modeAlbum": "Albüm",
   "@_SETTINGS_SERVER": {},
+  "sectionServerConnection": "SUNUCU BAĞLANTISI",
+  "serverType": "Sunucu Türü",
+  "notConnected": "Bağlı Değil",
+  "unknown": "Bilinmeyen",
+  "sectionMusicFolders": "MÜZİK KLASÖRLERİ",
+  "musicFolders": "Müzik Klasörleri",
+  "noMusicFolders": "Müzik klasörü bulunamadı",
+  "sectionSavedProfiles": "KAYITLI PROFİLLER",
+  "switchProfile": "Profil Değiştir",
+  "switchServer": "Sunucu Değiştir",
+  "addProfile": "Profil Ekle",
+  "switchProfileConfirmation": "\"{profile}\" profiline bağlanılsın mı?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionAccount": "HESAP",
+  "logoutConfirmation": "Çıkış yapmak istediğinize emin misiniz? Bu işlem tüm önbellek verilerini de temizleyecek.",
   "@_SETTINGS_STORAGE": {},
+  "sectionCacheSettings": "ÖNBELLEK AYARLARI",
+  "imageCache": "Görsel Önbelleği",
+  "musicCache": "Müzik Önbelleği",
+  "bpmCache": "BPM Önbelleği",
+  "saveAlbumCovers": "Albüm kapaklarını yerel olarak kaydet",
+  "saveSongMetadata": "Şarkı meta verilerini yerel olarak kaydet",
+  "saveBpmAnalysis": "BPM analizlerini yerel olarak kaydet",
+  "sectionCacheCleanup": "ÖNBELLEK TEMİZLİĞİ",
+  "clearAllCache": "Tüm Önbelleği Temizle",
+  "allCacheCleared": "Tüm önbellek temizlendi",
+  "sectionOfflineDownloads": "ÇEVRİMDIŞI İNDİRMELER",
+  "downloadedSongs": "İndirilen Şarkılar",
+  "downloadingLibrary": "Kütüphane indiriliyor... {progress}/{total}",
+  "@downloadingLibrary": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadAllLibrary": "Tüm Kütüphaneyi İndir",
+  "downloadLibraryConfirm": "Bu işlem {count} şarkıyı cihazınıza indirecek. İşlem biraz zaman alabilir ve yüksek depolama alanı kullanabilir. \n\nDevam edilsin mi?",
+  "@downloadLibraryConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "keepScreenOnDuringDownload": "Ekranı Açık Tut",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Cihaz kilitlendiğinde indirmenin durmasını önler",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "Paralel İndirmeler",
+  "parallelDownloadsSubtitle": "Birden fazla şarkıyı aynı anda indir",
+  "downloadSingular": "indirme",
+  "downloadPlural": "indirmeler",
+  "slowerButStable": "Daha yavaş ama daha stabil",
+  "fasterButMoreData": "Daha hızlı ama daha fazla veri kullanır",
+  "libraryDownloadStarted": "Kütüphane indirmesi başlatıldı",
+  "deleteDownloads": "Tüm İndirmeleri Sil",
+  "downloadsDeleted": "Tüm indirmeler silindi",
+  "noSongsAvailable": "Şarkı bulunamadı. Lütfen önce kütüphanenizi yükleyin.",
+  "sectionBpmAnalysis": "BPM ANALİZİ",
+  "cachedBpms": "Önbelleğe Alınan BPM’ ler",
+  "cacheAllBpms": "Tüm BPM’leri Önbelleğe Al",
+  "clearBpmCache": "BPM Önbelleğini Temizle",
+  "bpmCacheCleared": "BPM önbelleği temizlendi",
+  "downloadedStats": "{count} şarkı • {size}",
+  "@downloadedStats": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "@_SETTINGS_ABOUT": {},
+  "sectionInformation": "BİLGİ",
+  "sectionDeveloper": "GELİŞTİRİCİ",
+  "sectionLinks": "BAĞLANTILAR",
+  "githubRepo": "GitHub Deposu",
   "@_PLAYER_AND_MENUS": {},
+  "playingFrom": "ÇALINAN KAYNAK",
+  "live": "CANLI",
+  "streamingLive": "Canlı Yayın",
+  "stopRadio": "Radyoyu Durdur",
+  "removeFromLiked": "Beğenilen Şarkılardan Kaldır",
+  "addToLiked": "Beğenilen Şarkılara Ekle",
+  "playNext": "Sıradaki Olarak Çal",
+  "addToQueue": "Kuyruğa Ekle",
+  "goToAlbum": "Albüme Git",
+  "goToArtist": "Sanatçıya Git",
+  "rateSong": "Şarkıyı Puanla",
+  "rateSongValue": "Şarkıyı Puanla ({rating} {stars})",
+  "@rateSongValue": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "stars": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingRemoved": "Puan kaldırıldı",
+  "rated": "{rating} {stars} olarak puanlandı",
+  "@rated": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "stars": {
+        "type": "String"
+      }
+    }
+  },
+  "removeRating": "Puanı Kaldır",
+  "downloaded": "İndirildi",
+  "downloading": "İndiriliyor... %{percent}",
+  "@downloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "removeDownload": "İndirilenleri Kaldır",
+  "removeDownloadConfirm": "Bu şarkı çevrimdışı depodan kaldırılsın mı?",
+  "downloadRemoved": "İndirilen içerik kaldırıldı",
+  "downloadedTitle": "\"{title}\" indirildi",
+  "@downloadedTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "İndirme başarısız",
+  "downloadError": "İndirme hatası: {error}",
+  "@downloadError": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "addedToPlaylist": "\"{title}\", {playlist} listesine eklendi",
+  "@addedToPlaylist": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "playlist": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAddingToPlaylist": "Çalma listesine eklenemedi: {error}",
+  "@errorAddingToPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "noPlaylists": "Kullanılabilir çalma listesi yok",
+  "createNewPlaylist": "Yeni Çalma Listesi Oluştur",
+  "artistNotFound": "\"{name}\" sanatçısı bulunamadı",
+  "@artistNotFound": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorSearchingArtist": "Sanatçı aranırken hata oluştu: {error}",
+  "@errorSearchingArtist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "selectArtist": "Sanatçı Seç",
+  "removedFromFavorites": "Favorilerden kaldırıldı",
+  "addedToFavorites": "Favorilere eklendi",
+  "star": "yıldız",
+  "stars": "yıldızlar",
   "@_ALBUM_ARTIST_SCREENS": {},
+  "albumNotFound": "Albüm bulunamadı",
+  "@albumNotFound": {
+    "description": "Message when album data is not available"
+  },
+  "durationHoursMinutes": "{hours} SA {minutes} DK",
+  "@durationHoursMinutes": {
+    "description": "Album duration in hours and minutes",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{minutes} DK",
+  "@durationMinutes": {
+    "description": "Album duration in minutes only",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "topSongs": "En Popüler Şarkılar",
+  "@topSongs": {
+    "description": "Top songs section header on artist screen"
+  },
+  "connected": "Bağlandı",
+  "@connected": {
+    "description": "Server connection status — connected"
+  },
   "@_PLAYER_SCREENS": {},
+  "noSongPlaying": "Çalan şarkı yok",
+  "@noSongPlaying": {
+    "description": "Placeholder when no song is loaded in the player"
+  },
+  "internetRadioUppercase": "İNTERNET RADYOSU",
+  "@internetRadioUppercase": {
+    "description": "Uppercase badge shown in the now-playing radio player"
+  },
+  "playingNext": "Sırada Çalacak",
+  "@playingNext": {
+    "description": "Title of the queue / playing-next bottom sheet"
+  },
+  "createPlaylistTitle": "Çalma Listesi Oluştur",
+  "@createPlaylistTitle": {
+    "description": "Title of the create-new-playlist dialog"
+  },
+  "playlistNameHint": "Çalma listesi adı",
+  "@playlistNameHint": {
+    "description": "Hint text for playlist name input"
+  },
+  "playlistCreatedWithSong": "\"{name}\" çalma listesi bu şarkıyla oluşturuldu",
+  "@playlistCreatedWithSong": {
+    "description": "Snackbar shown after creating a playlist with the current song",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingPlaylists": "Çalma listeleri yüklenemedi: {error}",
+  "@errorLoadingPlaylists": {
+    "description": "Snackbar shown when playlists fail to load",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_PLAYLIST_SCREEN": {},
+  "playlistNotFound": "Çalma listesi bulunamadı",
+  "@playlistNotFound": {
+    "description": "Message when a playlist cannot be found"
+  },
+  "noSongsInPlaylist": "Bu çalma listesinde şarkı yok",
+  "@noSongsInPlaylist": {
+    "description": "Empty state message for a playlist with no songs"
+  },
   "@_FAVORITES_SCREEN": {},
+  "noFavoriteSongsYet": "Henüz favori şarkı yok",
+  "@noFavoriteSongsYet": {
+    "description": "Empty state for the favorite songs list"
+  },
+  "noFavoriteAlbumsYet": "Henüz favori albüm yok",
+  "@noFavoriteAlbumsYet": {
+    "description": "Empty state for the favorite albums list"
+  },
   "@_HISTORY_SCREEN": {},
+  "listeningHistory": "Dinleme Geçmişi",
+  "@listeningHistory": {
+    "description": "Title of the listening history screen"
+  },
+  "noListeningHistory": "Dinleme geçmişi yok",
+  "@noListeningHistory": {
+    "description": "Empty state headline on the history screen"
+  },
+  "songsWillAppearHere": "Çaldığınız şarkılar burada görünecek",
+  "@songsWillAppearHere": {
+    "description": "Empty state subtitle on the history screen"
+  },
   "@_SORT_OPTIONS": {},
+  "sortByTitleAZ": "Başlık (A-Z)",
+  "@sortByTitleAZ": {
+    "description": "Sort option: title ascending"
+  },
+  "sortByTitleZA": "Başlık (Z-A)",
+  "@sortByTitleZA": {
+    "description": "Sort option: title descending"
+  },
+  "sortByArtistAZ": "Sanatçı (A-Z)",
+  "@sortByArtistAZ": {
+    "description": "Sort option: artist ascending"
+  },
+  "sortByArtistZA": "Sanatçı (Z-A)",
+  "@sortByArtistZA": {
+    "description": "Sort option: artist descending"
+  },
+  "sortByAlbumAZ": "Albüm (A-Z)",
+  "@sortByAlbumAZ": {
+    "description": "Sort option: album ascending"
+  },
+  "sortByAlbumZA": "Albüm (Z-A)",
+  "@sortByAlbumZA": {
+    "description": "Sort option: album descending"
+  },
+  "recentlyAdded": "Son Eklenenler",
+  "@recentlyAdded": {
+    "description": "Sort option: recently added"
+  },
+  "noSongsFound": "Şarkı bulunamadı",
+  "@noSongsFound": {
+    "description": "Empty state when no songs match a filter"
+  },
+  "noAlbumsFound": "Albüm bulunamadı",
+  "@noAlbumsFound": {
+    "description": "No albums found message"
+  },
   "@_RADIO_SCREEN": {},
+  "noHomepageUrl": "Ana sayfa bağlantısı bulunamadı",
+  "@noHomepageUrl": {
+    "description": "Snackbar when a radio station has no homepage URL"
+  },
+  "playStation": "İstasyonu Çal",
+  "@playStation": {
+    "description": "Context menu option to play a radio station"
+  },
+  "openHomepage": "Ana Sayfayı Aç",
+  "@openHomepage": {
+    "description": "Context menu option to open a radio station's homepage"
+  },
+  "copyStreamUrl": "Yayın URL’sini Kopyala",
+  "@copyStreamUrl": {
+    "description": "Context menu option to copy a radio station stream URL"
+  },
+  "failedToLoadRadioStations": "Radyo istasyonları yüklenemedi",
+  "@failedToLoadRadioStations": {
+    "description": "Error message when radio stations fail to load"
+  },
+  "noRadioStations": "Radyo istasyonu yok",
+  "@noRadioStations": {
+    "description": "Empty state title for radio stations"
+  },
+  "noRadioStationsHint": "Burada görmek için Navidrome sunucu ayarlarından radyo istasyonları ekleyin.",
+  "@noRadioStationsHint": {
+    "description": "Empty state subtitle on the radio screen"
+  },
   "@_LOGIN_SCREEN": {},
+  "connectToServerSubtitle": "Subsonic sunucuna bağlan",
+  "@connectToServerSubtitle": {
+    "description": "Subtitle below the app name on the login screen"
+  },
+  "pleaseEnterServerUrl": "Lütfen sunucu URL’si girin",
+  "@pleaseEnterServerUrl": {
+    "description": "Validation message when server URL is empty"
+  },
+  "invalidUrlFormat": "URL, http:// veya https:// ile başlamalıdır",
+  "@invalidUrlFormat": {
+    "description": "Validation message when server URL format is invalid"
+  },
+  "pleaseEnterUsername": "Lütfen kullanıcı adı girin",
+  "@pleaseEnterUsername": {
+    "description": "Validation message when username is empty"
+  },
+  "pleaseEnterPassword": "Lütfen şifre girin",
+  "@pleaseEnterPassword": {
+    "description": "Validation message when password is empty"
+  },
+  "legacyAuthentication": "Eski Kimlik Doğrulama",
+  "@legacyAuthentication": {
+    "description": "Toggle label for legacy Subsonic authentication"
+  },
+  "legacyAuthSubtitle": "Eski Subsonic sunucuları için kullanılır",
+  "@legacyAuthSubtitle": {
+    "description": "Subtitle for the legacy authentication toggle"
+  },
+  "allowSelfSignedCerts": "Self-Signed Sertifikalara İzin Ver",
+  "@allowSelfSignedCerts": {
+    "description": "Toggle label to allow self-signed TLS certificates"
+  },
+  "allowSelfSignedSubtitle": "Özel TLS/SSL sertifikalı sunucular için",
+  "@allowSelfSignedSubtitle": {
+    "description": "Subtitle for the self-signed certificate toggle"
+  },
+  "advancedOptions": "Gelişmiş Seçenekler",
+  "@advancedOptions": {
+    "description": "Expandable section label for advanced login options"
+  },
+  "customTlsCertificate": "Özel TLS/SSL Sertifikası",
+  "@customTlsCertificate": {
+    "description": "Label for the custom certificate upload section"
+  },
+  "customCertificateSubtitle": "Standart olmayan CA kullanan sunucular için özel sertifika yükleyin",
+  "@customCertificateSubtitle": {
+    "description": "Subtitle for the custom certificate upload section"
+  },
+  "selectCertificateFile": "Sertifika Dosyası Seç",
+  "@selectCertificateFile": {
+    "description": "Button label to open the certificate file picker"
+  },
+  "clientCertificate": "İstemci Sertifikası (mTLS)",
+  "@clientCertificate": {
+    "description": "Label for the mutual TLS client certificate section"
+  },
+  "clientCertificateSubtitle": "Bu istemciyi sertifika ile doğrula (mTLS etkin sunucu gerekir)",
+  "@clientCertificateSubtitle": {
+    "description": "Subtitle for the client certificate (mTLS) section"
+  },
+  "selectClientCertificate": "İstemci Sertifikası Seç",
+  "@selectClientCertificate": {
+    "description": "Button label to open the client certificate file picker"
+  },
+  "clientCertPassword": "Sertifika şifresi (isteğe bağlı)",
+  "@clientCertPassword": {
+    "description": "Hint text for the PKCS12 client certificate password field"
+  },
+  "failedToSelectClientCert": "İstemci sertifikası seçilemedi: {error}",
+  "@failedToSelectClientCert": {
+    "description": "Error message when client certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "connect": "Bağlan",
+  "@connect": {
+    "description": "Login submit button label"
+  },
+  "or": "VEYA",
+  "@or": {
+    "description": "Divider label between Connect and Use Local Files"
+  },
+  "useLocalFiles": "Yerel Dosyaları Kullan",
+  "@useLocalFiles": {
+    "description": "Button label to start local-files mode"
+  },
+  "startingScan": "Tarama başlatılıyor...",
+  "@startingScan": {
+    "description": "Initial status message when a local file scan begins"
+  },
+  "storagePermissionRequired": "Yerel dosyaları taramak için depolama izni gerekli",
+  "@storagePermissionRequired": {
+    "description": "Snackbar message when storage permission is needed"
+  },
+  "noMusicFilesFound": "Cihazınızda müzik dosyası bulunamadı",
+  "@noMusicFilesFound": {
+    "description": "Snackbar when a local scan finds no audio files"
+  },
   "@_COMMON_ACTIONS": {},
+  "remove": "Kaldır",
+  "@remove": {
+    "description": "Button to remove an item"
+  },
+  "failedToSetRating": "Puanlama başarısız: {error}",
+  "@failedToSetRating": {
+    "description": "Snackbar shown when setting a star rating fails",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_DESKTOP_SIDEBAR": {},
+  "home": "Ana Sayfa",
+  "@home": {
+    "description": "Home navigation item label in the desktop sidebar"
+  },
+  "playlistsSection": "ÇALMA LİSTELERİ",
+  "@playlistsSection": {
+    "description": "Uppercase section header for playlists in the desktop sidebar"
+  },
+  "collapse": "Daralt",
+  "@collapse": {
+    "description": "Tooltip/label for the sidebar collapse button"
+  },
+  "expand": "Genişlet",
+  "@expand": {
+    "description": "Tooltip/label for the sidebar expand button"
+  },
+  "createPlaylist": "Çalma Listesi Oluştur",
+  "@createPlaylist": {
+    "description": "Tooltip/label for the create-playlist button in the sidebar library header"
+  },
+  "likedSongsSidebar": "Beğenilen Şarkılar",
+  "@likedSongsSidebar": {
+    "description": "Liked Songs item label in the desktop sidebar"
+  },
+  "playlistSongsCount": "Çalma Listesi • {count} şarkı",
+  "@playlistSongsCount": {
+    "description": "Subtitle for a playlist item in the desktop sidebar",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@_LYRICS": {},
+  "failedToLoadLyrics": "Şarkı sözleri yüklenemedi",
+  "@failedToLoadLyrics": {
+    "description": "Error state message when lyrics cannot be loaded"
+  },
+  "lyricsNotFoundSubtitle": "Bu şarkının sözleri bulunamadı",
+  "@lyricsNotFoundSubtitle": {
+    "description": "Empty/error subtitle in the lyrics view"
+  },
+  "backToCurrent": "Şu An Çalana Dön",
+  "@backToCurrent": {
+    "description": "Button to scroll the lyrics view back to the current line"
+  },
+  "exitFullscreen": "Tam Ekrandan Çık",
+  "@exitFullscreen": {
+    "description": "Tooltip for the exit-fullscreen button in lyrics view"
+  },
+  "fullscreen": "Tam Ekran",
+  "@fullscreen": {
+    "description": "Tooltip for the enter-fullscreen button in lyrics view"
+  },
+  "noLyrics": "Şarkı sözü yok",
+  "@noLyrics": {
+    "description": "Fallback text when no lyrics controller is available"
+  },
+  "internetRadioMiniPlayer": "İnternet Radyosu",
+  "@internetRadioMiniPlayer": {
+    "description": "Subtitle shown in the mini player when streaming internet radio"
+  },
+  "liveBadge": "CANLI",
+  "@liveBadge": {
+    "description": "Badge text shown in the mini player for live radio streams"
+  },
   "@_BANNERS": {},
+  "localFilesModeBanner": "Yerel Dosya Modu",
+  "@localFilesModeBanner": {
+    "description": "Banner shown at the top of the screen in local-files mode"
+  },
+  "offlineModeBanner": "Çevrimdışı Mod – Yalnızca indirilen müzikler çalınıyor",
+  "@offlineModeBanner": {
+    "description": "Banner shown at the top of the screen in offline mode"
+  },
   "@_UPDATE_DIALOG": {},
+  "updateAvailable": "Güncelleme Mevcut",
+  "@updateAvailable": {
+    "description": "Title of the update available dialog"
+  },
+  "updateAvailableSubtitle": "Musly’nin yeni bir sürümü mevcut!",
+  "@updateAvailableSubtitle": {
+    "description": "Subtitle in the update dialog"
+  },
+  "updateCurrentVersion": "Mevcut: v{version}",
+  "@updateCurrentVersion": {
+    "description": "Current version label in the update dialog",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateLatestVersion": "En Son: v{version}",
+  "@updateLatestVersion": {
+    "description": "Latest version label in the update dialog",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNew": "Yenilikler",
+  "@whatsNew": {
+    "description": "Section header for the changelog in the update dialog"
+  },
+  "downloadUpdate": "İndir",
+  "@downloadUpdate": {
+    "description": "Primary button in the update dialog that opens the release page"
+  },
+  "remindLater": "Daha Sonra",
+  "@remindLater": {
+    "description": "Dismiss button in the update dialog"
+  },
+  "seeAll": "Tümünü Gör",
+  "@seeAll": {
+    "description": "See All button in horizontal scroll sections"
+  },
   "@_ARTIST_SCREEN": {},
+  "artistDataNotFound": "Sanatçı bulunamadı",
+  "@artistDataNotFound": {
+    "description": "Error state on the artist screen when artist data fails to load"
+  },
+  "addedArtistToQueue": "Sanatçı kuyruğa eklendi",
+  "@addedArtistToQueue": {
+    "description": "Snackbar when user adds artist to queue"
+  },
+  "addedArtistToQueueError": "Sanatçı kuyruğa eklenemedi",
+  "@addedArtistToQueueError": {
+    "description": "Error shown in snackbar when adding artist to queue fails"
+  },
   "@_CAST_DLNA": {},
+  "casting": "Yayın Aktarma",
+  "@casting": {
+    "description": "Title shown in the Chromecast control dialog when actively casting"
+  },
+  "dlna": "DLNA",
+  "@dlna": {
+    "description": "Title shown in the DLNA control dialog when connected"
+  },
+  "castDlnaBeta": "Cast / DLNA (Beta)",
+  "@castDlnaBeta": {
+    "description": "Title of the Cast/DLNA device picker dialog"
+  },
+  "chromecast": "Chromecast",
+  "@chromecast": {
+    "description": "Section header for Chromecast devices in the device picker"
+  },
+  "dlnaUpnp": "DLNA / UPnP",
+  "@dlnaUpnp": {
+    "description": "Section header for DLNA/UPnP devices in the device picker"
+  },
+  "disconnect": "Bağlantıyı Kes",
+  "@disconnect": {
+    "description": "Button to clear server credentials and go back to login"
+  },
+  "searchingDevices": "Cihazlar aranıyor",
+  "@searchingDevices": {
+    "description": "Loading message in the device picker when no devices have been found yet"
+  },
+  "castWifiHint": "Cast / DLNA cihazınızın aynı Wi-Fi ağında olduğundan emin olun",
+  "@castWifiHint": {
+    "description": "Hint shown while searching for cast/DLNA devices"
+  },
+  "connectedToDevice": "{name} cihazına bağlandı",
+  "@connectedToDevice": {
+    "description": "Snackbar shown after successfully connecting to a cast/DLNA device",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToConnectDevice": "{name} cihazına bağlanılamadı",
+  "@failedToConnectDevice": {
+    "description": "Snackbar shown when connecting to a cast/DLNA device fails",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@_LIKED_SONGS_SNACKBARS": {},
+  "removedFromLikedSongs": "Beğenilen Şarkılardan kaldırıldı",
+  "@removedFromLikedSongs": {
+    "description": "Snackbar shown after un-liking a song in the song tile menu"
+  },
+  "addedToLikedSongs": "Beğenilen Şarkılara eklendi",
+  "@addedToLikedSongs": {
+    "description": "Snackbar shown after liking a song in the song tile menu"
+  },
   "@_PLAYER_BAR": {},
+  "enableShuffle": "Karıştırmayı Aç",
+  "@enableShuffle": {
+    "description": "Tooltip for the shuffle toggle button in the desktop player bar"
+  },
+  "enableRepeat": "Tekrarı Aç",
+  "@enableRepeat": {
+    "description": "Tooltip for the repeat toggle button in the desktop player bar"
+  },
   "@_CAST_TOOLTIPS": {},
+  "connecting": "Bağlanıyor",
+  "@connecting": {
+    "description": "Tooltip for the cast button when connecting to a device"
+  },
+  "closeLyrics": "Şarkı Sözlerini Kapat",
+  "@closeLyrics": {
+    "description": "Tooltip for the lyrics button when lyrics panel is open"
+  },
   "@_ERROR_MESSAGES": {},
+  "errorStartingDownload": "İndirme başlatılamadı: {error}",
+  "@errorStartingDownload": {
+    "description": "Snackbar shown when the library background download fails to start",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "@_GENRE_SCREEN": {},
+  "errorLoadingGenres": "Türler yüklenemedi",
+  "@errorLoadingGenres": {
+    "description": "Error message when the genre list fails to load"
+  },
+  "noGenresFound": "Tür bulunamadı",
+  "@noGenresFound": {
+    "description": "Empty state when no genres are returned from the server"
+  },
+  "noAlbumsInGenre": "Bu türde albüm yok",
+  "@noAlbumsInGenre": {
+    "description": "Empty state on the Albums tab of the genre screen"
+  },
+  "genreTooltip": "{songCount} şarkı • {albumCount} albüm",
+  "@genreTooltip": {
+    "description": "Tooltip shown when hovering a genre chip, showing song and album counts",
+    "placeholders": {
+      "songCount": {
+        "type": "int"
+      },
+      "albumCount": {
+        "type": "int"
+      }
+    }
+  },
   "@_JUKEBOX": {},
+  "sectionJukebox": "JUKEBOX MODU",
+  "@sectionJukebox": {
+    "description": "Section header for the jukebox settings in the Server tab"
+  },
+  "jukeboxMode": "Jukebox Modu",
+  "@jukeboxMode": {
+    "description": "Toggle label for enabling jukebox mode"
+  },
+  "jukeboxModeSubtitle": "Sesi bu cihaz yerine sunucu üzerinden oynat",
+  "@jukeboxModeSubtitle": {
+    "description": "Subtitle for the jukebox mode toggle"
+  },
+  "openJukeboxController": "Jukebox Denetleyicisini Aç",
+  "@openJukeboxController": {
+    "description": "List tile label to navigate to the jukebox controller screen"
+  },
+  "jukeboxClearQueue": "Kuyruğu Temizle",
+  "@jukeboxClearQueue": {
+    "description": "Action label to clear the jukebox playback queue"
+  },
+  "jukeboxShuffleQueue": "Kuyruğu Karıştır",
+  "@jukeboxShuffleQueue": {
+    "description": "Action label to shuffle the jukebox playback queue"
+  },
+  "jukeboxQueueEmpty": "Kuyrukta şarkı yok",
+  "@jukeboxQueueEmpty": {
+    "description": "Empty state when the jukebox queue has no songs"
+  },
+  "jukeboxNowPlaying": "Şimdi Çalıyor",
+  "@jukeboxNowPlaying": {
+    "description": "Section header for the now-playing area in the jukebox controller"
+  },
+  "jukeboxQueue": "Kuyruk",
+  "@jukeboxQueue": {
+    "description": "Section header for the queue list in the jukebox controller"
+  },
+  "jukeboxVolume": "Ses Seviyesi",
+  "@jukeboxVolume": {
+    "description": "Label for the volume slider in the jukebox controller"
+  },
+  "playOnJukebox": "Jukebox’ta Çal",
+  "@playOnJukebox": {
+    "description": "Option to replace the jukebox queue with this song and start playback"
+  },
+  "addToJukeboxQueue": "Jukebox Kuyruğuna Ekle",
+  "@addToJukeboxQueue": {
+    "description": "Option to append a song to the jukebox queue"
+  },
+  "jukeboxNotSupported": "Jukebox modu bu sunucu tarafından desteklenmiyor. Sunucu yapılandırmanızdan etkinleştirin (ör. Navidrome’da EnableJukebox = true).",
+  "@jukeboxNotSupported": {
+    "description": "Error shown when the server returns 501 for jukebox API calls"
+  },
   "@_MUSIC_FOLDERS": {},
-  "audioFocusDenied": "Oynatma başlatılamadı — ses odağı başka bir uygulamada"
+  "musicFoldersDialogTitle": "Müzik Klasörlerini Seç",
+  "@musicFoldersDialogTitle": {
+    "description": "Title of the music folders selection dialog"
+  },
+  "musicFoldersHint": "Tüm klasörleri kullanmak için hepsini etkin bırakın (varsayılan).",
+  "@musicFoldersHint": {
+    "description": "Hint text in the music folders selection dialog"
+  },
+  "musicFoldersSaved": "Müzik klasörü seçimi kaydedildi",
+  "@musicFoldersSaved": {
+    "description": "Snackbar shown after saving music folder selection"
+  },
+  "artworkStyleSection": "Kapak Görseli Stili",
+  "@artworkStyleSection": {
+    "description": "Display settings section header for artwork customisation"
+  },
+  "artworkCornerRadius": "Köşe Yuvarlaklığı",
+  "@artworkCornerRadius": {
+    "description": "Label for the album art corner radius slider"
+  },
+  "artworkCornerRadiusSubtitle": "Albüm kapaklarının köşe yuvarlaklığını ayarla",
+  "@artworkCornerRadiusSubtitle": {
+    "description": "Subtitle for the album art corner radius slider"
+  },
+  "artworkCornerRadiusNone": "Yok",
+  "@artworkCornerRadiusNone": {
+    "description": "Label shown when corner radius is set to 0 (no rounded corners)"
+  },
+  "artworkShape": "Şekil",
+  "@artworkShape": {
+    "description": "Label for the artwork shape selector"
+  },
+  "artworkShapeRounded": "Yuvarlatılmış",
+  "@artworkShapeRounded": {
+    "description": "Rounded rectangle artwork shape option"
+  },
+  "artworkShapeCircle": "Daire",
+  "@artworkShapeCircle": {
+    "description": "Circle artwork shape option"
+  },
+  "artworkShapeSquare": "Kare",
+  "@artworkShapeSquare": {
+    "description": "Square (no rounding) artwork shape option"
+  },
+  "artworkShadow": "Gölge",
+  "@artworkShadow": {
+    "description": "Label for the artwork shadow intensity selector"
+  },
+  "artworkShadowNone": "Yok",
+  "@artworkShadowNone": {
+    "description": "No shadow option for artwork"
+  },
+  "artworkShadowSoft": "Yumuşak",
+  "@artworkShadowSoft": {
+    "description": "Soft shadow option for artwork"
+  },
+  "artworkShadowMedium": "Orta",
+  "@artworkShadowMedium": {
+    "description": "Medium shadow option for artwork"
+  },
+  "artworkShadowStrong": "Güçlü",
+  "@artworkShadowStrong": {
+    "description": "Strong shadow option for artwork"
+  },
+  "artworkShadowColor": "Gölge Rengi",
+  "@artworkShadowColor": {
+    "description": "Label for the artwork shadow color selector"
+  },
+  "artworkShadowColorBlack": "Siyah",
+  "@artworkShadowColorBlack": {
+    "description": "Black shadow color option"
+  },
+  "artworkShadowColorAccent": "Vurgu",
+  "@artworkShadowColorAccent": {
+    "description": "Accent color shadow (matches app accent color)"
+  },
+  "artworkPreview": "Önizleme",
+  "@artworkPreview": {
+    "description": "Label shown above the live artwork style preview"
+  },
+  "artworkCornerRadiusLabel": "{value}px",
+  "@artworkCornerRadiusLabel": {
+    "description": "Formatted corner radius value label",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "noArtwork": "Kapak görseli yok",
+  "@noArtwork": {
+    "description": "Placeholder label shown in the player when a song has no cover art"
+  },
+  "serverUnreachableTitle": "Sunucuya ulaşılamıyor",
+  "@serverUnreachableTitle": {
+    "description": "Title on the server-unreachable screen"
+  },
+  "serverUnreachableSubtitle": "Bağlantınızı veya sunucunuzu kontrol edin.",
+  "@serverUnreachableSubtitle": {
+    "description": "Subtitle on the server-unreachable screen"
+  },
+  "openOfflineMode": "Çevrimdışı modda aç",
+  "@openOfflineMode": {
+    "description": "Button to enter offline mode from the server-unreachable screen"
+  },
+  "appearanceSection": "Görünüm",
+  "@appearanceSection": {
+    "description": "Display settings section header for theme / appearance"
+  },
+  "themeLabel": "Tema",
+  "@themeLabel": {
+    "description": "Label for the theme mode selector (System / Light / Dark)"
+  },
+  "accentColorLabel": "Vurgu rengi",
+  "@accentColorLabel": {
+    "description": "Label for the accent color picker"
+  },
+  "circularDesignLabel": "Yuvarlak Tasarım",
+  "@circularDesignLabel": {
+    "description": "Label for the Circular Design (glass-blur UI) toggle"
+  },
+  "circularDesignSubtitle": "Oynatıcı ve gezinme çubuğunda yarı saydam paneller ile cam bulanıklığı efektine sahip yuvarlak arayüz.",
+  "@circularDesignSubtitle": {
+    "description": "Subtitle describing the Circular Design visual style"
+  },
+  "themeModeSystem": "Sistem",
+  "@themeModeSystem": {
+    "description": "Theme mode option that follows the OS setting"
+  },
+  "themeModeLight": "Açık",
+  "@themeModeLight": {
+    "description": "Light theme mode option"
+  },
+  "themeModeDark": "Koyu",
+  "@themeModeDark": {
+    "description": "Dark theme mode option"
+  },
+  "@internetRadio": {
+    "description": "Subtitle shown in the mini player and player bar when a radio station is playing"
+  },
+  "liveLabel": "CANLI",
+  "@liveLabel": {
+    "description": "Badge shown next to a live radio stream"
+  },
+  "discordStatusText": "Discord durum metni",
+  "@discordStatusText": {
+    "description": "Settings label for the Discord Rich Presence second-line style"
+  },
+  "discordStatusTextSubtitle": "Discord etkinliğinde gösterilen ikinci satır",
+  "@discordStatusTextSubtitle": {
+    "description": "Subtitle for the Discord status text setting"
+  },
+  "discordRpcStyleArtist": "Sanatçı adı",
+  "@discordRpcStyleArtist": {
+    "description": "Discord RPC state style option: show artist name"
+  },
+  "discordRpcStyleSong": "Şarkı adı",
+  "@discordRpcStyleSong": {
+    "description": "Discord RPC state style option: show song title"
+  },
+  "discordRpcStyleApp": "Uygulama adı (Musly)",
+  "@discordRpcStyleApp": {
+    "description": "Discord RPC state style option: show app name"
+  },
+  "@sectionAutoDj": {
+    "description": "Playback settings section header for Auto DJ"
+  },
+  "sectionVolumeNormalization": "SES NORMALİZASYONU (REPLAYGAIN)",
+  "@sectionVolumeNormalization": {
+    "description": "Playback settings section header for ReplayGain"
+  },
+  "@sectionStreamingQuality": {
+    "description": "Playback settings section header for transcoding / streaming quality"
+  },
+  "sectionFadeInOut": "SES GEÇİŞLERİ",
+  "@sectionFadeInOut": {
+    "description": "Playback settings section header for fade in/out audio"
+  },
+  "fadeInOutEnable": "Ses Geçişlerini Etkinleştir",
+  "@fadeInOutEnable": {
+    "description": "Toggle label to enable fade in/out audio effect"
+  },
+  "fadeInOutSubtitle": "Oynatma ve duraklatma sırasında sesi yumuşak şekilde artırıp azaltır.",
+  "@fadeInOutSubtitle": {
+    "description": "Subtitle explaining fade in/out functionality"
+  },
+  "fadeDuration": "Geçiş Süresi: {duration} ms",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
+  "@replayGainMode": {
+    "description": "Label for the ReplayGain mode selector"
+  },
+  "replayGainModeOff": "Kapalı",
+  "@replayGainModeOff": {
+    "description": "ReplayGain mode: disabled"
+  },
+  "replayGainModeTrack": "Parça",
+  "@replayGainModeTrack": {
+    "description": "ReplayGain mode: per-track normalization"
+  },
+  "replayGainModeAlbum": "Albüm",
+  "@replayGainModeAlbum": {
+    "description": "ReplayGain mode: album-level normalization"
+  },
+  "replayGainPreamp": "Ön yükseltme: {value} dB",
+  "@replayGainPreamp": {
+    "description": "ReplayGain preamp slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "replayGainPreventClipping": "Ses taşmasını önle",
+  "@replayGainPreventClipping": {
+    "description": "Toggle label for ReplayGain prevent-clipping option"
+  },
+  "replayGainFallbackGain": "Yedek Kazanç: {value} dB",
+  "@replayGainFallbackGain": {
+    "description": "ReplayGain fallback gain slider label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "autoDjSongsToAdd": "Eklenecek Şarkı: {count}",
+  "@autoDjSongsToAdd": {
+    "description": "Auto DJ slider label showing how many songs to add",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transcodingEnable": "Dönüştürmeyi Etkinleştir",
+  "@transcodingEnable": {
+    "description": "Toggle label to enable transcoding"
+  },
+  "transcodingEnableSubtitle": "Daha düşük kaliteyle veri kullanımını azalt",
+  "@transcodingEnableSubtitle": {
+    "description": "Subtitle for the enable transcoding toggle"
+  },
+  "smartTranscoding": "Akıllı Dönüştürme",
+  "@smartTranscoding": {
+    "description": "Toggle label for smart (auto) transcoding mode"
+  },
+  "smartTranscodingSubtitle": "Bağlantınıza göre kaliteyi otomatik ayarlar (Wi-Fi / mobil veri)",
+  "@smartTranscodingSubtitle": {
+    "description": "Subtitle for the smart transcoding toggle"
+  },
+  "smartTranscodingDetectedNetwork": "Algılanan ağ: ",
+  "@smartTranscodingDetectedNetwork": {
+    "description": "Label shown before the live network type badge"
+  },
+  "smartTranscodingActiveBitrate": "Aktif bitrate: {bitrate}",
+  "@smartTranscodingActiveBitrate": {
+    "description": "Shows the currently active transcoding bitrate",
+    "placeholders": {
+      "bitrate": {
+        "type": "String"
+      }
+    }
+  },
+  "transcodingWifiQuality": "Wi-Fi Kalitesi",
+  "@transcodingWifiQuality": {
+    "description": "Label for WiFi bitrate selector"
+  },
+  "transcodingWifiQualitySubtitleSmart": "Wi-Fi’da otomatik kullanılır",
+  "@transcodingWifiQualitySubtitleSmart": {
+    "description": "WiFi quality subtitle when smart mode is on"
+  },
+  "transcodingWifiQualitySubtitle": "Wi-Fi kullanırken bitrate",
+  "@transcodingWifiQualitySubtitle": {
+    "description": "WiFi quality subtitle when smart mode is off"
+  },
+  "transcodingMobileQuality": "Mobil Veri Kalitesi",
+  "@transcodingMobileQuality": {
+    "description": "Label for mobile data bitrate selector"
+  },
+  "transcodingMobileQualitySubtitleSmart": "Mobil veride otomatik kullanılır",
+  "@transcodingMobileQualitySubtitleSmart": {
+    "description": "Mobile quality subtitle when smart mode is on"
+  },
+  "transcodingMobileQualitySubtitle": "Mobil veride bitrate",
+  "@transcodingMobileQualitySubtitle": {
+    "description": "Mobile quality subtitle when smart mode is off"
+  },
+  "transcodingFormat": "Format",
+  "@transcodingFormat": {
+    "description": "Label for the transcoding format selector"
+  },
+  "transcodingFormatSubtitle": "Yayında kullanılan ses codec’i",
+  "@transcodingFormatSubtitle": {
+    "description": "Subtitle for the transcoding format selector"
+  },
+  "transcodingBitrateOriginal": "Orijinal (Dönüştürme Yok)",
+  "@transcodingBitrateOriginal": {
+    "description": "Transcoding bitrate option: no transcoding, use original"
+  },
+  "transcodingFormatOriginal": "Orijinal",
+  "@transcodingFormatOriginal": {
+    "description": "Transcoding format option: original (no conversion)"
+  },
+  "@sectionCacheSettings": {
+    "description": "Storage settings section header"
+  },
+  "@sectionCacheCleanup": {
+    "description": "Storage settings section header for cache cleanup"
+  },
+  "@sectionOfflineDownloads": {
+    "description": "Storage settings section header for offline downloads"
+  },
+  "@sectionBpmAnalysis": {
+    "description": "Storage settings section header for BPM analysis"
+  },
+  "imageCacheTitle": "Görsel Önbelleği",
+  "@imageCacheTitle": {
+    "description": "Toggle title for image (album art) cache"
+  },
+  "imageCacheSubtitle": "Albüm kapaklarını yerel olarak kaydet",
+  "@imageCacheSubtitle": {
+    "description": "Subtitle for image cache toggle"
+  },
+  "musicCacheTitle": "Müzik Önbelleği",
+  "@musicCacheTitle": {
+    "description": "Toggle title for music metadata cache"
+  },
+  "musicCacheSubtitle": "Şarkı meta verilerini yerel olarak kaydet",
+  "@musicCacheSubtitle": {
+    "description": "Subtitle for music cache toggle"
+  },
+  "bpmCacheTitle": "BPM Önbelleği",
+  "@bpmCacheTitle": {
+    "description": "Toggle title for BPM analysis cache"
+  },
+  "bpmCacheSubtitle": "BPM analizlerini yerel olarak kaydet",
+  "@bpmCacheSubtitle": {
+    "description": "Subtitle for BPM cache toggle"
+  },
+  "@clearAllCache": {
+    "description": "Button to clear all cached data"
+  },
+  "sectionAboutInformation": "BİLGİ",
+  "@sectionAboutInformation": {
+    "description": "About screen section header"
+  },
+  "sectionAboutDeveloper": "GELİŞTİRİCİ",
+  "@sectionAboutDeveloper": {
+    "description": "About screen developer section header"
+  },
+  "sectionAboutLinks": "BAĞLANTILAR",
+  "@sectionAboutLinks": {
+    "description": "About screen links section header"
+  },
+  "aboutVersion": "Sürüm",
+  "@aboutVersion": {
+    "description": "About screen version row title"
+  },
+  "aboutPlatform": "Platform",
+  "@aboutPlatform": {
+    "description": "About screen platform row title"
+  },
+  "aboutMadeBy": "Dddevid tarafından geliştirildi",
+  "@aboutMadeBy": {
+    "description": "Developer credit text in the about tab"
+  },
+  "aboutGitHub": "github.com/dddevid",
+  "@aboutGitHub": {
+    "description": "Developer GitHub handle shown as subtitle"
+  },
+  "aboutLinkGitHub": "GitHub Deposu",
+  "@aboutLinkGitHub": {
+    "description": "Link tile title for the GitHub repo"
+  },
+  "aboutLinkChangelog": "Değişiklik Günlüğü",
+  "@aboutLinkChangelog": {
+    "description": "Link tile title for the app changelog"
+  },
+  "aboutLinkReportIssue": "Sorun Bildir",
+  "@aboutLinkReportIssue": {
+    "description": "Link tile title for reporting a bug"
+  },
+  "aboutLinkDiscord": "Discord Topluluğuna Katıl",
+  "@aboutLinkDiscord": {
+    "description": "Link tile title for the Discord server"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Analitik ve Gizlilik",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Anonim Analitik",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Anonim çökme raporları ve kullanım istatistikleriyle Musly’nin gelişmesine yardımcı olun",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "Cihaz Kimliği",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "Anonim Kimlik: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Anonim cihaz kimliğinizi görmek için analitiği etkinleştirin",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Cihaz Kimliği Hakkında",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "Bu, uygulama tarafından oluşturulan anonim bir tanımlayıcıdır. Kimliğinizle ilişkilendirilemez ve yalnızca analiz amacıyla kullanılır.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  },
+  "@_SUPPORT": {},
+  "supportGreeting": "Selam! 👋",
+  "supportParagraph1": "Ben Musly’nin geliştiricisi Devid. Bu uygulamayı müziği sevdiğim ve herkesin güzel, ücretsiz bir müzik oynatıcıyı hak ettiğine inandığım için geliştirdim.",
+  "supportParagraph2": "Musly tamamen ücretsiz ve açık kaynaklıdır. Reklam veya abonelik ücreti yoktur. İnsanlar için faydalı bir şey üretmeyi sevdiğim için boş zamanlarımda geliştiriyorum.",
+  "supportParagraph3": "Ama sunucular, geliştirme araçları ve kahve bedava değil 😅 Eğer Musly günlük hayatınızın bir parçası olduysa ve teşekkür etmek isterseniz, küçük bir bağış benim için çok değerli olur. Masrafları karşılamama ve yeni özellikler geliştirmem için motivasyon sağlar.",
+  "supportParagraph4": "Ama hiç baskı yok — uygulamadan keyif almanız zaten en büyük ödülüm! 💙",
+  "supportDonationTitle": "Bağış ile Destek Ol",
+  "supportDonationSubtitle": "revolut üzerinden — her destek yardımcı olur!",
+  "supportDiscordTitle": "Discord Sunucumuza Katıl",
+  "supportDiscordSubtitle": "Yardım alın, özellik önerin veya sohbet edin",
+  "supportWaysTitle": "Diğer Destek Yolları",
+  "supportWayRate": "Uygulama mağazasında puan verin",
+  "supportWayShare": "Musly’yi arkadaşlarına öner",
+  "supportWayBugs": "Hata bildir veya özellik öner",
+  "supportWayEnjoy": "Müziğin keyfini çıkar 🎵",
+  "supportMadeWithLove": "İtalya’da 💙 ile geliştirildi",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Oynatma Hızı",
+  "@playbackSpeed": {
+    "description": "Title of the playback speed bottom sheet"
+  },
+  "normalSpeed": "Normal (1×)",
+  "@normalSpeed": {
+    "description": "Label for 1× (normal) playback speed option"
+  },
+  "preservePitch": "Tonu Koru",
+  "@preservePitch": {
+    "description": "Toggle label to keep original pitch when changing speed"
+  },
+  "preservePitchSubtitle": "Hız değiştirildiğinde orijinal tonu koru",
+  "@preservePitchSubtitle": {
+    "description": "Subtitle for the preserve-pitch toggle"
+  },
+  "pitch": "Ton",
+  "@pitch": {
+    "description": "Label for the pitch slider in the speed dialog"
+  },
+  "pitchPreserved": "ton korundu",
+  "@pitchPreserved": {
+    "description": "Tooltip fragment shown when pitch correction is on"
+  },
+  "speedTooltipWithPitch": "Hız {speed} · ton {pitch}×",
+  "@speedTooltipWithPitch": {
+    "description": "Tooltip for the speed button showing speed and pitch values",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      },
+      "pitch": {
+        "type": "String"
+      }
+    }
+  },
+  "speedTooltipPitchPreserved": "Hız {speed} · ton korundu",
+  "@speedTooltipPitchPreserved": {
+    "description": "Tooltip for the speed button when pitch is preserved",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimer": "Uyku Zamanlayıcısı",
+  "@sleepTimer": {
+    "description": "Title of the sleep timer bottom sheet"
+  },
+  "sleepTimerActive": "Uyku zamanlayıcısı aktif",
+  "@sleepTimerActive": {
+    "description": "Tooltip for the sleep timer button when a timer is running"
+  },
+  "fadeOut": "Sesi Kademeli Azalt",
+  "@fadeOut": {
+    "description": "Toggle label for the fade-out option in the sleep timer dialog"
+  },
+  "fadeOutSubtitle": "Son {seconds} saniyede sesi kademeli olarak azalt",
+  "@fadeOutSubtitle": {
+    "description": "Subtitle for the fade-out toggle, showing fade duration in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "finishCurrentSong": "Mevcut şarkıyı bitir",
+  "@finishCurrentSong": {
+    "description": "Toggle label to stop after the current track finishes"
+  },
+  "finishCurrentSongSubtitle": "Geçerli parça bittikten sonra durdur",
+  "@finishCurrentSongSubtitle": {
+    "description": "Subtitle for the finish-current-song toggle"
+  },
+  "sleepTimerMinutes": "{count} dk",
+  "@sleepTimerMinutes": {
+    "description": "Sleep timer option label for a duration in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerHours": "{count} saat",
+  "@sleepTimerHours": {
+    "description": "Sleep timer option label for a duration in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerSetFor": "Uyku zamanlayıcısı {duration} olarak ayarlandı",
+  "@sleepTimerSetFor": {
+    "description": "Snackbar shown after setting the sleep timer",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "customDuration": "Özel süre...",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "cancelTimer": "Zamanlayıcıyı İptal Et",
+  "@cancelTimer": {
+    "description": "List tile label to cancel the active sleep timer"
+  },
+  "customSleepTimer": "Özel Uyku Zamanlayıcısı",
+  "@customSleepTimer": {
+    "description": "Title of the custom sleep timer dialog"
+  },
+  "set": "Ayarla",
+  "@set": {
+    "description": "Confirm button label in the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Çalma Listesine Ekle",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Çalma Listelerin",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "enableLrcLibFallback": "Şarkı sözlerini LRCLIB’den al",
+  "@enableLrcLibFallback": {
+    "description": "Toggle label for enabling LRCLIB lyrics fallback when the Subsonic server has no lyrics"
+  },
+  "lrcLibFallbackSubtitle": "Sunucunuz sağlamadığında şarkı sözlerini otomatik olarak LRCLIB’de ara",
+  "@lrcLibFallbackSubtitle": {
+    "description": "Subtitle explaining the LRCLIB fallback toggle"
+  },
+  "themeSaved": "Tema kaydedildi",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Kaydedilmemiş değişiklikler",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesTitle": "Kaydedilmemiş Değişiklikler",
+  "@themeUnsavedChangesTitle": {
+    "description": "Title of the unsaved changes dialog"
+  },
+  "themeUnsavedChangesBody": "Kaydedilmemiş değişiklikleriniz var. Çıkmadan önce kaydetmek ister misiniz?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Vazgeç",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "done": "Tamam",
+  "@done": {
+    "description": "Button to confirm a color picker dialog"
+  },
+  "pickColor": "{label} seç",
+  "@pickColor": {
+    "description": "Title of the color picker dialog",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStyle": "Başlık Stili",
+  "@titleStyle": {
+    "description": "Section heading for title text style in theme editor"
+  },
+  "artistStyle": "Sanatçı Stili",
+  "@artistStyle": {
+    "description": "Section heading for artist text style in theme editor"
+  },
+  "themeActive": "AKTİF",
+  "@themeActive": {
+    "description": "Badge shown on the active Now Playing theme card"
+  },
+  "themeSafeMode": "GÜVENLİ",
+  "@themeSafeMode": {
+    "description": "Badge shown when a theme is in safe mode"
+  },
+  "themeCodeMode": "KOD",
+  "@themeCodeMode": {
+    "description": "Badge shown when a theme has custom Flutter code enabled"
+  },
+  "themeAnimBadge": "ANİMASYON",
+  "@themeAnimBadge": {
+    "description": "Badge shown on theme cards that have animations enabled"
+  },
+  "themeAuthor": "geliştirici: {author}",
+  "@themeAuthor": {
+    "description": "Author attribution shown on theme preview card",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "audioFocusDenied": "Oynatma başlatılamadı — ses odağı başka bir uygulamada",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }
