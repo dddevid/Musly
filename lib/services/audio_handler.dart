@@ -116,6 +116,22 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// [_remoteVolume] expressed in provider units.
   int get _remoteProviderVolume => providerUnitsFromPercent(_remoteVolume);
 
+  /// Provider units last handed to Android, or null if it may hold another
+  /// value. A slider drag calls [updateRemoteVolume] every frame, nearly all
+  /// within one 5% unit; each publish is a platform-channel round trip.
+  int? _publishedProviderVolume;
+
+  void _publishRemoteVolume() {
+    _publishedProviderVolume = _remoteProviderVolume;
+    androidPlaybackInfo.add(
+      RemoteAndroidPlaybackInfo(
+        volumeControlType: AndroidVolumeControlType.absolute,
+        maxVolume: remoteProviderMax,
+        volume: _remoteProviderVolume,
+      ),
+    );
+  }
+
   StreamSubscription<PlaybackEvent>? _localStateSub;
 
   MuslyAudioHandler() {
@@ -304,14 +320,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     _remotePlayback = isRemote;
     if (isRemote) {
       _remoteVolume = volume.clamp(0, _remoteMaxVolume);
-      androidPlaybackInfo.add(
-        RemoteAndroidPlaybackInfo(
-          volumeControlType: AndroidVolumeControlType.absolute,
-          maxVolume: remoteProviderMax,
-          volume: _remoteProviderVolume,
-        ),
-      );
+      _publishRemoteVolume();
     } else {
+      _publishedProviderVolume = null;
       androidPlaybackInfo.add(LocalAndroidPlaybackInfo());
       playbackState.add(_buildPlaybackState(_player.playbackEvent));
     }
@@ -320,20 +331,19 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   void updateRemoteVolume(int volume) {
     if (kIsWeb || !Platform.isAndroid || !_remotePlayback) return;
     _remoteVolume = volume.clamp(0, _remoteMaxVolume);
-    androidPlaybackInfo.add(
-      RemoteAndroidPlaybackInfo(
-        volumeControlType: AndroidVolumeControlType.absolute,
-        maxVolume: remoteProviderMax,
-        volume: _remoteProviderVolume,
-      ),
-    );
+    if (_remoteProviderVolume == _publishedProviderVolume) return;
+    _publishRemoteVolume();
   }
 
   @override
   Future<void> androidSetRemoteVolume(int volumeIndex) async {
+    debugPrint('Audio: system slider set to $volumeIndex '
+        '(remote: $_remotePlayback)');
     if (!_remotePlayback) return;
     // volumeIndex arrives in provider units; callers downstream want percent.
     _remoteVolume = percentFromProviderUnits(volumeIndex);
+    // Android's panel now shows its own value; make the next publish go out.
+    _publishedProviderVolume = null;
     onSetRemoteVolume?.call(_remoteVolume);
   }
 
@@ -341,6 +351,10 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> androidAdjustRemoteVolume(AndroidVolumeDirection direction) async {
     // direction is -1, 0 or +1. Zero is the ADJUST_SAME that Android sends on
     // key-up; acting on it would issue a redundant SetVolume for no change.
+    if (direction.index != 0) {
+      debugPrint('Audio: volume key ${direction.index} '
+          '(remote: $_remotePlayback)');
+    }
     if (!_remotePlayback || direction.index == 0) return;
     _remoteVolume = adjustedPercent(_remoteVolume, direction.index);
     updateRemoteVolume(_remoteVolume);
