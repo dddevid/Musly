@@ -516,10 +516,18 @@ class UpnpService extends ChangeNotifier {
       }
 
       if (device.renderingControlUrl != null && _pollCount % 5 == 0) {
+        final epoch = _volumeEpoch;
         final vol = await getVolume();
         if (vol >= 0 && vol != _volume) {
-          _volume = vol;
-          changed = true;
+          // A read that overlapped a SetVolume may predate it; keep ours.
+          if (epoch != _volumeEpoch) {
+            debugPrint('UPnP: ignoring GetVolume $vol that overlapped a '
+                'SetVolume');
+          } else {
+            debugPrint('UPnP: renderer volume changed to $vol (was $_volume)');
+            _volume = vol;
+            changed = true;
+          }
         }
       }
 
@@ -972,17 +980,30 @@ class UpnpService extends ChangeNotifier {
     return responseBody;
   }
 
+  /// Bumped at the start and end of every SetVolume, so the poll can tell
+  /// that a GetVolume it issued overlapped one.
+  int _volumeEpoch = 0;
+
+  /// Callers in the app go through PlayerProvider, which coalesces key
+  /// presses and slider drags; calling this directly lets them overlap.
   Future<void> setVolume(int vol) async {
     vol = vol.clamp(0, 100);
+    final device = _connectedDevice;
+    _volumeEpoch++;
+    debugPrint('UPnP: SetVolume $vol');
     try {
       await _renderingQuery(
         'SetVolume',
         '<Channel>Master</Channel><DesiredVolume>$vol</DesiredVolume>',
       );
+      // A reply from a renderer we have since left is not this one's volume.
+      if (!identical(_connectedDevice, device)) return;
       _volume = vol;
       _safeNotifyListeners();
     } catch (e) {
       debugPrint('UPnP: SetVolume failed: $e');
+    } finally {
+      _volumeEpoch++;
     }
   }
 
@@ -994,9 +1015,27 @@ class UpnpService extends ChangeNotifier {
       );
       final val = _xmlText(xml, 'CurrentVolume');
       return val != null ? int.tryParse(val) ?? -1 : -1;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('UPnP: GetVolume failed: $e');
       return -1;
     }
+  }
+
+  /// Read the renderer's volume and keep it as [volume].
+  ///
+  /// A renderer that rounds (asked for 40, applies 39) would otherwise leave
+  /// the cache on the value sent while the caller shows the value read, and
+  /// the player would flip between the two on every notify. Returns -1 if the
+  /// read failed or the renderer changed while it was in flight.
+  Future<int> refreshVolume() async {
+    final device = _connectedDevice;
+    final vol = await getVolume();
+    if (vol < 0 || !identical(_connectedDevice, device)) return -1;
+    if (vol != _volume) {
+      _volume = vol;
+      _safeNotifyListeners();
+    }
+    return vol;
   }
 
   static String? mimeTypeFromSuffix(String? suffix) {
