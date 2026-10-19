@@ -60,6 +60,36 @@ void main() {
         reason: 'a stale 15 here snaps the system slider back');
   });
 
+  test('a poll read from a renderer we switched away from is dropped',
+      () async {
+    final other = FakeUpnpRenderer(volume: 20, name: 'Other renderer');
+    await other.start();
+    addTearDown(other.close);
+
+    renderer.holdNextRead = true;
+    await renderer.readHeld.future.timeout(const Duration(seconds: 8));
+    expect(await upnp.connect(other.device), isTrue);
+    expect(upnp.volume, 20);
+
+    renderer.releaseRead.complete();
+    await settle();
+
+    expect(upnp.volume, 20,
+        reason: 'the old renderer\'s 15 would be stepped from and sent to '
+            'the new one');
+  });
+
+  test('a poll read answered after a disconnect does not come back', () async {
+    renderer.holdNextRead = true;
+    await renderer.readHeld.future.timeout(const Duration(seconds: 8));
+    upnp.disconnect();
+
+    renderer.releaseRead.complete();
+    await settle();
+
+    expect(upnp.volume, -1);
+  });
+
   test('a change made by another controller still gets through', () async {
     renderer.volume = 30;
     final deadline = DateTime.now().add(const Duration(seconds: 8));

@@ -518,7 +518,9 @@ class UpnpService extends ChangeNotifier {
       if (device.renderingControlUrl != null && _pollCount % 5 == 0) {
         final epoch = _volumeEpoch;
         final vol = await getVolume();
-        if (vol >= 0 && vol != _volume) {
+        if (!identical(_connectedDevice, device)) {
+          debugPrint('UPnP: ignoring GetVolume $vol from a renderer we left');
+        } else if (vol >= 0 && vol != _volume) {
           // A read that overlapped a SetVolume may predate it; keep ours.
           if (epoch != _volumeEpoch) {
             debugPrint('UPnP: ignoring GetVolume $vol that overlapped a '
