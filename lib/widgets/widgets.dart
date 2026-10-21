@@ -36,6 +36,7 @@ export 'navigation/right_sidebar.dart';
 export 'navigation/cast_button.dart';
 export 'navigation/airplay_button.dart';
 export 'navigation/favorite_playlists_section.dart';
+export 'navigation/covered_back_gesture_guard.dart';
 
 export 'now_playing/marquee_text.dart';
 export 'now_playing/playback_controls.dart';
