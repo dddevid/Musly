@@ -69,9 +69,15 @@ class _MainScreenState extends State<MainScreen> {
     SearchScreen(),
   ];
 
+  // While a dialog, sheet or page on the root navigator (now playing, for one)
+  // covers this screen, the back swipe goes to that instead of a hidden page
+  // in the inner navigator. Shared by both layouts' inner navigators.
+  final _backGuard = CoveredBackGestureGuard();
+
   @override
   void dispose() {
     UsageTimeService().disposeService();
+    _backGuard.dispose();
     super.dispose();
   }
 
@@ -171,7 +177,10 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      CoveredBackGestureScope(guard: _backGuard, child: _buildScreen(context));
+
+  Widget _buildScreen(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isLocalMode = authProvider.isLocalOnlyMode;
     final isTv = Provider.of<TvDetectionService>(context).isTvMode;
@@ -199,6 +208,7 @@ class _MainScreenState extends State<MainScreen> {
                   Expanded(
                     child: Navigator(
                       key: NavigationHelper.appNavigatorKey,
+                      observers: [_backGuard],
                       onGenerateRoute: (settings) {
                         return PageRouteBuilder(
                           pageBuilder: (ctx, anim, _) => LazyIndexedStack(
@@ -403,6 +413,7 @@ class _MainScreenState extends State<MainScreen> {
                 Expanded(
                   child: Navigator(
                     key: NavigationHelper.appNavigatorKey,
+                    observers: [_backGuard],
                     onGenerateRoute: (settings) {
                       return MaterialPageRoute(
                         builder: (_) => LazyIndexedStack(
