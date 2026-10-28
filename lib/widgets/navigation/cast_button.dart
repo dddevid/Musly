@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/cast_service.dart';
 import 'package:musly/services/upnp_service.dart';
 import 'package:musly/theme/app_theme.dart';
@@ -331,9 +332,14 @@ class CastButton extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     Expanded(
+                      // Through PlayerProvider, like the other sliders and
+                      // the volume keys, so drags are coalesced instead of
+                      // racing each other and the keys.
                       child: Slider(
-                        value: (us.volume / 100.0).clamp(0.0, 1.0),
-                        onChanged: (v) => us.setVolume((v * 100).round()),
+                        value: context
+                            .select<PlayerProvider, double>((p) => p.volume),
+                        onChanged: (v) =>
+                            context.read<PlayerProvider>().setVolume(v),
                         activeColor: Theme.of(context).colorScheme.primary,
                       ),
                     ),

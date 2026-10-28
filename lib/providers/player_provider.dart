@@ -26,6 +26,7 @@ import '../services/storage_service.dart';
 import '../services/cast_service.dart';
 import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import '../services/upnp_service.dart';
+import '../services/latest_value_writer.dart';
 import '../services/jukebox_service.dart';
 import '../services/audio_handler.dart';
 import '../services/fade_settings_service.dart';
@@ -2414,13 +2415,19 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       _lastNonZeroVolume = clamped;
     }
     _volume = clamped;
+    final upnp = !_castService.isConnected && _upnpService.isConnected;
+    if (upnp) {
+      // Before any await: a key press straight after a tap has to step from
+      // the tapped value, and be sent after it, or it undoes the tap.
+      final percent = (_volume * 100).round();
+      _audioHandler.updateRemoteVolume(percent);
+      _requestUpnpVolume(percent);
+    }
     await _storageService.saveVolume(_volume);
 
     if (_castService.isConnected) {
       await _castService.setVolume(_volume);
-    } else if (_upnpService.isConnected) {
-      await _upnpService.setVolume((_volume * 100).round());
-    } else {
+    } else if (!_upnpService.isConnected) {
       await _applyReplayGain(_currentSong);
     }
     notifyListeners();
@@ -2435,34 +2442,61 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
     }
   }
 
-  bool _upnpVolumeWriteInProgress = false;
+  /// Hardware volume keys can fire faster than a SetVolume round trip, so
+  /// presses are coalesced rather than dropped while one is in flight.
+  late final LatestValueWriter _upnpVolumeWriter = LatestValueWriter(
+    // A value queued for one renderer must not land on the next one if the
+    // user switches mid-burst; nor should the old renderer's read-back.
+    write: (volume) async {
+      if (!_isUpnpVolumeTarget) {
+        debugPrint('UPnP: dropping volume $volume queued for a renderer that '
+            'is no longer connected');
+        return;
+      }
+      await _upnpService.setVolume(volume);
+    },
+    readBack: () async {
+      if (_isUpnpVolumeTarget) {
+        final actual = await _upnpService.refreshVolume();
+        if (_isUpnpVolumeTarget) return actual;
+      }
+      // Switched renderer mid-burst. The poll sync was held off while this
+      // ran, so resync to what connect() read from the new one, or the next
+      // key press would step from the old renderer's level.
+      return _upnpService.volume;
+    },
+    onSettled: (actual) {
+      if (_castService.isConnected || !_upnpService.isConnected) return;
+      if (actual != _upnpVolumeRequested) {
+        debugPrint('UPnP: renderer settled at volume $actual '
+            '(last asked for $_upnpVolumeRequested)');
+      }
+      _volume = actual / 100.0;
+      _audioHandler.updateRemoteVolume(actual);
+      notifyListeners();
+    },
+  );
 
   void _onRemoteVolumeChange(int volume) {
     if (_castService.isConnected) {
       _castService.setVolume(volume / 100.0);
     } else if (_upnpService.isConnected) {
-      if (_upnpVolumeWriteInProgress) return;
-      _applyUpnpVolume(volume);
+      _volume = (volume / 100.0).clamp(0.0, 1.0);
+      notifyListeners();
+      _requestUpnpVolume(volume);
     }
   }
 
-  Future<void> _applyUpnpVolume(int volume) async {
-    _upnpVolumeWriteInProgress = true;
-    _volume = (volume / 100.0).clamp(0.0, 1.0);
-    notifyListeners();
-    try {
-      await _upnpService.setVolume(volume);
-      final actual = await _upnpService.getVolume();
-      if (actual >= 0) {
-        _volume = actual / 100.0;
-        _audioHandler.updateRemoteVolume(actual);
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('UPnP setVolume error: $e');
-    } finally {
-      _upnpVolumeWriteInProgress = false;
-    }
+  String? _upnpVolumeTarget;
+  int? _upnpVolumeRequested;
+
+  bool get _isUpnpVolumeTarget =>
+      _upnpService.connectedDevice?.location == _upnpVolumeTarget;
+
+  void _requestUpnpVolume(int volume) {
+    _upnpVolumeTarget = _upnpService.connectedDevice?.location;
+    _upnpVolumeRequested = volume;
+    _upnpVolumeWriter.request(volume);
   }
 
   Future<AudioSource> _buildAudioSourceForSong(Song song) async {
@@ -3245,9 +3279,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
     }
 
     final vol = _upnpService.volume;
-    if (vol >= 0 && !_upnpVolumeWriteInProgress) {
+    if (vol >= 0 && !_upnpVolumeWriter.busy) {
       final normalized = vol / 100.0;
       if ((_volume - normalized).abs() > 0.005) {
+        debugPrint('UPnP: player volume synced to renderer volume $vol');
         _volume = normalized;
         changed = true;
         _audioHandler.updateRemoteVolume(vol);
