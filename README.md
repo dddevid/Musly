@@ -15,6 +15,9 @@ A free, cross-platform music player and streaming client for self-hosted librari
 
 ---
 
+## GitAds Sponsored
+[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=dddevid/musly@github)](https://gitads.dev/v1/ad-track?source=dddevid/musly@github)
+
 ## Supported Music Sources & Servers
 
 Musly connects to a wide variety of music sources in a single client:
