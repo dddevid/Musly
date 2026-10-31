@@ -37,6 +37,14 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Playlist-uri favorite",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Albume",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
   "madeForYou": "Creat pentru tine",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -67,7 +75,7 @@
   },
   "errorLoadingAlbums": "Eroare la încărcarea albumelor",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Niciun album evaluat de top",
   "@noTopRatedAlbums": {
@@ -128,7 +136,7 @@
   },
   "artists": "Artiști",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Melodii",
   "@songs": {
@@ -141,6 +149,10 @@
   "genres": "Genuri",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "Ani",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Favorite",
   "@favorites": {
@@ -206,6 +218,10 @@
   "@removeFromFavorites": {
     "description": "Remove from favorites option"
   },
+  "download": "Descărcați",
+  "@download": {
+    "description": "Download button label"
+  },
   "delete": "Șterge",
   "@delete": {
     "description": "Delete button label"
@@ -220,11 +236,11 @@
   },
   "save": "Salvați",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Închide",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "General",
   "@general": {
@@ -276,7 +292,7 @@
   },
   "unknownArtist": "Artist Necunoscut",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Album Necunoscut",
   "@unknownAlbum": {
@@ -336,7 +352,7 @@
   },
   "retry": "Reîncercați",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Nici un rezultat",
   "@noResults": {
@@ -354,7 +370,136 @@
   "@allAlbums": {
     "description": "All albums title"
   },
+  "allArtists": "Toți artiștii",
+  "@allArtists": {
+    "description": "All artists title"
+  },
+  "songsCount": "{count, plural, =0{Nici-un cântec} =1{1 cântec} other{{count} cântece}}",
+  "@songsCount": {
+    "description": "Songs count with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yes": "Da",
+  "@yes": {
+    "description": "Yes button label"
+  },
+  "no": "Nu",
+  "@no": {
+    "description": "No button label"
+  },
+  "offlineMode": "Mod off line",
+  "@offlineMode": {
+    "description": "Offline mode label"
+  },
+  "radio": "Radio",
+  "@radio": {
+    "description": "Radio section label"
+  },
+  "platform": "Platformă",
+  "@platform": {
+    "description": "Platform info label"
+  },
+  "server": "Server",
+  "@server": {
+    "description": "Server settings section"
+  },
+  "display": "Display",
+  "@display": {
+    "description": "Display settings section"
+  },
+  "smartRecommendations": "Recomandări inteligente",
+  "@smartRecommendations": {
+    "description": "Smart Recommendations settings section title"
+  },
+  "showVolumeSlider": "Arătați bara volum",
+  "@showVolumeSlider": {
+    "description": "Show Volume Slider toggle label"
+  },
+  "showMiniPlayerHeart": "Arătați butonul inimă",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Adăugați la favorite din mini player",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Arătați butonul repetare",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerShuffle": "Arătați butonul amestecare",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "enableRecommendationsSubtitle": "Primiți sugestii de muzică personalizate",
+  "@enableRecommendationsSubtitle": {
+    "description": "Enable Recommendations toggle subtitle"
+  },
+  "clearListeningHistory": "Ștergeți istoria de ascultare",
+  "@clearListeningHistory": {
+    "description": "Clear Listening History button label"
+  },
+  "confirmClearHistory": "Această acțiune vă va șterge toate datele de ascultat și recomandările. Sunteți sigur?",
+  "@confirmClearHistory": {
+    "description": "Confirmation dialog for clearing history"
+  },
+  "discordStatus": "Status Discord",
+  "@discordStatus": {
+    "description": "Discord RPC toggle label"
+  },
+  "discordStatusSubtitle": "Arată cântecul actual pe profilul Discord",
+  "@discordStatusSubtitle": {
+    "description": "Discord RPC toggle subtitle"
+  },
+  "selectLanguage": "Selectați limba",
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
+  "communityTranslations": "Tradus de comunitate",
+  "@communityTranslations": {
+    "description": "Community translations credit label"
+  },
+  "communityTranslationsSubtitle": "Ajutați-ne să traducem Musly pe Crowdin",
+  "@communityTranslationsSubtitle": {
+    "description": "Community translations credit subtitle"
+  },
+  "checkTranslationUpdatesSubtitle": "Sincronizați ultimele traduceri ale comunității în timp real (OTA)",
+  "@checkTranslationUpdatesSubtitle": {
+    "description": "Subtitle for checking live OTA translation updates"
+  },
+  "checkingTranslationUpdates": "Se caută actualizări ale traducerii...",
+  "@checkingTranslationUpdates": {
+    "description": "Snackbar message when checking for translation updates"
+  },
   "@_LIBRARY": {},
+  "deletePlaylistConfirmation": "Sunteți sigur că doriți să ștergeți playlist-ul \"{name}\"?",
+  "@deletePlaylistConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDeleted": "Playlist-ul \"{name}\" a fost șters",
+  "@playlistDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCreatingPlaylist": "Eroare creând playlist-ul: {error}",
+  "@errorCreatingPlaylist": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
   "errorDeletingPlaylist": "Eroare la ștergerea playlist-ului: {error}",
   "@errorDeletingPlaylist": {
     "placeholders": {
@@ -376,12 +521,62 @@
   "searchPlaceholder": "Artiști, melodii, albume",
   "tryDifferentSearch": "Încearcă o altă căutare",
   "noSuggestions": "Nicio sugestie",
+  "liveSearchSection": "Căutare",
+  "liveSearch": "Căutare live",
+  "categoryMadeForYou": "Pentru tine",
+  "categoryNewReleases": "Nou lansate",
+  "categoryGenres": "Genuri",
+  "categoryFavorites": "Favorite",
+  "categoryRadio": "Radio",
   "@_SETTINGS_GENERAL": {},
+  "settingsTitle": "Setări",
+  "tabPlayback": "Playback",
+  "tabServer": "Server",
+  "tabAbout": "Despre",
   "@_SETTINGS_PLAYBACK": {},
+  "sectionAutoDj": "DJ AUTO",
+  "autoDjMode": "Mod DJ Auto",
+  "songsToAdd": "Cântece de adăugat: {count}",
+  "@songsToAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "replayGainMode": "Mod",
+  "sectionStreamingQuality": "CALITATE STREAMING",
+  "qualityWifi": "Calitate WiFi",
+  "format": "Format",
+  "transcodingSubtitle": "Reduceți consumul datelor cu calitatea redusă",
+  "modeOff": "Oprit",
+  "modeAlbum": "Album",
   "@_SETTINGS_SERVER": {},
+  "sectionServerConnection": "CONEXIUNE SERVER",
+  "serverType": "Tip Server",
+  "unknown": "Necunoscut",
+  "sectionMusicFolders": "FOLDERE MUZICĂ",
+  "musicFolders": "Foldere muzică",
+  "noMusicFolders": "Nu au fost găsite foldere muzică",
+  "sectionSavedProfiles": "PROFILURI SALVATE",
+  "switchProfile": "Schimbați Profilul",
+  "switchServer": "Schimbați Server-ul",
+  "addProfile": "Adăugați Profilul",
+  "switchProfileConfirmation": "Vă conectați la \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionAccount": "CONT",
   "@_SETTINGS_STORAGE": {},
   "@_SETTINGS_ABOUT": {},
+  "sectionLinks": "LINKURI",
   "@_PLAYER_AND_MENUS": {},
+  "live": "ÎN DIRECT",
+  "stopRadio": "Stop Radio",
   "@_ALBUM_ARTIST_SCREENS": {},
   "@_PLAYER_SCREENS": {},
   "@_PLAYLIST_SCREEN": {},
@@ -404,5 +599,23 @@
   "@_GENRE_SCREEN": {},
   "@_JUKEBOX": {},
   "@_MUSIC_FOLDERS": {},
-  "audioFocusDenied": "Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio"
+  "@sectionAutoDj": {
+    "description": "Playback settings section header for Auto DJ"
+  },
+  "@sectionStreamingQuality": {
+    "description": "Playback settings section header for transcoding / streaming quality"
+  },
+  "@replayGainMode": {
+    "description": "Label for the ReplayGain mode selector"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "audioFocusDenied": "Redarea nu a putut fi pornită — o altă aplicație are focalizarea audio",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }

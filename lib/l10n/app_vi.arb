@@ -1,6 +1,251 @@
 {
   "@@locale": "vi",
   "@@last_modified": "2026-02-07T16:10:00Z",
+  "appName": "Musly",
+  "@appName": {
+    "description": "Application name"
+  },
+  "emulatorDetected": "Đã phát hiện trình giả lập",
+  "@emulatorDetected": {
+    "description": "Title shown when the app detects it's running on an emulator"
+  },
+  "emulatorNotAllowed": "Ứng dụng này không thể chạy trên giả lập.\\nXin vui lòng sử dụng thiết bị thật.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
+  },
+  "goodMorning": "Chào buổi sáng",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "goodAfternoon": "Chào buổi chiều",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Chào buổi tối",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "forYou": "Dành cho bạn",
+  "@forYou": {
+    "description": "For You section title"
+  },
+  "quickPicks": "Chọn nhanh",
+  "@quickPicks": {
+    "description": "Quick Picks section title"
+  },
+  "discoverMix": "Khám phá danh sách phát phối hợp",
+  "@discoverMix": {
+    "description": "Discover Mix section title"
+  },
+  "recentlyPlayed": "Gần đây phát",
+  "@recentlyPlayed": {
+    "description": "Recently played section title"
+  },
+  "yourPlaylists": "Danh sách phát của bạn",
+  "@yourPlaylists": {
+    "description": "Your playlists section title"
+  },
+  "favoritePlaylists": "Danh sách phát yêu thích của bạn",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Albums",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "Đĩa mở rộng",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Đĩa đơn",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
+  "madeForYou": "Dành cho bạn",
+  "@madeForYou": {
+    "description": "Made for you section title"
+  },
+  "topRated": "Bảng xếp hạng đánh giá",
+  "@topRated": {
+    "description": "Top rated albums title"
+  },
+  "noContentAvailable": "Không có nội dung nào khả dụng",
+  "@noContentAvailable": {
+    "description": "Message when no content is available"
+  },
+  "tryRefreshing": "Hãy thử lại hoặc kiểm tra kết nối máy chủ",
+  "@tryRefreshing": {
+    "description": "Message to try refreshing"
+  },
+  "refresh": "Thử lại",
+  "@refresh": {
+    "description": "Refresh button label"
+  },
+  "errorLoadingSongs": "Lỗi khi tải nhạc",
+  "@errorLoadingSongs": {
+    "description": "Error message when songs fail to load"
+  },
+  "noSongsInGenre": "Không có bài hát nào trong thể loại này",
+  "@noSongsInGenre": {
+    "description": "Message when genre has no songs"
+  },
+  "errorLoadingAlbums": "Lỗi khi tải album",
+  "@errorLoadingAlbums": {
+    "description": "Error loading albums message"
+  },
+  "noTopRatedAlbums": "Không có bảng xếp hạng đánh giá album",
+  "@noTopRatedAlbums": {
+    "description": "Message when there are no top rated albums"
+  },
+  "login": "Đăng nhập",
+  "@login": {
+    "description": "Login button label"
+  },
+  "serverUrl": "URL máy chủ",
+  "@serverUrl": {
+    "description": "Server URL field label"
+  },
+  "username": "Tên người dùng",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Mật khẩu",
+  "@password": {
+    "description": "Password field label"
+  },
+  "selectCertificate": "Chọn chứng chỉ TLS/SSL",
+  "@selectCertificate": {
+    "description": "Certificate selection dialog title"
+  },
+  "failedToSelectCertificate": "Thất bại khi chọn chứng chỉ: {error}",
+  "@failedToSelectCertificate": {
+    "description": "Error message when certificate selection fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serverUrlMustStartWith": "URL máy chủ bắt buộc phải bắt đầu bằng http:// hoặc https://",
+  "@serverUrlMustStartWith": {
+    "description": "Error message for invalid server URL"
+  },
+  "failedToConnect": "Thất bại khi kết nối",
+  "@failedToConnect": {
+    "description": "Error message when connection fails"
+  },
+  "library": "Thư viện",
+  "@library": {
+    "description": "Library tab label"
+  },
+  "search": "Tìm kiếm",
+  "@search": {
+    "description": "Search tab label"
+  },
+  "settings": "Cài đặt",
+  "@settings": {
+    "description": "Settings tab label"
+  },
+  "albums": "Album",
+  "@albums": {
+    "description": "Albums section label"
+  },
+  "artists": "Nghệ sĩ",
+  "@artists": {
+    "description": "Wrapped artists metric label"
+  },
+  "songs": "Bài hát",
+  "@songs": {
+    "description": "Songs section label"
+  },
+  "playlists": "Danh sách phát",
+  "@playlists": {
+    "description": "Playlists section label"
+  },
+  "genres": "Thể loại",
+  "@genres": {
+    "description": "Genres section label"
+  },
+  "years": "Năm",
+  "@years": {
+    "description": "Years filter tab label"
+  },
+  "favorites": "Yêu thích",
+  "@favorites": {
+    "description": "Favorites section label"
+  },
+  "nowPlaying": "Đang phát",
+  "@nowPlaying": {
+    "description": "Now playing screen title"
+  },
+  "queue": "Danh sách chờ",
+  "@queue": {
+    "description": "Queue section label"
+  },
+  "lyrics": "Lời bài hát",
+  "@lyrics": {
+    "description": "Lyrics section label"
+  },
+  "play": "Phát",
+  "@play": {
+    "description": "Play button label"
+  },
+  "pause": "Dừng",
+  "@pause": {
+    "description": "Pause button label"
+  },
+  "next": "Bài sau",
+  "@next": {
+    "description": "Next button label"
+  },
+  "previous": "Bài trước đó",
+  "@previous": {
+    "description": "Previous button label"
+  },
+  "shuffle": "Xáo trộn",
+  "@shuffle": {
+    "description": "Shuffle button label"
+  },
+  "confirmLogout": "Bạn có chắc chắn bạn muốn đăng xuất không?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+  "yes": "Có",
+  "@yes": {
+    "description": "Yes button label"
+  },
+  "no": "Không",
+  "@no": {
+    "description": "No button label"
+  },
+  "offlineMode": "Chế độ ngoại tuyến",
+  "@offlineMode": {
+    "description": "Offline mode label"
+  },
+  "radio": "Radio",
+  "@radio": {
+    "description": "Radio section label"
+  },
+  "changelog": "Nhật Ký thay đổi",
+  "@changelog": {
+    "description": "Changelog link label"
+  },
+  "platform": "Nền tảng",
+  "@platform": {
+    "description": "Platform info label"
+  },
+  "server": "Máy chủ",
+  "@server": {
+    "description": "Server settings section"
+  },
+  "display": "Hiển thị",
+  "@display": {
+    "description": "Display settings section"
+  },
+  "playerInterface": "Giao diện tổng quan trình phát",
+  "@playerInterface": {
+    "description": "Player Interface settings section"
+  },
   "@_LIBRARY": {},
   "@_SEARCH": {},
   "@_SETTINGS_GENERAL": {},
@@ -31,5 +276,14 @@
   "@_GENRE_SCREEN": {},
   "@_JUKEBOX": {},
   "@_MUSIC_FOLDERS": {},
-  "audioFocusDenied": "Không thể bắt đầu phát — một ứng dụng khác đang giữ quyền âm thanh"
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "audioFocusDenied": "Không thể bắt đầu phát — một ứng dụng khác đang giữ quyền âm thanh",
+  "@audioFocusDenied": {
+    "description": "Shown when the OS denies Musly audio focus (e.g. another app refuses to yield)"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }
