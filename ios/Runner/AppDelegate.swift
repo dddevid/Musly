@@ -3,35 +3,11 @@ import UIKit
 import AVFoundation
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    
-    // Register custom iOS plugins
-    if let controller = window?.rootViewController as? FlutterViewController {
-      // iOS System Integration Plugin
-      let systemPluginRegistrar = registrar(forPlugin: "iOSSystemPlugin")
-      if systemPluginRegistrar != nil {
-        iOSSystemPlugin.register(with: systemPluginRegistrar!)
-      }
-      
-      // iOS Bluetooth/CarPlay Plugin
-      let bluetoothPluginRegistrar = registrar(forPlugin: "iOSBluetoothPlugin")
-      if bluetoothPluginRegistrar != nil {
-        iOSBluetoothPlugin.register(with: bluetoothPluginRegistrar!)
-      }
-
-      // AirPlay button platform view
-      let airPlayRegistrar = registrar(forPlugin: "AirPlayButtonFactory")
-      if airPlayRegistrar != nil {
-        registerAirPlayButtonFactory(with: airPlayRegistrar!)
-      }
-
-    }
-    
     // Configure audio session for background playback
     do {
       let audioSession = AVAudioSession.sharedInstance()
@@ -44,13 +20,29 @@ import AVFoundation
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-  
-  override func applicationWillResignActive(_ application: UIApplication) {
-    // Keep audio session active when app goes to background
-  }
-  
-  override func applicationDidEnterBackground(_ application: UIApplication) {
-    // Maintain audio playback in background
+
+  // UIScene lifecycle: the FlutterViewController and its engine are created
+  // when the window scene connects, after didFinishLaunchingWithOptions has
+  // returned (the app delegate's window is nil there). Plugins, method
+  // channels and platform views are registered here instead.
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    let registry = engineBridge.pluginRegistry
+    GeneratedPluginRegistrant.register(with: registry)
+
+    // iOS System Integration Plugin
+    if let registrar = registry.registrar(forPlugin: "iOSSystemPlugin") {
+      iOSSystemPlugin.register(with: registrar)
+    }
+
+    // iOS Bluetooth/CarPlay Plugin
+    if let registrar = registry.registrar(forPlugin: "iOSBluetoothPlugin") {
+      iOSBluetoothPlugin.register(with: registrar)
+    }
+
+    // AirPlay button platform view
+    if let registrar = registry.registrar(forPlugin: "AirPlayButtonFactory") {
+      registerAirPlayButtonFactory(with: registrar)
+    }
   }
   
   override func applicationWillTerminate(_ application: UIApplication) {

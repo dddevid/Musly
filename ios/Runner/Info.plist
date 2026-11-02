@@ -63,13 +63,31 @@
 		<string>remote-notification</string>
 	</array>
 	
-	<!-- CarPlay Support TEMPORARILY DISABLED (requires approved entitlement)
+	<!-- UIScene lifecycle (required when built with the iOS 27 SDK).
+	     See https://flutter.dev/to/uiscene-migration -->
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 		<key>UISceneConfigurations</key>
 		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+			<!-- CarPlay Support TEMPORARILY DISABLED (requires approved entitlement).
+			     To re-enable, uncomment this role next to the window scene above
+			     (it belongs in this same manifest) and remove the #if false in
+			     CarPlaySceneDelegate.swift.
 			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
 			<array>
 				<dict>
@@ -81,9 +99,9 @@
 					<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
 				</dict>
 			</array>
+			-->
 		</dict>
 	</dict>
-	-->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
