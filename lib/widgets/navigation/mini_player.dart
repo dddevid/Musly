@@ -14,8 +14,11 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
+import 'package:musly/widgets/common/glass_container.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
 import 'package:musly/widgets/modals/song_options_modal.dart';
+
+const double _kGlassMiniPlayerHeight = 56;
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onTap;
@@ -108,54 +111,31 @@ class MiniPlayer extends StatelessWidget {
           subtitle: subtitle,
           coverArt: coverArt,
           isPlayingRadio: isPlayingRadio,
+          isGlass: isGlass,
         );
 
         if (isGlass) {
+          // iOS 26-style floating Liquid Glass capsule.
           return RepaintBoundary(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: GestureDetector(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              child: GlassContainer.capsule(
+                height: _kGlassMiniPlayerHeight,
                 onTap: handleTap,
                 onLongPress: currentSong != null
                     ? () => SongOptionsModal.show(context, currentSong)
                     : null,
-                child: Container(
-                  height: 64,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xF01C1C1E)
-                        : const Color(0xF5FFFFFF),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.14)
-                          : Colors.black.withValues(alpha: 0.08),
-                      width: 0.8,
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: row),
+                    // Inset hairline progress, kept clear of the rounded ends.
+                    const Positioned(
+                      left: _kGlassMiniPlayerHeight / 2 - 4,
+                      right: _kGlassMiniPlayerHeight / 2 - 4,
+                      bottom: 3,
+                      child: _MiniPlayerProgressBar(isGlass: true),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(child: row),
-                      const Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: _MiniPlayerProgressBar(
-                            borderRadius: 22, isGlass: true),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -226,11 +206,17 @@ class _MiniPlayerProgressBar extends StatelessWidget {
 
         final trackColor = isDark
             ? (isGlass
-                ? Colors.white.withValues(alpha: 0.08)
+                ? Colors.white.withValues(alpha: 0.14)
                 : Colors.white.withValues(alpha: 0.12))
             : (isGlass
-                ? Colors.black.withValues(alpha: 0.06)
+                ? Colors.black.withValues(alpha: 0.08)
                 : Colors.black.withValues(alpha: 0.08));
+
+        // Glass: a free-floating rounded hairline. Classic: flush bottom bar.
+        final double barHeight = isGlass ? 2.0 : 2.5;
+        final BorderRadius clipRadius = isGlass
+            ? BorderRadius.circular(barHeight / 2)
+            : BorderRadius.vertical(bottom: Radius.circular(borderRadius));
 
         final totalMs = duration.inMilliseconds > 0
             ? duration.inMilliseconds
@@ -252,11 +238,10 @@ class _MiniPlayerProgressBar extends StatelessWidget {
                 ? 0.0
                 : progress.clamp(0.0, 1.0);
 
-            return ClipRRect(
-              borderRadius:
-                  BorderRadius.vertical(bottom: Radius.circular(borderRadius)),
+            final Widget bar = ClipRRect(
+              borderRadius: clipRadius,
               child: Container(
-                height: 2.5,
+                height: barHeight,
                 width: double.infinity,
                 color: trackColor,
                 alignment: Alignment.centerLeft,
@@ -270,15 +255,19 @@ class _MiniPlayerProgressBar extends StatelessWidget {
                           primary.withValues(alpha: 0.85),
                         ],
                       ),
-                      borderRadius: cleanProgress >= 0.98
-                          ? BorderRadius.vertical(
-                              bottom: Radius.circular(borderRadius))
-                          : BorderRadius.zero,
+                      borderRadius: isGlass
+                          ? clipRadius
+                          : (cleanProgress >= 0.98
+                              ? BorderRadius.vertical(
+                                  bottom: Radius.circular(borderRadius))
+                              : BorderRadius.zero),
                     ),
                   ),
                 ),
               ),
             );
+            // Keep per-tick progress repaints from repainting the glass layers.
+            return isGlass ? RepaintBoundary(child: bar) : bar;
           },
         );
       },
@@ -291,38 +280,49 @@ class _MiniPlayerRow extends StatelessWidget {
   final String? subtitle;
   final String? coverArt;
   final bool isPlayingRadio;
+  final bool isGlass;
 
   const _MiniPlayerRow({
     required this.title,
     required this.subtitle,
     required this.coverArt,
     required this.isPlayingRadio,
+    this.isGlass = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Glass capsule: artwork inset equally from top/left/bottom so it nests
+    // inside the rounded end; controls tuck closer to the trailing curve.
+    final double artSize = isGlass ? 40 : 44;
+    final double artRadius = isGlass ? 8 : 6;
+    final EdgeInsets padding = isGlass
+        ? const EdgeInsets.only(
+            left: (_kGlassMiniPlayerHeight - 40) / 2, right: 6)
+        : const EdgeInsets.symmetric(horizontal: 16);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding,
       child: Row(
         children: [
           if (isPlayingRadio)
             Container(
-              width: 44,
-              height: 44,
+              width: artSize,
+              height: artSize,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [Color(0xFFFF2D55), Color(0xFFFF6B35)],
                 ),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(artRadius),
               ),
               child: const Icon(Icons.radio, color: Colors.white, size: 24),
             )
           else
-            AlbumArtwork(coverArt: coverArt, size: 44, borderRadius: 6),
-          const SizedBox(width: 12),
+            AlbumArtwork(
+                coverArt: coverArt, size: artSize, borderRadius: artRadius),
+          SizedBox(width: isGlass ? 10 : 12),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -373,7 +373,7 @@ class _MiniPlayerRow extends StatelessWidget {
               ],
             ),
           ),
-          _MiniPlayerControls(isRadio: isPlayingRadio),
+          _MiniPlayerControls(isRadio: isPlayingRadio, isGlass: isGlass),
         ],
       ),
     );
@@ -382,13 +382,33 @@ class _MiniPlayerRow extends StatelessWidget {
 
 class _MiniPlayerControls extends StatelessWidget {
   final bool isRadio;
+  final bool isGlass;
 
-  const _MiniPlayerControls({this.isRadio = false});
+  const _MiniPlayerControls({this.isRadio = false, this.isGlass = false});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isDark ? Colors.white : Colors.black;
+
+    // Glass uses SF Symbols-style filled Cupertino glyphs. They fill more of
+    // their em-box than the Material rounded icons, hence the smaller sizes.
+    final double iconSize =
+        ScreenHelper.miniPlayerIconSize(context) - (isGlass ? 2 : 0);
+    final double playIconSize =
+        ScreenHelper.miniPlayerPlayIconSize(context) - (isGlass ? 6 : 0);
+    final double skipIconSize =
+        ScreenHelper.miniPlayerSkipIconSize(context) - (isGlass ? 4 : 0);
+    final IconData playIcon =
+        isGlass ? CupertinoIcons.play_fill : Icons.play_arrow_rounded;
+    final IconData pauseIcon =
+        isGlass ? CupertinoIcons.pause_fill : Icons.pause_rounded;
+    final IconData skipIcon =
+        isGlass ? CupertinoIcons.forward_fill : Icons.skip_next_rounded;
+    final IconData heartIcon =
+        isGlass ? CupertinoIcons.heart : Icons.favorite_border_rounded;
+    final IconData heartFillIcon =
+        isGlass ? CupertinoIcons.heart_fill : Icons.favorite_rounded;
 
     return Selector<PlayerProvider, (bool, bool)>(
       selector: (_, p) => (p.isPlaying, p.hasNext),
@@ -420,11 +440,8 @@ class _MiniPlayerControls extends StatelessWidget {
                                 constraints: const BoxConstraints(
                                     minWidth: 36, minHeight: 36),
                                 icon: Icon(
-                                  isStarred
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  size:
-                                      ScreenHelper.miniPlayerIconSize(context),
+                                  isStarred ? heartFillIcon : heartIcon,
+                                  size: iconSize,
                                 ),
                                 color: isStarred
                                     ? Theme.of(context).colorScheme.primary
@@ -443,8 +460,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                     minWidth: 36, minHeight: 36),
                                 icon: Icon(
                                   CupertinoIcons.shuffle,
-                                  size:
-                                      ScreenHelper.miniPlayerIconSize(context),
+                                  size: iconSize,
                                 ),
                                 color: shuffleEnabled
                                     ? Theme.of(context).colorScheme.primary
@@ -458,10 +474,8 @@ class _MiniPlayerControls extends StatelessWidget {
                           constraints:
                               const BoxConstraints(minWidth: 40, minHeight: 40),
                           icon: Icon(
-                            isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            size: ScreenHelper.miniPlayerPlayIconSize(context),
+                            isPlaying ? pauseIcon : playIcon,
+                            size: playIconSize,
                           ),
                           color: color,
                         ),
@@ -481,9 +495,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
                                     minWidth: 36, minHeight: 36),
-                                icon: Icon(icon,
-                                    size: ScreenHelper.miniPlayerIconSize(
-                                        context)),
+                                icon: Icon(icon, size: iconSize),
                                 color: active
                                     ? Theme.of(context).colorScheme.primary
                                     : color,
@@ -496,9 +508,7 @@ class _MiniPlayerControls extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                                 minWidth: 36, minHeight: 36),
-                            icon: Icon(Icons.skip_next_rounded,
-                                size: ScreenHelper.miniPlayerSkipIconSize(
-                                    context)),
+                            icon: Icon(skipIcon, size: skipIconSize),
                             color: color,
                           ),
                       ],
