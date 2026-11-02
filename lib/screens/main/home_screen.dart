@@ -23,6 +23,7 @@ import 'package:musly/screens/settings/settings_screen.dart';
 import 'package:musly/screens/wrapped/wrapped_screen.dart';
 import 'package:musly/services/wrapped_service.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -275,7 +276,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
+                    padding: EdgeInsets.only(
+                        bottom: MainScreen.scrollEndPadding(context, 40)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

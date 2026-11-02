@@ -12,6 +12,7 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/widgets.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/utils/screen_helper.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class PlaylistScreen extends StatefulWidget {
   final String playlistId;
@@ -570,7 +571,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             const Divider(),
             Expanded(
               child: ReorderableListView.builder(
-                padding: const EdgeInsets.only(bottom: 150),
+                padding: EdgeInsets.only(
+                    bottom: MainScreen.scrollEndPadding(context, 150)),
                 itemCount: _playlist!.songs!.length,
                 buildDefaultDragHandles: false,
                 onReorder: _onSongReorderedItem,
@@ -966,7 +968,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 );
               },
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: 150)),
+          SliverToBoxAdapter(
+              child: SizedBox(
+                  height: MainScreen.scrollEndPadding(context, 150))),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import '../../services/recommendation_service.dart';
 import '../../services/wrapped_service.dart';
 import '../../widgets/common/album_artwork.dart';
 import '../../l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class WrappedScreen extends StatefulWidget {
   final bool devPreview;
@@ -463,6 +464,8 @@ class _WrappedScreenState extends State<WrappedScreen>
             _buildAnimatedBackground(),
             _buildFloatingAuraParticles(),
             SafeArea(
+              minimum: EdgeInsets.only(
+                  bottom: MainScreen.floatingChromeOverlap(context)),
               child: Column(
                 children: [
                   _buildHeaderProgress(),

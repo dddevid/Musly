@@ -8,6 +8,7 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/widgets.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'album_screen.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class GenreScreen extends StatefulWidget {
   final String genre;
@@ -181,7 +182,8 @@ class _GenreScreenState extends State<GenreScreen>
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 100),
+      padding:
+          EdgeInsets.only(bottom: MainScreen.scrollEndPadding(context, 100)),
       itemExtent: 68.0,
       itemCount: _songs!.length,
       itemBuilder: (context, index) {

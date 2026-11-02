@@ -5,6 +5,7 @@ import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/offline_service.dart';
 import 'package:musly/widgets/widgets.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class DownloadPlaylistStatusScreen extends StatelessWidget {
   const DownloadPlaylistStatusScreen({super.key});
@@ -29,7 +30,7 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
           if (playlists.isEmpty) {
             return Center(child: Text(l10n.noPlaylistsFound));
           }
-          return ListView.builder(
+          final list = ListView.builder(
             itemCount: playlists.length,
             itemBuilder: (context, index) {
               final playlist = playlists[index];
@@ -112,6 +113,7 @@ class DownloadPlaylistStatusScreen extends StatelessWidget {
               );
             },
           );
+          return MainScreen.clearFloatingChrome(context, list);
         },
       ),
     );

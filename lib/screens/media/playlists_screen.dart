@@ -9,6 +9,7 @@ import 'package:musly/widgets/widgets.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/screens/detail/playlist_screen.dart';
 import 'package:musly/utils/navigation_helper.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class PlaylistsScreen extends StatelessWidget {
   const PlaylistsScreen({super.key});
@@ -83,7 +84,8 @@ class PlaylistsScreen extends StatelessWidget {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.only(bottom: 150),
+              padding: EdgeInsets.only(
+                  bottom: MainScreen.scrollEndPadding(context, 150)),
               itemExtent: 72.0,
               itemCount: libraryProvider.playlists.length,
               itemBuilder: (context, index) {

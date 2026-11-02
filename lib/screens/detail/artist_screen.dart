@@ -8,6 +8,7 @@ import 'package:musly/widgets/widgets.dart';
 import 'album_screen.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/services/offline_service.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class ArtistScreen extends StatefulWidget {
   final String artistId;
@@ -490,7 +491,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 100),
+                  SizedBox(height: MainScreen.scrollEndPadding(context, 100)),
                 ],
               ),
             ),

@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/providers/providers.dart';
@@ -49,13 +52,112 @@ class _PlayPauseAction extends Action<PlayPauseIntent> {
   }
 }
 
+/// Breathing room between a page's last item and the floating glass chrome.
+const double _kScrollEndGap = 16;
+
 class MainScreen extends StatefulWidget {
   final bool isOfflineMode;
 
   const MainScreen({super.key, this.isOfflineMode = false});
 
+  /// How much of the bottom of the page at [context] is covered by the
+  /// floating Liquid Glass mini-player + tab bar, measured from the bottom of
+  /// the screen.
+  ///
+  /// `0` in the classic layout, and for anything shown full-screen above
+  /// [MainScreen] (root-navigator routes).
+  static double floatingChromeOverlap(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_FloatingChromeScope>()
+          ?.overlap ??
+      0;
+
+  /// Padding to leave after the last item of a page's scrollable content.
+  ///
+  /// Returns [base] unchanged unless glass chrome floats over the page, in
+  /// which case it is enough to scroll the last item fully clear of the
+  /// chrome (and never less than [base]).
+  static double scrollEndPadding(BuildContext context, double base) {
+    final overlap = floatingChromeOverlap(context);
+    return overlap > 0 ? math.max(base, overlap + _kScrollEndGap) : base;
+  }
+
+  /// For widgets that size themselves from the bottom [MediaQuery] padding,
+  /// such as a [ListView] without explicit padding or a [SafeArea]: extends
+  /// that padding to cover the floating glass chrome. Returns [child]
+  /// untouched when no chrome floats over the page.
+  static Widget clearFloatingChrome(BuildContext context, Widget child) {
+    final overlap = floatingChromeOverlap(context);
+    if (overlap <= 0) return child;
+    final mq = MediaQuery.of(context);
+    if (mq.padding.bottom >= overlap) return child;
+    return MediaQuery(
+      data: mq.copyWith(padding: mq.padding.copyWith(bottom: overlap)),
+      child: child,
+    );
+  }
+
   @override
   State<MainScreen> createState() => _MainScreenState();
+}
+
+/// Publishes how far the floating glass chrome overlaps the pages of the
+/// inner navigator. Read through [MainScreen.floatingChromeOverlap].
+class _FloatingChromeScope extends InheritedWidget {
+  const _FloatingChromeScope({required this.overlap, required super.child});
+
+  final double overlap;
+
+  @override
+  bool updateShouldNotify(_FloatingChromeScope oldWidget) =>
+      oldWidget.overlap != overlap;
+}
+
+/// Tracks whether a bottom sheet is the topmost route of the inner navigator.
+///
+/// Sheets opened from a page land on the inner navigator, which now runs
+/// underneath the floating glass chrome. While one is on top, the chrome
+/// steps aside so the sheet isn't covered (as on iOS, where a sheet covers
+/// the tab bar).
+class _SheetOnTopObserver extends NavigatorObserver {
+  final ValueNotifier<bool> sheetOnTop = ValueNotifier<bool>(false);
+  Route<dynamic>? _top;
+
+  static bool _isSheet(Route<dynamic>? route) =>
+      route is ModalBottomSheetRoute || route is CupertinoModalPopupRoute;
+
+  void _setTop(Route<dynamic>? route) {
+    _top = route;
+    if (sheetOnTop.value == _isSheet(route)) return;
+    // Route changes can be reported mid-build; never notify listeners then.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback(
+          (_) => sheetOnTop.value = _isSheet(_top));
+    } else {
+      sheetOnTop.value = _isSheet(route);
+    }
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _setTop(route);
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _setTop(previousRoute);
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (identical(route, _top)) _setTop(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    if (identical(oldRoute, _top)) _setTop(newRoute);
+  }
+
+  void dispose() => sheetOnTop.dispose();
 }
 
 class _MainScreenState extends State<MainScreen> {
@@ -74,10 +176,14 @@ class _MainScreenState extends State<MainScreen> {
   // in the inner navigator. Shared by both layouts' inner navigators.
   final _backGuard = CoveredBackGestureGuard();
 
+  // Phone layout only: hides the floating glass chrome under bottom sheets.
+  final _sheetObserver = _SheetOnTopObserver();
+
   @override
   void dispose() {
     UsageTimeService().disposeService();
     _backGuard.dispose();
+    _sheetObserver.dispose();
     super.dispose();
   }
 
@@ -301,9 +407,18 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     final bool liquidGlass = Provider.of<ThemeService>(context).liquidGlass;
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
+    final bool keyboardVisible = mediaQuery.viewInsets.bottom != 0;
     return Selector<PlayerProvider, bool>(
       selector: (_, p) => p.currentSong != null || p.isPlayingRadio,
       builder: (context, hasCurrentSong, _) {
+        // Liquid Glass: the mini-player + tab bar float over the pages, which
+        // run edge-to-edge underneath so the glass has real content to blur.
+        // Classic: they sit below the pages, as before.
+        final Widget? floatingChrome = liquidGlass && !keyboardVisible
+            ? _buildFloatingGlassChrome(context, hasCurrentSong)
+            : null;
+
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) {
@@ -316,130 +431,199 @@ class _MainScreenState extends State<MainScreen> {
                 ? AppTheme.darkBackground
                 : AppTheme.lightBackground,
             resizeToAvoidBottomInset: false,
-            body: Column(
-              children: [
-                if (widget.isOfflineMode || isLocalMode)
-                  Container(
-                    width: double.infinity,
-                    color: isLocalMode ? Colors.indigo : Colors.orange,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 16,
-                    ),
-                    child: SafeArea(
-                      bottom: false,
-                      child: Row(
-                        children: [
-                          Icon(
-                            isLocalMode
-                                ? CupertinoIcons.folder_fill
-                                : CupertinoIcons.wifi_slash,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              isLocalMode
-                                  ? AppLocalizations.of(
-                                      context,
-                                    )!
-                                      .localFilesModeBanner
-                                  : AppLocalizations.of(
-                                      context,
-                                    )!
-                                      .offlineModeBanner,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                if (isLocalMode)
-                  Selector<LocalMusicService, (bool, double, String)>(
-                    selector: (_, s) =>
-                        (s.isScanning, s.scanProgress, s.scanStatus),
-                    builder: (context, data, _) {
-                      final (isScanning, progress, status) = data;
-                      if (!isScanning) return const SizedBox.shrink();
-                      return Container(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withValues(alpha: 0.85),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                status,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (progress > 0)
-                              Text(
-                                '${(progress * 100).toStringAsFixed(0)}%',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                Expanded(
-                  child: Navigator(
-                    key: NavigationHelper.appNavigatorKey,
-                    observers: [_backGuard],
-                    onGenerateRoute: (settings) {
-                      return MaterialPageRoute(
-                        builder: (_) => LazyIndexedStack(
-                          index: _currentIndex,
-                          children: _screens,
-                        ),
-                      );
-                    },
+            extendBody: floatingChrome != null,
+            bottomNavigationBar: floatingChrome,
+            body: Builder(builder: (bodyContext) {
+              // With extendBody the Scaffold reports the chrome's height as
+              // the body's bottom padding. Pages get it via
+              // _FloatingChromeScope; the inner navigator itself keeps the
+              // real system inset, so sheets, dialogs and SafeAreas pushed
+              // there lay out exactly as before. (Classic: a no-op.)
+              final bodyMediaQuery = MediaQuery.of(bodyContext);
+              return MediaQuery(
+                data: bodyMediaQuery.copyWith(
+                  padding: bodyMediaQuery.padding
+                      .copyWith(bottom: mediaQuery.padding.bottom),
+                ),
+                child: _FloatingChromeScope(
+                  overlap: floatingChrome != null
+                      ? bodyMediaQuery.padding.bottom
+                      : 0,
+                  child: _buildPhoneBody(
+                    context,
+                    isLocalMode: isLocalMode,
+                    inlineChrome: !liquidGlass && !keyboardVisible,
+                    hasCurrentSong: hasCurrentSong,
                   ),
                 ),
-                if (MediaQuery.of(context).viewInsets.bottom == 0)
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (hasCurrentSong) const MiniPlayer(),
-                      liquidGlass
-                          ? _buildGlassBottomNav(context)
-                          : _buildBottomNav(context),
-                    ],
-                  ),
-              ],
-            ),
+              );
+            }),
           ),
           ),
         );
       },
+    );
+  }
+
+  /// The phone layout's page column: status banners, the inner navigator and,
+  /// in the classic layout only, the inline mini-player + tab bar.
+  Widget _buildPhoneBody(
+    BuildContext context, {
+    required bool isLocalMode,
+    required bool inlineChrome,
+    required bool hasCurrentSong,
+  }) {
+    return Column(
+      children: [
+        if (widget.isOfflineMode || isLocalMode)
+          Container(
+            width: double.infinity,
+            color: isLocalMode ? Colors.indigo : Colors.orange,
+            padding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 16,
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                children: [
+                  Icon(
+                    isLocalMode
+                        ? CupertinoIcons.folder_fill
+                        : CupertinoIcons.wifi_slash,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isLocalMode
+                          ? AppLocalizations.of(
+                              context,
+                            )!
+                              .localFilesModeBanner
+                          : AppLocalizations.of(
+                              context,
+                            )!
+                              .offlineModeBanner,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (isLocalMode)
+          Selector<LocalMusicService, (bool, double, String)>(
+            selector: (_, s) =>
+                (s.isScanning, s.scanProgress, s.scanStatus),
+            builder: (context, data, _) {
+              final (isScanning, progress, status) = data;
+              if (!isScanning) return const SizedBox.shrink();
+              return Container(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withValues(alpha: 0.85),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        status,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (progress > 0)
+                      Text(
+                        '${(progress * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        Expanded(
+          child: Navigator(
+            key: NavigationHelper.appNavigatorKey,
+            observers: [_backGuard, _sheetObserver],
+            onGenerateRoute: (settings) {
+              return MaterialPageRoute(
+                builder: (_) => LazyIndexedStack(
+                  index: _currentIndex,
+                  children: _screens,
+                ),
+              );
+            },
+          ),
+        ),
+        if (inlineChrome)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasCurrentSong) const MiniPlayer(),
+              _buildBottomNav(context),
+            ],
+          ),
+      ],
+    );
+  }
+
+  /// Liquid Glass chrome floating over the pages: mini-player + tab bar.
+  Widget _buildFloatingGlassChrome(BuildContext context, bool hasCurrentSong) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    return ValueListenableBuilder<bool>(
+      valueListenable: _sheetObserver.sheetOnTop,
+      builder: (context, sheetOnTop, child) {
+        // Slide out of the way while a bottom sheet is open over the pages.
+        // Layout size is kept, so pages don't reflow underneath the sheet.
+        return IgnorePointer(
+          ignoring: sheetOnTop,
+          child: AnimatedSlide(
+            offset: sheetOnTop ? const Offset(0, 1.4) : Offset.zero,
+            duration: reduceMotion
+                ? Duration.zero
+                : const Duration(milliseconds: 280),
+            curve: sheetOnTop ? Curves.easeInCubic : Curves.easeOutCubic,
+            child: child,
+          ),
+        );
+      },
+      // One shared backdrop for every glass surface in the chrome, so the
+      // engine snapshots the content behind it once rather than per surface.
+      child: BackdropGroup(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasCurrentSong) const MiniPlayer(),
+            _buildGlassBottomNav(context),
+          ],
+        ),
+      ),
     );
   }
 

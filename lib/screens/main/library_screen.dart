@@ -27,6 +27,7 @@ import 'package:musly/models/playlist.dart';
 import 'package:musly/models/album.dart';
 import 'package:musly/models/artist.dart';
 import 'package:musly/models/song.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -654,7 +655,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
               else
                 _buildSliverList(
                     context, libraryProvider, isDark, isYoutube, hPad),
-              const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              SliverToBoxAdapter(
+                  child: SizedBox(
+                      height: MainScreen.scrollEndPadding(context, 80))),
             ],
           ),
         );

@@ -9,6 +9,7 @@ import '../../services/subsonic_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/widgets.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 enum SongCollectionType {
   allSongs,
@@ -376,7 +377,8 @@ class _SongCollectionScreenState extends State<SongCollectionScreen> {
               _buildEmptyState(theme)
             else
               SliverPadding(
-                padding: const EdgeInsets.only(bottom: 120),
+                padding: EdgeInsets.only(
+                    bottom: MainScreen.scrollEndPadding(context, 120)),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {

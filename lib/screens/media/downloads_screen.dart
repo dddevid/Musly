@@ -7,6 +7,7 @@ import '../../widgets/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../detail/album_screen.dart';
 import '../../utils/navigation_helper.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
@@ -101,7 +102,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 150),
+      padding:
+          EdgeInsets.only(bottom: MainScreen.scrollEndPadding(context, 150)),
       itemExtent: 68.0,
       itemCount: _downloadedSongs.length,
       itemBuilder: (context, index) {
@@ -141,7 +143,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
+          padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MainScreen.scrollEndPadding(context, 150)),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
             childAspectRatio: 0.75,

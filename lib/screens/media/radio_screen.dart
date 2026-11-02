@@ -7,6 +7,7 @@ import 'package:musly/providers/player_provider.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class RadioScreen extends StatefulWidget {
   const RadioScreen({super.key});
@@ -241,7 +242,8 @@ class _RadioScreenState extends State<RadioScreen> {
     return RefreshIndicator(
       onRefresh: _loadStations,
       child: ListView.builder(
-        padding: const EdgeInsets.only(bottom: 100),
+        padding:
+            EdgeInsets.only(bottom: MainScreen.scrollEndPadding(context, 100)),
         itemExtent: 72.0,
         itemCount: _stations.length,
         itemBuilder: (context, index) {

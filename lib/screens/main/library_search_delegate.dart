@@ -5,6 +5,7 @@ import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/detail/playlist_screen.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class LibrarySearchDelegate extends SearchDelegate<String> {
   final LibraryProvider libraryProvider;
@@ -111,7 +112,7 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
       );
     }
 
-    return ListView(
+    final results = ListView(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -155,5 +156,6 @@ class LibrarySearchDelegate extends SearchDelegate<String> {
         ),
       ],
     );
+    return MainScreen.clearFloatingChrome(context, results);
   }
 }

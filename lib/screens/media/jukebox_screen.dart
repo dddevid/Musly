@@ -7,6 +7,7 @@ import 'package:musly/services/jukebox_service.dart';
 import 'package:musly/services/subsonic_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class JukeboxScreen extends StatefulWidget {
   const JukeboxScreen({super.key});
@@ -287,6 +288,10 @@ class _JukeboxScreenState extends State<JukeboxScreen> {
                 ),
                 Expanded(
                   child: ListView.builder(
+                    // Same as the automatic inset, plus room for glass chrome.
+                    padding: EdgeInsets.only(
+                        bottom: MainScreen.scrollEndPadding(
+                            context, MediaQuery.paddingOf(context).bottom)),
                     itemCount: status.playlist.length,
                     itemBuilder: (context, index) {
                       final s = status.playlist[index];

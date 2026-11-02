@@ -8,6 +8,7 @@ import '../../utils/screen_helper.dart';
 import '../../widgets/widgets.dart';
 import '../detail/album_screen.dart';
 import '../../utils/navigation_helper.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 enum AlbumCollectionType {
   recent,
@@ -219,7 +220,9 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
                   _buildEmptyState(theme)
                 else
                   _buildAlbumGrid(context),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                SliverToBoxAdapter(
+                    child: SizedBox(
+                        height: MainScreen.scrollEndPadding(context, 100))),
               ],
             ),
           ),
@@ -385,7 +388,7 @@ class _AlbumCollectionScreenState extends State<AlbumCollectionScreen> {
     return Positioned(
       right: 4,
       top: 130,
-      bottom: 90,
+      bottom: MainScreen.scrollEndPadding(context, 90),
       child: Center(
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),

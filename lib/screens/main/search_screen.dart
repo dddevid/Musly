@@ -22,6 +22,7 @@ import 'package:musly/screens/media/favorites_screen.dart';
 import 'package:musly/screens/media/radio_screen.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -311,7 +312,8 @@ class _SearchScreenState extends State<SearchScreen> {
         subsonicService.isYoutube || authProvider.config?.isYoutube == true;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 48),
+      padding: EdgeInsets.fromLTRB(
+          hPad, 16, hPad, MainScreen.scrollEndPadding(context, 48)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -561,7 +563,8 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 48),
+      padding: EdgeInsets.fromLTRB(
+          hPad, 16, hPad, MainScreen.scrollEndPadding(context, 48)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

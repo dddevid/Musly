@@ -9,6 +9,7 @@ import '../../widgets/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../detail/album_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -134,7 +135,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 150),
+      padding:
+          EdgeInsets.only(bottom: MainScreen.scrollEndPadding(context, 150)),
       itemCount: _favoriteSongs.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -277,7 +279,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 150),
+          padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MainScreen.scrollEndPadding(context, 150)),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
             childAspectRatio: 0.75,

@@ -10,6 +10,7 @@ import 'package:musly/widgets/widgets.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/services/offline_service.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class AlbumScreen extends StatefulWidget {
   final String albumId;
@@ -589,7 +590,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   );
                 },
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 150)),
+              SliverToBoxAdapter(
+                  child: SizedBox(
+                      height: MainScreen.scrollEndPadding(context, 150))),
             ],
           ),
         ],
