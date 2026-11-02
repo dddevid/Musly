@@ -1,114 +1,182 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// Tunable look of a [GlassContainer].
 ///
 /// Colours are intentionally not stored here: the tint is resolved from the
 /// ambient [Theme] at build time, so glass always sits *on top of* the current
 /// light/dark/accent/dynamic theme instead of replacing it.
+///
+/// Lengths are in logical pixels.
 @immutable
 class GlassStyle {
   const GlassStyle({
-    this.blurSigma = 20,
-    this.saturation = 1.7,
-    this.lightTintOpacity = 0.60,
-    this.darkTintOpacity = 0.46,
+    this.refraction = 18,
+    this.bevel = 20,
+    this.dispersion = 0.1,
+    this.frost = 0,
+    this.saturation = 1.2,
+    this.lightTintOpacity = 0.06,
+    this.darkTintOpacity = 0.05,
+    this.adaptiveTint = 0.45,
     this.highlight = 1.0,
     this.elevation = 1.0,
     this.rimWidth = 1.0,
+    this.fallbackBlurSigma = 20,
   });
 
-  /// Gaussian blur applied to whatever is painted behind the surface.
-  /// `0` skips the [BackdropFilter] entirely (cheap, tint-only glass).
-  final double blurSigma;
+  /// How far, at the very rim, the glass pulls in content from outside its
+  /// edge. `0` disables lensing.
+  final double refraction;
 
-  /// Saturation boost applied to the blurred backdrop (1 = unchanged). Gives
-  /// the vivid look of iOS materials instead of a washed-out frost.
+  /// Width of the curved band along the edge that bends light. The centre
+  /// inside it is flat and optically clear.
+  final double bevel;
+
+  /// Chromatic dispersion across the bevel, as a fraction of [refraction]
+  /// (blue bends that much more than green, red that much less).
+  final double dispersion;
+
+  /// Radius of an optional soft frost over the whole surface. `0` keeps the
+  /// centre perfectly clear.
+  final double frost;
+
+  /// Colour saturation applied to what is seen through the glass
+  /// (1 = unchanged).
   final double saturation;
 
-  /// Opacity of the theme-surface tint laid over the blur in light mode.
+  /// Base opacity of the theme-surface tint in light mode.
   final double lightTintOpacity;
 
-  /// Opacity of the theme-surface tint laid over the blur in dark mode.
+  /// Base opacity of the theme-surface tint in dark mode.
   final double darkTintOpacity;
 
-  /// Multiplier for the specular sheen and rim light. `0` disables them.
+  /// Extra tint added where content behind would fight foreground legibility
+  /// (bright content under dark glass, dark content under light glass).
+  final double adaptiveTint;
+
+  /// Multiplier for specular light on the bevel and rim. `0` disables it.
   final double highlight;
 
   /// Multiplier for the drop shadow. `0` makes the surface sit flat.
   final double elevation;
 
-  /// Stroke width of the specular rim, in logical pixels.
+  /// Stroke width of the crisp specular rim line.
   final double rimWidth;
 
-  /// Default for floating chrome: mini-player, tab bar, toolbars.
+  /// Where refraction shaders are unavailable (web, non-Impeller renderers),
+  /// glass falls back to a Gaussian blur of this sigma plus a thicker tint.
+  final double fallbackBlurSigma;
+
+  /// Default: optically clear centre with lensing edges. Mini-player, tab
+  /// bar, toolbars.
   static const GlassStyle regular = GlassStyle();
 
-  /// Thinner, more see-through variant for controls that float over artwork.
+  /// Even more transparent, for controls floating over artwork.
   static const GlassStyle clear = GlassStyle(
-    blurSigma: 12,
-    saturation: 1.4,
-    lightTintOpacity: 0.28,
-    darkTintOpacity: 0.22,
+    refraction: 12,
+    lightTintOpacity: 0.03,
+    darkTintOpacity: 0.03,
+    adaptiveTint: 0.2,
     elevation: 0.6,
   );
 
+  /// Softly frosted, for larger surfaces carrying dense text.
+  static const GlassStyle frosted = GlassStyle(
+    frost: 4,
+    lightTintOpacity: 0.40,
+    darkTintOpacity: 0.32,
+    adaptiveTint: 0.3,
+  );
+
   GlassStyle copyWith({
-    double? blurSigma,
+    double? refraction,
+    double? bevel,
+    double? dispersion,
+    double? frost,
     double? saturation,
     double? lightTintOpacity,
     double? darkTintOpacity,
+    double? adaptiveTint,
     double? highlight,
     double? elevation,
     double? rimWidth,
+    double? fallbackBlurSigma,
   }) {
     return GlassStyle(
-      blurSigma: blurSigma ?? this.blurSigma,
+      refraction: refraction ?? this.refraction,
+      bevel: bevel ?? this.bevel,
+      dispersion: dispersion ?? this.dispersion,
+      frost: frost ?? this.frost,
       saturation: saturation ?? this.saturation,
       lightTintOpacity: lightTintOpacity ?? this.lightTintOpacity,
       darkTintOpacity: darkTintOpacity ?? this.darkTintOpacity,
+      adaptiveTint: adaptiveTint ?? this.adaptiveTint,
       highlight: highlight ?? this.highlight,
       elevation: elevation ?? this.elevation,
       rimWidth: rimWidth ?? this.rimWidth,
+      fallbackBlurSigma: fallbackBlurSigma ?? this.fallbackBlurSigma,
     );
   }
 
   @override
   bool operator ==(Object other) =>
       other is GlassStyle &&
-      other.blurSigma == blurSigma &&
+      other.refraction == refraction &&
+      other.bevel == bevel &&
+      other.dispersion == dispersion &&
+      other.frost == frost &&
       other.saturation == saturation &&
       other.lightTintOpacity == lightTintOpacity &&
       other.darkTintOpacity == darkTintOpacity &&
+      other.adaptiveTint == adaptiveTint &&
       other.highlight == highlight &&
       other.elevation == elevation &&
-      other.rimWidth == rimWidth;
+      other.rimWidth == rimWidth &&
+      other.fallbackBlurSigma == fallbackBlurSigma;
 
   @override
-  int get hashCode => Object.hash(blurSigma, saturation, lightTintOpacity,
-      darkTintOpacity, highlight, elevation, rimWidth);
+  int get hashCode => Object.hash(
+      refraction,
+      bevel,
+      dispersion,
+      frost,
+      saturation,
+      lightTintOpacity,
+      darkTintOpacity,
+      adaptiveTint,
+      highlight,
+      elevation,
+      rimWidth,
+      fallbackBlurSigma);
 }
 
 /// An iOS 26 "Liquid Glass" surface.
 ///
+/// On Impeller (iOS, modern Android) the backdrop goes through a refraction
+/// shader: the centre is optically clear while a curved bevel along the edge
+/// pulls in and squeezes the content around the glass, with slight chromatic
+/// dispersion, specular light and an adaptive tint for legibility. Elsewhere
+/// (web, Skia) it falls back to blur + tint with the same shape and lighting.
+///
 /// Layers, bottom to top:
-///  1. Depth shadow, painted only *outside* the shape so it never muddies the
-///     translucent interior.
-///  2. Continuous-corner clip ([ClipRSuperellipse], the equivalent of SwiftUI's
-///     `.continuous` rounded rectangle).
-///  3. Backdrop blur + saturation boost ([BackdropFilter.grouped], so several
-///     glass surfaces under one [BackdropGroup] share a single backdrop read).
-///  4. Theme-derived tint + vertical specular sheen.
-///  5. [child].
-///  6. Specular rim light (bright top-leading / bottom-trailing edges).
+///  1. Continuous-corner clip ([ClipRSuperellipse], SwiftUI's `.continuous`).
+///  2. Refraction shader, or blur fallback, over the backdrop. Uses the
+///     nearest [BackdropGroup], so several glass surfaces share one backdrop.
+///  3. [child].
+///  4. Crisp specular rim line.
+///  5. Depth shadow, painted only *outside* the shape and after the glass, so
+///     the glass never refracts or tints its own shadow.
 ///
 /// When [onTap] or [onLongPress] is set the surface responds to touch like
 /// interactive iOS glass: it swells slightly and its highlights brighten.
 ///
-/// Note: blur only shows something if content is actually painted *behind*
-/// this widget (e.g. it sits in a [Stack] over a scroll view).
+/// Note: the glass only shows something if content is actually painted
+/// *behind* it (e.g. it floats in a [Stack] over a scroll view).
 class GlassContainer extends StatefulWidget {
   const GlassContainer({
     super.key,
@@ -139,7 +207,8 @@ class GlassContainer extends StatefulWidget {
 
   final Widget child;
 
-  /// Corner radii. Ignored by [GlassContainer.capsule].
+  /// Corner radii. Ignored by [GlassContainer.capsule]. The refraction field
+  /// uses the top-left radius for all corners.
   final BorderRadius borderRadius;
   final GlassStyle style;
   final EdgeInsetsGeometry? padding;
@@ -153,8 +222,32 @@ class GlassContainer extends StatefulWidget {
 
   final bool _capsule;
 
+  /// Forces the blur fallback even where the refraction shader is available.
+  /// For comparisons and tests.
+  static bool debugForceBlurFallback = false;
+
   @override
   State<GlassContainer> createState() => _GlassContainerState();
+}
+
+/// Loads the refraction shader once per process.
+abstract final class _LiquidGlassProgram {
+  static const String asset = 'shaders/liquid_glass.frag';
+
+  static ui.FragmentProgram? program;
+  static Future<void>? _loading;
+
+  static bool get supported => ui.ImageFilter.isShaderFilterSupported;
+
+  static Future<void> load() {
+    return _loading ??= ui.FragmentProgram.fromAsset(asset).then(
+      (p) => program = p,
+      onError: (Object error) {
+        debugPrint('GlassContainer: refraction shader unavailable, '
+            'using blur fallback ($error)');
+      },
+    );
+  }
 }
 
 class _GlassContainerState extends State<GlassContainer> {
@@ -162,6 +255,16 @@ class _GlassContainerState extends State<GlassContainer> {
 
   bool get _interactive =>
       widget.onTap != null || widget.onLongPress != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_LiquidGlassProgram.supported && _LiquidGlassProgram.program == null) {
+      _LiquidGlassProgram.load().then((_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
 
   void _setPressed(bool value) {
     if (_pressed != value) setState(() => _pressed = value);
@@ -181,17 +284,19 @@ class _GlassContainerState extends State<GlassContainer> {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final style = widget.style;
 
+    final ui.FragmentProgram? program = _LiquidGlassProgram.supported &&
+            !GlassContainer.debugForceBlurFallback
+        ? _LiquidGlassProgram.program
+        : null;
+
     // Tint follows the active theme surface (incl. dynamic colour). Dark glass
     // gets a small white lift so it still reads as a surface over pure black.
-    final baseTintOpacity =
-        isDark ? style.darkTintOpacity : style.lightTintOpacity;
-    final tintOpacity = highContrast
-        ? math.max(baseTintOpacity, 0.86)
-        : baseTintOpacity;
-    final tint = Color.alphaBlend(
-      Colors.white.withValues(alpha: isDark ? 0.07 : 0.0),
-      theme.colorScheme.surface.withValues(alpha: tintOpacity),
-    );
+    final tintColor = Color.alphaBlend(
+      Colors.white.withValues(alpha: isDark ? 0.10 : 0.0),
+      theme.colorScheme.surface,
+    ).withValues(alpha: 1.0);
+    final baseTint = isDark ? style.darkTintOpacity : style.lightTintOpacity;
+    final adaptive = style.adaptiveTint;
 
     final shadows = style.elevation <= 0
         ? const <BoxShadow>[]
@@ -225,6 +330,8 @@ class _GlassContainerState extends State<GlassContainer> {
       content = Padding(padding: widget.padding!, child: content);
     }
 
+    final BackdropKey? backdropKey = BackdropGroup.of(context)?.backdropKey;
+
     Widget glass = TweenAnimationBuilder<double>(
       tween: Tween<double>(end: _pressed ? 1.0 : 0.0),
       duration:
@@ -234,40 +341,77 @@ class _GlassContainerState extends State<GlassContainer> {
       builder: (context, press, child) {
         final highlight =
             style.highlight * (highContrast ? 1.3 : 1.0) * (1 + 0.8 * press);
-        final surface = CustomPaint(
-          painter: _GlassSurfacePainter(
-            tint: Color.alphaBlend(
-              Colors.white.withValues(alpha: (isDark ? 0.06 : 0.10) * press),
-              tint,
-            ),
-            highlight: highlight,
-            isDark: isDark,
-          ),
-          foregroundPainter: _GlassRimPainter(
-            shape: shape,
-            width: style.rimWidth,
-            highlight: highlight,
-            isDark: isDark,
-          ),
-          child: child,
-        );
 
-        final Widget blurred = style.blurSigma > 0
-            ? BackdropFilter.grouped(
-                filter: _backdropFilter(style.blurSigma, style.saturation),
-                child: surface,
-              )
-            : surface;
+        final Widget filtered;
+        if (program != null) {
+          // Refraction path: the shader handles tint and bevel light.
+          filtered = _LiquidGlassFilter(
+            program: program,
+            backdropKey: backdropKey,
+            optics: _GlassOptics(
+              shape: shape,
+              refraction: style.refraction,
+              bevel: style.bevel,
+              dispersion: style.dispersion,
+              frost: style.frost,
+              saturation: style.saturation,
+              highlight: highlight,
+              tint: tintColor,
+              tintOpacity: highContrast
+                  ? math.max(baseTint, 0.7)
+                  : baseTint + 0.06 * press,
+              adaptiveTint: adaptive,
+            ),
+            child: CustomPaint(
+              foregroundPainter: _GlassRimPainter(
+                shape: shape,
+                width: style.rimWidth,
+                highlight: highlight,
+                isDark: isDark,
+              ),
+              child: child,
+            ),
+          );
+        } else {
+          // Blur fallback: no lensing, so lean on blur + a thicker tint.
+          final fallbackOpacity = highContrast
+              ? 0.86
+              : math.min(baseTint + 0.25 + adaptive * 0.3, 0.9);
+          final surface = CustomPaint(
+            painter: _GlassSurfacePainter(
+              tint: Color.alphaBlend(
+                Colors.white.withValues(alpha: (isDark ? 0.06 : 0.10) * press),
+                tintColor.withValues(alpha: fallbackOpacity),
+              ),
+              highlight: highlight,
+              isDark: isDark,
+            ),
+            foregroundPainter: _GlassRimPainter(
+              shape: shape,
+              width: style.rimWidth,
+              highlight: highlight,
+              isDark: isDark,
+            ),
+            child: child,
+          );
+          filtered = style.fallbackBlurSigma > 0
+              ? BackdropFilter.grouped(
+                  filter: _blurFilter(
+                      style.fallbackBlurSigma, style.saturation + 0.4),
+                  child: surface,
+                )
+              : surface;
+        }
 
         final Widget body = CustomPaint(
-          painter: _GlassShadowPainter(
+          foregroundPainter: _GlassShadowPainter(
             shape: shape,
             shadows: shadows,
             outline: outline,
           ),
           child: ClipRSuperellipse(
             clipper: _GlassClipper(shape),
-            child: blurred,
+            child: filtered,
           ),
         );
 
@@ -297,7 +441,7 @@ class _GlassContainerState extends State<GlassContainer> {
   }
 }
 
-ui.ImageFilter _backdropFilter(double sigma, double saturation) {
+ui.ImageFilter _blurFilter(double sigma, double saturation) {
   final blur = ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
   if (saturation == 1.0) return blur;
   return ui.ImageFilter.compose(
@@ -317,6 +461,227 @@ List<double> _saturationMatrix(double s) {
     0, 0, 0, 1, 0, //
   ];
 }
+
+// ---------------------------------------------------------------------------
+// Refraction shader plumbing
+// ---------------------------------------------------------------------------
+
+/// Everything the refraction shader needs, in logical pixels.
+@immutable
+class _GlassOptics {
+  const _GlassOptics({
+    required this.shape,
+    required this.refraction,
+    required this.bevel,
+    required this.dispersion,
+    required this.frost,
+    required this.saturation,
+    required this.highlight,
+    required this.tint,
+    required this.tintOpacity,
+    required this.adaptiveTint,
+  });
+
+  final _GlassShape shape;
+  final double refraction;
+  final double bevel;
+  final double dispersion;
+  final double frost;
+  final double saturation;
+  final double highlight;
+  final Color tint;
+  final double tintOpacity;
+  final double adaptiveTint;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _GlassOptics &&
+      other.shape == shape &&
+      other.refraction == refraction &&
+      other.bevel == bevel &&
+      other.dispersion == dispersion &&
+      other.frost == frost &&
+      other.saturation == saturation &&
+      other.highlight == highlight &&
+      other.tint == tint &&
+      other.tintOpacity == tintOpacity &&
+      other.adaptiveTint == adaptiveTint;
+
+  @override
+  int get hashCode => Object.hash(shape, refraction, bevel, dispersion, frost,
+      saturation, highlight, tint, tintOpacity, adaptiveTint);
+}
+
+/// Applies the refraction shader to the backdrop behind [child].
+class _LiquidGlassFilter extends SingleChildRenderObjectWidget {
+  const _LiquidGlassFilter({
+    required this.program,
+    required this.optics,
+    this.backdropKey,
+    super.child,
+  });
+
+  final ui.FragmentProgram program;
+  final _GlassOptics optics;
+  final BackdropKey? backdropKey;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderLiquidGlass(program.fragmentShader(), optics, backdropKey);
+
+  @override
+  void updateRenderObject(
+      BuildContext context, _RenderLiquidGlass renderObject) {
+    renderObject
+      ..optics = optics
+      ..backdropKey = backdropKey;
+  }
+}
+
+class _RenderLiquidGlass extends RenderProxyBox {
+  _RenderLiquidGlass(this._shader, this._optics, this._backdropKey);
+
+  final ui.FragmentShader _shader;
+
+  _GlassOptics get optics => _optics;
+  _GlassOptics _optics;
+  set optics(_GlassOptics value) {
+    if (value == _optics) return;
+    _optics = value;
+    markNeedsPaint();
+  }
+
+  BackdropKey? get backdropKey => _backdropKey;
+  BackdropKey? _backdropKey;
+  set backdropKey(BackdropKey? value) {
+    if (value == _backdropKey) return;
+    _backdropKey = value;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get alwaysNeedsCompositing => child != null;
+
+  @override
+  _LiquidGlassLayer? get layer => super.layer as _LiquidGlassLayer?;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (child == null) {
+      layer = null;
+      return;
+    }
+    layer ??= _LiquidGlassLayer(_shader);
+    layer!
+      ..localRect = offset & size
+      ..optics = _optics
+      ..configure(backdropKey: _backdropKey);
+    context.pushLayer(layer!, super.paint, offset);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _shader.dispose();
+  }
+}
+
+/// A backdrop-filter layer that positions the refraction shader at
+/// compositing time.
+///
+/// The shader works in screen (render-target) pixels, so it needs to know
+/// where the glass actually is on screen. That changes whenever an ancestor
+/// layer moves (scrolling, slide transitions, press scaling) — often without
+/// this render object repainting. So, like [FollowerLayer], this layer opts
+/// out of retained rendering and recomputes its on-screen bounds from the
+/// ancestor layer transforms every time the scene is built.
+class _LiquidGlassLayer extends BackdropFilterLayer {
+  _LiquidGlassLayer(this._shader);
+
+  final ui.FragmentShader _shader;
+
+  /// Glass bounds in this layer's parent coordinate space.
+  Rect localRect = Rect.zero;
+  _GlassOptics? optics;
+
+  ui.ImageFilter? _resolved;
+  bool _configuring = false;
+
+  /// Applies inherited settings whose setters mark the layer dirty, which a
+  /// layer that always re-adds itself may otherwise not do.
+  void configure({BackdropKey? backdropKey}) {
+    _configuring = true;
+    try {
+      this.backdropKey = backdropKey;
+    } finally {
+      _configuring = false;
+    }
+  }
+
+  @override
+  bool get alwaysNeedsAddToScene => !_configuring;
+
+  @override
+  ui.ImageFilter? get filter => _resolved;
+
+  @override
+  void addToScene(ui.SceneBuilder builder) {
+    _resolved = _resolveFilter();
+    super.addToScene(builder);
+  }
+
+  ui.ImageFilter _resolveFilter() {
+    final o = optics!;
+    final m = _screenTransform();
+    final screenRect = MatrixUtils.transformRect(m, localRect);
+    // Logical px -> screen px (device pixel ratio and any ancestor scale).
+    final s = math.sqrt(m.storage[0] * m.storage[0] + m.storage[1] * m.storage[1]);
+
+    final size = localRect.size;
+    final half = size.shortestSide / 2;
+    final radius = math.min(o.shape.radiusFor(size).topLeft.x, half);
+    final bevel = math.min(o.bevel, half * 0.9);
+    final normalRadius = math.min(math.max(radius, bevel), half);
+
+    _shader
+      // 0, 1: u_size, set by the engine.
+      ..setFloat(2, screenRect.left)
+      ..setFloat(3, screenRect.top)
+      ..setFloat(4, screenRect.width)
+      ..setFloat(5, screenRect.height)
+      ..setFloat(6, radius * s)
+      ..setFloat(7, bevel * s)
+      ..setFloat(8, o.refraction * s)
+      ..setFloat(9, normalRadius * s)
+      ..setFloat(10, o.dispersion)
+      ..setFloat(11, o.frost * s)
+      ..setFloat(12, o.saturation)
+      ..setFloat(13, o.highlight)
+      ..setFloat(14, o.tint.r)
+      ..setFloat(15, o.tint.g)
+      ..setFloat(16, o.tint.b)
+      ..setFloat(17, o.tintOpacity)
+      ..setFloat(18, o.adaptiveTint);
+    return ui.ImageFilter.shader(_shader);
+  }
+
+  /// Transform from this layer's coordinates to the root (screen pixels).
+  Matrix4 _screenTransform() {
+    final ancestors = <ContainerLayer>[];
+    for (ContainerLayer? p = parent; p != null; p = p.parent) {
+      ancestors.add(p);
+    }
+    final m = Matrix4.identity();
+    for (var i = ancestors.length - 1; i >= 0; i--) {
+      ancestors[i].applyTransform(i == 0 ? this : ancestors[i - 1], m);
+    }
+    return m;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shape + painters
+// ---------------------------------------------------------------------------
 
 /// Resolves the continuous-corner geometry for a given size, so a capsule can
 /// always use exactly half its shortest side as its radius.
@@ -424,10 +789,11 @@ class _GlassShadowPainter extends CustomPainter {
   bool shouldRepaint(_GlassShadowPainter old) =>
       old.shape != shape ||
       old.outline != outline ||
-      !_listEquals(old.shadows, shadows);
+      !listEquals(old.shadows, shadows);
 }
 
-/// Fills the (already clipped) interior with the tint and a specular sheen.
+/// Blur fallback only: fills the (already clipped) interior with the tint and
+/// a specular sheen standing in for the shader's bevel light.
 class _GlassSurfacePainter extends CustomPainter {
   const _GlassSurfacePainter({
     required this.tint,
@@ -546,13 +912,4 @@ class _StretchToBounds extends GradientTransform {
       bounds.center.dx * (1 - sx), 0, 0, 1, //
     );
   }
-}
-
-bool _listEquals<T>(List<T> a, List<T> b) {
-  if (identical(a, b)) return true;
-  if (a.length != b.length) return false;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
-  }
-  return true;
 }

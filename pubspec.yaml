@@ -93,6 +93,8 @@ flutter:
   # The following line ensures that the Material Icons font is
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
+  shaders:
+    - shaders/liquid_glass.frag
   assets:
     - assets/logo.png
     - assets/logobig.png
