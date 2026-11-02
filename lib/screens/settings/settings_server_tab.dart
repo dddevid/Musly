@@ -18,6 +18,7 @@ import 'package:musly/widgets/settings/settings_switch_tile.dart';
 import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/widgets/modals/server_switcher_sheet.dart';
 import 'package:musly/utils/context_extensions.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsServerTab extends StatefulWidget {
   const SettingsServerTab({super.key});
@@ -37,7 +38,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+          0, 16, 0, MainScreen.scrollEndPadding(context, 16)),
       children: [
         _buildActiveServerCard(context, authProvider, currentConfig, isYoutube),
         const SizedBox(height: 24),

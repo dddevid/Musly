@@ -20,6 +20,7 @@ import 'package:musly/utils/context_extensions.dart';
 import 'package:musly/services/storage_service.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsDisplayTab extends StatefulWidget {
   const SettingsDisplayTab({super.key});
@@ -99,7 +100,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+          0, 16, 0, MainScreen.scrollEndPadding(context, 16)),
       children: [
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.appearanceSection.toUpperCase(),

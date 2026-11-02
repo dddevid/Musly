@@ -18,6 +18,7 @@ import 'package:musly/widgets/settings/settings_switch_tile.dart';
 import 'package:musly/widgets/settings/settings_list_tile.dart';
 
 import 'package:musly/utils/context_extensions.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsStorageTab extends StatefulWidget {
   const SettingsStorageTab({super.key});
@@ -117,7 +118,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
         Provider.of<SubsonicService>(context, listen: false).isYoutube;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+          0, 16, 0, MainScreen.scrollEndPadding(context, 16)),
       children: [
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionCacheSettings,

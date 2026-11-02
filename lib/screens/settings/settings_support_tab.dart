@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:musly/theme/app_theme.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsSupportTab extends StatelessWidget {
   const SettingsSupportTab({super.key});
@@ -30,7 +31,8 @@ class SettingsSupportTab extends StatelessWidget {
         isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: EdgeInsets.fromLTRB(
+          0, 24, 0, MainScreen.scrollEndPadding(context, 24)),
       children: [
         Center(
           child: Container(

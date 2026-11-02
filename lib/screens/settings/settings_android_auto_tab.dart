@@ -9,6 +9,7 @@ import 'package:musly/widgets/settings/settings_section_card.dart';
 import 'package:musly/widgets/settings/settings_switch_tile.dart';
 import 'package:musly/widgets/settings/settings_list_tile.dart';
 import 'package:musly/l10n/app_localizations.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsAndroidAutoTab extends StatefulWidget {
   const SettingsAndroidAutoTab({super.key});
@@ -73,7 +74,8 @@ class _SettingsAndroidAutoTabState extends State<SettingsAndroidAutoTab> {
     }
     
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+          0, 16, 0, MainScreen.scrollEndPadding(context, 16)),
       children: [
         SettingsSectionCard(
           title: 'Server',

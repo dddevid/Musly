@@ -17,6 +17,7 @@ import 'package:musly/screens/wrapped/wrapped_screen.dart';
 import 'package:musly/services/wrapped_service.dart';
 import 'package:musly/services/update_service.dart';
 import 'package:musly/widgets/dialogs/update_dialog.dart';
+import 'package:musly/screens/main/main_screen.dart' show MainScreen;
 
 class SettingsAboutTab extends StatefulWidget {
   const SettingsAboutTab({super.key});
@@ -50,7 +51,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.fromLTRB(
+          0, 16, 0, MainScreen.scrollEndPadding(context, 16)),
       children: [
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutInformation,
