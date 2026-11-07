@@ -1,9 +1,13 @@
 {
-  "@@locale": "es",
+  "@@locale": "es-ES",
   "@@last_modified": "2026-02-07T16:10:00Z",
   "appName": "Musly",
   "@appName": {
     "description": "Application name"
+  },
+  "emulatorNotAllowed": "Musly no está diseñada para usarse en un emulador.\\nPor favor usa tu dispositivo físico.",
+  "@emulatorNotAllowed": {
+    "description": "Message explaining that the app requires a physical device"
   },
   "goodMorning": "Buenos días",
   "@goodMorning": {
@@ -37,6 +41,22 @@
   "@yourPlaylists": {
     "description": "Your playlists section title"
   },
+  "favoritePlaylists": "Listas Favoritas",
+  "@favoritePlaylists": {
+    "description": "Favorite playlists section title on home screen"
+  },
+  "sectionAlbums": "Álbumes para ti",
+  "@sectionAlbums": {
+    "description": "Section header for full albums in artist screen"
+  },
+  "sectionEPs": "EP",
+  "@sectionEPs": {
+    "description": "Section header for EPs (extended plays) in artist screen"
+  },
+  "sectionSingles": "Sencillos",
+  "@sectionSingles": {
+    "description": "Section header for singles in artist screen"
+  },
   "madeForYou": "Hecho Para Ti",
   "@madeForYou": {
     "description": "Made for you section title"
@@ -67,7 +87,7 @@
   },
   "errorLoadingAlbums": "Error al cargar álbumes",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Sin álbumes mejor valorados",
   "@noTopRatedAlbums": {
@@ -128,7 +148,7 @@
   },
   "artists": "Artistas",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Canciones",
   "@songs": {
@@ -141,6 +161,10 @@
   "genres": "Géneros",
   "@genres": {
     "description": "Genres section label"
+  },
+  "years": "Años",
+  "@years": {
+    "description": "Years filter tab label"
   },
   "favorites": "Favoritos",
   "@favorites": {
@@ -224,11 +248,11 @@
   },
   "save": "Guardar",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Cerrar",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "General",
   "@general": {
@@ -280,7 +304,7 @@
   },
   "unknownArtist": "Artista desconocido",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Álbum Desconocido",
   "@unknownAlbum": {
@@ -340,7 +364,7 @@
   },
   "retry": "Reintentar",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Sin resultados",
   "@noResults": {
@@ -453,6 +477,30 @@
   "@showStarRatingsSubtitle": {
     "description": "Show Star Ratings toggle subtitle"
   },
+  "showMiniPlayerHeart": "Mostrar botón de favorito",
+  "@showMiniPlayerHeart": {
+    "description": "Show Heart button in mini player toggle label"
+  },
+  "showMiniPlayerHeartSubtitle": "Agregar a favoritos desde el mini reproductor",
+  "@showMiniPlayerHeartSubtitle": {
+    "description": "Show Heart button in mini player toggle subtitle"
+  },
+  "showMiniPlayerRepeat": "Mostrar Botón de Repetición",
+  "@showMiniPlayerRepeat": {
+    "description": "Show Repeat button in mini player toggle label"
+  },
+  "showMiniPlayerRepeatSubtitle": "Cambiar el modo de repetición desde el mini reproductor",
+  "@showMiniPlayerRepeatSubtitle": {
+    "description": "Show Repeat button in mini player toggle subtitle"
+  },
+  "showMiniPlayerShuffle": "Mostrar botón de aleatorio",
+  "@showMiniPlayerShuffle": {
+    "description": "Show Shuffle button in mini player toggle label"
+  },
+  "showMiniPlayerShuffleSubtitle": "Alternar el suffle desde el mini reproductor",
+  "@showMiniPlayerShuffleSubtitle": {
+    "description": "Show Shuffle button in mini player toggle subtitle"
+  },
   "enableRecommendations": "Habilitar Recomendaciones",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"
@@ -510,13 +558,47 @@
   "@communityTranslationsSubtitle": {
     "description": "Community translations credit subtitle"
   },
+  "checkTranslationUpdates": "Buscar actualizaciones de traducción",
+  "@checkTranslationUpdates": {
+    "description": "Title for checking live OTA translation updates"
+  },
+  "checkTranslationUpdatesSubtitle": "Sincronizar las traducciones de la comunidad más recientes (OTA)",
+  "@checkTranslationUpdatesSubtitle": {
+    "description": "Subtitle for checking live OTA translation updates"
+  },
+  "checkingTranslationUpdates": "Buscando nuevas traducciones...",
+  "@checkingTranslationUpdates": {
+    "description": "Snackbar message when checking for translation updates"
+  },
+  "translationsUpdated": "¡Actualizaciones actualizadas correctamente!",
+  "@translationsUpdated": {
+    "description": "Snackbar message when translations were updated"
+  },
+  "translationsUpToDate": "Las traducciones están al día",
+  "@translationsUpToDate": {
+    "description": "Snackbar message when translations are already up to date"
+  },
   "@_LIBRARY": {},
   "yourLibrary": "Tu Biblioteca",
   "filterAll": "Todo",
+  "faves": "Favoritos",
   "filterPlaylists": "Listas",
   "filterAlbums": "Álbumes",
   "filterArtists": "Artistas",
   "likedSongs": "Canciones que te gustan",
+  "likedAlbums": "Albums que me gustan",
+  "noLikedAlbums": "No hay albums que te gustan aún",
+  "localMusicLibrary": "Biblioteca de Música Local",
+  "mergeLocalLibrary": "Combinar con librería del servidor",
+  "mergeLocalLibrarySubtitle": "Mostrar música local junto con tu librería del servidor",
+  "localMusicStats": "Archivos de música locales",
+  "addMusicFolder": "Agregar folder de música",
+  "rescanLocalMusic": "Volver a escanear la música local",
+  "localLibraryEmpty": "Tu librería está vacía",
+  "localLibraryEmptySubtitle": "No se encontraron archivos de música local. Pulse el botón de abajo para escanear de nuevo.",
+  "libraryEmpty": "Tu biblioteca está vacía",
+  "libraryEmptySubtitle": "Añade algunas canciones para empezar.",
+  "scanForMusic": "Escanear Música",
   "radioStations": "Emisoras de radio",
   "playlist": "Lista",
   "internetRadio": "Radio de Internet",
@@ -573,6 +655,9 @@
   "liveSearchSection": "Búsqueda",
   "liveSearch": "Búsqueda en tiempo real",
   "liveSearchSubtitle": "Actualizar los resultados mientras escribes en lugar de mostrar un desplegable",
+  "homeSection": "Inicio",
+  "showFavoritePlaylistsOnHome": "Listas de reproducción favoritas en Inicio",
+  "showFavoritePlaylistsOnHomeSubtitle": "Mostrar cada lista de reproducción favorita como su propia fila en la parte superior de la pantalla de inicio",
   "categoryMadeForYou": "Hecho para ti",
   "categoryNewReleases": "Estrenos",
   "categoryTopRated": "Mejor valorado",
@@ -585,6 +670,7 @@
   "tabStorage": "Almacenamiento",
   "tabServer": "Servidor",
   "tabDisplay": "Pantalla",
+  "tabSupport": "Soporte",
   "tabAbout": "Acerca de",
   "@_SETTINGS_PLAYBACK": {},
   "sectionAutoDj": "AUTO DJ",
@@ -633,6 +719,18 @@
   "sectionMusicFolders": "CARPETAS DE MÚSICA",
   "musicFolders": "Carpeta de Música",
   "noMusicFolders": "No se encontraron carpetas de música",
+  "sectionSavedProfiles": "PERFILES GUARDADOS",
+  "switchProfile": "Cambiar Perfil",
+  "switchServer": "Cambiar de Servidor",
+  "addProfile": "Añadir Perfil",
+  "switchProfileConfirmation": "¿Conectar a \"{profile}\"?",
+  "@switchProfileConfirmation": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "sectionAccount": "CUENTA",
   "logoutConfirmation": "¿Seguro que quieres cerrar sesión? También se eliminarán todos los datos en caché.",
   "@_SETTINGS_STORAGE": {},
@@ -668,6 +766,20 @@
       }
     }
   },
+  "keepScreenOnDuringDownload": "Mantener la pantalla encendida",
+  "@keepScreenOnDuringDownload": {
+    "description": "Toggle to keep screen on during library download"
+  },
+  "keepScreenOnDuringDownloadSubtitle": "Evita que la descarga falle cuando el dispositivo se bloquee",
+  "@keepScreenOnDuringDownloadSubtitle": {
+    "description": "Subtitle explaining why to keep screen on during download"
+  },
+  "parallelDownloads": "Descargas paralelas",
+  "parallelDownloadsSubtitle": "Descargar varias canciones simultáneamente",
+  "downloadSingular": "descargar",
+  "downloadPlural": "descargas",
+  "slowerButStable": "Más lento, pero más estable",
+  "fasterButMoreData": "Más rápido pero utiliza más datos",
   "libraryDownloadStarted": "Descarga de la Biblioteca iniciada",
   "deleteDownloads": "Eliminar Todas las Descargas",
   "downloadsDeleted": "Todas las descargas eliminadas",
@@ -853,7 +965,7 @@
   },
   "playlistNameHint": "Nombre de la Lista",
   "@playlistNameHint": {
-    "description": "Hint text for the playlist name input field"
+    "description": "Hint text for playlist name input"
   },
   "playlistCreatedWithSong": "Lista creada \"{name}\" con esta canción",
   "@playlistCreatedWithSong": {
@@ -939,7 +1051,7 @@
   },
   "noAlbumsFound": "No se encontraron álbumes",
   "@noAlbumsFound": {
-    "description": "Empty state when no albums match a filter"
+    "description": "No albums found message"
   },
   "@_RADIO_SCREEN": {},
   "noHomepageUrl": "No hay URL de página de inicio disponible",
@@ -960,11 +1072,11 @@
   },
   "failedToLoadRadioStations": "Error al cargar las emisoras de radio",
   "@failedToLoadRadioStations": {
-    "description": "Error state message on the radio screen"
+    "description": "Error message when radio stations fail to load"
   },
   "noRadioStations": "Sin Emisoras de Radio",
   "@noRadioStations": {
-    "description": "Empty state headline on the radio screen"
+    "description": "Empty state title for radio stations"
   },
   "noRadioStationsHint": "Añade emisoras de radio en la configuración de tu servidor Navidrome para verlas aquí.",
   "@noRadioStationsHint": {
@@ -1066,7 +1178,7 @@
   },
   "storagePermissionRequired": "Permiso de almacenamiento necesario para escanear archivos locales",
   "@storagePermissionRequired": {
-    "description": "Snackbar when storage permission is denied"
+    "description": "Snackbar message when storage permission is needed"
   },
   "noMusicFilesFound": "No se han encontrado archivos de música en tu dispositivo",
   "@noMusicFilesFound": {
@@ -1075,7 +1187,7 @@
   "@_COMMON_ACTIONS": {},
   "remove": "Eliminar",
   "@remove": {
-    "description": "Generic remove / delete confirm button"
+    "description": "Button to remove an item"
   },
   "failedToSetRating": "Error al establecer la valoración: {error}",
   "@failedToSetRating": {
@@ -1106,6 +1218,50 @@
   "createPlaylist": "Crear Lista",
   "@createPlaylist": {
     "description": "Tooltip/label for the create-playlist button in the sidebar library header"
+  },
+  "importPlaylist": "Importar lista de reproducción",
+  "@importPlaylist": {
+    "description": "Label for importing a playlist from Spotify or YouTube Music"
+  },
+  "importPlaylistSubtitle": "Importar desde Spotify o YouTube Music (sin iniciar sesión)",
+  "@importPlaylistSubtitle": {
+    "description": "Subtitle for the import playlist option"
+  },
+  "checkForUpdates": "Buscar actualizaciones",
+  "@checkForUpdates": {
+    "description": "Label for checking app updates"
+  },
+  "checkingForUpdates": "Buscando actualizaciones...",
+  "@checkingForUpdates": {
+    "description": "Message shown while checking for updates"
+  },
+  "appUpToDate": "Musly está al día",
+  "@appUpToDate": {
+    "description": "Message shown when app is on the latest version"
+  },
+  "updateAvailable": "Actualización Disponible",
+  "@updateAvailable": {
+    "description": "Title of the update available dialog"
+  },
+  "updateNow": "Actualizar ahora",
+  "@updateNow": {
+    "description": "Button to start update"
+  },
+  "downloadingUpdate": "Descargando actualización...",
+  "@downloadingUpdate": {
+    "description": "Progress message while downloading update"
+  },
+  "openOnGitHub": "Abrir en GitHub",
+  "@openOnGitHub": {
+    "description": "Button to open release on GitHub"
+  },
+  "skipThisVersion": "Omitir esta versión",
+  "@skipThisVersion": {
+    "description": "Button to skip the current update version"
+  },
+  "updateDownloaded": "Descarga completa. Comenzando la instalación...",
+  "@updateDownloaded": {
+    "description": "Message shown when update download finishes"
   },
   "likedSongsSidebar": "Canciones que te gustan",
   "@likedSongsSidebar": {
@@ -1163,10 +1319,6 @@
     "description": "Banner shown at the top of the screen in offline mode"
   },
   "@_UPDATE_DIALOG": {},
-  "updateAvailable": "Actualización Disponible",
-  "@updateAvailable": {
-    "description": "Title of the update available dialog"
-  },
   "updateAvailableSubtitle": "¡Una nueva versión de Musly está disponible!",
   "@updateAvailableSubtitle": {
     "description": "Subtitle in the update dialog"
@@ -1559,6 +1711,27 @@
   "@sectionStreamingQuality": {
     "description": "Playback settings section header for transcoding / streaming quality"
   },
+  "sectionFadeInOut": "Fundido de Entrada/Salida",
+  "@sectionFadeInOut": {
+    "description": "Playback settings section header for fade in/out audio"
+  },
+  "fadeInOutEnable": "Activar el desvanecimiento",
+  "@fadeInOutEnable": {
+    "description": "Toggle label to enable fade in/out audio effect"
+  },
+  "fadeInOutSubtitle": "Desvanecer suavemente el audio al reproducir o pausar",
+  "@fadeInOutSubtitle": {
+    "description": "Subtitle explaining fade in/out functionality"
+  },
+  "fadeDuration": "Duración de fundido: {duration}ms",
+  "@fadeDuration": {
+    "description": "Slider label showing fade duration in milliseconds",
+    "placeholders": {
+      "duration": {
+        "type": "int"
+      }
+    }
+  },
   "@replayGainMode": {
     "description": "Label for the ReplayGain mode selector"
   },
@@ -1757,7 +1930,192 @@
   "@aboutLinkDiscord": {
     "description": "Link tile title for the Discord server"
   },
-  "desktopOverlaySection": "Superposición de escritorio",
-  "spotverlayTitle": "Spotverlay",
-  "spotverlayDescription": "Si quieres una superposición hermosa y ligera \"Made for Musly\", puedes usar Spotverlay (https://github.com/dddevid/Spotverlay)"
+  "@_SETTINGS_ANALYTICS": {},
+  "sectionAnalyticsPrivacy": "Análisis y privacidad",
+  "@sectionAnalyticsPrivacy": {
+    "description": "Analytics and Privacy section header"
+  },
+  "anonymousAnalytics": "Analítica anónima",
+  "@anonymousAnalytics": {
+    "description": "Title for anonymous analytics toggle"
+  },
+  "anonymousAnalyticsSubtitle": "Ayuda a mejorar Musly con informes de fallos anónimos y estadísticas de uso",
+  "@anonymousAnalyticsSubtitle": {
+    "description": "Subtitle explaining anonymous analytics"
+  },
+  "deviceId": "ID del dispositivo",
+  "@deviceId": {
+    "description": "Title for device ID row"
+  },
+  "deviceIdAnonymous": "ID anónimo: {id}",
+  "@deviceIdAnonymous": {
+    "description": "Shows the anonymous device ID",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceIdDisabled": "Habilita la analítica para ver tu ID de dispositivo anónimo",
+  "@deviceIdDisabled": {
+    "description": "Shown when analytics is disabled"
+  },
+  "aboutDeviceId": "Acerca del ID del dispositivo",
+  "@aboutDeviceId": {
+    "description": "Title for device ID explanation"
+  },
+  "aboutDeviceIdSubtitle": "Este es un identificador anónimo generado por la aplicación. No puede ser vinculado a su identidad personal y se utiliza sólo para el análisis.",
+  "@aboutDeviceIdSubtitle": {
+    "description": "Explanation of what device ID is"
+  },
+  "@_SUPPORT": {},
+  "supportGreeting": "¡Hola! 👋",
+  "supportParagraph1": "Soy Devid, el desarrollador detrás de Musly. Construí esta aplicación porque me encanta la música y creo que todo el mundo merece un bonito reproductor de música gratuita.",
+  "supportParagraph2": "Musly es completamente gratis y de código abierto. Sin anuncios ni tarifas de suscripción. Trabajo en ello en mi tiempo libre porque realmente me gusta hacer algo útil para personas como tú.",
+  "supportParagraph3": "Pero los servidores, las herramientas de desarrollo y el café no son gratuitos si Musly se ha convertido en parte de tu vida diaria y te gustaría decir \"gracias, una pequeña donación significaría el mundo para mí. Ayuda a cubrir los costos y me mantiene motivado para añadir nuevas características.",
+  "supportParagraph4": "Sin embargo, no hay ninguna presión - ¡su disfrute de la aplicación ya es la mejor recompensa!",
+  "supportDonationTitle": "Ayuda con una donación",
+  "supportDonationSubtitle": "vía Revolut - ¡cualquier cantidad ayuda!",
+  "supportDiscordTitle": "Únete a Discord",
+  "supportDiscordSubtitle": "Obtén ayuda, sugerir características o simplemente chatear",
+  "supportWaysTitle": "Otras maneras de apoyar",
+  "supportWayRate": "Deja una calificación en la App Store",
+  "supportWayShare": "Cuéntale a tus amigos sobre Musly",
+  "supportWayBugs": "Reportar errores o sugerir características",
+  "supportWayEnjoy": "¡Disfrute de la música! 🎵",
+  "supportMadeWithLove": "Fabricado con pasión en Italia",
+  "@_NOW_PLAYING_DIALOGS": {},
+  "playbackSpeed": "Velocidad de reproducción",
+  "@playbackSpeed": {
+    "description": "Title of the playback speed bottom sheet"
+  },
+  "normalSpeed": "Normal (1×)",
+  "@normalSpeed": {
+    "description": "Label for 1× (normal) playback speed option"
+  },
+  "customDuration": "Duración personalizada",
+  "@customDuration": {
+    "description": "List tile label to open the custom sleep timer dialog"
+  },
+  "addToPlaylistTitle": "Añadir a Lista",
+  "@addToPlaylistTitle": {
+    "description": "Title of the add-to-playlist bottom sheet (distinct from the menu action)"
+  },
+  "yourPlaylistsLabel": "Tus Listas",
+  "@yourPlaylistsLabel": {
+    "description": "Section heading inside the add-to-playlist bottom sheet"
+  },
+  "themeSaved": "Tema guardado",
+  "@themeSaved": {
+    "description": "Snackbar message after saving a Now Playing theme"
+  },
+  "themeUnsavedChanges": "Cambios sin guardar",
+  "@themeUnsavedChanges": {
+    "description": "Subtitle in AppBar when theme has unsaved changes"
+  },
+  "themeUnsavedChangesBody": "Tiene cambios sin guardar, ¿Quiere guardarlos antes de salir?",
+  "@themeUnsavedChangesBody": {
+    "description": "Body of the unsaved changes dialog"
+  },
+  "discard": "Descartar",
+  "@discard": {
+    "description": "Button to discard unsaved changes"
+  },
+  "done": "Hecho",
+  "@done": {
+    "description": "Button to confirm a color picker dialog"
+  },
+  "pickColor": "Escoger {label}",
+  "@pickColor": {
+    "description": "Title of the color picker dialog",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStyle": "Estilo del Título",
+  "@titleStyle": {
+    "description": "Section heading for title text style in theme editor"
+  },
+  "artistStyle": "Estilo del Artista",
+  "@artistStyle": {
+    "description": "Section heading for artist text style in theme editor"
+  },
+  "themeActive": "ACTIVO",
+  "@themeActive": {
+    "description": "Badge shown on the active Now Playing theme card"
+  },
+  "themeSafeMode": "SEGURO",
+  "@themeSafeMode": {
+    "description": "Badge shown when a theme is in safe mode"
+  },
+  "themeCodeMode": "CÓDIGO",
+  "@themeCodeMode": {
+    "description": "Badge shown when a theme has custom Flutter code enabled"
+  },
+  "themeAuthor": "por {author}",
+  "@themeAuthor": {
+    "description": "Author attribution shown on theme preview card",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsUnderArtworkSubtitle": "Mostrar la línea de la letra actualmente sincronizada bajo la portada del álbum en el reproductor de pantalla completa",
+  "@lyricsUnderArtworkSubtitle": {
+    "description": "Subtitle for live lyrics under artwork toggle"
+  },
+  "lyricsDisplaySection": "LETRAS",
+  "@lyricsDisplaySection": {
+    "description": "Section header for lyrics display appearance settings"
+  },
+  "lyricsBlurUnfocused": "Desenfocar Letras sin enfocar",
+  "@lyricsBlurUnfocused": {
+    "description": "Toggle to blur past and upcoming lyric lines"
+  },
+  "lyricsBlurUnfocusedSubtitle": "Añadir efecto de desenfoque a líneas de letra pasadas y próximas",
+  "@lyricsBlurUnfocusedSubtitle": {
+    "description": "Subtitle for blur unfocused lyrics toggle"
+  },
+  "lyricsAlignment": "Alineación de las letras",
+  "@lyricsAlignment": {
+    "description": "Label for lyrics alignment setting"
+  },
+  "lyricsAlignmentCentered": "Centrado",
+  "@lyricsAlignmentCentered": {
+    "description": "Centered lyrics alignment label"
+  },
+  "lyricsAlignmentLeft": "Alineado a la izquierda",
+  "@lyricsAlignmentLeft": {
+    "description": "Left aligned lyrics alignment label"
+  },
+  "alignLeft": "Izquierda",
+  "@alignLeft": {
+    "description": "Left alignment button"
+  },
+  "alignCenter": "Centro",
+  "@alignCenter": {
+    "description": "Center alignment button"
+  },
+  "lyricsGlowEffect": "Brillo de línea activa",
+  "@lyricsGlowEffect": {
+    "description": "Toggle for active lyric line glow effect"
+  },
+  "lyricsGlowEffectSubtitle": "Efecto de resplandor sutil en la línea actual",
+  "@lyricsGlowEffectSubtitle": {
+    "description": "Subtitle for active lyric line glow effect toggle"
+  },
+  "lyricsKeepScreenOn": "Mantener la pantalla encendida",
+  "@lyricsKeepScreenOn": {
+    "description": "Toggle to keep the screen on while viewing lyrics"
+  },
+  "lyricsKeepScreenOnSubtitle": "Evita que la pantalla se apague mientras lees la letra",
+  "@lyricsKeepScreenOnSubtitle": {
+    "description": "Subtitle for keep screen on while viewing lyrics toggle"
+  },
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
+  }
 }
