@@ -99,7 +99,14 @@ class SubsonicService {
   String? _activeBaseUrl;
   String get activeBaseUrl => _activeBaseUrl ?? _config?.normalizedUrl ?? '';
 
-  Future<void> configure(ServerConfig config) async {
+  /// Points the service at [config].
+  ///
+  /// [onReady] runs once everything a request or stream URL needs is set, before
+  /// the LAN probe, which can take 3 s when the LAN address does not answer.
+  Future<void> configure(
+    ServerConfig config, {
+    void Function()? onReady,
+  }) async {
     _config = config;
     _activeBaseUrl = config.normalizedUrl;
     if (config.isJellyfin) {
@@ -120,7 +127,13 @@ class SubsonicService {
         clientCertPath: config.clientCertificatePath,
         clientCertPassword: config.clientCertificatePassword,
       );
+    }
 
+    _clientSalt = await StorageService().getOrCreateSubsonicSalt();
+    _stableAuthParams = null;
+    onReady?.call();
+
+    if (!config.isJellyfin && config.serverFamily != 'youtube') {
       if (config.lanUrl != null && config.lanUrl!.trim().isNotEmpty) {
         final lanNormalized = config.normalizedLanUrl;
         if (lanNormalized != null) {
@@ -146,9 +159,6 @@ class SubsonicService {
         }
       }
     }
-
-    _clientSalt = await StorageService().getOrCreateSubsonicSalt();
-    _stableAuthParams = null;
   }
 
   bool get isYoutube => _youtube != null;

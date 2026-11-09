@@ -185,7 +185,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       } catch (_) {}
     }
 
-    _restoreQueueState();
+    _queueRestored = _restoreQueueState();
 
     WidgetsBinding.instance.addObserver(this);
   }
@@ -200,14 +200,56 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
     }
   }
 
+  /// Completes once the queue saved by the previous session is back.
+  late final Future<void> _queueRestored;
+
+  /// Completes once OfflineService knows which songs are downloaded. Until
+  /// then a downloaded track would be streamed instead of played from disk.
+  late final Future<void> _offlineIndexed;
+
+  Future<void> _serverConfigLoaded = Future<void>.value();
+
+  /// Media commands that start the app also wait for [loaded], so a restored
+  /// streamed track has a server to stream from. main() passes
+  /// [AuthProvider.savedConfigLoaded]; without it nothing extra is awaited.
+  void setServerConfigLoaded(Future<void> loaded) =>
+      _serverConfigLoaded = loaded;
+
+  /// Runs a media-session command only once the saved queue is restored, the
+  /// saved server config is loaded and the downloaded songs are indexed.
+  ///
+  /// A media button can be what starts the app: a car head unit or a watch
+  /// pressing play while Musly is not running makes Android start the process
+  /// to deliver it, and the press arrives as soon as these callbacks are wired.
+  /// Run before the restore finishes, play() finds no current song; before the
+  /// server config is loaded, a streamed track fails with "Server not
+  /// configured"; before the offline index, a downloaded track is streamed.
+  /// Commands held here start in the order they arrived. As with any two
+  /// commands, they are not serialised once running: play() awaits playback
+  /// itself, so chaining a later pause behind it would never let it run.
+  Future<void> Function() _afterStartup(Future<void> Function() command) =>
+      () async {
+        await _startupLoaded();
+        await command();
+      };
+
+  Future<void> _startupLoaded() async {
+    await _queueRestored;
+    await _serverConfigLoaded;
+    await _offlineIndexed;
+  }
+
   void _wireAudioHandlerCallbacks() {
-    _audioHandler.onPlay = play;
-    _audioHandler.onPause = pause;
-    _audioHandler.onStop = stop;
-    _audioHandler.onSkipNext = skipNext;
-    _audioHandler.onSkipPrevious = skipPrevious;
-    _audioHandler.onSeekTo = seek;
-    _audioHandler.onTogglePlayPause = togglePlayPause;
+    _audioHandler.onPlay = _afterStartup(play);
+    _audioHandler.onPause = _afterStartup(pause);
+    _audioHandler.onStop = _afterStartup(stop);
+    _audioHandler.onSkipNext = _afterStartup(skipNext);
+    _audioHandler.onSkipPrevious = _afterStartup(skipPrevious);
+    _audioHandler.onSeekTo = (position) async {
+      await _startupLoaded();
+      await seek(position);
+    };
+    _audioHandler.onTogglePlayPause = _afterStartup(togglePlayPause);
     _audioHandler.onSetRemoteVolume = _onRemoteVolumeChange;
     _audioHandler.onSetRepeatMode = (mode) {
       switch (mode) {
@@ -919,9 +961,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       notifyListeners();
     });
 
-    _offlineService.initialize().then((_) {
-      _offlineService.resumeIncompleteDownloads(_subsonicService);
-    });
+    _offlineIndexed = _offlineService
+        .initialize()
+        .then((_) {
+          _offlineService.resumeIncompleteDownloads(_subsonicService);
+        })
+        .catchError((Object e) {
+          debugPrint('[Player] Offline index failed: $e');
+        });
 
     _storageService.getRepeatMode().then((saved) {
       _repeatMode =
@@ -1812,6 +1859,17 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
               _audioPlayer.processingState == ProcessingState.idle ||
               _audioPlayer.processingState == ProcessingState.completed)) {
         await _prepareCurrentSong();
+      }
+      // Nothing to play (empty queue) or the track failed to load. Calling
+      // play() anyway leaves just_audio "playing" an empty player: the media
+      // session then shows a pause button that does nothing, and a car or
+      // watch play/pause press, which audio_service turns into a toggle, has
+      // nothing to pause.
+      if (_audioPlayer.processingState == ProcessingState.idle) {
+        _isPlaying = false;
+        notifyListeners();
+        _updateAndroidAuto();
+        return;
       }
       await _ensureAudioFocus(() async {
         try {
