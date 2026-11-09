@@ -294,6 +294,39 @@ class OfflineService {
     if (_downloadQueue.isNotEmpty) _startQueueProcessor();
   }
 
+  /// Download tracks added to an already-downloaded playlist since it finished.
+  ///
+  /// [_processQueue] drops a playlist's track list once it completes, and
+  /// [resumeIncompleteDownloads] only walks playlists still in the queue, so a
+  /// finished playlist was never examined again. [songs] is the playlist as the
+  /// caller just fetched it. Returns whether anything was queued.
+  ///
+  /// The playlist stays marked downloaded while the new tracks download: if
+  /// one fails, the playlist is stale but still listed offline, rather than
+  /// dropped from the offline views. Tracks removed from the playlist are left
+  /// on disk, since they may belong to another download.
+  Future<bool> topUpDownloadedPlaylist(
+    String playlistId,
+    List<Song> songs,
+    SubsonicService subsonicService,
+  ) async {
+    if (_offlineMode) return false;
+    if (_offlineDir == null) await initialize();
+    // Only playlists the user chose to download, and not while a download of
+    // this one is already queued: opening the screen again must not add a
+    // duplicate job.
+    if (!downloadedPlaylistIds.value.contains(playlistId)) return false;
+    if (queuedPlaylistIds.value.contains(playlistId)) return false;
+    // Albums share downloadedPlaylistIds, and so do all server profiles, so
+    // the id alone may belong to another download. One that really is this
+    // playlist has some of its tracks on disk.
+    if (!songs.any((s) => isSongDownloaded(s.id))) return false;
+    if (songs.every((s) => isSongDownloaded(s.id))) return false;
+
+    await queuePlaylistDownload(playlistId, songs, subsonicService);
+    return true;
+  }
+
   bool _isFileValid(String songId, File file) {
     try {
       final len = file.lengthSync();

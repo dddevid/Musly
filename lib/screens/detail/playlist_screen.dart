@@ -97,6 +97,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         });
         _updateDownloadState();
       }
+      if (playlist.songs != null && playlist.songs!.isNotEmpty) {
+        // Tracks added to a playlist after it was downloaded would otherwise
+        // never download. Opening it is when the current track list is known.
+        _topUpDownload(playlist.songs!, subsonicService, libraryProvider);
+      }
       if ((playlist.coverArt == null || playlist.coverArt!.isEmpty) &&
           playlist.songs != null &&
           playlist.songs!.isNotEmpty) {
@@ -364,6 +369,19 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         await PlaylistOptionsModal.confirmAndDelete(context, playlist);
     if (deleted && mounted) {
       Navigator.of(context).pop();
+    }
+  }
+
+  // Takes the providers rather than reading them from context: it runs after
+  // the playlist fetch, when the user may already have closed the screen.
+  Future<void> _topUpDownload(List<Song> songs,
+      SubsonicService subsonicService, LibraryProvider libraryProvider) async {
+    try {
+      final queued = await OfflineService()
+          .topUpDownloadedPlaylist(widget.playlistId, songs, subsonicService);
+      if (queued) await libraryProvider.cacheSongsLocally(songs);
+    } catch (e) {
+      debugPrint('Error topping up playlist download: $e');
     }
   }
 
