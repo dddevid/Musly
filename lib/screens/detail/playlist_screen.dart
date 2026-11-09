@@ -379,7 +379,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     try {
       final queued = await OfflineService()
           .topUpDownloadedPlaylist(widget.playlistId, songs, subsonicService);
-      if (queued) libraryProvider.cacheSongsLocally(songs);
+      if (queued) await libraryProvider.cacheSongsLocally(songs);
     } catch (e) {
       debugPrint('Error topping up playlist download: $e');
     }

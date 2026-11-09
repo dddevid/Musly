@@ -43,6 +43,34 @@ class _SlowLibraryProvider extends LibraryProvider {
   Future<void> cacheSongsLocally(List<Song> songs) async {}
 }
 
+/// Its song cache write fails, as a database error would.
+class _BrokenCacheLibraryProvider extends _SlowLibraryProvider {
+  _BrokenCacheLibraryProvider(super.service);
+
+  @override
+  Future<void> cacheSongsLocally(List<Song> songs) async {
+    throw Exception('database is locked');
+  }
+}
+
+/// Waits for the top-up's downloads to finish. The queue runs partly in real
+/// time (the download delays) and partly in the test's fake-async zone (where
+/// it was started), so alternate real waits with pumps.
+Future<void> _downloadsSettled(
+    WidgetTester tester, _FailingDownloads svc) async {
+  final offline = OfflineService();
+  for (var i = 0; i < 100; i++) {
+    if (svc.requested.isNotEmpty &&
+        offline.queuedPlaylistIds.value.isEmpty &&
+        !offline.isBackgroundDownloadActive) {
+      break;
+    }
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester.pump();
+  }
+}
+
 void main() {
   initializeTestEnvironment();
 
@@ -91,17 +119,42 @@ void main() {
         Song(id: 'b', title: 'B'),
       ],
     ));
-    await tester.runAsync(() async {
-      for (var i = 0; i < 100; i++) {
-        if (svc.requested.isNotEmpty && !offline.isBackgroundDownloadActive) {
-          break;
-        }
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
-    });
-    await tester.pump();
+    await _downloadsSettled(tester, svc);
 
     // The screen is gone, but the download it found missing is still wanted.
+    expect(svc.requested.toSet(), {'b'});
+  });
+
+  testWidgets('a failed song cache write after a top-up is caught',
+      (tester) async {
+    offline.setOfflineMode(false);
+    offline.queuedPlaylistIds.value = {};
+    offline.downloadedPlaylistIds.value = {'p1'};
+    offline.downloadedSongIds.value = {'a'};
+
+    final svc = _FailingDownloads();
+    final library = _BrokenCacheLibraryProvider(svc);
+
+    await tester.pumpWidget(createTestApp(
+      subsonicService: svc,
+      libraryProvider: library,
+      child: const PlaylistScreen(playlistId: 'p1', playlistName: 'P1'),
+    ));
+
+    library.fetch.complete(Playlist(
+      id: 'p1',
+      name: 'P1',
+      // With no cover art the open screen would generate one on disk.
+      coverArt: 'cover-p1',
+      songs: [
+        Song(id: 'a', title: 'A'),
+        Song(id: 'b', title: 'B'),
+      ],
+    ));
+    await _downloadsSettled(tester, svc);
+
+    // The top-up still went ahead, and the error did not escape: an uncaught
+    // async error fails a testWidgets test.
     expect(svc.requested.toSet(), {'b'});
   });
 }

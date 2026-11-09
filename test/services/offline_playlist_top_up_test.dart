@@ -80,12 +80,20 @@ void main() {
   });
 
   test('a failed top-up leaves the playlist listed as downloaded', () async {
+    // Record every change, not just the end state: dropping p1 and adding it
+    // back later would still hide the playlist offline in between.
+    final seen = <Set<String>>[];
+    void record() => seen.add({...offline.downloadedPlaylistIds.value});
+    offline.downloadedPlaylistIds.addListener(record);
+    addTearDown(() => offline.downloadedPlaylistIds.removeListener(record));
+
     await offline.topUpDownloadedPlaylist('p1', [_song('a'), _song('b')], svc);
     await queueDrained();
 
     // The offline views list playlists from downloadedPlaylistIds. Unmarking
     // it before the new track arrived would make a playlist that is almost
     // entirely on disk vanish offline whenever that download failed.
+    expect(seen, everyElement(contains('p1')));
     expect(offline.downloadedPlaylistIds.value, contains('p1'));
   });
 
