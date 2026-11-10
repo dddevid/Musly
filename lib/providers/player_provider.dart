@@ -961,14 +961,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       notifyListeners();
     });
 
-    _offlineIndexed = _offlineService
-        .initialize()
-        .then((_) {
-          _offlineService.resumeIncompleteDownloads(_subsonicService);
-        })
-        .catchError((Object e) {
-          debugPrint('[Player] Offline index failed: $e');
-        });
+    _offlineIndexed = _offlineService.initialize().then((_) {
+      _offlineService.resumeIncompleteDownloads(_subsonicService);
+    }).catchError((Object e) {
+      debugPrint('[Player] Offline index failed: $e');
+    });
 
     _storageService.getRepeatMode().then((saved) {
       _repeatMode =
@@ -1864,8 +1861,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       // play() anyway leaves just_audio "playing" an empty player: the media
       // session then shows a pause button that does nothing, and a car or
       // watch play/pause press, which audio_service turns into a toggle, has
-      // nothing to pause.
-      if (_audioPlayer.processingState == ProcessingState.idle) {
+      // nothing to pause. A radio station has no current song: just_audio
+      // reloads its stream itself when play() is called after a stop.
+      if (!_isPlayingRadio &&
+          _audioPlayer.processingState == ProcessingState.idle) {
         _isPlaying = false;
         notifyListeners();
         _updateAndroidAuto();
@@ -1874,6 +1873,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       await _ensureAudioFocus(() async {
         try {
           await _applyReplayGain(_currentSong);
+          // A pause that arrived while the track was loading wins: it had
+          // nothing to pause yet. Media commands held at startup arrive
+          // together.
+          if (_isManuallyPaused) return;
           await _audioPlayer.play();
           await _fadeIn();
         } catch (e) {

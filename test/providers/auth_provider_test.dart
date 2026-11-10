@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/server_config.dart';
 import 'package:musly/providers/auth_provider.dart';
@@ -71,6 +74,10 @@ void main() {
     // PlayerProvider holds back a media command that starts the app until this
     // completes, so it must complete in every startup path and must not wait
     // for the server to answer a ping, which can take up to 30 s offline.
+    //
+    // Tests whose startup is still checking or pinging leave the provider
+    // undisposed: it would notify after dispose() once the ping fails. In the
+    // app it lives as long as the process.
 
     test('completes when no server is saved', () async {
       SharedPreferences.setMockInitialValues({});
@@ -99,29 +106,72 @@ void main() {
       expect(subsonic.config?.serverUrl, 'http://music.test');
       expect(auth.state, AuthState.authenticating,
           reason: 'waited for the ping to finish before completing');
-      auth.dispose();
     });
 
-    test('does not wait for an unreachable LAN address', () async {
-      // Away from home (in the car) the saved LAN address does not answer,
-      // and SubsonicService.configure() probes it for up to 3 s.
+    /// Serves a saved server's LAN address on this machine, answering the
+    /// ping after [answerAfter] like a real LAN server a little slowly.
+    Future<String> lanServer({required Duration answerAfter}) async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close(force: true));
+      server.listen((request) async {
+        await Future<void>.delayed(answerAfter);
+        request.response
+          ..headers.contentType = ContentType.json
+          ..write('{"subsonic-response":{"status":"ok","version":"1.16.1"}}');
+        await request.response.close();
+      });
+      return 'http://127.0.0.1:${server.port}';
+    }
+
+    test('waits for the LAN check, then uses the LAN address', () async {
+      // A restored track must stream from the same address as any other
+      // track. At home the server URL may not work from inside the network.
+      final lanUrl =
+          await lanServer(answerAfter: const Duration(milliseconds: 300));
+      SharedPreferences.setMockInitialValues({});
+      final saved = ServerConfig(
+        serverUrl: 'http://music.test',
+        lanUrl: lanUrl,
+        username: 'user',
+        password: 'pass',
+      );
+      await StorageService().saveServerConfig(saved);
+      final subsonic = SubsonicService();
+      final auth = AuthProvider(subsonic, StorageService());
+
+      await auth.savedConfigLoaded.timeout(const Duration(seconds: 5));
+
+      expect(subsonic.activeBaseUrl, saved.normalizedLanUrl,
+          reason: 'completed before the LAN check');
+    });
+
+    test('a profile switch during the LAN check is kept', () async {
+      // Android Auto can switch to its own server preference while the saved
+      // server's LAN address is still being checked.
+      final lanUrl =
+          await lanServer(answerAfter: const Duration(milliseconds: 1000));
       SharedPreferences.setMockInitialValues({});
       await StorageService().saveServerConfig(ServerConfig(
-        serverUrl: 'http://music.test',
-        lanUrl: 'http://10.255.255.1:4533',
+        serverUrl: 'http://a.invalid',
+        lanUrl: lanUrl,
         username: 'user',
         password: 'pass',
       ));
       final subsonic = SubsonicService();
       final auth = AuthProvider(subsonic, StorageService());
 
-      final watch = Stopwatch()..start();
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      unawaited(auth.switchProfile(ServerConfig(
+        serverUrl: 'http://b.invalid',
+        username: 'user',
+        password: 'pass',
+      )));
       await auth.savedConfigLoaded.timeout(const Duration(seconds: 5));
+      await pumpEventQueue();
 
-      expect(watch.elapsedMilliseconds, lessThan(1000),
-          reason: 'waited for the LAN probe');
-      expect(subsonic.config?.serverUrl, 'http://music.test');
-      auth.dispose();
+      expect(auth.config?.serverUrl, 'http://b.invalid',
+          reason: 'startup put the saved server back over the switch');
+      expect(subsonic.config?.serverUrl, 'http://b.invalid');
     });
   });
 }

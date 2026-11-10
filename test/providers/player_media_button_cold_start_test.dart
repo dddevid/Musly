@@ -6,6 +6,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';
+import 'package:musly/models/radio_station.dart';
 import 'package:musly/models/server_config.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
@@ -184,6 +185,31 @@ void main() {
     return uris;
   }
 
+  // Commands held at startup are released together, so a later one runs
+  // while an earlier play() is still loading the track. The last one wins.
+
+  test('play then pause at startup leaves the player paused', () async {
+    coldStart();
+
+    unawaited(handler.play());
+    unawaited(handler.pause());
+    await settle();
+
+    expect(handler.player.playing, isFalse,
+        reason: 'the track loaded and played after the pause');
+  });
+
+  test('two play/pause presses at startup leave the player paused', () async {
+    coldStart();
+
+    unawaited(handler.click(MediaButton.media));
+    unawaited(handler.click(MediaButton.media));
+    await settle();
+
+    expect(handler.player.playing, isFalse,
+        reason: 'the first press loaded and played after the second');
+  });
+
   // A press that cannot play anything must leave the player paused. If the
   // player is left "playing" with nothing loaded, the session shows a pause
   // button that does nothing, and every play/pause press from a car or watch
@@ -211,6 +237,30 @@ void main() {
       expect(handler.player.playing, isFalse,
           reason: 'press $press left the player "playing" after a failed load');
     }
+  });
+
+  test('play after stop resumes a radio station', () async {
+    // A radio station has no current song, so play() loads nothing itself;
+    // just_audio reloads the stream when play() is called on the stopped
+    // player. The guard against playing an empty player must not block that.
+    SharedPreferences.setMockInitialValues({});
+    coldStart();
+    await settle();
+    unawaited(player.playRadioStation(RadioStation(
+      id: 'r1',
+      name: 'Radio',
+      streamUrl: 'http://radio.test/stream',
+    )));
+    await settle();
+    expect(playingALoadedTrack(), isTrue, reason: 'radio did not start');
+
+    await player.stop();
+    await settle();
+    unawaited(handler.click(MediaButton.media));
+    await settle();
+
+    expect(playingALoadedTrack(), isTrue,
+        reason: 'play after stop did not resume the radio station');
   });
 
   test('a press that starts the app plays a downloaded track from disk',
