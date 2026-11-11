@@ -184,6 +184,7 @@ void main() async {
     jukeboxService,
     transcodingService,
   );
+  playerProvider.setServerConfigLoaded(authProvider.savedConfigLoaded);
   final libraryProvider = LibraryProvider(subsonicService, audioHandler);
   playerProvider.setLibraryProvider(libraryProvider);
 
