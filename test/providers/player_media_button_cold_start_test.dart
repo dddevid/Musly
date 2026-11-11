@@ -210,6 +210,48 @@ void main() {
         reason: 'the first press loaded and played after the second');
   });
 
+  test('a stop while play() is starting playback wins', () async {
+    coldStart();
+    await settle();
+    // play() sets the replay gain volume after loading the track, just
+    // before starting playback: the last point a stop can land. (The volume
+    // is also set during the load; a stop there is caught as an idle player.)
+    var stopped = false;
+    platform.onSetVolume = () {
+      if (stopped || handler.player.processingState != ProcessingState.ready) {
+        return;
+      }
+      stopped = true;
+      unawaited(player.stop());
+    };
+
+    unawaited(player.play());
+    await settle();
+
+    expect(stopped, isTrue);
+    expect(handler.player.playing, isFalse,
+        reason: 'play() started the track after the stop');
+  });
+
+  test('a pause while a failed play is being retried wins', () async {
+    coldStart();
+    await settle();
+    // The first play request fails, so play() reloads the track and tries
+    // again. A pause lands while the retry is loading.
+    platform.failPlays = 1;
+    platform.onLoad = (loads) {
+      if (loads == 2) unawaited(player.pause());
+    };
+
+    unawaited(player.play());
+    await settle();
+
+    expect(platform.players.expand((p) => p.loads), hasLength(2),
+        reason: 'play() did not retry after the failed play request');
+    expect(handler.player.playing, isFalse,
+        reason: 'the retry played after the pause');
+  });
+
   // A press that cannot play anything must leave the player paused. If the
   // player is left "playing" with nothing loaded, the session shows a pause
   // button that does nothing, and every play/pause press from a car or watch

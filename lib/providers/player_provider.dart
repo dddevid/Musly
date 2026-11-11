@@ -1102,6 +1102,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   bool _wasPlayingBeforeInterruption = false;
   bool _isManuallyPaused = false;
 
+  /// Set by stop() and cleared when play() starts, so a stop that lands while
+  /// play() is loading the track wins. Separate from [_isManuallyPaused]:
+  /// playSong() starts playback without play(), so that flag would stay set
+  /// and block resuming after the next call or navigation prompt.
+  bool _stopRequested = false;
+
   Future<void> _fadeOutAndPause() async {
     try {
       if (!_isPlaying) return;
@@ -1821,6 +1827,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   @override
   Future<void> play() async {
     _isManuallyPaused = false;
+    _stopRequested = false;
     _wasPlayingBeforeInterruption = false;
 
     if (_jukeboxService.enabled) {
@@ -1870,15 +1877,15 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
         _updateAndroidAuto();
         return;
       }
-      // A pause that arrived while the track was loading wins: it had nothing
-      // to pause yet. Media commands held at startup arrive together. Checked
-      // before taking audio focus, which would pause another app, and again
-      // before playing.
-      if (_isManuallyPaused) return;
+      // A pause or stop that arrived while the track was loading wins: it had
+      // nothing to act on yet. Media commands held at startup arrive together.
+      // Checked before taking audio focus, which would pause another app, and
+      // again before each play below.
+      if (_isManuallyPaused || _stopRequested) return;
       await _ensureAudioFocus(() async {
         try {
           await _applyReplayGain(_currentSong);
-          if (_isManuallyPaused) return;
+          if (_isManuallyPaused || _stopRequested) return;
           await _audioPlayer.play();
           await _fadeIn();
         } catch (e) {
@@ -1886,6 +1893,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
           if (_currentSong != null) {
             await _prepareCurrentSong();
             await _applyReplayGain(_currentSong);
+            if (_isManuallyPaused || _stopRequested) return;
             await _audioPlayer.play();
             await _fadeIn();
           }
@@ -1933,6 +1941,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   }
 
   Future<void> stop() async {
+    // Like a pause, a stop wins over a local play() still loading the track.
+    _stopRequested = true;
     if (_castService.isConnected) {
       await _castService.stop();
     } else if (_upnpService.isConnected) {

@@ -15,12 +15,27 @@ class FakeJustAudioPlatform extends JustAudioPlatform {
   /// Makes every player created from now on fail its loads.
   bool failLoads = false;
 
+  /// How many of the next play requests, on any player, fail the way a
+  /// native player reports a source it cannot play.
+  int failPlays = 0;
+
+  /// Called on every load with the number of loads so far across all
+  /// players, before the load completes. Lets a test act mid-load.
+  void Function(int loads)? onLoad;
+
+  /// Called on every volume change, before it completes. The app sets the
+  /// replay gain volume just before it starts playback.
+  void Function()? onSetVolume;
+
+  int _loadCount = 0;
+
   /// The player most recently created by an [AudioPlayer].
   FakeAudioPlayerPlatform get player => players.last;
 
   @override
   Future<AudioPlayerPlatform> init(InitRequest request) async {
-    final player = FakeAudioPlayerPlatform(request.id)..failLoads = failLoads;
+    final player = FakeAudioPlayerPlatform(request.id, this)
+      ..failLoads = failLoads;
     players.add(player);
     return player;
   }
@@ -43,7 +58,9 @@ class FakeJustAudioPlatform extends JustAudioPlatform {
 /// Records loads and play/pause calls, and reports playback state the way the
 /// native players do: loading, then ready once a source is loaded.
 class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
-  FakeAudioPlayerPlatform(super.id);
+  FakeAudioPlayerPlatform(super.id, this._owner);
+
+  final FakeJustAudioPlatform _owner;
 
   final _events = StreamController<PlaybackEventMessage>.broadcast();
   final _data = StreamController<PlayerDataMessage>.broadcast();
@@ -90,6 +107,7 @@ class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
   @override
   Future<LoadResponse> load(LoadRequest request) async {
     loads.add(request.audioSourceMessage);
+    _owner.onLoad?.call(++_owner._loadCount);
     if (failLoads) {
       throw PlatformException(code: '0', message: 'Source error');
     }
@@ -104,6 +122,10 @@ class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
 
   @override
   Future<PlayResponse> play(PlayRequest request) async {
+    if (_owner.failPlays > 0) {
+      _owner.failPlays--;
+      throw PlatformException(code: '0', message: 'Playback error');
+    }
     if (loads.isEmpty) playsWithoutSource++;
     playing = true;
     return PlayResponse();
@@ -124,8 +146,10 @@ class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
   }
 
   @override
-  Future<SetVolumeResponse> setVolume(SetVolumeRequest request) async =>
-      SetVolumeResponse();
+  Future<SetVolumeResponse> setVolume(SetVolumeRequest request) async {
+    _owner.onSetVolume?.call();
+    return SetVolumeResponse();
+  }
 
   @override
   Future<SetSpeedResponse> setSpeed(SetSpeedRequest request) async =>
