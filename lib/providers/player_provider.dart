@@ -1870,12 +1870,14 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
         _updateAndroidAuto();
         return;
       }
+      // A pause that arrived while the track was loading wins: it had nothing
+      // to pause yet. Media commands held at startup arrive together. Checked
+      // before taking audio focus, which would pause another app, and again
+      // before playing.
+      if (_isManuallyPaused) return;
       await _ensureAudioFocus(() async {
         try {
           await _applyReplayGain(_currentSong);
-          // A pause that arrived while the track was loading wins: it had
-          // nothing to pause yet. Media commands held at startup arrive
-          // together.
           if (_isManuallyPaused) return;
           await _audioPlayer.play();
           await _fadeIn();
