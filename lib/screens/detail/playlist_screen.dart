@@ -397,6 +397,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     await offlineService.initialize();
     offlineService.queuePlaylistDownload(
         widget.playlistId, songs, subsonicService);
+    offlineService.rememberPlaylistTracks(widget.playlistId, songs).catchError(
+        (e) => debugPrint('Error storing playlist tracks: $e'));
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
