@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/playlist.dart';
 import 'package:musly/models/song.dart';
@@ -35,6 +36,18 @@ List<String>? _ids(Playlist p) => p.songs?.map((s) => s.id).toList();
 void main() {
   initializeTestEnvironment();
 
+  // Its own app documents directory: test files run concurrently, and the
+  // '.' that bootstrap.dart returns would be shared with other suites.
+  late Directory appDir;
+  setUpAll(() {
+    appDir = Directory.systemTemp.createTempSync('musly_test_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (_) async => appDir.path,
+    );
+  });
+
   final offline = OfflineService();
   late _Server server;
   late LibraryProvider library;
@@ -54,12 +67,7 @@ void main() {
     await library.loadPlaylists();
   });
 
-  tearDownAll(() {
-    // bootstrap.dart mocks path_provider to '.', so initialize() creates an
-    // offline_music directory in the working tree. Do not leave it behind.
-    final dir = Directory('./offline_music');
-    if (dir.existsSync()) dir.deleteSync(recursive: true);
-  });
+  tearDownAll(() => appDir.deleteSync(recursive: true));
 
   test('offline mode lists a downloaded playlist\'s stored tracks', () async {
     await offline.rememberPlaylistTracks('p1', server.tracks);
