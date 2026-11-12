@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/library_provider.dart';
@@ -43,6 +44,18 @@ Future<void> _settle(WidgetTester tester, bool Function() done) async {
 void main() {
   initializeTestEnvironment();
 
+  // Its own app documents directory: test files run concurrently, and the
+  // '.' that bootstrap.dart returns would be shared with other suites.
+  late Directory appDir;
+  setUpAll(() {
+    appDir = Directory.systemTemp.createTempSync('musly_test_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (_) async => appDir.path,
+    );
+  });
+
   setUpAll(() async {
     // Once, before OfflineService first reads prefs: the singleton keeps the
     // SharedPreferences instance it got first, so a later reset never
@@ -53,12 +66,7 @@ void main() {
     await OfflineService().initialize();
   });
 
-  tearDownAll(() {
-    // bootstrap.dart mocks path_provider to '.', so initialize() creates an
-    // offline_music directory in the working tree. Do not leave it behind.
-    final dir = Directory('./offline_music');
-    if (dir.existsSync()) dir.deleteSync(recursive: true);
-  });
+  tearDownAll(() => appDir.deleteSync(recursive: true));
 
   testWidgets('the Downloads screen lists downloaded songs', (tester) async {
     final svc = SubsonicService();
