@@ -668,7 +668,13 @@ class AndroidAutoService {
         }
       }
       final playlist = await lib.getPlaylist(playlistId);
-      final songs = playlist.songs ?? [];
+      var songs = playlist.songs ?? [];
+      if (lib.isServerOfflineMode) {
+        // Offline the tracks may come from the offline store, which keeps the
+        // whole playlist. Only the downloaded ones can play.
+        final ids = await _getDownloadedIds();
+        songs = songs.where((s) => ids.contains(s.id)).toList();
+      }
       return songs.map(_songToMediaItem).toList();
     } catch (e) {
       debugPrint('[AndroidAutoService] _buildPlaylistSongItems($playlistId) error: $e');
