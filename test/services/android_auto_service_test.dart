@@ -117,6 +117,31 @@ void main() {
 
       expect(items.map((i) => i.title), ['Downloaded']);
     });
+
+    test('lists a playlist whose tracks are only in the offline store',
+        () async {
+      // The cached copy has no tracks, so the cache alone cannot show that
+      // the playlist has downloads. Without this, the playlist above can
+      // never be opened from the car.
+      when(() => mockLibrary.isInitialized).thenReturn(true);
+      when(() => mockLibrary.isServerOfflineMode).thenReturn(true);
+      when(() => mockLibrary.playlists).thenReturn([
+        Playlist(id: 'p1', name: 'Downloaded'),
+        Playlist(id: 'p2', name: 'Not downloaded'),
+        Playlist(id: 'p3', name: 'Also downloaded', songs: const []),
+      ]);
+      when(() => mockOffline.initialize()).thenAnswer((_) async {});
+      when(() => mockOffline.getDownloadedSongIds()).thenReturn(['a']);
+      when(() => mockOffline.getPlaylistTracks('p1'))
+          .thenReturn([Song(id: 'a', title: 'A')]);
+      when(() => mockOffline.getPlaylistTracks('p2')).thenReturn(null);
+      when(() => mockOffline.getPlaylistTracks('p3'))
+          .thenReturn([Song(id: 'a', title: 'A')]);
+
+      final items = await service.getChildren('AUTO_PLAYLISTS');
+
+      expect(items.map((i) => i.title), ['Downloaded', 'Also downloaded']);
+    });
   });
 
   group('playback actions', () {

@@ -506,9 +506,15 @@ class AndroidAutoService {
 
     if (lib.isServerOfflineMode) {
       final ids = await _getDownloadedIds();
-      playlistList = playlistList
-          .where((p) => p.songs?.any((s) => ids.contains(s.id)) ?? false)
-          .toList();
+      // A cached playlist may have no tracks while the offline store has
+      // them. LibraryProvider.getPlaylist falls back to the store then, so
+      // filter the same way.
+      playlistList = playlistList.where((p) {
+        final songs = (p.songs?.isNotEmpty ?? false)
+            ? p.songs
+            : _offlineService.getPlaylistTracks(p.id);
+        return songs?.any((s) => ids.contains(s.id)) ?? false;
+      }).toList();
     }
 
     return playlistList.take(_maxItemsPerCategory).map(_playlistToMediaItem).toList();
