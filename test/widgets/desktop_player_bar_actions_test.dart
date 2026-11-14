@@ -14,6 +14,8 @@ import 'package:musly/services/transcoding_service.dart';
 import 'package:musly/services/tv_detection_service.dart';
 import 'package:musly/widgets/navigation/desktop_player_bar.dart';
 import 'package:musly/widgets/modals/song_options_modal.dart';
+import 'package:musly/screens/player/now_playing_screen.dart';
+import 'package:musly/services/offline_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../test_helpers.dart';
 import '../bootstrap.dart';
@@ -111,6 +113,21 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Add to Playlist'), findsWidgets);
+      Navigator.pop(tester.element(find.text('Add to Playlist').first));
+      await tester.pumpAndSettle();
+
+      // Tapping track info opens NowPlayingScreen (#278)
+      OfflineService().setOfflineMode(true);
+      await tester.tap(find.text('Test Song Title'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+      Navigator.pop(tester.element(find.byType(NowPlayingScreen)));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 3));
+      OfflineService().setOfflineMode(false);
     });
   });
 }

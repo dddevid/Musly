@@ -9,6 +9,7 @@ import '../../widgets/navigation/tv_remote_scope.dart';
 import '../../services/tv_detection_service.dart';
 import 'package:musly/services/recommendation_service.dart';
 import 'package:musly/services/theme_service.dart';
+import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/services/usage_time_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
@@ -185,7 +186,10 @@ class _MainScreenState extends State<MainScreen> {
     await UpdateDialog.checkAndShow(context);
   }
 
-  bool _isLargeScreen(BuildContext context) {
+  bool _isLargeScreen(BuildContext context, [String? layoutMode]) {
+    final mode = layoutMode ?? PlayerUiSettingsService().getLayoutMode();
+    if (mode == 'mobile') return false;
+    if (mode == 'desktop') return true;
     final size = MediaQuery.of(context).size;
     return size.width >= 650 || size.shortestSide >= 600;
   }
@@ -203,7 +207,11 @@ class _MainScreenState extends State<MainScreen> {
       return TvMainScreen(isOfflineMode: widget.isOfflineMode);
     }
 
-    if (_isLargeScreen(context)) {
+    final uiSettings = PlayerUiSettingsService();
+    return ValueListenableBuilder<String>(
+      valueListenable: uiSettings.layoutModeNotifier,
+      builder: (context, layoutMode, _) {
+        if (_isLargeScreen(context, layoutMode)) {
       final content = Scaffold(
         body: Column(
           children: [
@@ -513,6 +521,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
           ),
         );
+      },
+    );
       },
     );
   }

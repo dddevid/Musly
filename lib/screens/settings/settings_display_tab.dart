@@ -44,6 +44,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _lyricsKeepScreenOn = true;
   bool _hideWindowTitlebar = false;
   String _artworkResolution = 'normal';
+  String _layoutMode = 'auto';
 
   ThemeMode _themeMode = ThemeMode.system;
   AccentColor _accentColor = AccentColor.red;
@@ -82,6 +83,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _lyricsGlowEffect = _playerUiSettings.getLyricsGlowEffect();
       _lyricsKeepScreenOn = _playerUiSettings.getLyricsKeepScreenOn();
       _artworkResolution = _playerUiSettings.getArtworkResolution();
+      _layoutMode = _playerUiSettings.getLayoutMode();
       _themeMode = themeService.themeMode;
       _accentColor = themeService.accentColor;
       _liquidGlass = themeService.liquidGlass;
@@ -147,6 +149,13 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
           const SizedBox(height: 24),
           _buildSpotverlaySection(),
         ],
+        const SizedBox(height: 24),
+        SettingsSectionCard(
+          title: 'LAYOUT',
+          children: [
+            _buildLayoutModeSelector(),
+          ],
+        ),
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.homeSection.toUpperCase(),
@@ -932,6 +941,36 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         await _playerUiSettings.setLyricsBlurUnfocused(val);
         setState(() => _lyricsBlurUnfocused = val);
       },
+    );
+  }
+
+  Widget _buildLayoutModeSelector() {
+    final options = {
+      'auto': 'Auto (Responsive)',
+      'mobile': 'Mobile (Bottom Bar)',
+      'desktop': 'Desktop (Sidebar)',
+    };
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: const Text('Layout Mode'),
+      subtitle: const Text('Choose between responsive, mobile, or desktop interface'),
+      trailing: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _layoutMode,
+          items: options.entries.map((e) {
+            return DropdownMenuItem(
+              value: e.key,
+              child: Text(e.value),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => _layoutMode = val);
+              _playerUiSettings.setLayoutMode(val);
+            }
+          },
+        ),
+      ),
     );
   }
 

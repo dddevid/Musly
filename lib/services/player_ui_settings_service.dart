@@ -20,6 +20,7 @@ class PlayerUiSettingsService {
       'player_show_live_lyric_under_artwork';
 
   static const String _keyArtworkResolution = 'artwork_resolution';
+  static const String _keyLayoutMode = 'ui_layout_mode';
   static const String _keyShowFavoritePlaylistsOnHome =
       'home_show_favorite_playlists';
 
@@ -43,6 +44,7 @@ class PlayerUiSettingsService {
   final ValueNotifier<String> artworkShadowNotifier = ValueNotifier('soft');
   final ValueNotifier<String> artworkShadowColorNotifier = ValueNotifier('black');
   final ValueNotifier<String> artworkResolutionNotifier = ValueNotifier('normal');
+  final ValueNotifier<String> layoutModeNotifier = ValueNotifier('auto');
   
   final ValueNotifier<bool> lyricsBlurUnfocusedNotifier = ValueNotifier(false);
   final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
@@ -65,6 +67,7 @@ class PlayerUiSettingsService {
     artworkShadowNotifier.value = getArtworkShadow();
     artworkShadowColorNotifier.value = getArtworkShadowColor();
     artworkResolutionNotifier.value = getArtworkResolution();
+    layoutModeNotifier.value = getLayoutMode();
     liveSearchNotifier.value = getLiveSearch();
     lyricsBlurUnfocusedNotifier.value = getLyricsBlurUnfocused();
     lyricsAlignmentNotifier.value = getLyricsAlignment();
@@ -195,6 +198,16 @@ class PlayerUiSettingsService {
     return _prefs?.getString(_keyArtworkResolution) ?? 'normal';
   }
 
+  Future<void> setLayoutMode(String mode) async {
+    await initialize();
+    await _prefs!.setString(_keyLayoutMode, mode);
+    layoutModeNotifier.value = mode;
+  }
+
+  String getLayoutMode() {
+    return _prefs?.getString(_keyLayoutMode) ?? 'auto';
+  }
+
   Future<void> setLiveSearch(bool enabled) async {
     await initialize();
     await _prefs!.setBool(_keyLiveSearch, enabled);
@@ -256,6 +269,7 @@ class PlayerUiSettingsService {
     artworkShadowNotifier.dispose();
     artworkShadowColorNotifier.dispose();
     artworkResolutionNotifier.dispose();
+    layoutModeNotifier.dispose();
     lyricsBlurUnfocusedNotifier.dispose();
     lyricsAlignmentNotifier.dispose();
     lyricsGlowEffectNotifier.dispose();
