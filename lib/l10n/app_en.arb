@@ -3852,5 +3852,49 @@
   "downloadQualitySubtitle": "Audio quality for downloaded songs",
   "@downloadQualitySubtitle": {
     "description": "Subtitle describing the download quality setting"
+  },
+  "visualizerSection": "Music Visualizer",
+  "@visualizerSection": {
+    "description": "Header for visualizer section in display settings"
+  },
+  "visualizerEnable": "Music Visualizer",
+  "@visualizerEnable": {
+    "description": "Toggle to enable music visualizer in Now Playing"
+  },
+  "visualizerEnableSubtitle": "Show real-time audio visualization in Now Playing",
+  "@visualizerEnableSubtitle": {
+    "description": "Subtitle for music visualizer toggle"
+  },
+  "visualizerStyle": "Visualizer Style",
+  "@visualizerStyle": {
+    "description": "Label for visualizer style selector"
+  },
+  "visualizerStyleBars": "Spectrum Bars",
+  "@visualizerStyleBars": {
+    "description": "Spectrum bars visualizer style"
+  },
+  "visualizerStyleWave": "Waveform",
+  "@visualizerStyleWave": {
+    "description": "Waveform visualizer style"
+  },
+  "visualizerStyleCircle": "Radial Ring",
+  "@visualizerStyleCircle": {
+    "description": "Radial ring visualizer style"
+  },
+  "visualizerColorMode": "Visualizer Colors",
+  "@visualizerColorMode": {
+    "description": "Label for visualizer color mode selector"
+  },
+  "visualizerColorAccent": "Accent Color",
+  "@visualizerColorAccent": {
+    "description": "Use app accent color for visualizer"
+  },
+  "visualizerColorArtwork": "Album Artwork Palette",
+  "@visualizerColorArtwork": {
+    "description": "Use dynamic colors extracted from album artwork"
+  },
+  "visualizerColorRainbow": "Rainbow Spectrum",
+  "@visualizerColorRainbow": {
+    "description": "Rainbow gradient for visualizer"
   }
 }

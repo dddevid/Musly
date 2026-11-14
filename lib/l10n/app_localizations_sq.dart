@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -3177,4 +3176,38 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get downloadQualitySubtitle => 'Audio quality for downloaded songs';
+
+  @override
+  String get visualizerSection => 'Music Visualizer';
+
+  @override
+  String get visualizerEnable => 'Music Visualizer';
+
+  @override
+  String get visualizerEnableSubtitle =>
+      'Show real-time audio visualization in Now Playing';
+
+  @override
+  String get visualizerStyle => 'Visualizer Style';
+
+  @override
+  String get visualizerStyleBars => 'Spectrum Bars';
+
+  @override
+  String get visualizerStyleWave => 'Waveform';
+
+  @override
+  String get visualizerStyleCircle => 'Radial Ring';
+
+  @override
+  String get visualizerColorMode => 'Visualizer Colors';
+
+  @override
+  String get visualizerColorAccent => 'Accent Color';
+
+  @override
+  String get visualizerColorArtwork => 'Album Artwork Palette';
+
+  @override
+  String get visualizerColorRainbow => 'Rainbow Spectrum';
 }

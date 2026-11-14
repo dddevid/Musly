@@ -6,16 +6,20 @@ import 'package:musly/widgets/navigation/cast_button.dart';
 class NowPlayingBottomActions extends StatelessWidget {
   final VoidCallback onLyricsTap;
   final VoidCallback onQueueTap;
+  final VoidCallback? onVisualizerTap;
   final bool isLyricsActive;
   final bool isQueueActive;
+  final bool isVisualizerActive;
   final Color accentColor;
 
   const NowPlayingBottomActions({
     super.key,
     required this.onLyricsTap,
     required this.onQueueTap,
+    this.onVisualizerTap,
     this.isLyricsActive = false,
     this.isQueueActive = false,
+    this.isVisualizerActive = false,
     this.accentColor = Colors.white,
   });
 
@@ -33,6 +37,15 @@ class NowPlayingBottomActions extends StatelessWidget {
             iconSize: 24,
             iconColor: Colors.white.withValues(alpha: 0.5),
           ),
+          if (onVisualizerTap != null)
+            _ActionButton(
+              icon: isApple
+                  ? CupertinoIcons.waveform_path_ecg
+                  : Icons.graphic_eq_rounded,
+              isActive: isVisualizerActive,
+              activeColor: accentColor,
+              onTap: onVisualizerTap!,
+            ),
           _ActionButton(
             icon: isApple
                 ? CupertinoIcons.quote_bubble

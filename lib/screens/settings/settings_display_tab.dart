@@ -45,6 +45,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _hideWindowTitlebar = false;
   String _artworkResolution = 'normal';
   String _layoutMode = 'auto';
+  bool _visualizerEnabled = false;
+  String _visualizerStyle = 'bars';
+  String _visualizerColorMode = 'artwork';
 
   ThemeMode _themeMode = ThemeMode.system;
   AccentColor _accentColor = AccentColor.red;
@@ -84,6 +87,9 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _lyricsKeepScreenOn = _playerUiSettings.getLyricsKeepScreenOn();
       _artworkResolution = _playerUiSettings.getArtworkResolution();
       _layoutMode = _playerUiSettings.getLayoutMode();
+      _visualizerEnabled = _playerUiSettings.getVisualizerEnabled();
+      _visualizerStyle = _playerUiSettings.getVisualizerStyle();
+      _visualizerColorMode = _playerUiSettings.getVisualizerColorMode();
       _themeMode = themeService.themeMode;
       _accentColor = themeService.accentColor;
       _liquidGlass = themeService.liquidGlass;
@@ -191,6 +197,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             _buildLyricsKeepScreenOnToggle(),
           ],
         ),
+        const SizedBox(height: 24),
+        _buildVisualizerSection(),
         const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(
@@ -1107,6 +1115,144 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         ),
       ],
     );
+  }
+
+  Widget _buildVisualizerSection() {
+    final l10n = AppLocalizations.of(context);
+    final isEnabled = _visualizerEnabled;
+
+    final styleLabel = _visualizerStyle == 'bars'
+        ? (l10n?.visualizerStyleBars ?? 'Spectrum Bars')
+        : (_visualizerStyle == 'wave'
+            ? (l10n?.visualizerStyleWave ?? 'Waveform')
+            : (l10n?.visualizerStyleCircle ?? 'Radial Ring'));
+
+    final colorLabel = _visualizerColorMode == 'artwork'
+        ? (l10n?.visualizerColorArtwork ?? 'Album Artwork Palette')
+        : (_visualizerColorMode == 'rainbow'
+            ? (l10n?.visualizerColorRainbow ?? 'Rainbow Spectrum')
+            : (l10n?.visualizerColorAccent ?? 'Accent Color'));
+
+    return SettingsSectionCard(
+      title: l10n?.visualizerSection.toUpperCase() ?? 'MUSIC VISUALIZER',
+      children: [
+        SettingsSwitchTile(
+          icon: CupertinoIcons.waveform_path_ecg,
+          title: l10n?.visualizerEnable ?? 'Music Visualizer',
+          subtitle: l10n?.visualizerEnableSubtitle ??
+              'Show real-time audio visualization in Now Playing',
+          value: _visualizerEnabled,
+          onChanged: (val) {
+            setState(() => _visualizerEnabled = val);
+            _playerUiSettings.setVisualizerEnabled(val);
+          },
+        ),
+        if (isEnabled) ...[
+          const SettingsDivider(),
+          SettingsListTile(
+            icon: CupertinoIcons.slider_horizontal_3,
+            title: l10n?.visualizerStyle ?? 'Visualizer Style',
+            subtitle: styleLabel,
+            trailing: const Icon(CupertinoIcons.chevron_forward, size: 16),
+            onTap: _showVisualizerStyleDialog,
+          ),
+          const SettingsDivider(),
+          SettingsListTile(
+            icon: CupertinoIcons.paintbrush,
+            title: l10n?.visualizerColorMode ?? 'Visualizer Colors',
+            subtitle: colorLabel,
+            trailing: const Icon(CupertinoIcons.chevron_forward, size: 16),
+            onTap: _showVisualizerColorModeDialog,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _showVisualizerStyleDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final styles = [
+      ('bars', l10n?.visualizerStyleBars ?? 'Spectrum Bars'),
+      ('wave', l10n?.visualizerStyleWave ?? 'Waveform'),
+      ('circle', l10n?.visualizerStyleCircle ?? 'Radial Ring'),
+    ];
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n?.visualizerStyle ?? 'Visualizer Style'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: styles.map((entry) {
+            final isSelected = entry.$1 == _visualizerStyle;
+            return ListTile(
+              title: Text(entry.$2),
+              leading: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+              ),
+              onTap: () => Navigator.pop(context, entry.$1),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n?.cancel ?? 'Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != _visualizerStyle) {
+      await _playerUiSettings.setVisualizerStyle(selected);
+      setState(() => _visualizerStyle = selected);
+    }
+  }
+
+  Future<void> _showVisualizerColorModeDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final modes = [
+      ('artwork', l10n?.visualizerColorArtwork ?? 'Album Artwork Palette'),
+      ('accent', l10n?.visualizerColorAccent ?? 'Accent Color'),
+      ('rainbow', l10n?.visualizerColorRainbow ?? 'Rainbow Spectrum'),
+    ];
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n?.visualizerColorMode ?? 'Visualizer Colors'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: modes.map((entry) {
+            final isSelected = entry.$1 == _visualizerColorMode;
+            return ListTile(
+              title: Text(entry.$2),
+              leading: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+              ),
+              onTap: () => Navigator.pop(context, entry.$1),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n?.cancel ?? 'Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != _visualizerColorMode) {
+      await _playerUiSettings.setVisualizerColorMode(selected);
+      setState(() => _visualizerColorMode = selected);
+    }
   }
 }
 

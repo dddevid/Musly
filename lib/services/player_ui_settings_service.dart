@@ -23,6 +23,9 @@ class PlayerUiSettingsService {
   static const String _keyLayoutMode = 'ui_layout_mode';
   static const String _keyShowFavoritePlaylistsOnHome =
       'home_show_favorite_playlists';
+  static const String _keyVisualizerEnabled = 'player_visualizer_enabled';
+  static const String _keyVisualizerStyle = 'player_visualizer_style';
+  static const String _keyVisualizerColorMode = 'player_visualizer_color_mode';
 
   static final PlayerUiSettingsService _instance =
       PlayerUiSettingsService._internal();
@@ -54,6 +57,10 @@ class PlayerUiSettingsService {
       ValueNotifier(false);
   final ValueNotifier<bool> showFavoritePlaylistsOnHomeNotifier =
       ValueNotifier(false);
+  final ValueNotifier<bool> visualizerEnabledNotifier = ValueNotifier(false);
+  final ValueNotifier<String> visualizerStyleNotifier = ValueNotifier('bars');
+  final ValueNotifier<String> visualizerColorModeNotifier =
+      ValueNotifier('artwork');
 
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -76,6 +83,9 @@ class PlayerUiSettingsService {
     showLiveLyricUnderArtworkNotifier.value = getShowLiveLyricUnderArtwork();
     showFavoritePlaylistsOnHomeNotifier.value =
         getShowFavoritePlaylistsOnHome();
+    visualizerEnabledNotifier.value = getVisualizerEnabled();
+    visualizerStyleNotifier.value = getVisualizerStyle();
+    visualizerColorModeNotifier.value = getVisualizerColorMode();
   }
 
   Future<void> setShowFavoritePlaylistsOnHome(bool show) async {
@@ -256,6 +266,36 @@ class PlayerUiSettingsService {
 
   bool getLyricsKeepScreenOn() {
     return _prefs?.getBool(_keyLyricsKeepScreenOn) ?? true;
+  }
+
+  Future<void> setVisualizerEnabled(bool enabled) async {
+    await initialize();
+    await _prefs!.setBool(_keyVisualizerEnabled, enabled);
+    visualizerEnabledNotifier.value = enabled;
+  }
+
+  bool getVisualizerEnabled() {
+    return _prefs?.getBool(_keyVisualizerEnabled) ?? false;
+  }
+
+  Future<void> setVisualizerStyle(String style) async {
+    await initialize();
+    await _prefs!.setString(_keyVisualizerStyle, style);
+    visualizerStyleNotifier.value = style;
+  }
+
+  String getVisualizerStyle() {
+    return _prefs?.getString(_keyVisualizerStyle) ?? 'bars';
+  }
+
+  Future<void> setVisualizerColorMode(String mode) async {
+    await initialize();
+    await _prefs!.setString(_keyVisualizerColorMode, mode);
+    visualizerColorModeNotifier.value = mode;
+  }
+
+  String getVisualizerColorMode() {
+    return _prefs?.getString(_keyVisualizerColorMode) ?? 'artwork';
   }
 
   void dispose() {

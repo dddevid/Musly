@@ -2201,5 +2201,16 @@
   "similarSongsAdded": "{count, plural, =1{1 canzone simile aggiunta alla coda} other{{count} canzoni simili aggiunte alla coda}}",
   "noSimilarSongsFound": "Nessuna canzone simile trovata",
   "downloadQuality": "Qualità download",
-  "downloadQualitySubtitle": "Qualità audio per i brani scaricati"
+  "downloadQualitySubtitle": "Qualità audio per i brani scaricati",
+  "visualizerSection": "Visualizzatore Musicale",
+  "visualizerEnable": "Visualizzatore musicale",
+  "visualizerEnableSubtitle": "Mostra la visualizzazione audio in tempo reale nella schermata In riproduzione",
+  "visualizerStyle": "Stile visualizzatore",
+  "visualizerStyleBars": "Barre dello spettro",
+  "visualizerStyleWave": "Forma d'onda",
+  "visualizerStyleCircle": "Anello radiale",
+  "visualizerColorMode": "Colori visualizzatore",
+  "visualizerColorAccent": "Colore accento",
+  "visualizerColorArtwork": "Palette copertina album",
+  "visualizerColorRainbow": "Spettro arcobaleno"
 }

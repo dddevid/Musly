@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -3192,4 +3191,38 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get downloadQualitySubtitle => 'Qualità audio per i brani scaricati';
+
+  @override
+  String get visualizerSection => 'Visualizzatore Musicale';
+
+  @override
+  String get visualizerEnable => 'Visualizzatore musicale';
+
+  @override
+  String get visualizerEnableSubtitle =>
+      'Mostra la visualizzazione audio in tempo reale nella schermata In riproduzione';
+
+  @override
+  String get visualizerStyle => 'Stile visualizzatore';
+
+  @override
+  String get visualizerStyleBars => 'Barre dello spettro';
+
+  @override
+  String get visualizerStyleWave => 'Forma d\'onda';
+
+  @override
+  String get visualizerStyleCircle => 'Anello radiale';
+
+  @override
+  String get visualizerColorMode => 'Colori visualizzatore';
+
+  @override
+  String get visualizerColorAccent => 'Colore accento';
+
+  @override
+  String get visualizerColorArtwork => 'Palette copertina album';
+
+  @override
+  String get visualizerColorRainbow => 'Spettro arcobaleno';
 }

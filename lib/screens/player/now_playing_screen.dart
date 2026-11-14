@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:musly/widgets/common/blurred_gradient_background.dart';
 import 'package:musly/widgets/now_playing/album_art_view.dart';
+import 'package:musly/widgets/now_playing/music_visualizer_view.dart';
 import 'package:musly/widgets/now_playing/marquee_text.dart';
 import 'package:musly/widgets/now_playing/playback_controls.dart';
 import 'package:musly/widgets/now_playing/playback_progress_slider.dart';
@@ -59,6 +60,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   bool _isLoadingLyrics = true;
   Song? _lastSong;
   ImageProvider? _currentImageProvider;
+  bool _showVisualizer = false;
 
   @override
   void initState() {
@@ -422,6 +424,51 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildArtworkOrVisualizer(
+    PlayerProvider provider,
+    Song? currentSong,
+    Color accentColor,
+  ) {
+    return ValueListenableBuilder<bool>(
+      valueListenable:
+          PlayerUiSettingsService().visualizerEnabledNotifier,
+      builder: (context, visualizerEnabled, _) {
+        if (visualizerEnabled && _showVisualizer) {
+          return ValueListenableBuilder<String>(
+            valueListenable:
+                PlayerUiSettingsService().visualizerStyleNotifier,
+            builder: (context, style, _) {
+              return ValueListenableBuilder<String>(
+                valueListenable:
+                    PlayerUiSettingsService().visualizerColorModeNotifier,
+                builder: (context, colorMode, _) {
+                  return MusicVisualizerView(
+                    isPlaying: provider.isPlaying,
+                    style: style,
+                    colorMode: colorMode,
+                    accentColor: accentColor,
+                    paletteColors: _bgColors,
+                    centerImage: _currentImageProvider ?? widget.image,
+                    onTap: () => setState(() => _showVisualizer = false),
+                  );
+                },
+              );
+            },
+          );
+        }
+        return GestureDetector(
+          onTap: visualizerEnabled
+              ? () => setState(() => _showVisualizer = true)
+              : null,
+          child: AlbumArtView(
+            image: _currentImageProvider ?? widget.image,
+            tag: currentSong?.id ?? widget.heroTag,
+          ),
+        );
+      },
     );
   }
 
@@ -807,9 +854,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                 }
                               }
                             },
-                            child: AlbumArtView(
-                              image: _currentImageProvider ?? widget.image,
-                              tag: currentSong?.id ?? widget.heroTag,
+                            child: _buildArtworkOrVisualizer(
+                              provider,
+                              currentSong,
+                              accentColor,
                             ),
                           ),
                         ),
@@ -897,35 +945,55 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           },
                         ),
                         const SizedBox(height: 2),
-                        NowPlayingBottomActions(
-                          isLyricsActive: _currentPage == 1,
-                          isQueueActive: _currentPage == 2,
-                          accentColor: accentColor,
-                          onLyricsTap: () {
-                            if (_currentPage == 1) {
-                              _syncLyricsWakelock(page: 0);
-                              _pageController.animateToPage(0,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut);
-                            } else {
-                              _syncLyricsWakelock(page: 1);
-                              _pageController.animateToPage(1,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut);
-                            }
-                          },
-                          onQueueTap: () {
-                            if (_currentPage == 2) {
-                              _syncLyricsWakelock(page: 0);
-                              _pageController.animateToPage(0,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut);
-                            } else {
-                              _syncLyricsWakelock(page: 2);
-                              _pageController.animateToPage(2,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut);
-                            }
+                        ValueListenableBuilder<bool>(
+                          valueListenable:
+                              PlayerUiSettingsService().visualizerEnabledNotifier,
+                          builder: (context, visualizerEnabled, _) {
+                            return NowPlayingBottomActions(
+                              isLyricsActive: _currentPage == 1,
+                              isQueueActive: _currentPage == 2,
+                              isVisualizerActive:
+                                  _currentPage == 0 && _showVisualizer,
+                              accentColor: accentColor,
+                              onVisualizerTap: visualizerEnabled
+                                  ? () {
+                                      if (_currentPage != 0) {
+                                        _pageController.animateToPage(0,
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            curve: Curves.easeInOut);
+                                      }
+                                      setState(() =>
+                                          _showVisualizer = !_showVisualizer);
+                                    }
+                                  : null,
+                              onLyricsTap: () {
+                                if (_currentPage == 1) {
+                                  _syncLyricsWakelock(page: 0);
+                                  _pageController.animateToPage(0,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut);
+                                } else {
+                                  _syncLyricsWakelock(page: 1);
+                                  _pageController.animateToPage(1,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut);
+                                }
+                              },
+                              onQueueTap: () {
+                                if (_currentPage == 2) {
+                                  _syncLyricsWakelock(page: 0);
+                                  _pageController.animateToPage(0,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut);
+                                } else {
+                                  _syncLyricsWakelock(page: 2);
+                                  _pageController.animateToPage(2,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut);
+                                }
+                              },
+                            );
                           },
                         ),
                       ],
@@ -1003,9 +1071,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             }
                           }
                         },
-                        child: AlbumArtView(
-                          image: _currentImageProvider ?? widget.image,
-                          tag: currentSong?.id ?? widget.heroTag,
+                        child: _buildArtworkOrVisualizer(
+                          provider,
+                          currentSong,
+                          accentColor,
                         ),
                       ),
                     ),
@@ -1068,35 +1137,52 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   );
                 },
               ),
-              NowPlayingBottomActions(
-                isLyricsActive: _currentPage == 1,
-                isQueueActive: _currentPage == 2,
-                accentColor: accentColor,
-                onLyricsTap: () {
-                  if (_currentPage == 1) {
-                    _syncLyricsWakelock(page: 0);
-                    _pageController.animateToPage(0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  } else {
-                    _syncLyricsWakelock(page: 1);
-                    _pageController.animateToPage(1,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  }
-                },
-                onQueueTap: () {
-                  if (_currentPage == 2) {
-                    _syncLyricsWakelock(page: 0);
-                    _pageController.animateToPage(0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  } else {
-                    _syncLyricsWakelock(page: 2);
-                    _pageController.animateToPage(2,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  }
+              ValueListenableBuilder<bool>(
+                valueListenable:
+                    PlayerUiSettingsService().visualizerEnabledNotifier,
+                builder: (context, visualizerEnabled, _) {
+                  return NowPlayingBottomActions(
+                    isLyricsActive: _currentPage == 1,
+                    isQueueActive: _currentPage == 2,
+                    isVisualizerActive: _currentPage == 0 && _showVisualizer,
+                    accentColor: accentColor,
+                    onVisualizerTap: visualizerEnabled
+                        ? () {
+                            if (_currentPage != 0) {
+                              _pageController.animateToPage(0,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
+                            }
+                            setState(() => _showVisualizer = !_showVisualizer);
+                          }
+                        : null,
+                    onLyricsTap: () {
+                      if (_currentPage == 1) {
+                        _syncLyricsWakelock(page: 0);
+                        _pageController.animateToPage(0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
+                      } else {
+                        _syncLyricsWakelock(page: 1);
+                        _pageController.animateToPage(1,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
+                      }
+                    },
+                    onQueueTap: () {
+                      if (_currentPage == 2) {
+                        _syncLyricsWakelock(page: 0);
+                        _pageController.animateToPage(0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
+                      } else {
+                        _syncLyricsWakelock(page: 2);
+                        _pageController.animateToPage(2,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
+                      }
+                    },
+                  );
                 },
               ),
               SizedBox(height: bottomActionsSpacing),
