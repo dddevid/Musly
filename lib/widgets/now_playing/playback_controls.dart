@@ -133,9 +133,9 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
-        scale: _isPressed ? 0.92 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: Duration(milliseconds: _isPressed ? 140 : 100),
+        curve: const Cubic(0.23, 1, 0.32, 1),
         child: Container(
           width: widget.size,
           height: widget.size,
@@ -143,16 +143,29 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.2),
           ),
-          child: Icon(
-            widget.isPlaying
-                ? (isApple
-                    ? CupertinoIcons.pause_fill
-                    : Icons.pause_rounded)
-                : (isApple
-                    ? CupertinoIcons.play_fill
-                    : Icons.play_arrow_rounded),
-            size: isApple ? widget.size * 0.5 : widget.size * 0.6,
-            color: Colors.white,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 160),
+            switchInCurve: const Cubic(0.23, 1, 0.32, 1),
+            switchOutCurve: const Cubic(0.23, 1, 0.32, 1),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.88, end: 1.0).animate(animation),
+                child: child,
+              ),
+            ),
+            child: Icon(
+              key: ValueKey<bool>(widget.isPlaying),
+              widget.isPlaying
+                  ? (isApple
+                      ? CupertinoIcons.pause_fill
+                      : Icons.pause_rounded)
+                  : (isApple
+                      ? CupertinoIcons.play_fill
+                      : Icons.play_arrow_rounded),
+              size: isApple ? widget.size * 0.5 : widget.size * 0.6,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
@@ -191,9 +204,9 @@ class _MainControlButtonState extends State<_MainControlButton> {
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
-        scale: _isPressed ? 0.85 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: Duration(milliseconds: _isPressed ? 140 : 100),
+        curve: const Cubic(0.23, 1, 0.32, 1),
         child: Icon(
           widget.icon,
           size: widget.size,
@@ -227,7 +240,8 @@ class _SecondaryControlButton extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
+              curve: const Cubic(0.23, 1, 0.32, 1),
               width: 36,
               height: 36,
               decoration: BoxDecoration(
@@ -244,18 +258,27 @@ class _SecondaryControlButton extends StatelessWidget {
                 size: 24,
               ),
             ),
-            if (isActive)
-              Positioned(
-                bottom: 2,
-                child: Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: activeColor,
+            Positioned(
+              bottom: 2,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 180),
+                opacity: isActive ? 1.0 : 0.0,
+                curve: Curves.easeOut,
+                child: AnimatedScale(
+                  scale: isActive ? 1.0 : 0.4,
+                  duration: const Duration(milliseconds: 180),
+                  curve: const Cubic(0.23, 1, 0.32, 1),
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: activeColor,
+                    ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),

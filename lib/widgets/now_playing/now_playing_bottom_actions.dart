@@ -71,7 +71,9 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Container(
+      icon: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: const Cubic(0.23, 1, 0.32, 1),
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           color: isActive
