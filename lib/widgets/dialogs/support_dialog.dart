@@ -7,6 +7,11 @@ import 'package:musly/l10n/app_localizations.dart';
 class SupportDialog extends StatefulWidget {
   const SupportDialog({super.key});
 
+  /// When built with `--dart-define=APP_STORE_COMPLIANT=true`, external donation
+  /// links are suppressed to strictly comply with Apple App Store Review Guideline 3.1.1.
+  static const bool isAppStoreCompliant =
+      bool.fromEnvironment('APP_STORE_COMPLIANT', defaultValue: false);
+
   static const String _prefsKey = 'support_dialog_dont_show';
 
   static Future<bool> shouldShow() async {
@@ -115,15 +120,17 @@ class _SupportDialogState extends State<SupportDialog> {
                   color: const Color(0xFF5865F2),
                   onTap: _launchDiscord,
                 ),
-                SizedBox(height: isSmallScreen ? 8 : 12),
-                _buildActionButton(
-                  icon: CupertinoIcons.heart_fill,
-                  title: l10n.supportDialogDonateTitle,
-                  subtitle: l10n.supportDialogDonateSubtitle,
-                  color: const Color(0xFFFA2D48),
-                  onTap: _launchDonation,
-                  compact: isSmallScreen,
-                ),
+                if (!SupportDialog.isAppStoreCompliant) ...[
+                  SizedBox(height: isSmallScreen ? 8 : 12),
+                  _buildActionButton(
+                    icon: CupertinoIcons.heart_fill,
+                    title: l10n.supportDialogDonateTitle,
+                    subtitle: l10n.supportDialogDonateSubtitle,
+                    color: const Color(0xFFFA2D48),
+                    onTap: _launchDonation,
+                    compact: isSmallScreen,
+                  ),
+                ],
                 SizedBox(height: isSmallScreen ? 16 : 20),
                 Row(
                   children: [
