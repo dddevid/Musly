@@ -824,7 +824,12 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
     final artistId = widget.song.artistId;
     if (artistId != null && artistId.isNotEmpty) {
       nav.push(
-        MaterialPageRoute(builder: (_) => ArtistScreen(artistId: artistId)),
+        MaterialPageRoute(
+          builder: (_) => ArtistScreen(
+            artistId: artistId,
+            artistName: widget.song.artist,
+          ),
+        ),
       );
     }
   }
@@ -832,7 +837,12 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
   void _pushArtist(NavigatorState nav, ArtistRef artist) {
     if (artist.id.isNotEmpty) {
       nav.push(
-        MaterialPageRoute(builder: (_) => ArtistScreen(artistId: artist.id)),
+        MaterialPageRoute(
+          builder: (_) => ArtistScreen(
+            artistId: artist.id,
+            artistName: artist.name,
+          ),
+        ),
       );
     } else if (artist.name.isNotEmpty) {
       final ctx = NavigationHelper.navigatorKey.currentContext;
@@ -847,7 +857,10 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
               orElse: () => res.artists.first,
             );
             nav.push(MaterialPageRoute(
-                builder: (_) => ArtistScreen(artistId: matched.id)));
+                builder: (_) => ArtistScreen(
+                      artistId: matched.id,
+                      artistName: matched.name,
+                    )));
           }
         }).catchError((_) {});
       }

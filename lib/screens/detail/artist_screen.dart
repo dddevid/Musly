@@ -11,8 +11,9 @@ import 'package:musly/services/offline_service.dart';
 
 class ArtistScreen extends StatefulWidget {
   final String artistId;
+  final String? artistName;
 
-  const ArtistScreen({super.key, required this.artistId});
+  const ArtistScreen({super.key, required this.artistId, this.artistName});
 
   @override
   State<ArtistScreen> createState() => _ArtistScreenState();
@@ -98,6 +99,29 @@ class _ArtistScreenState extends State<ArtistScreen> {
           artist ??= Artist(
             id: widget.artistId,
             name: albums.first.artist ?? 'Unknown Artist',
+          );
+        }
+
+        if (artist == null && topSongs.isNotEmpty) {
+          artist = Artist(
+            id: widget.artistId,
+            name: widget.artistName ?? topSongs.first.artist ?? widget.artistId,
+            coverArt: topSongs.first.coverArt,
+            artistImageUrl: topSongs.first.coverArt,
+          );
+        }
+
+        if (artist == null && widget.artistName != null) {
+          artist = Artist(
+            id: widget.artistId,
+            name: widget.artistName!,
+          );
+        }
+
+        if (artist == null && widget.artistId.isNotEmpty) {
+          artist = Artist(
+            id: widget.artistId,
+            name: widget.artistName ?? widget.artistId,
           );
         }
       }

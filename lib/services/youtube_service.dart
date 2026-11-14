@@ -352,6 +352,61 @@ class YoutubeService {
     }
   }
 
+  Future<Artist> getArtist(String channelOrArtistId) async {
+    try {
+      final starred = await _db.getStarredSongs();
+      final matchingStarred = starred.where(
+        (s) => s.artistId == channelOrArtistId || s.artist == channelOrArtistId,
+      );
+      if (matchingStarred.isNotEmpty) {
+        final s = matchingStarred.first;
+        return Artist(
+          id: channelOrArtistId,
+          name: s.artist ?? channelOrArtistId,
+          coverArt: s.coverArt,
+          artistImageUrl: s.coverArt,
+        );
+      }
+
+      final local = await _db.searchSongs(channelOrArtistId, limit: 5);
+      final match = local.where(
+        (s) => s.artistId == channelOrArtistId || s.artist == channelOrArtistId,
+      );
+      if (match.isNotEmpty) {
+        final s = match.first;
+        return Artist(
+          id: channelOrArtistId,
+          name: s.artist ?? channelOrArtistId,
+          coverArt: s.coverArt,
+          artistImageUrl: s.coverArt,
+        );
+      }
+
+      final results = await _ytdlp.search('$channelOrArtistId songs', limit: 5);
+      if (results.isNotEmpty) {
+        final s = _mapDictToSong(results.first);
+        final name = s.artist?.isNotEmpty == true ? s.artist! : channelOrArtistId;
+        return Artist(
+          id: channelOrArtistId,
+          name: name,
+          coverArt: s.coverArt,
+          artistImageUrl: s.coverArt,
+        );
+      }
+    } catch (e) {
+      debugPrint('[YouTube] getArtist error: $e');
+    }
+
+    return Artist(
+      id: channelOrArtistId,
+      name: channelOrArtistId,
+    );
+  }
+
+  Future<ArtistInfo?> getArtistInfo(String id) async {
+    return null;
+  }
+
   Future<List<Album>> getAlbumList({
     String type = 'recent',
     int size = 20,

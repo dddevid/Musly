@@ -388,7 +388,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             title: art.name,
             subtitle: 'Artist',
             data: art,
-            onTap: () => _navigate(context, ArtistScreen(artistId: art.id)),
+            onTap: () => _navigate(
+              context,
+              ArtistScreen(artistId: art.id, artistName: art.name),
+            ),
           ),
         );
       }

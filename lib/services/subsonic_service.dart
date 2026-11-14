@@ -636,11 +636,13 @@ class SubsonicService {
   }
 
   Future<Artist> getArtist(String id) async {
+    if (_youtube != null) return _youtube!.getArtist(id);
     final response = await _request('getArtist', {'id': id});
     return Artist.fromJson(response['artist'] as Map<String, dynamic>);
   }
 
   Future<ArtistInfo?> getArtistInfo(String id) async {
+    if (_youtube != null) return _youtube!.getArtistInfo(id);
     try {
       final response = await _request('getArtistInfo2', {'id': id});
       if (response['artistInfo2'] != null) {

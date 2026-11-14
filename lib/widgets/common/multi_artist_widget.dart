@@ -49,7 +49,7 @@ class MultiArtistWidget extends StatelessWidget {
       final navigator = Navigator.of(context);
       onBeforeNavigate?.call();
       navigator.push(MaterialPageRoute(
-        builder: (_) => ArtistScreen(artistId: artist.id),
+        builder: (_) => ArtistScreen(artistId: artist.id, artistName: artist.name),
       ));
     } else if (artist.name.isNotEmpty) {
       _searchAndNavigate(context, artist.name);
@@ -74,7 +74,7 @@ class MultiArtistWidget extends StatelessWidget {
         );
         onBeforeNavigate?.call();
         navigator.push(MaterialPageRoute(
-          builder: (_) => ArtistScreen(artistId: matched.id),
+          builder: (_) => ArtistScreen(artistId: matched.id, artistName: matched.name),
         ));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

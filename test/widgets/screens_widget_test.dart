@@ -6,6 +6,7 @@ import 'package:musly/screens/media/playlists_screen.dart';
 import 'package:musly/screens/settings/settings_screen.dart';
 import 'package:musly/screens/settings/settings_display_tab.dart';
 import 'package:musly/screens/player/now_playing_screen.dart';
+import 'package:musly/screens/detail/artist_screen.dart';
 import 'package:musly/models/lyric_line.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
@@ -135,6 +136,20 @@ void main() {
 
       expect(find.byIcon(Icons.star_outline_rounded), findsNWidgets(5));
       expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
+    });
+
+    testWidgets('ArtistScreen builds with fallback artistName when online fetch fails (Issue #279)', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createTestApp(
+        child: const ArtistScreen(
+          artistId: 'yt-channel-123',
+          artistName: 'Test Artist Name',
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.byType(ArtistScreen), findsOneWidget);
+      expect(find.text('Test Artist Name'), findsWidgets);
     });
   });
 }

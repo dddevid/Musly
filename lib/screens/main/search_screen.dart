@@ -621,7 +621,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   size: _isDesktop ? 160 : 140,
                   onTap: () => NavigationHelper.push(
                     context,
-                    ArtistScreen(artistId: artist.id),
+                    ArtistScreen(artistId: artist.id, artistName: artist.name),
                   ),
                 );
               }).toList(),
@@ -705,11 +705,11 @@ class _SearchScreenState extends State<SearchScreen> {
       imageUrl: coverArt,
       onTap: () => NavigationHelper.push(
         context,
-        ArtistScreen(artistId: artist.id),
+        ArtistScreen(artistId: artist.id, artistName: artist.name),
       ),
       onPlayPressed: () => NavigationHelper.push(
         context,
-        ArtistScreen(artistId: artist.id),
+        ArtistScreen(artistId: artist.id, artistName: artist.name),
       ),
     );
   }

@@ -74,10 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openArtist(BuildContext context, String artistId) {
+  void _openArtist(BuildContext context, String artistId, [String? artistName]) {
     NavigationHelper.push(
       context,
-      ArtistScreen(artistId: artistId),
+      ArtistScreen(artistId: artistId, artistName: artistName),
     );
   }
 
@@ -425,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 coverArt: coverArt,
                                 isRound: true,
                                 size: isDesktop ? 160 : 140,
-                                onTap: () => _openArtist(context, artist.id),
+                                onTap: () => _openArtist(context, artist.id, artist.name),
                               );
                             }).toList(),
                           ),
