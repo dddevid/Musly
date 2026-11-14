@@ -9,6 +9,8 @@ import 'package:musly/providers/player_provider.dart';
 import 'package:musly/providers/library_provider.dart';
 import 'package:musly/services/jukebox_service.dart';
 import 'package:musly/services/subsonic_service.dart';
+import 'package:musly/services/lidarr_service.dart';
+import 'package:musly/services/discovery_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
 import 'package:musly/screens/media/jukebox_screen.dart';
@@ -27,6 +29,22 @@ class SettingsServerTab extends StatefulWidget {
 }
 
 class _SettingsServerTabState extends State<SettingsServerTab> {
+  final LidarrService _lidarr = LidarrService();
+  final DiscoveryService _discovery = DiscoveryService();
+  bool _isTestingLidarr = false;
+  String? _lidarrTestStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _lidarr.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
+    _discovery.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -59,6 +77,8 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
           ),
         ],
         const SizedBox(height: 24),
+        _buildLidarrAndDiscoverySection(context, l10n),
+        const SizedBox(height: 24),
         SettingsSectionCard(
           title: l10n.sectionAccount,
           children: [_buildLogoutButton()],
@@ -66,6 +86,178 @@ class _SettingsServerTabState extends State<SettingsServerTab> {
         const SizedBox(height: 40),
       ],
     );
+  }
+
+  Widget _buildLidarrAndDiscoverySection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return SettingsSectionCard(
+      title: l10n.lidarrDiscoverySection,
+      children: [
+        SettingsSwitchTile(
+          title: l10n.discoverSimilar,
+          subtitle: l10n.discoverSimilarSubtitle,
+          value: _discovery.isEnabled,
+          onChanged: (val) async {
+            await _discovery.setEnabled(val);
+            setState(() {});
+          },
+        ),
+        const Divider(height: 1),
+        SettingsSwitchTile(
+          title: l10n.enableLidarr,
+          subtitle: l10n.lidarrSubtitle,
+          value: _lidarr.isEnabled,
+          onChanged: (val) async {
+            await _lidarr.setEnabled(val);
+            setState(() {});
+          },
+        ),
+        if (_lidarr.isEnabled) ...[
+          const Divider(height: 1),
+          SettingsListTile(
+            gradientColors: const [Color(0xFF007AFF), Color(0xFF5856D6)],
+            icon: Icons.link_rounded,
+            title: l10n.lidarrHost,
+            subtitle: _lidarr.host.isNotEmpty ? _lidarr.host : 'Not set',
+            trailing: const Icon(Icons.edit_rounded, size: 18),
+            onTap: () => _showHostDialog(context, l10n),
+          ),
+          const Divider(height: 1),
+          SettingsListTile(
+            gradientColors: const [Color(0xFFFF9500), Color(0xFFFF5E3A)],
+            icon: Icons.vpn_key_rounded,
+            title: l10n.lidarrApiKey,
+            subtitle: _lidarr.apiKey.isNotEmpty
+                ? '••••••••${_lidarr.apiKey.length > 4 ? _lidarr.apiKey.substring(_lidarr.apiKey.length - 4) : ""}'
+                : 'Not set',
+            trailing: const Icon(Icons.edit_rounded, size: 18),
+            onTap: () => _showApiKeyDialog(context, l10n),
+          ),
+          const Divider(height: 1),
+          SettingsListTile(
+            gradientColors: _lidarrTestStatus != null &&
+                    _lidarrTestStatus!.startsWith('OK')
+                ? const [Color(0xFF30D158), Color(0xFF34C759)]
+                : const [Color(0xFF007AFF), Color(0xFF5856D6)],
+            icon: _isTestingLidarr
+                ? Icons.hourglass_top_rounded
+                : (_lidarrTestStatus != null &&
+                        _lidarrTestStatus!.startsWith('OK')
+                    ? Icons.check_circle_rounded
+                    : Icons.network_check_rounded),
+            title: l10n.testConnection,
+            subtitle: _isTestingLidarr
+                ? l10n.testingConnection
+                : (_lidarrTestStatus ?? 'Check Lidarr server accessibility'),
+            trailing: _isTestingLidarr
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.chevron_right_rounded, size: 20),
+            onTap: _isTestingLidarr ? null : () => _testLidarrConnection(l10n),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _testLidarrConnection(AppLocalizations l10n) async {
+    setState(() {
+      _isTestingLidarr = true;
+      _lidarrTestStatus = null;
+    });
+
+    final res = await _lidarr.testConnection();
+    if (mounted) {
+      setState(() {
+        _isTestingLidarr = false;
+        if (res['success'] == true) {
+          _lidarrTestStatus =
+              l10n.connectionSuccess(res["version"]?.toString() ?? "1.0");
+        } else {
+          _lidarrTestStatus = '${l10n.connectionFailed}: ${res["error"]}';
+        }
+      });
+    }
+  }
+
+  Future<void> _showHostDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final controller = TextEditingController(text: _lidarr.host);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.lidarrHost),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'http://192.168.1.50:8686',
+          ),
+          keyboardType: TextInputType.url,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      await _lidarr.setHost(result);
+      setState(() {
+        _lidarrTestStatus = null;
+      });
+    }
+  }
+
+  Future<void> _showApiKeyDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final controller = TextEditingController(text: _lidarr.apiKey);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.lidarrApiKey),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Enter Lidarr API Key',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      await _lidarr.setApiKey(result);
+      setState(() {
+        _lidarrTestStatus = null;
+      });
+    }
   }
 
   Widget _buildActiveServerCard(

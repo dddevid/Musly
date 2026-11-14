@@ -18,6 +18,8 @@ import '../common/album_artwork.dart';
 import '../common/multi_artist_widget.dart';
 import '../../screens/detail/album_screen.dart';
 import '../../screens/detail/artist_screen.dart';
+import '../discovery/discovery_sheet.dart';
+import '../../services/lidarr_service.dart';
 
 class SongOptionsModal extends StatefulWidget {
   static Future<void> show(
@@ -471,6 +473,37 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                     ),
                     _buildRatingTile(context),
                     _buildDownloadTile(context),
+                    _OptionTile(
+                      icon: Icons.auto_awesome_rounded,
+                      title: l10n?.discoverSimilar ?? 'Music Discovery',
+                      subtitle: l10n?.discoverSimilarSubtitle,
+                      iconColor: const Color(0xFF5856D6),
+                      onTap: () {
+                        Navigator.pop(context);
+                        DiscoverySheet.show(
+                          context,
+                          artistName: widget.song.artist ?? '',
+                          songTitle: widget.song.title,
+                        );
+                      },
+                    ),
+                    if (LidarrService().isEnabled)
+                      _OptionTile(
+                        icon: Icons.cloud_download_rounded,
+                        title: l10n?.sendToLidarr ?? 'Search on Lidarr',
+                        subtitle: widget.song.album != null
+                            ? '${widget.song.album} • ${widget.song.artist ?? ""}'
+                            : (widget.song.artist ?? ''),
+                        iconColor: const Color(0xFF00C853),
+                        onTap: () {
+                          Navigator.pop(context);
+                          DiscoverySheet.show(
+                            context,
+                            artistName: widget.song.artist ?? '',
+                            songTitle: widget.song.album ?? widget.song.title,
+                          );
+                        },
+                      ),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -872,12 +905,14 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
 class _OptionTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
   final Color? iconColor;
 
   const _OptionTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.onTap,
     this.iconColor,
   });
@@ -890,6 +925,7 @@ class _OptionTile extends StatelessWidget {
         color: iconColor ?? Theme.of(context).colorScheme.primary,
       ),
       title: Text(title),
+      subtitle: subtitle != null ? Text(subtitle!) : null,
       onTap: onTap,
     );
   }

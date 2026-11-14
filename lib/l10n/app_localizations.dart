@@ -3874,6 +3874,126 @@ abstract class AppLocalizations {
   /// **'Toggle lyrics translation'**
   String get translateLyricsTooltip;
 
+  /// Section title for Lidarr and music discovery settings
+  ///
+  /// In en, this message translates to:
+  /// **'LIDARR & MUSIC DISCOVERY'**
+  String get lidarrDiscoverySection;
+
+  /// Toggle to enable Lidarr integration
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Lidarr Integration'**
+  String get enableLidarr;
+
+  /// Subtitle for Lidarr integration toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Search, monitor, and dispatch album downloads with your Lidarr instance'**
+  String get lidarrSubtitle;
+
+  /// Label for Lidarr host URL setting
+  ///
+  /// In en, this message translates to:
+  /// **'Lidarr Server URL'**
+  String get lidarrHost;
+
+  /// Label for Lidarr API key setting
+  ///
+  /// In en, this message translates to:
+  /// **'Lidarr API Key'**
+  String get lidarrApiKey;
+
+  /// Label for Lidarr quality profile setting
+  ///
+  /// In en, this message translates to:
+  /// **'Quality Profile'**
+  String get lidarrQualityProfile;
+
+  /// Label for Lidarr root folder setting
+  ///
+  /// In en, this message translates to:
+  /// **'Root Music Folder'**
+  String get lidarrRootFolder;
+
+  /// Button to test server connection
+  ///
+  /// In en, this message translates to:
+  /// **'Test Connection'**
+  String get testConnection;
+
+  /// Status text while testing connection
+  ///
+  /// In en, this message translates to:
+  /// **'Testing connection...'**
+  String get testingConnection;
+
+  /// Success message for server connection
+  ///
+  /// In en, this message translates to:
+  /// **'Connected successfully! (v{version})'**
+  String connectionSuccess(String version);
+
+  /// Error message when connection test fails
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed'**
+  String get connectionFailed;
+
+  /// Label for music discovery and recommendation feature
+  ///
+  /// In en, this message translates to:
+  /// **'Music Discovery'**
+  String get discoverSimilar;
+
+  /// Subtitle for music discovery feature
+  ///
+  /// In en, this message translates to:
+  /// **'Discover similar artists and releases via ListenBrainz'**
+  String get discoverSimilarSubtitle;
+
+  /// Label for searching online music discovery
+  ///
+  /// In en, this message translates to:
+  /// **'Online Discovery'**
+  String get searchOnline;
+
+  /// Button to send an album to Lidarr
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Lidarr'**
+  String get sendToLidarr;
+
+  /// Notification when album is added to Lidarr
+  ///
+  /// In en, this message translates to:
+  /// **'Added to Lidarr! Starting search...'**
+  String get sentToLidarr;
+
+  /// Error when adding album to Lidarr fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add to Lidarr'**
+  String get failedToSendToLidarr;
+
+  /// Header for similar artists section
+  ///
+  /// In en, this message translates to:
+  /// **'Similar Artists'**
+  String get similarArtists;
+
+  /// Header for recommended releases section
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Releases'**
+  String get recommendedReleases;
+
+  /// Empty state when no releases are found
+  ///
+  /// In en, this message translates to:
+  /// **'No releases found'**
+  String get noReleasesFound;
+
   /// Toggle to hide native desktop window titlebar
   ///
   /// In en, this message translates to:

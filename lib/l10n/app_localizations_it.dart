@@ -2062,6 +2062,70 @@ class AppLocalizationsIt extends AppLocalizations {
   String get translateLyricsTooltip => 'Attiva/disattiva traduzione testi';
 
   @override
+  String get lidarrDiscoverySection => 'LIDARR E SCOPERTA MUSICALE';
+
+  @override
+  String get enableLidarr => 'Abilita integrazione Lidarr';
+
+  @override
+  String get lidarrSubtitle =>
+      'Cerca, monitora e avvia il download di album tramite la tua istanza Lidarr';
+
+  @override
+  String get lidarrHost => 'URL Server Lidarr';
+
+  @override
+  String get lidarrApiKey => 'Chiave API Lidarr';
+
+  @override
+  String get lidarrQualityProfile => 'Profilo di qualità';
+
+  @override
+  String get lidarrRootFolder => 'Cartella musicale radice';
+
+  @override
+  String get testConnection => 'Verifica connessione';
+
+  @override
+  String get testingConnection => 'Verifica connessione in corso...';
+
+  @override
+  String connectionSuccess(String version) {
+    return 'Connesso con successo! (v$version)';
+  }
+
+  @override
+  String get connectionFailed => 'Connessione fallita';
+
+  @override
+  String get discoverSimilar => 'Scoperta musicale';
+
+  @override
+  String get discoverSimilarSubtitle =>
+      'Scopri artisti e uscite simili tramite ListenBrainz';
+
+  @override
+  String get searchOnline => 'Scopri online';
+
+  @override
+  String get sendToLidarr => 'Invia a Lidarr';
+
+  @override
+  String get sentToLidarr => 'Aggiunto a Lidarr! Avvio ricerca download...';
+
+  @override
+  String get failedToSendToLidarr => 'Impossibile aggiungere a Lidarr';
+
+  @override
+  String get similarArtists => 'Artisti simili';
+
+  @override
+  String get recommendedReleases => 'Uscite consigliate';
+
+  @override
+  String get noReleasesFound => 'Nessuna uscita trovata';
+
+  @override
   String get hideWindowTitlebar =>
       'Nascondi barra del titolo / decorazioni della finestra';
 

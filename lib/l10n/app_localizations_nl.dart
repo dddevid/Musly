@@ -2050,6 +2050,70 @@ class AppLocalizationsNl extends AppLocalizations {
   String get translateLyricsTooltip => 'Toggle lyrics translation';
 
   @override
+  String get lidarrDiscoverySection => 'LIDARR & MUSIC DISCOVERY';
+
+  @override
+  String get enableLidarr => 'Enable Lidarr Integration';
+
+  @override
+  String get lidarrSubtitle =>
+      'Search, monitor, and dispatch album downloads with your Lidarr instance';
+
+  @override
+  String get lidarrHost => 'Lidarr Server URL';
+
+  @override
+  String get lidarrApiKey => 'Lidarr API Key';
+
+  @override
+  String get lidarrQualityProfile => 'Quality Profile';
+
+  @override
+  String get lidarrRootFolder => 'Root Music Folder';
+
+  @override
+  String get testConnection => 'Test Connection';
+
+  @override
+  String get testingConnection => 'Testing connection...';
+
+  @override
+  String connectionSuccess(String version) {
+    return 'Connected successfully! (v$version)';
+  }
+
+  @override
+  String get connectionFailed => 'Connection failed';
+
+  @override
+  String get discoverSimilar => 'Music Discovery';
+
+  @override
+  String get discoverSimilarSubtitle =>
+      'Discover similar artists and releases via ListenBrainz';
+
+  @override
+  String get searchOnline => 'Online Discovery';
+
+  @override
+  String get sendToLidarr => 'Send to Lidarr';
+
+  @override
+  String get sentToLidarr => 'Added to Lidarr! Starting search...';
+
+  @override
+  String get failedToSendToLidarr => 'Failed to add to Lidarr';
+
+  @override
+  String get similarArtists => 'Similar Artists';
+
+  @override
+  String get recommendedReleases => 'Recommended Releases';
+
+  @override
+  String get noReleasesFound => 'No releases found';
+
+  @override
   String get hideWindowTitlebar => 'Hide Window Titlebar / Decorations';
 
   @override

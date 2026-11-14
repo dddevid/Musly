@@ -2377,6 +2377,91 @@
   "@translateLyricsTooltip": {
     "description": "Tooltip for toggling lyrics translation"
   },
+  "lidarrDiscoverySection": "LIDARR & MUSIC DISCOVERY",
+  "@lidarrDiscoverySection": {
+    "description": "Section title for Lidarr and music discovery settings"
+  },
+  "enableLidarr": "Enable Lidarr Integration",
+  "@enableLidarr": {
+    "description": "Toggle to enable Lidarr integration"
+  },
+  "lidarrSubtitle": "Search, monitor, and dispatch album downloads with your Lidarr instance",
+  "@lidarrSubtitle": {
+    "description": "Subtitle for Lidarr integration toggle"
+  },
+  "lidarrHost": "Lidarr Server URL",
+  "@lidarrHost": {
+    "description": "Label for Lidarr host URL setting"
+  },
+  "lidarrApiKey": "Lidarr API Key",
+  "@lidarrApiKey": {
+    "description": "Label for Lidarr API key setting"
+  },
+  "lidarrQualityProfile": "Quality Profile",
+  "@lidarrQualityProfile": {
+    "description": "Label for Lidarr quality profile setting"
+  },
+  "lidarrRootFolder": "Root Music Folder",
+  "@lidarrRootFolder": {
+    "description": "Label for Lidarr root folder setting"
+  },
+  "testConnection": "Test Connection",
+  "@testConnection": {
+    "description": "Button to test server connection"
+  },
+  "testingConnection": "Testing connection...",
+  "@testingConnection": {
+    "description": "Status text while testing connection"
+  },
+  "connectionSuccess": "Connected successfully! (v{version})",
+  "@connectionSuccess": {
+    "description": "Success message for server connection",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "connectionFailed": "Connection failed",
+  "@connectionFailed": {
+    "description": "Error message when connection test fails"
+  },
+  "discoverSimilar": "Music Discovery",
+  "@discoverSimilar": {
+    "description": "Label for music discovery and recommendation feature"
+  },
+  "discoverSimilarSubtitle": "Discover similar artists and releases via ListenBrainz",
+  "@discoverSimilarSubtitle": {
+    "description": "Subtitle for music discovery feature"
+  },
+  "searchOnline": "Online Discovery",
+  "@searchOnline": {
+    "description": "Label for searching online music discovery"
+  },
+  "sendToLidarr": "Send to Lidarr",
+  "@sendToLidarr": {
+    "description": "Button to send an album to Lidarr"
+  },
+  "sentToLidarr": "Added to Lidarr! Starting search...",
+  "@sentToLidarr": {
+    "description": "Notification when album is added to Lidarr"
+  },
+  "failedToSendToLidarr": "Failed to add to Lidarr",
+  "@failedToSendToLidarr": {
+    "description": "Error when adding album to Lidarr fails"
+  },
+  "similarArtists": "Similar Artists",
+  "@similarArtists": {
+    "description": "Header for similar artists section"
+  },
+  "recommendedReleases": "Recommended Releases",
+  "@recommendedReleases": {
+    "description": "Header for recommended releases section"
+  },
+  "noReleasesFound": "No releases found",
+  "@noReleasesFound": {
+    "description": "Empty state when no releases are found"
+  },
   "hideWindowTitlebar": "Hide Window Titlebar / Decorations",
   "@hideWindowTitlebar": {
     "description": "Toggle to hide native desktop window titlebar"

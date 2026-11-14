@@ -21,6 +21,7 @@ import 'package:musly/screens/media/song_collection_screen.dart';
 import 'package:musly/screens/media/favorites_screen.dart';
 import 'package:musly/screens/media/radio_screen.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
+import 'package:musly/widgets/discovery/discovery_sheet.dart';
 import 'package:musly/l10n/app_localizations.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -245,6 +246,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     _buildFilterChip('Albums', 'Albums', isDark),
                     const SizedBox(width: 8),
                     _buildFilterChip('Playlists', 'Playlists', isDark),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(
+                      'Online',
+                      AppLocalizations.of(context)?.searchOnline ??
+                          'Online Discovery',
+                      isDark,
+                    ),
                   ],
                 ),
               ),
@@ -270,7 +278,13 @@ class _SearchScreenState extends State<SearchScreen> {
             : Colors.black;
 
     return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = key),
+      onTap: () {
+        if (key == 'Online') {
+          DiscoverySheet.show(context, artistName: _searchController.text);
+          return;
+        }
+        setState(() => _selectedFilter = key);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -558,6 +572,31 @@ class _SearchScreenState extends State<SearchScreen> {
                 'Please check your spelling or try another query.',
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                ),
+                icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                label: Text(
+                  AppLocalizations.of(context)?.searchOnline ??
+                      'Discover Online (MusicBrainz & Lidarr)',
+                ),
+                onPressed: () {
+                  DiscoverySheet.show(
+                    context,
+                    artistName: _searchController.text,
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -676,6 +715,31 @@ class _SearchScreenState extends State<SearchScreen> {
               }).toList(),
             ),
           ],
+          const SizedBox(height: 20),
+          Center(
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+              ),
+              icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+              label: Text(
+                AppLocalizations.of(context)?.searchOnline ??
+                    'Discover More Online (MusicBrainz & Lidarr)',
+              ),
+              onPressed: () {
+                DiscoverySheet.show(
+                  context,
+                  artistName: _searchController.text,
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
