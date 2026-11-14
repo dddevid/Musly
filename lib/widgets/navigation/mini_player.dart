@@ -325,7 +325,8 @@ class _MiniPlayerRow extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.radio, color: Colors.white, size: 24),
+              child: const Icon(CupertinoIcons.antenna_radiowaves_left_right,
+                  color: Colors.white, size: 22),
             )
           else
             AlbumArtwork(coverArt: coverArt, size: 44, borderRadius: 6),
@@ -425,11 +426,11 @@ class _MiniPlayerControls extends StatelessWidget {
                                 onPressed: provider.toggleFavorite,
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                    minWidth: 36, minHeight: 36),
+                                    minWidth: 44, minHeight: 44),
                                 icon: Icon(
                                   isStarred
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
+                                      ? CupertinoIcons.heart_fill
+                                      : CupertinoIcons.heart,
                                   size:
                                       ScreenHelper.miniPlayerIconSize(context),
                                 ),
@@ -447,7 +448,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                 onPressed: provider.toggleShuffle,
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                    minWidth: 36, minHeight: 36),
+                                    minWidth: 44, minHeight: 44),
                                 icon: Icon(
                                   CupertinoIcons.shuffle,
                                   size:
@@ -463,11 +464,11 @@ class _MiniPlayerControls extends StatelessWidget {
                           onPressed: provider.togglePlayPause,
                           padding: EdgeInsets.zero,
                           constraints:
-                              const BoxConstraints(minWidth: 40, minHeight: 40),
+                              const BoxConstraints(minWidth: 44, minHeight: 44),
                           icon: Icon(
                             isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
+                                ? CupertinoIcons.pause_fill
+                                : CupertinoIcons.play_fill,
                             size: ScreenHelper.miniPlayerPlayIconSize(context),
                           ),
                           color: color,
@@ -487,7 +488,7 @@ class _MiniPlayerControls extends StatelessWidget {
                                 onPressed: provider.toggleRepeat,
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                    minWidth: 36, minHeight: 36),
+                                    minWidth: 44, minHeight: 44),
                                 icon: Icon(icon,
                                     size: ScreenHelper.miniPlayerIconSize(
                                         context)),
@@ -502,8 +503,8 @@ class _MiniPlayerControls extends StatelessWidget {
                             onPressed: hasNext ? provider.skipNext : null,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
-                                minWidth: 36, minHeight: 36),
-                            icon: Icon(Icons.skip_next_rounded,
+                                minWidth: 44, minHeight: 44),
+                            icon: Icon(CupertinoIcons.forward_fill,
                                 size: ScreenHelper.miniPlayerSkipIconSize(
                                     context)),
                             color: color,
