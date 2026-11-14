@@ -85,6 +85,7 @@ class OfflineService {
   static const String _keyQueuedPlaylists = 'offline_queued_playlists';
   static const String _keyQueuedPlaylistData = 'offline_queued_playlist_data';
   static const String _keyDownloadedPlaylists = 'offline_downloaded_playlists';
+  static const String _keyPlaylistTracks = 'offline_playlist_tracks';
   static const String _keyParallelDownloads = 'parallel_downloads_count';
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
   static const String _keyCustomDownloadPath = 'offline_custom_download_path';
@@ -100,6 +101,10 @@ class OfflineService {
   final ValueNotifier<Set<String>> downloadedPlaylistIds = ValueNotifier({});
 
   Map<String, List<Map<String, dynamic>>> _queuedPlaylistData = {};
+
+  /// The track list of each playlist download, kept after it completes (unlike
+  /// [_queuedPlaylistData]) so the playlist can be listed with no connection.
+  Map<String, List<Map<String, dynamic>>> _playlistTracks = {};
 
   final List<({String playlistId, List<Song> songs, SubsonicService service})>
       _downloadQueue = [];
@@ -186,6 +191,24 @@ class OfflineService {
     final downloadedPlaylistList =
         _prefs?.getStringList(_keyDownloadedPlaylists) ?? [];
     downloadedPlaylistIds.value = downloadedPlaylistList.toSet();
+
+    _playlistTracks = {};
+    final playlistTracksJson = _prefs?.getString(_keyPlaylistTracks);
+    if (playlistTracksJson != null) {
+      try {
+        final raw = json.decode(playlistTracksJson) as Map<String, dynamic>;
+        for (final entry in raw.entries) {
+          // Converted now, one playlist at a time: a lazy cast would throw
+          // later, when the playlist is opened, and one bad entry must not
+          // cost the others.
+          try {
+            _playlistTracks[entry.key] = (entry.value as List)
+                .map((s) => Map<String, dynamic>.from(s as Map))
+                .toList();
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
 
     await _checkAndUnmarkCompleted(merged);
   }
@@ -325,6 +348,43 @@ class OfflineService {
 
     await queuePlaylistDownload(playlistId, songs, subsonicService);
     return true;
+  }
+
+  /// The tracks of a playlist downloaded on this device, as last seen online,
+  /// or null if none are stored.
+  List<Song>? getPlaylistTracks(String playlistId) {
+    final tracks = _playlistTracks[playlistId];
+    if (tracks == null) return null;
+    return tracks.map(Song.fromJson).toList();
+  }
+
+  /// Stores [songs] as the track list of a playlist the user is downloading,
+  /// so the playlist can still be listed with no connection.
+  Future<void> rememberPlaylistTracks(
+      String playlistId, List<Song> songs) async {
+    if (_prefs == null) await initialize();
+    _playlistTracks[playlistId] = songs.map((s) => s.toJson()).toList();
+    await _prefs?.setString(_keyPlaylistTracks, json.encode(_playlistTracks));
+  }
+
+  /// Keeps a downloaded playlist's stored tracks current. [songs] is the
+  /// playlist as just fetched from the server.
+  ///
+  /// Also stores the tracks of a playlist downloaded before track lists were
+  /// kept. Albums share downloadedPlaylistIds and the stored track lists, and
+  /// so do all server profiles, so the id alone may belong to another
+  /// download. One that really is this playlist has some of its tracks on
+  /// disk; that is checked on every refresh, so another server's playlist
+  /// with the same id cannot overwrite a stored one.
+  Future<void> refreshPlaylistTracks(
+      String playlistId, List<Song> songs) async {
+    if (_prefs == null) await initialize();
+    if (!songs.any((s) => isSongDownloaded(s.id))) return;
+    if (!_playlistTracks.containsKey(playlistId) &&
+        !downloadedPlaylistIds.value.contains(playlistId)) {
+      return;
+    }
+    await rememberPlaylistTracks(playlistId, songs);
   }
 
   bool _isFileValid(String songId, File file) {
@@ -719,6 +779,9 @@ class OfflineService {
         _keyDownloadedPlaylists, downloadedPlaylistIds.value.toList());
     await _prefs?.setString(
         _keyQueuedPlaylistData, json.encode(_queuedPlaylistData));
+    if (_playlistTracks.remove(playlistId) != null) {
+      await _prefs?.setString(_keyPlaylistTracks, json.encode(_playlistTracks));
+    }
   }
 
   Future<void> deletePlaylistDownloads(List<Song> songs) async {
@@ -799,8 +862,10 @@ class OfflineService {
       await _prefs?.remove(_keyQueuedPlaylists);
       await _prefs?.remove(_keyQueuedPlaylistData);
       await _prefs?.remove(_keyDownloadedPlaylists);
+      await _prefs?.remove(_keyPlaylistTracks);
       _expectedSizes = {};
       _queuedPlaylistData = {};
+      _playlistTracks = {};
       _downloadQueue.clear();
       queuedPlaylistIds.value = {};
       downloadedPlaylistIds.value = {};

@@ -740,6 +740,17 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
     }
   }
 
+  /// [cached] as read from the playlist cache, with its tracks filled in from
+  /// the offline store when the cache has none. The playlist list endpoint
+  /// returns no tracks, so a downloaded playlist not opened since the cache
+  /// was last written would otherwise show as empty offline.
+  Playlist _withDownloadedTracks(Playlist cached) {
+    if (cached.songs != null && cached.songs!.isNotEmpty) return cached;
+    final tracks = OfflineService().getPlaylistTracks(cached.id);
+    if (tracks == null || tracks.isEmpty) return cached;
+    return cached.copyWith(songs: tracks);
+  }
+
   @override
   Future<Playlist> getPlaylist(String playlistId) async {
     if (_serverOfflineMode) {
@@ -750,7 +761,7 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
           orElse: () => throw Exception('Playlist not available offline'),
         ),
       );
-      return cached;
+      return _withDownloadedTracks(cached);
     }
 
     try {
@@ -770,12 +781,18 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
       _cachedPlaylists = List.from(_playlists);
       _saveCachedData();
       notifyListeners();
+      final songs = playlist.songs;
+      if (songs != null && songs.isNotEmpty) {
+        OfflineService()
+            .refreshPlaylistTracks(playlistId, songs)
+            .catchError((e) => debugPrint('Error storing playlist tracks: $e'));
+      }
       return playlist;
     } catch (e) {
-      final cachedPlaylist = _playlists.firstWhere(
+      final cachedPlaylist = _withDownloadedTracks(_playlists.firstWhere(
         (playlist) => playlist.id == playlistId,
         orElse: () => throw e,
-      );
+      ));
 
       if (cachedPlaylist.songs != null && cachedPlaylist.songs!.isNotEmpty) {
         return cachedPlaylist;
