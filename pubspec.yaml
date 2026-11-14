@@ -25,6 +25,7 @@ dependencies:
   provider: ^6.1.2
   dio: ^5.4.0
   just_audio: ^0.9.46
+  just_audio_platform_interface: ^4.6.0
   just_audio_windows: ^0.2.2
   just_audio_media_kit: ^2.1.0  # Linux (and macOS) audio backend via libmpv
   media_kit_libs_linux: ^1.2.1  # Native libmpv binaries for Linux
@@ -86,8 +87,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
   mockito: ^5.6.3
   mocktail: ^1.0.3
-  # Fake just_audio platform for tests that need a player to really load.
-  just_audio_platform_interface: ^4.6.0
+  http: ^1.2.0
 # For information on the generic Dart part of this file, see the
 # The following section is specific to Flutter packages.
 flutter:

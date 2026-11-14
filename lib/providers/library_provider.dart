@@ -49,19 +49,23 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
 
   SubsonicService get subsonicService => _subsonicService;
   bool get isLocalOnlyMode => _localOnlyMode;
+  @override
   bool get isServerOfflineMode => _serverOfflineMode;
   bool get mergeLocalLibrary => _mergeLocalLibrary;
   List<Album> get recentAlbums => _recentAlbums;
   List<Album> get frequentAlbums => _frequentAlbums;
   List<Album> get newestAlbums => _newestAlbums;
   List<Album> get randomAlbums => _randomAlbums;
+  @override
   List<Playlist> get playlists => _playlists;
   List<Song> get randomSongs => _randomSongs;
   List<String> get genres => _genres;
+  @override
   List<Genre> get richGenres => _richGenres;
   SearchResult? get starred => _starred;
   bool get isLoading => _isLoading;
   bool get isBackgroundSyncing => _isBackgroundSyncing;
+  @override
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
@@ -196,6 +200,7 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
     return _mergedArtistsCache!;
   }
 
+  @override
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -718,6 +723,7 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
     } catch (_) {}
   }
 
+  @override
   Future<List<Album>> getArtistAlbums(String artistId) async {
     if (_localOnlyMode && _localMusicService != null) {
       return _localMusicService!.getAlbumsByArtist(artistId);
@@ -729,6 +735,7 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
     }
   }
 
+  @override
   Future<List<Song>> getAlbumSongs(String albumId) async {
     if (_localOnlyMode && _localMusicService != null) {
       return _localMusicService!.getSongsByAlbum(albumId);
