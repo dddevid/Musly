@@ -165,15 +165,19 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white : const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    color: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : const Color(0xFFE5E5EA),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                   ),
                   child: TextField(
                     controller: _searchController,
@@ -188,30 +192,30 @@ class _SearchScreenState extends State<SearchScreen> {
                       _performSearch(v.trim());
                       _focusNode.unfocus();
                     },
-                    style: const TextStyle(
-                      color: Colors.black87,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                     decoration: InputDecoration(
                       hintText:
                           AppLocalizations.of(context)!.whatDoYouWantToPlay,
                       hintStyle: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: isDark ? Colors.white54 : Colors.black45,
                         fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         CupertinoIcons.search,
-                        color: Colors.black87,
-                        size: 22,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                        size: 20,
                       ),
                       suffixIcon: query.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                   CupertinoIcons.clear_circled_solid,
-                                  color: Colors.black54,
-                                  size: 20),
+                                  color: isDark ? Colors.white54 : Colors.black45,
+                                  size: 18),
                               onPressed: _clearSearch,
                             )
                           : null,
