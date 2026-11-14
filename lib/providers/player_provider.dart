@@ -819,13 +819,19 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
     final targetPitch = _pitchCorrection ? 1.0 : _playbackSpeed;
     _pitch = targetPitch.clamp(0.5, 2.0);
 
-    final success = await _audioHandler.setPlaybackParameters(
-      _playbackSpeed,
-      _pitch,
-    );
-    if (!success) {
-      await _audioPlayer.setSpeed(_playbackSpeed);
+    await _audioPlayer.setSpeed(_playbackSpeed);
+    try {
+      await _audioPlayer.setPitch(_pitch);
+    } catch (e) {
+      debugPrint('[PlayerProvider] setPitch error: $e');
     }
+
+    try {
+      await _audioHandler.setPlaybackParameters(
+        _playbackSpeed,
+        _pitch,
+      );
+    } catch (_) {}
 
     notifyListeners();
   }
@@ -833,13 +839,18 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
   Future<void> setPitch(double pitch) async {
     _pitch = pitch.clamp(0.5, 2.0);
 
-    final success = await _audioHandler.setPlaybackParameters(
-      _playbackSpeed,
-      _pitch,
-    );
-    if (!success) {
-      await _audioPlayer.setSpeed(_playbackSpeed);
+    try {
+      await _audioPlayer.setPitch(_pitch);
+    } catch (e) {
+      debugPrint('[PlayerProvider] setPitch error: $e');
     }
+
+    try {
+      await _audioHandler.setPlaybackParameters(
+        _playbackSpeed,
+        _pitch,
+      );
+    } catch (_) {}
 
     notifyListeners();
   }
@@ -849,13 +860,18 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
     final targetPitch = _pitchCorrection ? 1.0 : _playbackSpeed;
     _pitch = targetPitch.clamp(0.5, 2.0);
 
-    final success = await _audioHandler.setPlaybackParameters(
-      _playbackSpeed,
-      _pitch,
-    );
-    if (!success) {
-      await _audioPlayer.setSpeed(_playbackSpeed);
+    try {
+      await _audioPlayer.setPitch(_pitch);
+    } catch (e) {
+      debugPrint('[PlayerProvider] setPitch error: $e');
     }
+
+    try {
+      await _audioHandler.setPlaybackParameters(
+        _playbackSpeed,
+        _pitch,
+      );
+    } catch (_) {}
 
     notifyListeners();
   }

@@ -149,5 +149,31 @@ void main() {
 
       player.dispose();
     });
+
+    test('should update playback speed and adapt pitch when pitch correction is toggled (#272)', () async {
+      expect(playerProvider.playbackSpeed, 1.0);
+      expect(playerProvider.pitch, 1.0);
+      expect(playerProvider.pitchCorrection, true);
+
+      // Changing speed with pitch correction on preserves pitch at 1.0
+      await playerProvider.setPlaybackSpeed(1.5);
+      expect(playerProvider.playbackSpeed, 1.5);
+      expect(playerProvider.pitch, 1.0);
+
+      // Toggling pitch correction off matches pitch with playback speed
+      await playerProvider.togglePitchCorrection();
+      expect(playerProvider.pitchCorrection, false);
+      expect(playerProvider.pitch, 1.5);
+
+      // Changing speed with pitch correction off updates pitch accordingly
+      await playerProvider.setPlaybackSpeed(0.8);
+      expect(playerProvider.playbackSpeed, 0.8);
+      expect(playerProvider.pitch, 0.8);
+
+      // Toggling pitch correction back on resets pitch to 1.0
+      await playerProvider.togglePitchCorrection();
+      expect(playerProvider.pitchCorrection, true);
+      expect(playerProvider.pitch, 1.0);
+    });
   });
 }
