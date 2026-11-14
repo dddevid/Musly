@@ -176,7 +176,7 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
           Container(
             height: 1,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFF1A1A1A),
+            color: isDark ? const Color(0xFF1A1A1A) : theme.dividerColor,
           ),
           _LibrarySection(
             isCollapsed: _isCollapsed,
@@ -290,9 +290,11 @@ class _NavItemState extends State<_NavItem> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = isDark ? Colors.white : Colors.black;
+    final inactiveColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF636366);
     final textColor = widget.isSelected
         ? activeColor
-        : (_isHovered ? activeColor : const Color(0xFF9CA3AF));
+        : (_isHovered ? activeColor : inactiveColor);
     final bgColor = widget.isSelected
         ? activeColor.withValues(alpha: 0.10)
         : (_isHovered
@@ -385,11 +387,13 @@ class _LibrarySection extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 4, 16, 6),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'YOUR LIBRARY',
                       style: TextStyle(
-                        color: Color(0xFF6B7280),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF9CA3AF)
+                            : const Color(0xFF636366),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.0,
@@ -402,12 +406,14 @@ class _LibrarySection extends StatelessWidget {
                       onTap: () => ImportPlaylistDialog.show(context),
                       borderRadius: BorderRadius.circular(50),
                       hoverColor: Colors.white.withValues(alpha: 0.1),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
                         child: Icon(
                           CupertinoIcons.square_arrow_down,
                           size: 16,
-                          color: Color(0xFF9CA3AF),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF636366),
                         ),
                       ),
                     ),
@@ -419,12 +425,14 @@ class _LibrarySection extends StatelessWidget {
                       onTap: () => _showCreatePlaylist(context),
                       borderRadius: BorderRadius.circular(50),
                       hoverColor: Colors.white.withValues(alpha: 0.1),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
                         child: Icon(
                           Icons.add_rounded,
                           size: 18,
-                          color: Color(0xFF9CA3AF),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF636366),
                         ),
                       ),
                     ),
@@ -648,8 +656,10 @@ class _PlaylistTileState extends State<_PlaylistTile> {
                     if (widget.playlist.songCount != null)
                       Text(
                         '${widget.playlist.songCount} songs',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF636366),
                           fontSize: 11,
                         ),
                         maxLines: 1,
@@ -661,7 +671,9 @@ class _PlaylistTileState extends State<_PlaylistTile> {
               if (_isHovered)
                 IconButton(
                   icon: const Icon(Icons.more_vert, size: 16),
-                  color: const Color(0xFF9CA3AF),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF9CA3AF)
+                      : const Color(0xFF636366),
                   padding: EdgeInsets.zero,
                   constraints:
                       const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -695,7 +707,8 @@ class _DisconnectButtonState extends State<_DisconnectButton> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hoverColor = isDark ? Colors.white : Colors.black;
-    final defaultColor = const Color(0xFF9CA3AF);
+    final defaultColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF636366);
     
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -759,6 +772,10 @@ class _CollapseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconTextColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF636366);
+
     return Tooltip(
       message: isCollapsed ? expandLabel : '',
       waitDuration: const Duration(milliseconds: 400),
@@ -778,15 +795,15 @@ class _CollapseButton extends StatelessWidget {
                 isCollapsed
                     ? Icons.keyboard_double_arrow_right_rounded
                     : Icons.keyboard_double_arrow_left_rounded,
-                color: const Color(0xFF6B7280),
+                color: iconTextColor,
                 size: 18,
               ),
               if (!isCollapsed) ...[
                 const SizedBox(width: 10),
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: TextStyle(
+                    color: iconTextColor,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
