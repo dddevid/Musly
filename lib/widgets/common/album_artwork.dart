@@ -175,9 +175,10 @@ class AlbumArtwork extends StatelessWidget {
 
     // For small thumbnails (e.g. lists, mini player), decode in memory at device resolution
     // rather than decoding a full 600px+ raster, saving ~90% RAM during long list scrolling.
+    // We scale by 1.8x to guarantee that even wide 16:9 images retain sufficient vertical resolution.
     final int? memCacheSize = cacheSize == 0
         ? null
-        : (validSize <= 80 ? baseSize.clamp(64, 200) : cacheSize);
+        : (validSize <= 80 ? (baseSize * 1.8).round().clamp(120, 360) : cacheSize);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final resolvedShadow = _resolvedShadow(
@@ -236,7 +237,6 @@ class AlbumArtwork extends StatelessWidget {
         key: ValueKey(coverArt),
         fit: BoxFit.contain,
         cacheWidth: memCacheSize,
-        cacheHeight: memCacheSize,
         errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
       );
     }
@@ -250,7 +250,6 @@ class AlbumArtwork extends StatelessWidget {
           key: ValueKey('offline_natural_$coverArt'),
           fit: BoxFit.contain,
           cacheWidth: memCacheSize,
-          cacheHeight: memCacheSize,
           errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
         );
       }
@@ -270,9 +269,7 @@ class AlbumArtwork extends StatelessWidget {
           key: ValueKey(cacheKey),
           fit: BoxFit.contain,
           memCacheWidth: memCacheSize,
-          memCacheHeight: memCacheSize,
           maxWidthDiskCache: diskCacheSize,
-          maxHeightDiskCache: diskCacheSize,
           fadeInDuration: Duration.zero,
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,
@@ -304,7 +301,6 @@ class AlbumArtwork extends StatelessWidget {
         key: ValueKey(coverArt),
         fit: BoxFit.cover,
         cacheWidth: memCacheSize,
-        cacheHeight: memCacheSize,
         errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
       );
     }
@@ -318,7 +314,6 @@ class AlbumArtwork extends StatelessWidget {
           key: ValueKey('offline_$coverArt'),
           fit: BoxFit.cover,
           cacheWidth: memCacheSize,
-          cacheHeight: memCacheSize,
           errorBuilder: (ctx, err, stack) => _buildPlaceholder(isDark),
         );
       }
@@ -338,9 +333,7 @@ class AlbumArtwork extends StatelessWidget {
           key: ValueKey(cacheKey),
           fit: BoxFit.cover,
           memCacheWidth: memCacheSize,
-          memCacheHeight: memCacheSize,
           maxWidthDiskCache: diskCacheSize,
-          maxHeightDiskCache: diskCacheSize,
           fadeInDuration: Duration.zero,
           fadeOutDuration: Duration.zero,
           useOldImageOnUrlChange: true,

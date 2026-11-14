@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:musly/models/server_config.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/services/subsonic_service.dart';
@@ -61,6 +62,28 @@ void main() {
       await settings.setArtworkResolution('high');
       await tester.pumpAndSettle();
       expect(find.byType(AlbumArtwork), findsOneWidget);
+    });
+
+    testWidgets('AlbumArtwork omits memCacheHeight to preserve aspect ratio (#283, #277)',
+        (tester) async {
+      final settings = PlayerUiSettingsService();
+      await settings.setArtworkResolution('normal');
+
+      await tester.pumpWidget(
+        createTestApp(
+          child: const AlbumArtwork(
+            coverArt: 'https://example.com/cover.jpg',
+            size: 56,
+          ),
+        ),
+      );
+
+      final cachedImageFinder = find.byType(CachedNetworkImage);
+      expect(cachedImageFinder, findsOneWidget);
+      final CachedNetworkImage cachedImage = tester.widget(cachedImageFinder);
+      expect(cachedImage.memCacheWidth, isNotNull);
+      expect(cachedImage.memCacheHeight, isNull);
+      expect(cachedImage.fit, BoxFit.cover);
     });
 
     test('SubsonicService getCoverArtUrl defaults to 600px', () async {
