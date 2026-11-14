@@ -133,15 +133,17 @@ class SubsonicService {
             final pingUrl = '$lanNormalized/rest/ping?$q';
             final resp =
                 await _dio.get(pingUrl).timeout(const Duration(seconds: 3));
-            if (resp.statusCode == 200) {
+            if (_config == config && resp.statusCode == 200) {
               _activeBaseUrl = lanNormalized;
               debugPrint(
                   '[Subsonic] Successfully connected via LAN: $lanNormalized');
             }
           } catch (_) {
-            debugPrint(
-                '[Subsonic] LAN unavailable, using WAN: ${config.normalizedUrl}');
-            _activeBaseUrl = config.normalizedUrl;
+            if (_config == config) {
+              debugPrint(
+                  '[Subsonic] LAN unavailable, using WAN: ${config.normalizedUrl}');
+              _activeBaseUrl = config.normalizedUrl;
+            }
           }
         }
       }

@@ -23,9 +23,23 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   ServerConfig? _config;
   bool _hasOfflineContent = false;
+  bool _disposed = false;
 
   AuthProvider(this._subsonicService, this._storageService) {
     _loadSavedConfig();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 
   AuthState get state => _state;
@@ -37,6 +51,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _loadSavedConfig() async {
     final config = await _storageService.getServerConfig();
+    if (_config != null && _config != config) return;
     if (config != null && config.isValid) {
       _config = config;
 
@@ -48,30 +63,37 @@ class AuthProvider extends ChangeNotifier {
       }
 
       await _subsonicService.configure(config);
+      if (_config != config) return;
       await _verifyConnection();
     } else {
+      if (_config != null) return;
       _state = AuthState.unauthenticated;
       notifyListeners();
     }
   }
 
   Future<void> _verifyConnection() async {
+    final targetConfig = _config;
     _state = AuthState.authenticating;
     notifyListeners();
 
     PingResult? pingResult;
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (_config != targetConfig) return;
       pingResult = await _subsonicService.pingWithError().timeout(
             const Duration(seconds: 10),
             onTimeout: () =>
                 PingResult(success: false, error: 'Connection timed out'),
           );
+      if (_config != targetConfig) return;
       if (pingResult.success) break;
       if (attempt < maxAttempts) {
         await Future.delayed(const Duration(seconds: 2));
       }
     }
+
+    if (_config != targetConfig) return;
 
     if (pingResult != null && pingResult.success) {
       if (_config != null) {
@@ -89,12 +111,14 @@ class AuthProvider extends ChangeNotifier {
 
       final offlineService = OfflineService();
       await offlineService.initialize();
+      if (_config != targetConfig) return;
       offlineService.flushPendingScrobbles(_subsonicService).catchError(
             (e) => debugPrint('Error flushing pending scrobbles: $e'),
           );
     } else {
       final offlineService = OfflineService();
       await offlineService.initialize();
+      if (_config != targetConfig) return;
       _hasOfflineContent = offlineService.getDownloadedCount() > 0;
       _state = AuthState.serverUnreachable;
     }
