@@ -1,41 +1,47 @@
 import 'package:flutter/material.dart';
-
-import '../theme/app_theme.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 class UiFeedback {
   UiFeedback._();
 
   static void showSuccess(BuildContext context, String message) {
-    _showSnackBar(
-      context,
-      message: message,
-      icon: Icons.check_circle_rounded,
-      backgroundColor: const Color(0xFF1DB954),
-      textColor: Colors.black,
-      iconColor: Colors.black,
-    );
-  }
-
-  static void showError(BuildContext context, String message) {
-    _showSnackBar(
-      context,
-      message: message,
-      icon: Icons.error_rounded,
-      backgroundColor: const Color(0xFFE53935),
-      textColor: Colors.white,
-      iconColor: Colors.white,
-    );
-  }
-
-  static void showInfo(BuildContext context, String message) {
+    HapticFeedback.lightImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _showSnackBar(
       context,
       message: message,
-      icon: Icons.info_outline_rounded,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.grey[900]!,
-      textColor: Colors.white,
-      iconColor: AppTheme.brandGreen,
+      icon: CupertinoIcons.checkmark_circle_fill,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      textColor: isDark ? Colors.white : Colors.black87,
+      iconColor: const Color(0xFF34C759),
+    );
+  }
+
+  static void showError(BuildContext context, String message) {
+    HapticFeedback.heavyImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    _showSnackBar(
+      context,
+      message: message,
+      icon: CupertinoIcons.exclamationmark_circle_fill,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      textColor: isDark ? Colors.white : Colors.black87,
+      iconColor: const Color(0xFFFF3B30),
+    );
+  }
+
+  static void showInfo(BuildContext context, String message) {
+    HapticFeedback.lightImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    _showSnackBar(
+      context,
+      message: message,
+      icon: CupertinoIcons.info_circle_fill,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      textColor: isDark ? Colors.white : Colors.black87,
+      iconColor: primary,
     );
   }
 
@@ -48,6 +54,7 @@ class UiFeedback {
     required Color iconColor,
     Duration duration = const Duration(seconds: 3),
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
@@ -62,7 +69,7 @@ class UiFeedback {
                 style: TextStyle(
                   color: textColor,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -71,9 +78,15 @@ class UiFeedback {
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.08),
+            width: 0.8,
+          ),
         ),
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         duration: duration,
         elevation: 6,
       ),
