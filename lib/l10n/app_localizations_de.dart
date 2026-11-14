@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -3154,4 +3153,27 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get spotverlayDescription =>
       'Wenn du ein schönes und leichtes \"Made for Musly\"-Overlay möchtest, kannst du Spotverlay verwenden (https://github.com/dddevid/Spotverlay)';
+
+  @override
+  String get removeFromQueue => 'Remove from queue';
+
+  @override
+  String get generateMoreSongs => 'Generate more songs';
+
+  @override
+  String get generatingSimilarSongs => 'Finding similar songs…';
+
+  @override
+  String similarSongsAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count similar songs added to queue',
+      one: '1 similar song added to queue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noSimilarSongsFound => 'No similar songs found';
 }

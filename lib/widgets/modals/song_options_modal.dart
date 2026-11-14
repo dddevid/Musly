@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/artist_ref.dart';
 import '../../models/song.dart';
 import '../../utils/navigation_helper.dart';
+import '../../utils/screen_helper.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/library_provider.dart';
 import '../../services/jukebox_service.dart';
@@ -257,7 +258,10 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isApple = ScreenHelper.isApple(context);
+    final l10n = AppLocalizations.of(context);
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final isInQueue = playerProvider.queue.any((s) => s.id == widget.song.id);
 
     return Container(
       decoration: BoxDecoration(
@@ -349,6 +353,22 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                         Navigator.pop(context);
                       },
                     ),
+                    if (isInQueue)
+                      _OptionTile(
+                        icon: isApple
+                            ? CupertinoIcons.minus_circle
+                            : Icons.remove_circle_outline_rounded,
+                        title: l10n?.removeFromQueue ?? 'Remove from queue',
+                        iconColor: const Color(0xFFFF453A),
+                        onTap: () {
+                          final idx = playerProvider.queue
+                              .indexWhere((s) => s.id == widget.song.id);
+                          if (idx != -1) {
+                            playerProvider.removeFromQueue(idx);
+                          }
+                          Navigator.pop(context);
+                        },
+                      ),
                     Builder(
                       builder: (context) {
                         final jukebox = Provider.of<JukeboxService>(

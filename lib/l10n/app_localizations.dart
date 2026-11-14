@@ -88,7 +88,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -111,11 +111,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -145,7 +145,7 @@ abstract class AppLocalizations {
     Locale('tr'),
     Locale('uk'),
     Locale('vi'),
-    Locale('zh'),
+    Locale('zh')
   ];
 
   /// Application name
@@ -5811,6 +5811,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If you want a beautiful and lightweight \"Made for Musly\" overlay, you can use Spotverlay (https://github.com/dddevid/Spotverlay)'**
   String get spotverlayDescription;
+
+  /// Tooltip and action to remove a song from the playback queue
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get removeFromQueue;
+
+  /// Button to generate and queue similar songs when queue is low
+  ///
+  /// In en, this message translates to:
+  /// **'Generate more songs'**
+  String get generateMoreSongs;
+
+  /// Loading state message when searching and adding similar songs
+  ///
+  /// In en, this message translates to:
+  /// **'Finding similar songs…'**
+  String get generatingSimilarSongs;
+
+  /// Notification when similar songs are added to the queue
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 similar song added to queue} other{{count} similar songs added to queue}}'**
+  String similarSongsAdded(int count);
+
+  /// Notification when no similar songs could be found
+  ///
+  /// In en, this message translates to:
+  /// **'No similar songs found'**
+  String get noSimilarSongsFound;
 }
 
 class _AppLocalizationsDelegate
@@ -5824,34 +5854,34 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-    'ar',
-    'az',
-    'bn',
-    'da',
-    'de',
-    'el',
-    'en',
-    'es',
-    'fi',
-    'fr',
-    'ga',
-    'hi',
-    'id',
-    'it',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'ro',
-    'ru',
-    'sq',
-    'sv',
-    'te',
-    'tr',
-    'uk',
-    'vi',
-    'zh',
-  ].contains(locale.languageCode);
+        'ar',
+        'az',
+        'bn',
+        'da',
+        'de',
+        'el',
+        'en',
+        'es',
+        'fi',
+        'fr',
+        'ga',
+        'hi',
+        'id',
+        'it',
+        'nl',
+        'no',
+        'pl',
+        'pt',
+        'ro',
+        'ru',
+        'sq',
+        'sv',
+        'te',
+        'tr',
+        'uk',
+        'vi',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5917,9 +5947,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

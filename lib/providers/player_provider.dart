@@ -2302,7 +2302,13 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
           debugPrint('Error removing from concatenating source: $e');
         }
       }
-      if (index < _currentIndex) {
+      if (_queue.isEmpty) {
+        _currentIndex = -1;
+        _currentSong = null;
+        _audioPlayer.stop();
+        _isPlaying = false;
+        _position = Duration.zero;
+      } else if (index < _currentIndex) {
         _currentIndex--;
       } else if (index == _currentIndex && _queue.isNotEmpty) {
         if (_currentIndex >= _queue.length) {
@@ -2319,6 +2325,29 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       _saveQueueState();
       notifyListeners();
     }
+  }
+
+  bool _isGeneratingSimilarSongs = false;
+  bool get isGeneratingSimilarSongs => _isGeneratingSimilarSongs;
+
+  Future<int> generateSimilarSongs({Song? seedSong}) async {
+    if (_isGeneratingSimilarSongs) return 0;
+    final song = seedSong ?? _currentSong ?? (_queue.isNotEmpty ? _queue.first : null);
+    if (song == null) return 0;
+
+    _isGeneratingSimilarSongs = true;
+    notifyListeners();
+
+    final prevLength = _queue.length;
+    try {
+      await _fetchAndQueueRadioTracks(song, isRefill: true);
+    } catch (e) {
+      debugPrint('[Player] generateSimilarSongs failed: $e');
+    } finally {
+      _isGeneratingSimilarSongs = false;
+      notifyListeners();
+    }
+    return _queue.length - prevLength;
   }
 
   void clearQueue() {

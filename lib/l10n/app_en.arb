@@ -3818,5 +3818,31 @@
   "spotverlayDescription": "If you want a beautiful and lightweight \"Made for Musly\" overlay, you can use Spotverlay (https://github.com/dddevid/Spotverlay)",
   "@spotverlayDescription": {
     "description": "Message recommending Spotverlay desktop overlay for Musly"
+  },
+  "removeFromQueue": "Remove from queue",
+  "@removeFromQueue": {
+    "description": "Tooltip and action to remove a song from the playback queue"
+  },
+  "generateMoreSongs": "Generate more songs",
+  "@generateMoreSongs": {
+    "description": "Button to generate and queue similar songs when queue is low"
+  },
+  "generatingSimilarSongs": "Finding similar songs…",
+  "@generatingSimilarSongs": {
+    "description": "Loading state message when searching and adding similar songs"
+  },
+  "similarSongsAdded": "{count, plural, =1{1 similar song added to queue} other{{count} similar songs added to queue}}",
+  "@similarSongsAdded": {
+    "description": "Notification when similar songs are added to the queue",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "20"
+      }
+    }
+  },
+  "noSimilarSongsFound": "No similar songs found",
+  "@noSimilarSongsFound": {
+    "description": "Notification when no similar songs could be found"
   }
 }

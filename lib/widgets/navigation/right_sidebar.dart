@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:musly/models/song.dart';
 import 'package:musly/providers/player_provider.dart';
 import 'package:musly/widgets/common/album_artwork.dart';
 import 'package:musly/utils/navigation_helper.dart';
+import 'package:musly/utils/screen_helper.dart';
+import 'package:musly/utils/ui_feedback.dart';
+import 'package:musly/l10n/app_localizations.dart';
 
 class RightSidebar extends StatelessWidget {
   final VoidCallback? onClose;
@@ -12,6 +16,8 @@ class RightSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: 320,
       decoration: const BoxDecoration(
@@ -34,9 +40,9 @@ class RightSidebar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Queue',
-                  style: TextStyle(
+                Text(
+                  l10n?.queue ?? 'Queue',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -52,7 +58,7 @@ class RightSidebar extends StatelessWidget {
                     onClose?.call();
                     NavigationHelper.isDesktopQueueOpen.value = false;
                   },
-                  tooltip: 'Close Queue',
+                  tooltip: l10n?.closeQueue ?? 'Close Queue',
                   splashRadius: 18,
                   hoverColor: Colors.white.withValues(alpha: 0.1),
                 ),
@@ -67,19 +73,19 @@ class RightSidebar extends StatelessWidget {
                 final currentIndex = player.currentIndex;
 
                 if (queue.isEmpty && currentSong == null) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.music_note_rounded,
                           size: 32,
                           color: Color(0xFF4B5563),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text(
-                          'Queue is empty',
-                          style: TextStyle(
+                          l10n?.noSongsInQueue ?? 'Queue is empty',
+                          style: const TextStyle(
                             color: Color(0xFF6B7280),
                             fontSize: 14,
                           ),
@@ -181,6 +187,12 @@ class RightSidebar extends StatelessWidget {
                           onRemove: () => player.removeFromQueue(i),
                         ),
                     ],
+                    if (queue.length == 1 ||
+                        (upcomingCount == 0 &&
+                            (currentSong != null || queue.isNotEmpty)))
+                      _DesktopGenerateMoreSongsButton(
+                        seedSong: currentSong ?? queue.first,
+                      ),
                   ],
                 );
               },
@@ -282,7 +294,7 @@ class _UpcomingSongTileState extends State<_UpcomingSongTile> {
                   color: Color(0xFF9CA3AF),
                 ),
                 onPressed: widget.onRemove,
-                tooltip: 'Remove',
+                tooltip: AppLocalizations.of(context)?.removeFromQueue ?? 'Remove from queue',
                 constraints: const BoxConstraints(),
                 padding: const EdgeInsets.all(4),
                 hoverColor: Colors.red.withValues(alpha: 0.2),
@@ -291,6 +303,110 @@ class _UpcomingSongTileState extends State<_UpcomingSongTile> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DesktopGenerateMoreSongsButton extends StatelessWidget {
+  final Song seedSong;
+
+  const _DesktopGenerateMoreSongsButton({required this.seedSong});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isApple = ScreenHelper.isApple(context);
+    final accentColor = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
+
+    return Consumer<PlayerProvider>(
+      builder: (context, player, _) {
+        final isLoading = player.isGeneratingSimilarSongs;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: isLoading
+                  ? null
+                  : () async {
+                      final added = await player.generateSimilarSongs(
+                        seedSong: seedSong,
+                      );
+                      if (context.mounted) {
+                        if (added > 0) {
+                          UiFeedback.showSuccess(
+                            context,
+                            l10n?.similarSongsAdded(added) ??
+                                'Added $added similar songs to queue',
+                          );
+                        } else {
+                          UiFeedback.showInfo(
+                            context,
+                            l10n?.noSimilarSongsFound ??
+                                'No similar songs found',
+                          );
+                        }
+                      }
+                    },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: accentColor.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (isLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: accentColor,
+                          ),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(
+                          isApple
+                              ? CupertinoIcons.sparkles
+                              : Icons.auto_awesome_rounded,
+                          color: accentColor,
+                          size: 16,
+                        ),
+                      ),
+                    Text(
+                      isLoading
+                          ? (l10n?.generatingSimilarSongs ??
+                              'Finding similar songs…')
+                          : (l10n?.generateMoreSongs ?? 'Generate more songs'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
