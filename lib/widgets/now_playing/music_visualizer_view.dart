@@ -192,7 +192,6 @@ class _VisualizerPainter extends CustomPainter {
     paint.shader = gradient.createShader(Rect.fromLTWH(0, 0, w, h));
 
     for (int i = 0; i < _barCount; i++) {
-      final t = i / _barCount;
       double magnitude = isPlaying
           ? (0.25 +
               0.35 * math.sin(phase * 2.5 + i * 0.42).abs() +

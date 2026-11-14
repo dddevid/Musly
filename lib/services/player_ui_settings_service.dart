@@ -16,6 +16,10 @@ class PlayerUiSettingsService {
   static const String _keyLyricsAlignment = 'lyrics_alignment';
   static const String _keyLyricsGlowEffect = 'lyrics_glow_effect';
   static const String _keyLyricsKeepScreenOn = 'lyrics_keep_screen_on';
+  static const String _keyLyricsTranslationEnabled =
+      'lyrics_translation_enabled';
+  static const String _keyLyricsTranslationLanguage =
+      'lyrics_translation_language';
   static const String _keyShowLiveLyricUnderArtwork =
       'player_show_live_lyric_under_artwork';
 
@@ -53,6 +57,10 @@ class PlayerUiSettingsService {
   final ValueNotifier<String> lyricsAlignmentNotifier = ValueNotifier('left');
   final ValueNotifier<bool> lyricsGlowEffectNotifier = ValueNotifier(true);
   final ValueNotifier<bool> lyricsKeepScreenOnNotifier = ValueNotifier(true);
+  final ValueNotifier<bool> lyricsTranslationEnabledNotifier =
+      ValueNotifier(false);
+  final ValueNotifier<String> lyricsTranslationLanguageNotifier =
+      ValueNotifier('en');
   final ValueNotifier<bool> showLiveLyricUnderArtworkNotifier =
       ValueNotifier(false);
   final ValueNotifier<bool> showFavoritePlaylistsOnHomeNotifier =
@@ -80,6 +88,8 @@ class PlayerUiSettingsService {
     lyricsAlignmentNotifier.value = getLyricsAlignment();
     lyricsGlowEffectNotifier.value = getLyricsGlowEffect();
     lyricsKeepScreenOnNotifier.value = getLyricsKeepScreenOn();
+    lyricsTranslationEnabledNotifier.value = getLyricsTranslationEnabled();
+    lyricsTranslationLanguageNotifier.value = getLyricsTranslationLanguage();
     showLiveLyricUnderArtworkNotifier.value = getShowLiveLyricUnderArtwork();
     showFavoritePlaylistsOnHomeNotifier.value =
         getShowFavoritePlaylistsOnHome();
@@ -298,6 +308,26 @@ class PlayerUiSettingsService {
     return _prefs?.getString(_keyVisualizerColorMode) ?? 'artwork';
   }
 
+  Future<void> setLyricsTranslationEnabled(bool enabled) async {
+    await initialize();
+    await _prefs!.setBool(_keyLyricsTranslationEnabled, enabled);
+    lyricsTranslationEnabledNotifier.value = enabled;
+  }
+
+  bool getLyricsTranslationEnabled() {
+    return _prefs?.getBool(_keyLyricsTranslationEnabled) ?? false;
+  }
+
+  Future<void> setLyricsTranslationLanguage(String lang) async {
+    await initialize();
+    await _prefs!.setString(_keyLyricsTranslationLanguage, lang);
+    lyricsTranslationLanguageNotifier.value = lang;
+  }
+
+  String getLyricsTranslationLanguage() {
+    return _prefs?.getString(_keyLyricsTranslationLanguage) ?? 'en';
+  }
+
   void dispose() {
     showStarRatingsNotifier.dispose();
     showMiniPlayerHeartNotifier.dispose();
@@ -314,5 +344,7 @@ class PlayerUiSettingsService {
     lyricsAlignmentNotifier.dispose();
     lyricsGlowEffectNotifier.dispose();
     lyricsKeepScreenOnNotifier.dispose();
+    lyricsTranslationEnabledNotifier.dispose();
+    lyricsTranslationLanguageNotifier.dispose();
   }
 }

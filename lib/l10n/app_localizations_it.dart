@@ -2046,6 +2046,22 @@ class AppLocalizationsIt extends AppLocalizations {
       'Evita che lo schermo si spenga durante la visualizzazione dei testi';
 
   @override
+  String get lyricsTranslation => 'Traduci testi';
+
+  @override
+  String get lyricsTranslationSubtitle =>
+      'Mostra la traduzione riga per riga sotto il testo originale';
+
+  @override
+  String get lyricsTranslationLanguage => 'Lingua di traduzione';
+
+  @override
+  String get translatingLyrics => 'Traduzione del testo in corso...';
+
+  @override
+  String get translateLyricsTooltip => 'Attiva/disattiva traduzione testi';
+
+  @override
   String get hideWindowTitlebar =>
       'Nascondi barra del titolo / decorazioni della finestra';
 

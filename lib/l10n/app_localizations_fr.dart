@@ -2055,6 +2055,22 @@ class AppLocalizationsFr extends AppLocalizations {
       'Prevent the screen from turning off while reading lyrics';
 
   @override
+  String get lyricsTranslation => 'Translate Lyrics';
+
+  @override
+  String get lyricsTranslationSubtitle =>
+      'Display line-by-line translation below original lyrics';
+
+  @override
+  String get lyricsTranslationLanguage => 'Translation Language';
+
+  @override
+  String get translatingLyrics => 'Translating lyrics...';
+
+  @override
+  String get translateLyricsTooltip => 'Toggle lyrics translation';
+
+  @override
   String get hideWindowTitlebar => 'Hide Window Titlebar / Decorations';
 
   @override

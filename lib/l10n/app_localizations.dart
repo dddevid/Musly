@@ -3844,6 +3844,36 @@ abstract class AppLocalizations {
   /// **'Prevent the screen from turning off while reading lyrics'**
   String get lyricsKeepScreenOnSubtitle;
 
+  /// Toggle for inline translated lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Translate Lyrics'**
+  String get lyricsTranslation;
+
+  /// Subtitle for inline translated lyrics toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Display line-by-line translation below original lyrics'**
+  String get lyricsTranslationSubtitle;
+
+  /// Target language for lyrics translation
+  ///
+  /// In en, this message translates to:
+  /// **'Translation Language'**
+  String get lyricsTranslationLanguage;
+
+  /// Status text while translating lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Translating lyrics...'**
+  String get translatingLyrics;
+
+  /// Tooltip for toggling lyrics translation
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle lyrics translation'**
+  String get translateLyricsTooltip;
+
   /// Toggle to hide native desktop window titlebar
   ///
   /// In en, this message translates to:

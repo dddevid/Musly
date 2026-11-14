@@ -48,28 +48,52 @@ class LyricsLineWidget extends StatelessWidget {
 
     switch (state) {
       case LyricLineState.past:
+        final translationWidget = _buildTranslation(
+          textAlign,
+          Colors.white.withValues(alpha: 0.25),
+        );
         return SizedBox(
           key: const ValueKey('past'),
           width: double.infinity,
-          child: Text(
-            line.text,
-            textAlign: textAlign,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white.withValues(alpha: 0.35),
-            ),
+          child: Column(
+            crossAxisAlignment:
+                isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                line.text,
+                textAlign: textAlign,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white.withValues(alpha: 0.35),
+                ),
+              ),
+              if (translationWidget != null) translationWidget,
+            ],
           ),
         );
       case LyricLineState.future:
-        final textWidget = Text(
-          line.text,
-          textAlign: textAlign,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white.withValues(alpha: 0.30),
-          ),
+        final translationWidget = _buildTranslation(
+          textAlign,
+          Colors.white.withValues(alpha: 0.22),
+        );
+        final textWidget = Column(
+          crossAxisAlignment:
+              isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              line.text,
+              textAlign: textAlign,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withValues(alpha: 0.30),
+              ),
+            ),
+            if (translationWidget != null) translationWidget,
+          ],
         );
 
         if (!blurUnfocused) {
@@ -94,11 +118,29 @@ class LyricsLineWidget extends StatelessWidget {
             ? _buildWordByWord(textAlign, glowEffect)
             : _buildLineLevel(textAlign, glowEffect);
 
+        final translationWidget = _buildTranslation(
+          textAlign,
+          Colors.white.withValues(alpha: 0.75),
+        );
+
+        final fullCurrentChild = translationWidget != null
+            ? Column(
+                crossAxisAlignment: isCentered
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  currentChild,
+                  translationWidget,
+                ],
+              )
+            : currentChild;
+
         return SizedBox(
           key: const ValueKey('current'),
           width: double.infinity,
           child: reduceMotion
-              ? currentChild
+              ? fullCurrentChild
               : TweenAnimationBuilder<double>(
                   tween: Tween(begin: 1.0, end: 1.05),
                   duration: const Duration(milliseconds: 220),
@@ -110,10 +152,26 @@ class LyricsLineWidget extends StatelessWidget {
                       child: child,
                     );
                   },
-                  child: currentChild,
+                  child: fullCurrentChild,
                 ),
         );
     }
+  }
+
+  Widget? _buildTranslation(TextAlign textAlign, Color color) {
+    if (!line.hasTranslation) return null;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Text(
+        line.translation!,
+        textAlign: textAlign,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: color,
+        ),
+      ),
+    );
   }
 
   Widget _buildLineLevel(TextAlign textAlign, bool glowEffect) {

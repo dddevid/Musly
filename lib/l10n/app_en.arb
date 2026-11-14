@@ -2357,6 +2357,26 @@
   "@lyricsKeepScreenOnSubtitle": {
     "description": "Subtitle for keep screen on while viewing lyrics toggle"
   },
+  "lyricsTranslation": "Translate Lyrics",
+  "@lyricsTranslation": {
+    "description": "Toggle for inline translated lyrics"
+  },
+  "lyricsTranslationSubtitle": "Display line-by-line translation below original lyrics",
+  "@lyricsTranslationSubtitle": {
+    "description": "Subtitle for inline translated lyrics toggle"
+  },
+  "lyricsTranslationLanguage": "Translation Language",
+  "@lyricsTranslationLanguage": {
+    "description": "Target language for lyrics translation"
+  },
+  "translatingLyrics": "Translating lyrics...",
+  "@translatingLyrics": {
+    "description": "Status text while translating lyrics"
+  },
+  "translateLyricsTooltip": "Toggle lyrics translation",
+  "@translateLyricsTooltip": {
+    "description": "Tooltip for toggling lyrics translation"
+  },
   "hideWindowTitlebar": "Hide Window Titlebar / Decorations",
   "@hideWindowTitlebar": {
     "description": "Toggle to hide native desktop window titlebar"

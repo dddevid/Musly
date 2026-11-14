@@ -22,6 +22,7 @@ import 'package:musly/widgets/now_playing/add_to_menu.dart';
 import 'package:musly/widgets/common/multi_artist_widget.dart';
 import 'package:musly/services/player_ui_settings_service.dart';
 import 'package:musly/services/wakelock_service.dart';
+import 'package:musly/services/lyrics_translation_service.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:musly/services/tv_detection_service.dart';
@@ -61,6 +62,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   Song? _lastSong;
   ImageProvider? _currentImageProvider;
   bool _showVisualizer = false;
+  bool _isTranslatingLyrics = false;
 
   @override
   void initState() {
@@ -69,6 +71,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     PlayerUiSettingsService()
         .lyricsKeepScreenOnNotifier
         .addListener(_syncLyricsWakelock);
+    PlayerUiSettingsService()
+        .lyricsTranslationEnabledNotifier
+        .addListener(_onTranslationSettingsChanged);
+    PlayerUiSettingsService()
+        .lyricsTranslationLanguageNotifier
+        .addListener(_onTranslationSettingsChanged);
     _pageController = PageController(initialPage: 0);
     _fetchedLyrics = widget.lyrics;
     _currentImageProvider = widget.image;
@@ -160,6 +168,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   _fetchedLyrics = parsedLines;
                   _isLoadingLyrics = false;
                 });
+                _maybeTranslateLyrics();
               }
               return;
             }
@@ -174,6 +183,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               _fetchedLyrics = LrcParser.parseLrc(lrcText);
               _isLoadingLyrics = false;
             });
+            _maybeTranslateLyrics();
           }
           return;
         }
@@ -191,6 +201,64 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
     if (mounted) {
       setState(() => _isLoadingLyrics = false);
+    }
+  }
+
+  void _onTranslationSettingsChanged() {
+    final settings = PlayerUiSettingsService();
+    if (settings.getLyricsTranslationEnabled()) {
+      _translateCurrentLyrics();
+    } else {
+      for (final line in _fetchedLyrics) {
+        line.translation = null;
+      }
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _maybeTranslateLyrics() async {
+    final settings = PlayerUiSettingsService();
+    if (settings.getLyricsTranslationEnabled()) {
+      await _translateCurrentLyrics();
+    }
+  }
+
+  Future<void> _toggleLyricsTranslation() async {
+    final settings = PlayerUiSettingsService();
+    final current = settings.getLyricsTranslationEnabled();
+    final next = !current;
+    await settings.setLyricsTranslationEnabled(next);
+    if (next) {
+      await _translateCurrentLyrics();
+    } else {
+      for (final line in _fetchedLyrics) {
+        line.translation = null;
+      }
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _translateCurrentLyrics() async {
+    if (_fetchedLyrics.isEmpty) return;
+    final settings = PlayerUiSettingsService();
+    final lang = settings.getLyricsTranslationLanguage();
+    if (mounted) setState(() => _isTranslatingLyrics = true);
+    try {
+      final translated = await LyricsTranslationService().translateLyrics(
+        _fetchedLyrics,
+        targetLanguage: lang,
+      );
+      if (mounted) {
+        setState(() {
+          _fetchedLyrics = List.from(translated);
+        });
+      }
+    } catch (e) {
+      debugPrint('[NowPlaying] Translation error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isTranslatingLyrics = false);
+      }
     }
   }
 
@@ -234,6 +302,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     PlayerUiSettingsService()
         .lyricsKeepScreenOnNotifier
         .removeListener(_syncLyricsWakelock);
+    PlayerUiSettingsService()
+        .lyricsTranslationEnabledNotifier
+        .removeListener(_onTranslationSettingsChanged);
+    PlayerUiSettingsService()
+        .lyricsTranslationLanguageNotifier
+        .removeListener(_onTranslationSettingsChanged);
     WakelockService().disable('lyrics_view');
     _pageController.dispose();
     super.dispose();
@@ -332,6 +406,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                                               listen: false)
                                           .seek(duration);
                                     },
+                                    onToggleTranslation:
+                                        _toggleLyricsTranslation,
+                                    isTranslating: _isTranslatingLyrics,
                                   );
                                 },
                               )

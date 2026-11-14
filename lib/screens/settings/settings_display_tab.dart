@@ -42,6 +42,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   String _lyricsAlignment = 'left';
   bool _lyricsGlowEffect = true;
   bool _lyricsKeepScreenOn = true;
+  bool _lyricsTranslationEnabled = false;
+  String _lyricsTranslationLanguage = 'en';
   bool _hideWindowTitlebar = false;
   String _artworkResolution = 'normal';
   String _layoutMode = 'auto';
@@ -85,6 +87,10 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _lyricsAlignment = _playerUiSettings.getLyricsAlignment();
       _lyricsGlowEffect = _playerUiSettings.getLyricsGlowEffect();
       _lyricsKeepScreenOn = _playerUiSettings.getLyricsKeepScreenOn();
+      _lyricsTranslationEnabled =
+          _playerUiSettings.getLyricsTranslationEnabled();
+      _lyricsTranslationLanguage =
+          _playerUiSettings.getLyricsTranslationLanguage();
       _artworkResolution = _playerUiSettings.getArtworkResolution();
       _layoutMode = _playerUiSettings.getLayoutMode();
       _visualizerEnabled = _playerUiSettings.getVisualizerEnabled();
@@ -195,6 +201,12 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             _buildLyricsGlowToggle(),
             const SettingsDivider(),
             _buildLyricsKeepScreenOnToggle(),
+            const SettingsDivider(),
+            _buildLyricsTranslationToggle(),
+            if (_lyricsTranslationEnabled) ...[
+              const SettingsDivider(),
+              _buildLyricsTranslationLanguageSelector(),
+            ],
           ],
         ),
         const SizedBox(height: 24),
@@ -1064,6 +1076,110 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         setState(() => _lyricsKeepScreenOn = val);
       },
     );
+  }
+
+  Widget _buildLyricsTranslationToggle() {
+    final l10n = AppLocalizations.of(context)!;
+    return SwitchListTile.adaptive(
+      title: Text(l10n.lyricsTranslation),
+      subtitle: Text(l10n.lyricsTranslationSubtitle),
+      value: _lyricsTranslationEnabled,
+      onChanged: (val) async {
+        await _playerUiSettings.setLyricsTranslationEnabled(val);
+        setState(() => _lyricsTranslationEnabled = val);
+      },
+    );
+  }
+
+  Widget _buildLyricsTranslationLanguageSelector() {
+    final l10n = AppLocalizations.of(context)!;
+    const languages = [
+      ('en', 'English'),
+      ('it', 'Italiano'),
+      ('es', 'Español'),
+      ('fr', 'Français'),
+      ('de', 'Deutsch'),
+      ('ja', '日本語 (Japanese)'),
+      ('ko', '한국어 (Korean)'),
+      ('zh', '中文 (Chinese)'),
+      ('pt', 'Português'),
+      ('ru', 'Русский (Russian)'),
+      ('ar', 'العربية (Arabic)'),
+      ('hi', 'हिन्दी (Hindi)'),
+    ];
+    final currentLabel = languages
+        .firstWhere(
+          (entry) => entry.$1 == _lyricsTranslationLanguage,
+          orElse: () => (_lyricsTranslationLanguage, _lyricsTranslationLanguage),
+        )
+        .$2;
+
+    return SettingsListTile(
+      gradientColors: const [Color(0xFF30D158), Color(0xFF34C759)],
+      icon: Icons.translate_rounded,
+      title: l10n.lyricsTranslationLanguage,
+      subtitle: currentLabel,
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+      onTap: _showLyricsTranslationLanguageDialog,
+    );
+  }
+
+  Future<void> _showLyricsTranslationLanguageDialog() async {
+    final l10n = AppLocalizations.of(context);
+    const languages = [
+      ('en', 'English'),
+      ('it', 'Italiano'),
+      ('es', 'Español'),
+      ('fr', 'Français'),
+      ('de', 'Deutsch'),
+      ('ja', '日本語 (Japanese)'),
+      ('ko', '한국어 (Korean)'),
+      ('zh', '中文 (Chinese)'),
+      ('pt', 'Português'),
+      ('ru', 'Русский (Russian)'),
+      ('ar', 'العربية (Arabic)'),
+      ('hi', 'हिन्दी (Hindi)'),
+    ];
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n?.lyricsTranslationLanguage ?? 'Translation Language'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: languages.length,
+            itemBuilder: (context, index) {
+              final entry = languages[index];
+              final isSelected = entry.$1 == _lyricsTranslationLanguage;
+              return ListTile(
+                title: Text(entry.$2),
+                leading: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color:
+                      isSelected ? Theme.of(context).colorScheme.primary : null,
+                ),
+                onTap: () => Navigator.pop(context, entry.$1),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n?.cancel ?? 'Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != _lyricsTranslationLanguage) {
+      await _playerUiSettings.setLyricsTranslationLanguage(selected);
+      setState(() => _lyricsTranslationLanguage = selected);
+    }
   }
 
   Widget _buildWindowTitlebarToggle() {
