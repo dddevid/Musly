@@ -86,29 +86,39 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
     final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF282828),
-        title: const Text('Disconnect', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to disconnect from this server?',
-          style: TextStyle(color: Color(0xFFB3B3B3)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel,
-                style: const TextStyle(color: Color(0xFFB3B3B3))),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF282828) : Colors.white,
+          title: Text('Disconnect',
+              style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.bold)),
+          content: Text(
+            'Are you sure you want to disconnect from this server?',
+            style: TextStyle(
+                color: isDark ? const Color(0xFFB3B3B3) : const Color(0xFF636366)),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFA243C),
-              foregroundColor: Colors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel,
+                  style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFFB3B3B3)
+                          : const Color(0xFF636366))),
             ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Disconnect'),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFA243C),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Disconnect'),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm == true && mounted) {
@@ -199,6 +209,11 @@ class _DesktopNavigationSidebarState extends State<DesktopNavigationSidebar> {
                 onTap: _navigateToRadio,
               );
             },
+          ),
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: isDark ? const Color(0xFF1A1A1A) : theme.dividerColor,
           ),
           _DisconnectButton(
             isCollapsed: _isCollapsed,
