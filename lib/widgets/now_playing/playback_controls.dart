@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide RepeatMode;
+import 'package:flutter/cupertino.dart' hide RepeatMode;
 import 'package:flutter/services.dart';
 import '../../providers/player_provider.dart' show RepeatMode;
 
@@ -41,8 +42,8 @@ class PlaybackControls extends StatelessWidget {
     final mode = _effectiveRepeatMode;
     final isRepeatActive = mode != RepeatMode.off;
     final IconData repeatIcon = mode == RepeatMode.one
-        ? Icons.repeat_one_rounded
-        : Icons.repeat_rounded;
+        ? CupertinoIcons.repeat_1
+        : CupertinoIcons.repeat;
 
     final themePrimary = Theme.of(context).colorScheme.primary;
     final effectiveActiveColor = (accentColor == Colors.white ||
@@ -54,14 +55,14 @@ class PlaybackControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _SecondaryControlButton(
-          icon: Icons.shuffle_rounded,
+          icon: CupertinoIcons.shuffle,
           isActive: isShuffleEnabled,
           activeColor: effectiveActiveColor,
           onTap: onShuffleToggle,
         ),
         _MainControlButton(
-          icon: Icons.skip_previous_rounded,
-          size: 48,
+          icon: CupertinoIcons.backward_fill,
+          size: 40,
           onTap: onPrevious,
         ),
         _PlayPauseButton(
@@ -70,8 +71,8 @@ class PlaybackControls extends StatelessWidget {
           size: 72,
         ),
         _MainControlButton(
-          icon: Icons.skip_next_rounded,
-          size: 48,
+          icon: CupertinoIcons.forward_fill,
+          size: 40,
           onTap: onNext,
         ),
         _SecondaryControlButton(
@@ -127,8 +128,10 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
             color: Colors.white.withValues(alpha: 0.2),
           ),
           child: Icon(
-            widget.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            size: widget.size * 0.6,
+            widget.isPlaying
+                ? CupertinoIcons.pause_fill
+                : CupertinoIcons.play_fill,
+            size: widget.size * 0.5,
             color: Colors.white,
           ),
         ),

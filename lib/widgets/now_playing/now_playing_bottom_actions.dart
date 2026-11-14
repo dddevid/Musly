@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:musly/widgets/navigation/cast_button.dart';
 
@@ -30,13 +31,13 @@ class NowPlayingBottomActions extends StatelessWidget {
             iconColor: Colors.white.withValues(alpha: 0.5),
           ),
           _ActionButton(
-            icon: Icons.chat_bubble_outline_rounded,
+            icon: CupertinoIcons.quote_bubble,
             isActive: isLyricsActive,
             activeColor: accentColor,
             onTap: onLyricsTap,
           ),
           _ActionButton(
-            icon: Icons.queue_music_rounded,
+            icon: CupertinoIcons.list_bullet,
             isActive: isQueueActive,
             activeColor: accentColor,
             onTap: onQueueTap,
