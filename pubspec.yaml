@@ -86,6 +86,8 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
   mockito: ^5.6.3
   mocktail: ^1.0.3
+  # Fake just_audio platform for tests that need a player to really load.
+  just_audio_platform_interface: ^4.6.0
 # For information on the generic Dart part of this file, see the
 # The following section is specific to Flutter packages.
 flutter:

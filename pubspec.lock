@@ -718,7 +718,7 @@ packages:
     source: hosted
     version: "2.1.0"
   just_audio_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: just_audio_platform_interface
       sha256: "2532c8d6702528824445921c5ff10548b518b13f808c2e34c2fd54793b999a6a"

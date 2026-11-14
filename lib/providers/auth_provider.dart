@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -24,6 +25,7 @@ class AuthProvider extends ChangeNotifier {
   ServerConfig? _config;
   bool _hasOfflineContent = false;
   bool _disposed = false;
+  final _savedConfigLoaded = Completer<void>();
 
   AuthProvider(this._subsonicService, this._storageService) {
     _loadSavedConfig();
@@ -49,7 +51,28 @@ class AuthProvider extends ChangeNotifier {
   bool get hasOfflineContent => _hasOfflineContent;
   bool get isLocalOnlyMode => _config?.serverType == 'local';
 
+  /// Completes once the server saved by the previous session, if any, has been
+  /// handed to [SubsonicService], or once it is known there is none.
+  ///
+  /// Includes SubsonicService's LAN check, so a restored track streams from
+  /// the same address as any other: up to 3 s when the saved LAN address
+  /// doesn't answer. Doesn't wait for the server ping, which can take 30 s.
+  /// PlayerProvider holds back media commands that start the app until then.
+  Future<void> get savedConfigLoaded => _savedConfigLoaded.future;
+
+  void _completeSavedConfigLoaded() {
+    if (!_savedConfigLoaded.isCompleted) _savedConfigLoaded.complete();
+  }
+
   Future<void> _loadSavedConfig() async {
+    try {
+      await _restoreSavedConfig();
+    } finally {
+      _completeSavedConfigLoaded();
+    }
+  }
+
+  Future<void> _restoreSavedConfig() async {
     final config = await _storageService.getServerConfig();
     if (_config != null && _config != config) return;
     if (config != null && config.isValid) {
@@ -63,6 +86,7 @@ class AuthProvider extends ChangeNotifier {
       }
 
       await _subsonicService.configure(config);
+      _completeSavedConfigLoaded();
       if (_config != config) return;
       await _verifyConnection();
     } else {
