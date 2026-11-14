@@ -509,62 +509,67 @@ class _MainScreenState extends State<MainScreen> {
             final item = items[idx];
             final isSelected = _currentIndex == idx;
             return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  final navigatorState =
-                      NavigationHelper.appNavigatorKey.currentState;
-                  navigatorState?.popUntil((route) => route.isFirst);
+              child: Semantics(
+                label: item.label,
+                selected: isSelected,
+                button: true,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    final navigatorState =
+                        NavigationHelper.appNavigatorKey.currentState;
+                    navigatorState?.popUntil((route) => route.isFirst);
 
-                  if (idx == 2) {
-                    final now = DateTime.now();
-                    if (now.difference(_lastSearchTap).inSeconds > 3) {
+                    if (idx == 2) {
+                      final now = DateTime.now();
+                      if (now.difference(_lastSearchTap).inSeconds > 3) {
+                        _searchTapCount = 0;
+                      }
+                      _searchTapCount++;
+                      _lastSearchTap = now;
+                      if (_searchTapCount >= 11) {
+                        _searchTapCount = 0;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const FantasyScreen(),
+                          ),
+                        );
+                        return;
+                      }
+                    } else {
                       _searchTapCount = 0;
                     }
-                    _searchTapCount++;
-                    _lastSearchTap = now;
-                    if (_searchTapCount >= 11) {
-                      _searchTapCount = 0;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const FantasyScreen(),
+
+                    setState(() => _currentIndex = idx);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 150),
+                        child: Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          key: ValueKey(isSelected),
+                          color: isSelected
+                              ? accent
+                              : (isDark ? Colors.white54 : Colors.black38),
+                          size: 22,
                         ),
-                      );
-                      return;
-                    }
-                  } else {
-                    _searchTapCount = 0;
-                  }
-
-                  setState(() => _currentIndex = idx);
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        key: ValueKey(isSelected),
-                        color: isSelected
-                            ? accent
-                            : (isDark ? Colors.white54 : Colors.black38),
-                        size: 22,
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                        color: isSelected
-                            ? accent
-                            : (isDark ? Colors.white54 : Colors.black38),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                          color: isSelected
+                              ? accent
+                              : (isDark ? Colors.white60 : Colors.black54),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
