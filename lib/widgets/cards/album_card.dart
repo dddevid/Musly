@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:musly/models/album.dart';
@@ -34,7 +35,11 @@ class _AlbumCardState extends State<AlbumCard> {
 
     return RepaintBoundary(
       child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
+        onEnter: (event) {
+          if (event.kind == PointerDeviceKind.mouse) {
+            setState(() => _isHovered = true);
+          }
+        },
         onExit: (_) => setState(() => _isHovered = false),
         child: GestureDetector(
           onTap: widget.onTap,
@@ -45,10 +50,11 @@ class _AlbumCardState extends State<AlbumCard> {
               children: [
                 AnimatedScale(
                   scale: _isHovered ? 1.04 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 180),
+                  curve: const Cubic(0.23, 1, 0.32, 1),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 180),
+                    curve: const Cubic(0.23, 1, 0.32, 1),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: _isHovered
@@ -68,12 +74,25 @@ class _AlbumCardState extends State<AlbumCard> {
                           size: widget.size,
                           borderRadius: 8,
                         ),
-                        if (_isHovered && widget.onPlayPressed != null)
+                        if (widget.onPlayPressed != null)
                           Positioned(
                             bottom: 8,
                             right: 8,
-                            child: _PlayButton(
-                              onPressed: widget.onPlayPressed!,
+                            child: IgnorePointer(
+                              ignoring: !_isHovered,
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 180),
+                                curve: const Cubic(0.23, 1, 0.32, 1),
+                                opacity: _isHovered ? 1.0 : 0.0,
+                                child: AnimatedScale(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: const Cubic(0.23, 1, 0.32, 1),
+                                  scale: _isHovered ? 1.0 : 0.95,
+                                  child: _PlayButton(
+                                    onPressed: widget.onPlayPressed!,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -137,43 +156,29 @@ class _PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.8 + (value * 0.2),
-          child: Opacity(
-            opacity: value,
-            child: child,
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppTheme.brandGreen,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-        );
-      },
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppTheme.brandGreen,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: const Icon(
-              Icons.play_arrow_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 28,
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -64,12 +65,17 @@ class _MediaCardState extends State<MediaCard> {
           ),
         },
         child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
+          onEnter: (event) {
+            if (event.kind == PointerDeviceKind.mouse) {
+              setState(() => _isHovered = true);
+            }
+          },
           onExit: (_) => setState(() => _isHovered = false),
           child: GestureDetector(
             onTap: widget.onTap,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
+              curve: const Cubic(0.23, 1, 0.32, 1),
               width: widget.size,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -85,10 +91,11 @@ class _MediaCardState extends State<MediaCard> {
               children: [
                 AnimatedScale(
                   scale: (_isHovered || _isFocused) ? 1.04 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 180),
+                  curve: const Cubic(0.23, 1, 0.32, 1),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 180),
+                    curve: const Cubic(0.23, 1, 0.32, 1),
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(widget.isRound ? 999 : 4),
@@ -116,12 +123,25 @@ class _MediaCardState extends State<MediaCard> {
                                 borderRadius: widget.isRound ? 999 : 4,
                               ),
                         ),
-                        if (_isHovered && widget.onPlayPressed != null)
+                        if (widget.onPlayPressed != null)
                           Positioned(
                             bottom: 8,
                             right: 8,
-                            child: _PlayButton(
-                              onPressed: widget.onPlayPressed!,
+                            child: IgnorePointer(
+                              ignoring: !_isHovered,
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 180),
+                                curve: const Cubic(0.23, 1, 0.32, 1),
+                                opacity: _isHovered ? 1.0 : 0.0,
+                                child: AnimatedScale(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: const Cubic(0.23, 1, 0.32, 1),
+                                  scale: _isHovered ? 1.0 : 0.95,
+                                  child: _PlayButton(
+                                    onPressed: widget.onPlayPressed!,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -160,77 +180,36 @@ class _MediaCardState extends State<MediaCard> {
   }
 }
 
-class _PlayButton extends StatefulWidget {
+class _PlayButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _PlayButton({required this.onPressed});
 
   @override
-  State<_PlayButton> createState() => _PlayButtonState();
-}
-
-class _PlayButtonState extends State<_PlayButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacityAnimation,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppTheme.brandGreen,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppTheme.brandGreen,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.onPressed,
-              customBorder: const CircleBorder(),
-              child: const Icon(
-                Icons.play_arrow_rounded,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 28,
           ),
         ),
       ),
