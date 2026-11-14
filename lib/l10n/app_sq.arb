@@ -67,7 +67,7 @@
   },
   "errorLoadingAlbums": "Gabim gjatë ngarkimit të albumeve",
   "@errorLoadingAlbums": {
-    "description": "Error message when albums fail to load"
+    "description": "Error loading albums message"
   },
   "noTopRatedAlbums": "Asnjë album me vlerësim të lartë.",
   "@noTopRatedAlbums": {
@@ -128,7 +128,7 @@
   },
   "artists": "Artistët",
   "@artists": {
-    "description": "Artists section label"
+    "description": "Wrapped artists metric label"
   },
   "songs": "Këngët",
   "@songs": {
@@ -224,11 +224,11 @@
   },
   "save": "Ruaj",
   "@save": {
-    "description": "Save button label"
+    "description": "Button to save changes"
   },
   "close": "Mbyll",
   "@close": {
-    "description": "Close button label"
+    "description": "Close button"
   },
   "general": "Përgjithshme",
   "@general": {
@@ -280,7 +280,7 @@
   },
   "unknownArtist": "Artist i panjohur",
   "@unknownArtist": {
-    "description": "Placeholder for unknown artist"
+    "description": "Fallback displayed when a song has no artist"
   },
   "unknownAlbum": "Album i panjohur",
   "@unknownAlbum": {
@@ -340,7 +340,7 @@
   },
   "retry": "Provo përsëri",
   "@retry": {
-    "description": "Button to retry a failed server connection"
+    "description": "Retry button label"
   },
   "noResults": "Nuk u gjet asnjë rezultat",
   "@noResults": {
@@ -719,5 +719,11 @@
   },
   "@clearAllCache": {
     "description": "Button to clear all cached data"
+  },
+  "@_SETTINGS_ANALYTICS": {},
+  "@_SUPPORT": {},
+  "@_NOW_PLAYING_DIALOGS": {},
+  "@audioStreamCache": {
+    "description": "Title for song/audio cache row"
   }
 }
