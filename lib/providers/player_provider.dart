@@ -1711,7 +1711,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
           if (song.isLocal == true ||
               _offlineService.getLocalPath(song.id) != null) {
             await _audioPlayer.setUrl(playUrl);
-          } else {
+          } else if (_transcodingService.enabled && !_gaplessEnabled) {
             final cacheDir = await getTemporaryDirectory();
             final cacheFile = File(
               '${cacheDir.path}/musly_stream_${song.id.hashCode}.tmp',
@@ -1721,6 +1721,13 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
               LockCachingAudioSource(
                 Uri.parse(playUrl),
                 cacheFile: cacheFile,
+                tag: song.id,
+              ),
+            );
+          } else {
+            await _audioPlayer.setAudioSource(
+              AudioSource.uri(
+                Uri.parse(playUrl),
                 tag: song.id,
               ),
             );
@@ -2081,7 +2088,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver implemen
       await _upnpService.seek(position);
       return;
     } else {
-      await _audioPlayer.seek(position);
+      if (_concatenatingSource != null && _currentIndex >= 0) {
+        await _audioPlayer.seek(position, index: _currentIndex);
+      } else {
+        await _audioPlayer.seek(position);
+      }
     }
   }
 
