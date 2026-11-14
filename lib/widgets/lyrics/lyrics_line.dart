@@ -28,9 +28,9 @@ class LyricsLineWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
+          duration: const Duration(milliseconds: 250),
+          switchInCurve: const Cubic(0.23, 1, 0.32, 1),
+          switchOutCurve: const Cubic(0.23, 1, 0.32, 1),
           child: _buildContent(context),
         ),
       ),
@@ -44,6 +44,7 @@ class LyricsLineWidget extends StatelessWidget {
     final glowEffect = uiSettings.getLyricsGlowEffect();
     final textAlign = isCentered ? TextAlign.center : TextAlign.left;
     final alignment = isCentered ? Alignment.center : Alignment.centerLeft;
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     switch (state) {
       case LyricLineState.past:
@@ -89,24 +90,28 @@ class LyricsLineWidget extends StatelessWidget {
           ),
         );
       case LyricLineState.current:
+        final currentChild = line.hasWords
+            ? _buildWordByWord(textAlign, glowEffect)
+            : _buildLineLevel(textAlign, glowEffect);
+
         return SizedBox(
           key: const ValueKey('current'),
           width: double.infinity,
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 1.0, end: 1.05),
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutBack,
-            builder: (context, scale, child) {
-              return Transform.scale(
-                scale: scale,
-                alignment: alignment,
-                child: child,
-              );
-            },
-            child: line.hasWords
-                ? _buildWordByWord(textAlign, glowEffect)
-                : _buildLineLevel(textAlign, glowEffect),
-          ),
+          child: reduceMotion
+              ? currentChild
+              : TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 1.0, end: 1.05),
+                  duration: const Duration(milliseconds: 220),
+                  curve: const Cubic(0.23, 1, 0.32, 1),
+                  builder: (context, scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      alignment: alignment,
+                      child: child,
+                    );
+                  },
+                  child: currentChild,
+                ),
         );
     }
   }

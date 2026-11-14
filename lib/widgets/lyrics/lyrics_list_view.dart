@@ -167,10 +167,12 @@ class _LyricsListViewState extends State<LyricsListView> {
 
     final key = _keys[_currentIndex];
     if (key.currentContext != null) {
+      final reduceMotion =
+          MediaQuery.maybeOf(context)?.disableAnimations ?? false;
       Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOutCubic,
+        duration: Duration(milliseconds: reduceMotion ? 0 : 280),
+        curve: const Cubic(0.23, 1, 0.32, 1),
         alignment: 0.5,
       );
     }
