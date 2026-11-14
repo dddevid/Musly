@@ -438,7 +438,19 @@ class _MainScreenState extends State<MainScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (hasCurrentSong) const MiniPlayer(),
+                                    ClipRect(
+                                      child: AnimatedSize(
+                                        duration:
+                                            const Duration(milliseconds: 220),
+                                        curve: const Cubic(0.23, 1, 0.32, 1),
+                                        alignment: Alignment.topCenter,
+                                        child: hasCurrentSong
+                                            ? const MiniPlayer()
+                                            : const SizedBox(
+                                                width: double.infinity,
+                                                height: 0),
+                                      ),
+                                    ),
                                     _buildGlassBottomNav(context),
                                   ],
                                 ),
@@ -465,7 +477,19 @@ class _MainScreenState extends State<MainScreen> {
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (hasCurrentSong) const MiniPlayer(),
+                                  ClipRect(
+                                    child: AnimatedSize(
+                                      duration:
+                                          const Duration(milliseconds: 220),
+                                      curve: const Cubic(0.23, 1, 0.32, 1),
+                                      alignment: Alignment.topCenter,
+                                      child: hasCurrentSong
+                                          ? const MiniPlayer()
+                                          : const SizedBox(
+                                              width: double.infinity,
+                                              height: 0),
+                                    ),
+                                  ),
                                   _buildBottomNav(context),
                                 ],
                               ),

@@ -244,35 +244,50 @@ class _LogoRow extends StatelessWidget {
         isCollapsed ? 0 : 16,
         14,
       ),
-      child: isCollapsed
-          ? Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset('assets/logo.png', width: 32, height: 32),
-              ),
-            )
-          : Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset('assets/logo.png', width: 32, height: 32),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Musly',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-                      letterSpacing: -0.3,
+      child: Row(
+        mainAxisAlignment:
+            isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset('assets/logo.png', width: 32, height: 32),
+          ),
+          ClipRect(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: const Cubic(0.23, 1, 0.32, 1),
+              alignment: Alignment.centerLeft,
+              child: isCollapsed
+                  ? const SizedBox.shrink()
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(width: 12),
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 160),
+                          curve: Curves.easeOut,
+                          opacity: isCollapsed ? 0.0 : 1.0,
+                          child: Text(
+                            'Musly',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
             ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -335,36 +350,50 @@ class _NavItemState extends State<_NavItem> {
           ),
           alignment:
               widget.isCollapsed ? Alignment.center : Alignment.centerLeft,
-          child: widget.isCollapsed
-              ? Icon(
-                  widget.isSelected ? widget.activeIcon : widget.icon,
-                  color: textColor,
-                  size: 20,
-                )
-              : Row(
-                  children: [
-                    Icon(
-                      widget.isSelected ? widget.activeIcon : widget.icon,
-                      color: textColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.label,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 14,
-                          fontWeight: widget.isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
+          child: Row(
+            mainAxisAlignment: widget.isCollapsed
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.start,
+            children: [
+              Icon(
+                widget.isSelected ? widget.activeIcon : widget.icon,
+                color: textColor,
+                size: 20,
+              ),
+              ClipRect(
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: const Cubic(0.23, 1, 0.32, 1),
+                  alignment: Alignment.centerLeft,
+                  child: widget.isCollapsed
+                      ? const SizedBox.shrink()
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(width: 12),
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 160),
+                              curve: Curves.easeOut,
+                              opacity: widget.isCollapsed ? 0.0 : 1.0,
+                              child: Text(
+                                widget.label,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: widget.isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
                 ),
+              ),
+            ],
+          ),
         ),
         ),
       ),
