@@ -487,42 +487,8 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   Future<void> _checkForUpdatesManual() async {
     if (_isCheckingUpdates) return;
     setState(() => _isCheckingUpdates = true);
-
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.checkingForUpdates),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
     try {
-      final release = await UpdateService.checkForUpdate(force: true);
-      if (!mounted) return;
-
-      if (release != null) {
-        await UpdateDialog.show(context, release);
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.appUpToDate),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      await UpdateDialog.checkAndShow(context, manual: true);
     } finally {
       if (mounted) {
         setState(() => _isCheckingUpdates = false);

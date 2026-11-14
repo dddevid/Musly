@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musly/screens/media/song_collection_screen.dart';
 import 'package:musly/screens/main/library_screen.dart';
@@ -49,6 +50,7 @@ void main() {
       await tester.pumpWidget(createTestApp(child: const SettingsScreen()));
       await tester.pump();
       expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.arrow_2_circlepath), findsOneWidget);
     });
 
     testWidgets('SettingsDisplayTab displays Spotverlay on desktop', (

@@ -20,16 +20,48 @@ class UpdateDialog extends StatefulWidget {
     );
   }
 
-  static Future<void> checkAndShow(BuildContext context) async {
-    if (UpdateService.hasCheckedStartup) return;
-    UpdateService.markStartupChecked();
+  static Future<void> checkAndShow(BuildContext context, {bool manual = false}) async {
+    if (!manual) {
+      if (UpdateService.hasCheckedStartup) return;
+      UpdateService.markStartupChecked();
+    }
+    if (manual && context.mounted) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n?.checkingForUpdates ?? 'Checking for updates...'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
     try {
-      final release = await UpdateService.checkForUpdate();
-      if (release != null && context.mounted) {
+      final release = await UpdateService.checkForUpdate(force: manual);
+      if (!context.mounted) return;
+      if (release != null) {
         await show(context, release);
+      } else if (manual) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n?.appUpToDate ?? 'App is up to date'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
-      debugPrint('UpdateDialog: startup check error – $e');
+      debugPrint('UpdateDialog: check error – $e');
+      if (manual && context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to check for updates: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 

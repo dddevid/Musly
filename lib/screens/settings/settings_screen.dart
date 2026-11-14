@@ -11,6 +11,7 @@ import 'settings_about_tab.dart';
 import 'settings_support_tab.dart';
 import 'settings_android_auto_tab.dart';
 import 'package:musly/theme/app_theme.dart';
+import 'package:musly/widgets/dialogs/update_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -85,6 +86,13 @@ class _SettingsScreenState extends State<SettingsScreen>
               _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(CupertinoIcons.arrow_2_circlepath),
+              tooltip: l10n.checkForUpdates,
+              onPressed: () => UpdateDialog.checkAndShow(context, manual: true),
+            ),
+          ],
         ),
         body: Row(
           children: [
@@ -160,6 +168,13 @@ class _SettingsScreenState extends State<SettingsScreen>
             _isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.arrow_2_circlepath),
+            tooltip: l10n.checkForUpdates,
+            onPressed: () => UpdateDialog.checkAndShow(context, manual: true),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
