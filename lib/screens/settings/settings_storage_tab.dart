@@ -43,6 +43,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
   String _imageCacheSize = '0 B';
   String _totalCacheSize = '0 B';
   int _parallelDownloads = 3;
+  int _downloadBitrate = 0;
   bool _keepScreenOn = true;
   bool _autoDownloadFavorites = false;
 
@@ -82,6 +83,7 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       _musicCacheEnabled = _cacheSettings.getMusicCacheEnabled();
       _bpmCacheEnabled = _cacheSettings.getBpmCacheEnabled();
       _parallelDownloads = _offlineService.getParallelDownloadsCount();
+      _downloadBitrate = _offlineService.getDownloadBitrate();
       _keepScreenOn = _offlineService.getKeepScreenOn();
       _autoDownloadFavorites = _offlineService.getAutoDownloadFavorites();
     });
@@ -166,6 +168,8 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
           title: AppLocalizations.of(context)!.sectionOfflineDownloads,
           children: [
             _buildDownloadLocationTile(),
+            const SettingsDivider(),
+            _buildDownloadQualityTile(),
             const SettingsDivider(),
             _buildParallelDownloadsTile(),
             const SettingsDivider(),
@@ -383,6 +387,84 @@ class _SettingsStorageTabState extends State<SettingsStorageTab> {
       value: _autoDownloadFavorites,
       onChanged: _toggleAutoDownloadFavorites,
     );
+  }
+
+  Widget _buildDownloadQualityTile() {
+    final l10n = AppLocalizations.of(context)!;
+    final bitrate = _downloadBitrate;
+    final label = bitrate == 0
+        ? l10n.transcodingBitrateOriginal
+        : '$bitrate kbps';
+
+    return SettingsListTile(
+      gradientColors: const [Color(0xFFFF9500), Color(0xFFFFCC00)],
+      icon: CupertinoIcons.slider_horizontal_3,
+      title: l10n.downloadQuality,
+      subtitle: l10n.downloadQualitySubtitle,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            CupertinoIcons.chevron_right,
+            size: 16,
+            color: context.isDark
+                ? AppTheme.darkSecondaryText
+                : AppTheme.lightSecondaryText,
+          ),
+        ],
+      ),
+      onTap: _showDownloadQualityDialog,
+    );
+  }
+
+  Future<void> _showDownloadQualityDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final bitrates = [0, 320, 256, 192, 128];
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.downloadQuality),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: bitrates.map((b) {
+            final isSelected = b == _downloadBitrate;
+            final label = b == 0 ? l10n.transcodingBitrateOriginal : '$b kbps';
+            return ListTile(
+              title: Text(label),
+              leading: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected ? Theme.of(context).colorScheme.primary : null,
+              ),
+              onTap: () => Navigator.pop(context, b),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != _downloadBitrate) {
+      await _offlineService.setDownloadBitrate(selected);
+      setState(() {
+        _downloadBitrate = selected;
+      });
+    }
   }
 
   Widget _buildParallelDownloadsTile() {

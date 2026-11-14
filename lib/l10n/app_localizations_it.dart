@@ -3186,4 +3186,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get noSimilarSongsFound => 'Nessuna canzone simile trovata';
+
+  @override
+  String get downloadQuality => 'Qualità download';
+
+  @override
+  String get downloadQualitySubtitle => 'Qualità audio per i brani scaricati';
 }

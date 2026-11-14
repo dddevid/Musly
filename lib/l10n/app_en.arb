@@ -3844,5 +3844,13 @@
   "noSimilarSongsFound": "No similar songs found",
   "@noSimilarSongsFound": {
     "description": "Notification when no similar songs could be found"
+  },
+  "downloadQuality": "Download Quality",
+  "@downloadQuality": {
+    "description": "Label for choosing audio quality for offline downloads"
+  },
+  "downloadQualitySubtitle": "Audio quality for downloaded songs",
+  "@downloadQualitySubtitle": {
+    "description": "Subtitle describing the download quality setting"
   }
 }

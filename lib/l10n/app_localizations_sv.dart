@@ -3172,4 +3172,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get noSimilarSongsFound => 'No similar songs found';
+
+  @override
+  String get downloadQuality => 'Download Quality';
+
+  @override
+  String get downloadQualitySubtitle => 'Audio quality for downloaded songs';
 }

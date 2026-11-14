@@ -2199,5 +2199,7 @@
   "generateMoreSongs": "Genera altre canzoni",
   "generatingSimilarSongs": "Ricerca canzoni simili…",
   "similarSongsAdded": "{count, plural, =1{1 canzone simile aggiunta alla coda} other{{count} canzoni simili aggiunte alla coda}}",
-  "noSimilarSongsFound": "Nessuna canzone simile trovata"
+  "noSimilarSongsFound": "Nessuna canzone simile trovata",
+  "downloadQuality": "Qualità download",
+  "downloadQualitySubtitle": "Qualità audio per i brani scaricati"
 }

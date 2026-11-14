@@ -5841,6 +5841,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No similar songs found'**
   String get noSimilarSongsFound;
+
+  /// Label for choosing audio quality for offline downloads
+  ///
+  /// In en, this message translates to:
+  /// **'Download Quality'**
+  String get downloadQuality;
+
+  /// Subtitle describing the download quality setting
+  ///
+  /// In en, this message translates to:
+  /// **'Audio quality for downloaded songs'**
+  String get downloadQualitySubtitle;
 }
 
 class _AppLocalizationsDelegate

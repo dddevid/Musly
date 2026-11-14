@@ -90,6 +90,7 @@ class OfflineService {
   static const String _keyKeepScreenOn = 'offline_keep_screen_on';
   static const String _keyCustomDownloadPath = 'offline_custom_download_path';
   static const String _keyAutoDownloadFavorites = 'offline_auto_download_favorites';
+  static const String _keyDownloadBitrate = 'offline_download_bitrate';
 
   static const int _defaultParallelDownloads = 3;
   static const int _maxParallelDownloads = 5;
@@ -394,7 +395,7 @@ class OfflineService {
       if (expected != null && expected > 0) {
         return len >= expected;
       }
-      return len >= 65536;
+      return len >= 16384;
     } catch (_) {
       return false;
     }
@@ -430,6 +431,14 @@ class OfflineService {
     final path = _getCoverArtPath(songId);
     if (File(path).existsSync()) return path;
     return null;
+  }
+
+  int getDownloadBitrate() {
+    return _prefs?.getInt(_keyDownloadBitrate) ?? 0;
+  }
+
+  Future<void> setDownloadBitrate(int bitrate) async {
+    await _prefs?.setInt(_keyDownloadBitrate, bitrate);
   }
 
   String? getLocalCoverArtPathByCoverArtId(String? coverArtId) {
@@ -509,16 +518,22 @@ class OfflineService {
     Song song,
     SubsonicService subsonicService, {
     Function(double progress)? onProgress,
+    int? customBitrate,
   }) async {
     if (_offlineDir == null) await initialize();
 
-    if (song.size != null && song.size! > 0) {
+    final bitrate = customBitrate ?? getDownloadBitrate();
+    final isTranscoded = bitrate > 0;
+
+    if (!isTranscoded && song.size != null && song.size! > 0) {
       await _persistExpectedSize(song.id, song.size!);
     }
 
     final filePath = _getSongPath(song.id);
     try {
-      final url = subsonicService.getDownloadUrl(song.id);
+      final url = isTranscoded
+          ? subsonicService.getStreamUrl(song.id, maxBitRate: bitrate, format: 'mp3')
+          : subsonicService.getDownloadUrl(song.id);
 
       final dio = Dio();
       await dio.download(
