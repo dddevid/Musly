@@ -25,19 +25,31 @@ class PlayPauseIntent extends Intent {
   const PlayPauseIntent();
 }
 
-class _PlayPauseAction extends Action<PlayPauseIntent> {
+class PlayPauseAction extends Action<PlayPauseIntent> {
   final BuildContext context;
-  _PlayPauseAction(this.context);
+  PlayPauseAction(this.context);
 
   @override
   bool isEnabled(PlayPauseIntent intent) {
     final primaryFocus = FocusManager.instance.primaryFocus;
     if (primaryFocus != null) {
       final focusedContext = primaryFocus.context;
-      if (focusedContext != null &&
-          focusedContext.findAncestorWidgetOfExactType<EditableText>() !=
-              null) {
-        return false;
+      if (focusedContext != null) {
+        final widget = focusedContext.widget;
+        if (widget is EditableText ||
+            widget is TextField ||
+            widget is TextFormField) {
+          return false;
+        }
+        if (focusedContext.findAncestorWidgetOfExactType<EditableText>() !=
+                null ||
+            focusedContext.findAncestorWidgetOfExactType<TextField>() != null ||
+            focusedContext.findAncestorWidgetOfExactType<TextFormField>() !=
+                null ||
+            focusedContext.findAncestorStateOfType<EditableTextState>() !=
+                null) {
+          return false;
+        }
       }
     }
     return true;
@@ -290,7 +302,7 @@ class _MainScreenState extends State<MainScreen> {
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
-            PlayPauseIntent: _PlayPauseAction(context),
+            PlayPauseIntent: PlayPauseAction(context),
           },
           child: TvRemoteScope(
             child: Focus(

@@ -114,3 +114,5 @@ migrate_working_dir/
 .claude/
 /discord_sdk_temp
 .widget_preview/
+.agents/
+skills-lock.json
