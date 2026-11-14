@@ -55,6 +55,9 @@ class _BlurredGradientBackgroundState extends State<BlurredGradientBackground>
       safeColors.add(safeColors.last.withValues(alpha: 0.8));
     }
 
+    final size = MediaQuery.of(context).size;
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
     return Stack(
       children: [
         Container(color: Colors.black),
@@ -62,60 +65,74 @@ class _BlurredGradientBackgroundState extends State<BlurredGradientBackground>
           child: AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
-              final value = _animation.value;
+              final value = reduceMotion ? 0.5 : _animation.value;
               return Stack(
                 children: [
                   Positioned(
-                    top: -100 + (100 * value),
-                    left: -100 + (50 * math.sin(value * math.pi)),
+                    top: -100,
+                    left: -100,
                     width: 400,
                     height: 400,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            safeColors[0].withValues(alpha: 0.8),
-                            safeColors[0].withValues(alpha: 0.0),
-                          ],
+                    child: Transform.translate(
+                      offset: Offset(
+                        50 * math.sin(value * math.pi),
+                        100 * value,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              safeColors[0].withValues(alpha: 0.8),
+                              safeColors[0].withValues(alpha: 0.0),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: -150 + (100 * (1 - value)),
-                    right: -100 + (80 * math.cos(value * math.pi)),
+                    bottom: -150,
+                    right: -100,
                     width: 500,
                     height: 500,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            safeColors[1].withValues(alpha: 0.8),
-                            safeColors[1].withValues(alpha: 0.0),
-                          ],
+                    child: Transform.translate(
+                      offset: Offset(
+                        80 * math.cos(value * math.pi),
+                        -(100 * (1 - value)),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              safeColors[1].withValues(alpha: 0.8),
+                              safeColors[1].withValues(alpha: 0.0),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                   Positioned(
-                    top: MediaQuery.of(context).size.height / 2 -
-                        200 +
-                        (150 * math.sin(value * math.pi * 2)),
-                    left: MediaQuery.of(context).size.width / 2 -
-                        200 +
-                        (100 * math.cos(value * math.pi * 2)),
+                    top: size.height / 2 - 200,
+                    left: size.width / 2 - 200,
                     width: 400,
                     height: 400,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            safeColors[2].withValues(alpha: 0.7),
-                            safeColors[2].withValues(alpha: 0.0),
-                          ],
+                    child: Transform.translate(
+                      offset: Offset(
+                        100 * math.cos(value * math.pi * 2),
+                        150 * math.sin(value * math.pi * 2),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              safeColors[2].withValues(alpha: 0.7),
+                              safeColors[2].withValues(alpha: 0.0),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -89,17 +89,24 @@ class _AnimatedEqualizerState extends State<AnimatedEqualizer>
             return AnimatedBuilder(
               animation: _controllers[index],
               builder: (context, child) {
-                return Container(
-                  width: 3,
-                  height: (maxHeight - minHeight) * _controllers[index].value +
-                      minHeight,
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(
-                    color: widget.color,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                final scale = (minHeight +
+                        (maxHeight - minHeight) * _controllers[index].value) /
+                    maxHeight;
+                return Transform.scale(
+                  scaleY: scale,
+                  alignment: Alignment.bottomCenter,
+                  child: child,
                 );
               },
+              child: Container(
+                width: 3,
+                height: maxHeight,
+                margin: const EdgeInsets.symmetric(horizontal: 1),
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             );
           }),
         ),
