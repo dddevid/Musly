@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -411,29 +412,65 @@ class _MainScreenState extends State<MainScreen> {
                     },
                   ),
                 Expanded(
-                  child: Navigator(
-                    key: NavigationHelper.appNavigatorKey,
-                    observers: [_backGuard],
-                    onGenerateRoute: (settings) {
-                      return MaterialPageRoute(
-                        builder: (_) => LazyIndexedStack(
-                          index: _currentIndex,
-                          children: _screens,
+                  child: liquidGlass
+                      ? Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Navigator(
+                                key: NavigationHelper.appNavigatorKey,
+                                observers: [_backGuard],
+                                onGenerateRoute: (settings) {
+                                  return MaterialPageRoute(
+                                    builder: (_) => LazyIndexedStack(
+                                      index: _currentIndex,
+                                      children: _screens,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (MediaQuery.of(context).viewInsets.bottom == 0)
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (hasCurrentSong) const MiniPlayer(),
+                                    _buildGlassBottomNav(context),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            Expanded(
+                              child: Navigator(
+                                key: NavigationHelper.appNavigatorKey,
+                                observers: [_backGuard],
+                                onGenerateRoute: (settings) {
+                                  return MaterialPageRoute(
+                                    builder: (_) => LazyIndexedStack(
+                                      index: _currentIndex,
+                                      children: _screens,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (MediaQuery.of(context).viewInsets.bottom == 0)
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (hasCurrentSong) const MiniPlayer(),
+                                  _buildBottomNav(context),
+                                ],
+                              ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
                 ),
-                if (MediaQuery.of(context).viewInsets.bottom == 0)
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (hasCurrentSong) const MiniPlayer(),
-                      liquidGlass
-                          ? _buildGlassBottomNav(context)
-                          : _buildBottomNav(context),
-                    ],
-                  ),
               ],
             ),
           ),
@@ -485,95 +522,103 @@ class _MainScreenState extends State<MainScreen> {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 4, 12, safeBottom > 0 ? safeBottom : 12),
-      child: Container(
-        height: 62,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xF018181A) : const Color(0xF5FFFFFF),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.08),
-            width: 0.8,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: List.generate(items.length, (idx) {
-            final item = items[idx];
-            final isSelected = _currentIndex == idx;
-            return Expanded(
-              child: Semantics(
-                label: item.label,
-                selected: isSelected,
-                button: true,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    final navigatorState =
-                        NavigationHelper.appNavigatorKey.currentState;
-                    navigatorState?.popUntil((route) => route.isFirst);
-
-                    if (idx == 2) {
-                      final now = DateTime.now();
-                      if (now.difference(_lastSearchTap).inSeconds > 3) {
-                        _searchTapCount = 0;
-                      }
-                      _searchTapCount++;
-                      _lastSearchTap = now;
-                      if (_searchTapCount >= 11) {
-                        _searchTapCount = 0;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const FantasyScreen(),
-                          ),
-                        );
-                        return;
-                      }
-                    } else {
-                      _searchTapCount = 0;
-                    }
-
-                    setState(() => _currentIndex = idx);
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 150),
-                        child: Icon(
-                          isSelected ? item.activeIcon : item.icon,
-                          key: ValueKey(isSelected),
-                          color: isSelected
-                              ? accent
-                              : (isDark ? Colors.white54 : Colors.black38),
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.w400,
-                          color: isSelected
-                              ? accent
-                              : (isDark ? Colors.white60 : Colors.black54),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 62,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xB818181A)
+                  : const Color(0xD0FFFFFF),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.16)
+                    : Colors.black.withValues(alpha: 0.08),
+                width: 0.8,
               ),
-            );
-          }),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: List.generate(items.length, (idx) {
+                final item = items[idx];
+                final isSelected = _currentIndex == idx;
+                return Expanded(
+                  child: Semantics(
+                    label: item.label,
+                    selected: isSelected,
+                    button: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        final navigatorState =
+                            NavigationHelper.appNavigatorKey.currentState;
+                        navigatorState?.popUntil((route) => route.isFirst);
+
+                        if (idx == 2) {
+                          final now = DateTime.now();
+                          if (now.difference(_lastSearchTap).inSeconds > 3) {
+                            _searchTapCount = 0;
+                          }
+                          _searchTapCount++;
+                          _lastSearchTap = now;
+                          if (_searchTapCount >= 11) {
+                            _searchTapCount = 0;
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const FantasyScreen(),
+                              ),
+                            );
+                            return;
+                          }
+                        } else {
+                          _searchTapCount = 0;
+                        }
+
+                        setState(() => _currentIndex = idx);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            child: Icon(
+                              isSelected ? item.activeIcon : item.icon,
+                              key: ValueKey(isSelected),
+                              color: isSelected
+                                  ? accent
+                                  : (isDark ? Colors.white54 : Colors.black38),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.label,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight:
+                                  isSelected ? FontWeight.w600 : FontWeight.w400,
+                              color: isSelected
+                                  ? accent
+                                  : (isDark ? Colors.white60 : Colors.black54),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
