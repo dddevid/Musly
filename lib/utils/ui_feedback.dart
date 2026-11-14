@@ -7,11 +7,15 @@ class UiFeedback {
 
   static void showSuccess(BuildContext context, String message) {
     HapticFeedback.lightImpact();
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _showSnackBar(
       context,
       message: message,
-      icon: CupertinoIcons.checkmark_circle_fill,
+      icon: isApple
+          ? CupertinoIcons.checkmark_circle_fill
+          : Icons.check_circle_rounded,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       textColor: isDark ? Colors.white : Colors.black87,
       iconColor: const Color(0xFF34C759),
@@ -20,11 +24,15 @@ class UiFeedback {
 
   static void showError(BuildContext context, String message) {
     HapticFeedback.heavyImpact();
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _showSnackBar(
       context,
       message: message,
-      icon: CupertinoIcons.exclamationmark_circle_fill,
+      icon: isApple
+          ? CupertinoIcons.exclamationmark_circle_fill
+          : Icons.error_rounded,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       textColor: isDark ? Colors.white : Colors.black87,
       iconColor: const Color(0xFFFF3B30),
@@ -33,12 +41,14 @@ class UiFeedback {
 
   static void showInfo(BuildContext context, String message) {
     HapticFeedback.lightImpact();
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
     _showSnackBar(
       context,
       message: message,
-      icon: CupertinoIcons.info_circle_fill,
+      icon: isApple ? CupertinoIcons.info_circle_fill : Icons.info_outline_rounded,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       textColor: isDark ? Colors.white : Colors.black87,
       iconColor: primary,

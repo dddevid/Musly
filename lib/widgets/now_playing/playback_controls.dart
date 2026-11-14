@@ -39,11 +39,20 @@ class PlaybackControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
     final mode = _effectiveRepeatMode;
     final isRepeatActive = mode != RepeatMode.off;
-    final IconData repeatIcon = mode == RepeatMode.one
-        ? CupertinoIcons.repeat_1
-        : CupertinoIcons.repeat;
+    final IconData repeatIcon;
+    if (isApple) {
+      repeatIcon = mode == RepeatMode.one
+          ? CupertinoIcons.repeat_1
+          : CupertinoIcons.repeat;
+    } else {
+      repeatIcon = mode == RepeatMode.one
+          ? Icons.repeat_one_rounded
+          : Icons.repeat_rounded;
+    }
 
     final themePrimary = Theme.of(context).colorScheme.primary;
     final effectiveActiveColor = (accentColor == Colors.white ||
@@ -55,14 +64,16 @@ class PlaybackControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _SecondaryControlButton(
-          icon: CupertinoIcons.shuffle,
+          icon: isApple ? CupertinoIcons.shuffle : Icons.shuffle_rounded,
           isActive: isShuffleEnabled,
           activeColor: effectiveActiveColor,
           onTap: onShuffleToggle,
         ),
         _MainControlButton(
-          icon: CupertinoIcons.backward_fill,
-          size: 40,
+          icon: isApple
+              ? CupertinoIcons.backward_fill
+              : Icons.skip_previous_rounded,
+          size: isApple ? 40 : 48,
           onTap: onPrevious,
         ),
         _PlayPauseButton(
@@ -71,8 +82,10 @@ class PlaybackControls extends StatelessWidget {
           size: 72,
         ),
         _MainControlButton(
-          icon: CupertinoIcons.forward_fill,
-          size: 40,
+          icon: isApple
+              ? CupertinoIcons.forward_fill
+              : Icons.skip_next_rounded,
+          size: isApple ? 40 : 48,
           onTap: onNext,
         ),
         _SecondaryControlButton(
@@ -106,6 +119,9 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
+
     return GestureDetector(
       onTapDown: (_) {
         setState(() => _isPressed = true);
@@ -129,9 +145,13 @@ class _PlayPauseButtonState extends State<_PlayPauseButton> {
           ),
           child: Icon(
             widget.isPlaying
-                ? CupertinoIcons.pause_fill
-                : CupertinoIcons.play_fill,
-            size: widget.size * 0.5,
+                ? (isApple
+                    ? CupertinoIcons.pause_fill
+                    : Icons.pause_rounded)
+                : (isApple
+                    ? CupertinoIcons.play_fill
+                    : Icons.play_arrow_rounded),
+            size: isApple ? widget.size * 0.5 : widget.size * 0.6,
             color: Colors.white,
           ),
         ),

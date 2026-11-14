@@ -21,6 +21,9 @@ class NowPlayingBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isApple = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
       child: Row(
@@ -31,13 +34,17 @@ class NowPlayingBottomActions extends StatelessWidget {
             iconColor: Colors.white.withValues(alpha: 0.5),
           ),
           _ActionButton(
-            icon: CupertinoIcons.quote_bubble,
+            icon: isApple
+                ? CupertinoIcons.quote_bubble
+                : Icons.lyrics_rounded,
             isActive: isLyricsActive,
             activeColor: accentColor,
             onTap: onLyricsTap,
           ),
           _ActionButton(
-            icon: CupertinoIcons.list_bullet,
+            icon: isApple
+                ? CupertinoIcons.list_bullet
+                : Icons.queue_music_rounded,
             isActive: isQueueActive,
             activeColor: accentColor,
             onTap: onQueueTap,

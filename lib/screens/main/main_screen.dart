@@ -12,6 +12,7 @@ import 'package:musly/services/theme_service.dart';
 import 'package:musly/services/usage_time_service.dart';
 import 'package:musly/theme/app_theme.dart';
 import 'package:musly/utils/navigation_helper.dart';
+import 'package:musly/utils/screen_helper.dart';
 import 'package:musly/widgets/widgets.dart';
 import 'package:musly/l10n/app_localizations.dart';
 import 'home_screen.dart';
@@ -502,20 +503,21 @@ class _MainScreenState extends State<MainScreen> {
     final safeBottom = MediaQuery.of(context).padding.bottom;
     final l10n = AppLocalizations.of(context)!;
 
+    final isApple = ScreenHelper.isApple(context);
     final items = [
       (
-        icon: CupertinoIcons.music_house,
-        activeIcon: CupertinoIcons.music_house_fill,
+        icon: isApple ? CupertinoIcons.music_house : Icons.home_outlined,
+        activeIcon: isApple ? CupertinoIcons.music_house_fill : Icons.home_rounded,
         label: l10n.home,
       ),
       (
-        icon: CupertinoIcons.collections,
-        activeIcon: CupertinoIcons.collections_solid,
+        icon: isApple ? CupertinoIcons.collections : Icons.library_music_outlined,
+        activeIcon: isApple ? CupertinoIcons.collections_solid : Icons.library_music_rounded,
         label: l10n.library,
       ),
       (
-        icon: CupertinoIcons.search,
-        activeIcon: CupertinoIcons.search,
+        icon: isApple ? CupertinoIcons.search : Icons.search_rounded,
+        activeIcon: isApple ? CupertinoIcons.search : Icons.search_rounded,
         label: l10n.search,
       ),
     ];
@@ -628,6 +630,7 @@ class _MainScreenState extends State<MainScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final isApple = ScreenHelper.isApple(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -670,18 +673,30 @@ class _MainScreenState extends State<MainScreen> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: const Icon(CupertinoIcons.music_house),
-              activeIcon: const Icon(CupertinoIcons.music_house_fill),
+              icon: Icon(isApple
+                  ? CupertinoIcons.music_house
+                  : Icons.home_outlined),
+              activeIcon: Icon(isApple
+                  ? CupertinoIcons.music_house_fill
+                  : Icons.home_rounded),
               label: l10n.home,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(CupertinoIcons.collections),
-              activeIcon: const Icon(CupertinoIcons.collections_solid),
+              icon: Icon(isApple
+                  ? CupertinoIcons.collections
+                  : Icons.library_music_outlined),
+              activeIcon: Icon(isApple
+                  ? CupertinoIcons.collections_solid
+                  : Icons.library_music_rounded),
               label: l10n.library,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(CupertinoIcons.search),
-              activeIcon: const Icon(CupertinoIcons.search),
+              icon: Icon(isApple
+                  ? CupertinoIcons.search
+                  : Icons.search_rounded),
+              activeIcon: Icon(isApple
+                  ? CupertinoIcons.search
+                  : Icons.search_rounded),
               label: l10n.search,
             ),
           ],

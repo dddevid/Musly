@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 class ScreenHelper {
+  static bool isApple(BuildContext context) {
+    final platform = Theme.of(context).platform;
+    return platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+  }
+
   static bool isDesktop(BuildContext context) {
     return MediaQuery.sizeOf(context).width >= 800;
   }

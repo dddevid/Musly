@@ -325,8 +325,13 @@ class _MiniPlayerRow extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(CupertinoIcons.antenna_radiowaves_left_right,
-                  color: Colors.white, size: 22),
+              child: Icon(
+                ScreenHelper.isApple(context)
+                    ? CupertinoIcons.antenna_radiowaves_left_right
+                    : Icons.radio_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
             )
           else
             AlbumArtwork(coverArt: coverArt, size: 44, borderRadius: 6),
@@ -395,6 +400,7 @@ class _MiniPlayerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isApple = ScreenHelper.isApple(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isDark ? Colors.white : Colors.black;
 
@@ -429,8 +435,12 @@ class _MiniPlayerControls extends StatelessWidget {
                                     minWidth: 44, minHeight: 44),
                                 icon: Icon(
                                   isStarred
-                                      ? CupertinoIcons.heart_fill
-                                      : CupertinoIcons.heart,
+                                      ? (isApple
+                                          ? CupertinoIcons.heart_fill
+                                          : Icons.favorite_rounded)
+                                      : (isApple
+                                          ? CupertinoIcons.heart
+                                          : Icons.favorite_border_rounded),
                                   size:
                                       ScreenHelper.miniPlayerIconSize(context),
                                 ),
@@ -450,7 +460,9 @@ class _MiniPlayerControls extends StatelessWidget {
                                 constraints: const BoxConstraints(
                                     minWidth: 44, minHeight: 44),
                                 icon: Icon(
-                                  CupertinoIcons.shuffle,
+                                  isApple
+                                      ? CupertinoIcons.shuffle
+                                      : Icons.shuffle_rounded,
                                   size:
                                       ScreenHelper.miniPlayerIconSize(context),
                                 ),
@@ -467,8 +479,12 @@ class _MiniPlayerControls extends StatelessWidget {
                               const BoxConstraints(minWidth: 44, minHeight: 44),
                           icon: Icon(
                             isPlaying
-                                ? CupertinoIcons.pause_fill
-                                : CupertinoIcons.play_fill,
+                                ? (isApple
+                                    ? CupertinoIcons.pause_fill
+                                    : Icons.pause_rounded)
+                                : (isApple
+                                    ? CupertinoIcons.play_fill
+                                    : Icons.play_arrow_rounded),
                             size: ScreenHelper.miniPlayerPlayIconSize(context),
                           ),
                           color: color,
@@ -480,9 +496,13 @@ class _MiniPlayerControls extends StatelessWidget {
                               IconData icon;
                               bool active = repeatMode != RepeatMode.off;
                               if (repeatMode == RepeatMode.one) {
-                                icon = CupertinoIcons.repeat_1;
+                                icon = isApple
+                                    ? CupertinoIcons.repeat_1
+                                    : Icons.repeat_one_rounded;
                               } else {
-                                icon = CupertinoIcons.repeat;
+                                icon = isApple
+                                    ? CupertinoIcons.repeat
+                                    : Icons.repeat_rounded;
                               }
                               return IconButton(
                                 onPressed: provider.toggleRepeat,
@@ -504,7 +524,10 @@ class _MiniPlayerControls extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                                 minWidth: 44, minHeight: 44),
-                            icon: Icon(CupertinoIcons.forward_fill,
+                            icon: Icon(
+                                isApple
+                                    ? CupertinoIcons.forward_fill
+                                    : Icons.skip_next_rounded,
                                 size: ScreenHelper.miniPlayerSkipIconSize(
                                     context)),
                             color: color,
