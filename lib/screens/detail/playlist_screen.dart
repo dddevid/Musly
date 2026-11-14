@@ -959,6 +959,12 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         playlist: displaySongs,
                         index: index,
                         showArtist: true,
+                        onRemoveFromPlaylist: () {
+                          final originalIndex = _playlist!.songs!.indexOf(song);
+                          if (originalIndex != -1) {
+                            _removeSongFromPlaylist(originalIndex);
+                          }
+                        },
                       );
                       return Dismissible(
                         key: ValueKey('${song.id}_$index'),

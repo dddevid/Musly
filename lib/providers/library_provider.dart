@@ -865,6 +865,13 @@ class LibraryProvider extends ChangeNotifier implements AndroidAutoLibraryDelega
     );
   }
 
+  Future<void> removeSongFromPlaylist(String playlistId, int songIndex) async {
+    await _subsonicService.updatePlaylist(
+      playlistId: playlistId,
+      songIndexesToRemove: [songIndex],
+    );
+  }
+
   @override
   Future<SearchResult> search(String query) async {
     if (_localOnlyMode) {

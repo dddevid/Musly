@@ -26,6 +26,7 @@ class SongTile extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Widget? trailing;
+  final VoidCallback? onRemoveFromPlaylist;
 
   const SongTile({
     super.key,
@@ -41,6 +42,7 @@ class SongTile extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.trailing,
+    this.onRemoveFromPlaylist,
   });
 
   @override
@@ -275,6 +277,10 @@ class SongTile extends StatelessWidget {
   }
 
   void _showOptions(BuildContext context) {
-    SongOptionsModal.show(context, song);
+    SongOptionsModal.show(
+      context,
+      song,
+      onRemoveFromPlaylist: onRemoveFromPlaylist,
+    );
   }
 }

@@ -20,13 +20,20 @@ import '../../screens/detail/album_screen.dart';
 import '../../screens/detail/artist_screen.dart';
 
 class SongOptionsModal extends StatefulWidget {
-  static Future<void> show(BuildContext context, Song song) {
+  static Future<void> show(
+    BuildContext context,
+    Song song, {
+    VoidCallback? onRemoveFromPlaylist,
+  }) {
     HapticFeedback.mediumImpact();
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => SongOptionsModal(song: song),
+      builder: (context) => SongOptionsModal(
+        song: song,
+        onRemoveFromPlaylist: onRemoveFromPlaylist,
+      ),
     );
   }
 
@@ -229,8 +236,13 @@ class SongOptionsModal extends StatefulWidget {
   }
 
   final Song song;
+  final VoidCallback? onRemoveFromPlaylist;
 
-  const SongOptionsModal({super.key, required this.song});
+  const SongOptionsModal({
+    super.key,
+    required this.song,
+    this.onRemoveFromPlaylist,
+  });
 
   @override
   State<SongOptionsModal> createState() => _SongOptionsModalState();
@@ -367,6 +379,18 @@ class _SongOptionsModalState extends State<SongOptionsModal> {
                             playerProvider.removeFromQueue(idx);
                           }
                           Navigator.pop(context);
+                        },
+                      ),
+                    if (widget.onRemoveFromPlaylist != null)
+                      _OptionTile(
+                        icon: isApple
+                            ? CupertinoIcons.trash
+                            : Icons.playlist_remove_rounded,
+                        title: l10n?.removeFromPlaylist ?? 'Remove from Playlist',
+                        iconColor: const Color(0xFFFF453A),
+                        onTap: () {
+                          Navigator.pop(context);
+                          widget.onRemoveFromPlaylist!();
                         },
                       ),
                     Builder(

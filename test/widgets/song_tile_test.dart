@@ -175,5 +175,38 @@ void main() {
       final sizeLater = tester.getSize(find.byType(AnimatedEqualizer));
       expect(sizeLater.height, 16.0);
     });
+
+    testWidgets('SongTile shows Remove from Playlist when onRemoveFromPlaylist is provided (#276)', (tester) async {
+      bool removed = false;
+      final song = Song(
+        id: '1',
+        title: 'Playlist Song',
+        artist: 'Test Artist',
+      );
+
+      await tester.pumpWidget(
+        createTestApp(
+          child: SongTile(
+            song: song,
+            onRemoveFromPlaylist: () {
+              removed = true;
+            },
+          ),
+        ),
+      );
+
+      // Open options modal by tapping trailing button
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+
+      // Find remove from playlist option
+      final removeOption = find.text('Remove from Playlist');
+      expect(removeOption, findsOneWidget);
+
+      await tester.tap(removeOption);
+      await tester.pumpAndSettle();
+
+      expect(removed, isTrue);
+    });
   });
 }
